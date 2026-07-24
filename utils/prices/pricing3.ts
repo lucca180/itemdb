@@ -4,6 +4,22 @@ import { median, quantileSorted, mad, sum, mean } from 'simple-statistics';
 
 const MAX_VALID_STOCK = 3; // max stock to consider for price calculation
 
+const sourceWeight: { [key: string]: number } = {
+  ssw: 1,
+  sw: 0.85,
+  'auction-sold': 0.75,
+  trade: 0.75,
+  auction: 0.7,
+  usershop: 0.35,
+};
+
+export type PriceSignals = {
+  sourceScore: number;
+  owners: number;
+  ownerMin: number;
+  maxShare: number;
+};
+
 export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) => {
   // we're using ip_address field to add more info than we should
   // (adding a new column to PriceProcess2 is pain)
@@ -14,9 +30,11 @@ export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) 
       return x;
     });
 
-  const weightedVals = filterMostRecent(sorted, forceMode);
+  const filtered = filterMostRecent(sorted, forceMode);
 
-  if (weightedVals.length === 0) return undefined;
+  if (!filtered) return undefined;
+
+  const { weightedVals, ownerMin } = filtered;
 
   const usedIds = new Set<number>(weightedVals.map(([x]) => x.internal_id));
 
@@ -37,8 +55,30 @@ export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) 
     price: logRound(finalMean),
     usedIds: Array.from(usedIds),
     latestDate: latestDate,
+    // owners + maxShare from the pre-slice pool (same population that met ownerMin);
+    // sourceScore from the points that form the final price
+    signals: buildSignals(filteredPrices, ownerMin, weightedVals),
   };
 };
+
+function buildSignals(
+  pricePoints: [PriceProcess2, number][],
+  ownerMin: number,
+  pool: [PriceProcess2, number][]
+): PriceSignals {
+  const scoreWeight = sum(pricePoints.map(([, w]) => w));
+  const sourceScore =
+    scoreWeight > 0
+      ? sum(pricePoints.map(([p, w]) => (sourceWeight[p.type] ?? 0.35) * w)) / scoreWeight
+      : 0;
+
+  const owners = new Set(pool.map(([p]) => p.owner).filter(Boolean)).size;
+
+  const poolWeight = sum(pool.map(([, w]) => w));
+  const maxShare = poolWeight > 0 ? Math.max(...pool.map(([, w]) => w)) / poolWeight : 1;
+
+  return { sourceScore, owners, ownerMin, maxShare };
+}
 
 function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) {
   const EVENT_MODE = forceMode || process.env.EVENT_MODE === 'true';
@@ -54,6 +94,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
   let filtered: PriceProcess2[] = [];
   let passed = false;
+  let ownerMin = 0;
 
   let prevDay = 0;
 
@@ -74,13 +115,14 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
     if (filteredRaw.length >= threshold) {
       passed = true;
+      ownerMin = threshold;
       break;
     } else if (filteredRaw.length === priceProcessList.length) {
-      return [];
+      return undefined;
     }
   }
 
-  if (!filtered.length || !passed) return [];
+  if (!filtered.length || !passed) return undefined;
 
   let allPrices: number[] = [];
 
@@ -101,7 +143,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   // console.log(allPrices, noOutliers);
 
   // if all remaining data is from usershops, skip
-  if (filtered.length === filtered.filter((x) => x.type === 'usershop').length) return [];
+  if (filtered.length === filtered.filter((x) => x.type === 'usershop').length) return undefined;
 
   const result = filtered.map((x, i) => [x, getWeight(x, i)]) as [PriceProcess2, number][];
 
@@ -116,20 +158,11 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   // data is low confidence, skip
   if (meanWeight < 0.5 && differenceInCalendarDays(Date.now(), lastDate) <= 30) {
     // console.warn('processPrices3: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
-    return [];
+    return undefined;
   }
 
-  return result as [PriceProcess2, number][];
+  return { weightedVals: result, ownerMin };
 }
-
-const sourceWeight: { [key: string]: number } = {
-  ssw: 1,
-  sw: 0.85,
-  'auction-sold': 0.75,
-  trade: 0.75,
-  auction: 0.7,
-  usershop: 0.35,
-};
 
 const getWeight = (
   price: PriceProcess2,

@@ -5,6 +5,7 @@ import { differenceInCalendarDays } from 'date-fns';
 import { mean, standardDeviation } from 'simple-statistics';
 import prisma from '@utils/prisma';
 import { LogService } from '@services/ActionLogService';
+import type { PriceSignals } from '@utils/prices/pricing3';
 
 const EVENT_MODE = process.env.EVENT_MODE === 'true';
 
@@ -13,7 +14,14 @@ export const PRICING = {
   MIN_LAST_UPDATE: 3,
   MIN_Z_SCORE: 4,
   MAX_Z_DAYS: 180,
+  AUTO_APPROVE_SOURCE_SCORE: 0.75,
+  /** Absolute margin above the pricing window's ownerMin (effective mult decays as 1+k/ownerMin). */
+  AUTO_APPROVE_OWNER_EXTRA: 4,
+  AUTO_APPROVE_MAX_SHARE: 0.35,
 } as const;
+
+export const getAutoApproveOwnerNeed = (ownerMin: number) =>
+  ownerMin + PRICING.AUTO_APPROVE_OWNER_EXTRA;
 
 // for a given number, calculate z-score
 export const zScore = (x: number, data: number[]) => {
@@ -26,7 +34,7 @@ export const zScore = (x: number, data: number[]) => {
   return (x - meanVal) / stdVal;
 };
 
-type PriceHistory = {
+export type PriceHistory = {
   addedAt: Date;
   price: Decimal;
   noInflation_id: number | null;
@@ -133,6 +141,8 @@ export type handleInflationArgs = {
   latestDate: Date;
   priceHistory: PriceHistory[];
   priceValue: number;
+  signals?: PriceSignals;
+  forceMode?: boolean;
 };
 
 type handleInflationReturn = {
@@ -141,65 +151,101 @@ type handleInflationReturn = {
   msg: string | null;
 };
 
+export const canAutoApprove = (signals: PriceSignals | undefined, forceMode = false) => {
+  if (!signals || forceMode || EVENT_MODE) return false;
+
+  const ownerNeed = getAutoApproveOwnerNeed(signals.ownerMin);
+
+  return (
+    signals.sourceScore >= PRICING.AUTO_APPROVE_SOURCE_SCORE &&
+    signals.owners >= ownerNeed &&
+    signals.maxShare <= PRICING.AUTO_APPROVE_MAX_SHARE
+  );
+};
+
+/** Pure check: would this priceValue be flagged as a *new* inflation vs priceHistory[0]? */
+export const isNewInflation = (priceHistory: PriceHistory[], priceValue: number) => {
+  if (!priceHistory.length) return false;
+
+  const oldPriceRaw = priceHistory[0];
+  if (oldPriceRaw.noInflation_id) return false;
+
+  const prices = getPrices(priceHistory.slice(1));
+  const oldPrice = oldPriceRaw.price.toNumber();
+  const priceDiff = Math.abs(oldPrice - priceValue);
+  const zNew = zScore(priceValue, prices);
+  const percentDiff = priceDiff / oldPrice;
+  const variation = coefficientOfVariation([oldPrice, priceValue]);
+  const hasZScores = prices.length >= PRICING.MIN_Z_SCORE && standardDeviation(prices) > 0;
+
+  if (hasZScores) {
+    return (
+      priceDiff >= PRICING.MIN_INFLATION_DIFF &&
+      zNew >= 2.5 &&
+      priceValue > oldPrice &&
+      percentDiff >= 0.35
+    );
+  }
+
+  if (priceDiff < PRICING.MIN_INFLATION_DIFF || oldPrice >= priceValue) return false;
+  if (variation >= 75) return true;
+  if (priceValue >= 100000 && variation >= 50) return true;
+  return false;
+};
+
 export const handleInflation = async (
   args: handleInflationArgs
 ): Promise<handleInflationReturn> => {
-  const { latestDate, priceHistory, priceValue, newPriceData } = args;
+  const { latestDate, priceHistory, priceValue, newPriceData, signals, forceMode } = args;
 
   const prices = getPrices(priceHistory.slice(1));
 
   const oldPriceRaw = priceHistory[0];
   const oldPrice = oldPriceRaw.price.toNumber();
-  const priceDiff = Math.abs(oldPrice - priceValue);
 
   const isInflation = !!oldPriceRaw.noInflation_id;
 
   const zNew = zScore(priceValue, prices);
-  const percentDiff = priceDiff / oldPrice;
   const variation = coefficientOfVariation([oldPrice, priceValue]);
 
   const hasZScores = prices.length >= PRICING.MIN_Z_SCORE && standardDeviation(prices) > 0;
 
-  // ---------- Z-SCORE VERSION ---------- //
+  // ---------- Z-SCORE / LEGACY: new inflation ---------- //
+  if (!isInflation && isNewInflation(priceHistory, priceValue)) {
+    newPriceData.noInflation_id = oldPriceRaw.internal_id;
 
-  if (hasZScores) {
-    if (
-      !isInflation &&
-      priceDiff >= PRICING.MIN_INFLATION_DIFF &&
-      zNew >= 2.5 &&
-      priceValue > oldPrice &&
-      percentDiff >= 0.35
-    ) {
-      newPriceData.noInflation_id = oldPriceRaw.internal_id;
+    // Legacy path never auto-approves (same as before)
+    if (!hasZScores) {
       return {
         msg: 'inflation',
         isManualCheck: true,
         newPriceData,
       };
     }
-  }
 
-  // ---------- LEGACY VERSION ---------- //
-  if (!hasZScores) {
-    if (!isInflation && priceDiff >= PRICING.MIN_INFLATION_DIFF) {
-      if (oldPrice < priceValue && variation >= 75) {
-        newPriceData.noInflation_id = oldPriceRaw.internal_id;
-        return {
-          msg: 'inflation',
-          isManualCheck: true,
-          newPriceData,
-        };
-      }
+    if (canAutoApprove(signals, forceMode) && signals) {
+      await LogService.createLog(
+        'inflationAutoApprove',
+        {
+          newPrice: priceValue,
+          oldPrice,
+          ...signals,
+        },
+        newPriceData.item_iid?.toString()
+      );
 
-      if (oldPrice < priceValue && priceValue >= 100000 && variation >= 50) {
-        newPriceData.noInflation_id = oldPriceRaw.internal_id;
-        return {
-          msg: 'inflation',
-          isManualCheck: true,
-          newPriceData,
-        };
-      }
+      return {
+        msg: 'inflation',
+        isManualCheck: false,
+        newPriceData,
+      };
     }
+
+    return {
+      msg: 'inflation',
+      isManualCheck: true,
+      newPriceData,
+    };
   }
   // ---------- END OF LEGACY VERSION ---------- //
 

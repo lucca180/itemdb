@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
-import { processPrices3 } from '@utils/prices/pricing3';
+import { processPrices3, type PriceSignals } from '@utils/prices/pricing3';
 import { handleInflation, PRICING, shouldUpdatePrice } from '@utils/prices/process-helpers';
 import pMap from 'p-map';
 
@@ -278,7 +278,8 @@ export const doProcessPrices = async (
           newPrice.price,
           allItemData.map((x) => x.internal_id),
           newPrice.latestDate,
-          forceMode
+          forceMode,
+          newPrice.signals
         );
 
         if (result) processedIDs.push(...allIDs);
@@ -340,7 +341,8 @@ async function updateOrAddDB(
   priceValue: number,
   usedIDs: number[],
   latestDate: Date,
-  forceMode = false
+  forceMode = false,
+  signals?: PriceSignals
 ): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
   let newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
     item_iid: priceData.item_iid,
@@ -387,6 +389,8 @@ async function updateOrAddDB(
       priceHistory,
       priceValue,
       newPriceData,
+      signals,
+      forceMode,
     });
 
     newPriceData = result.newPriceData;
