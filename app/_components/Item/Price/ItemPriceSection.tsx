@@ -20,13 +20,14 @@ import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
 import {
   loadLastSeen,
   getOfficialItemLists,
+  loadItemPriceMarkers,
   loadNPPrices,
   loadPriceStatus,
   loadTradeLists,
 } from '@app/_components/Item/loadUtils';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { shouldShowTradeLists } from '@utils/utils';
-import type { ItemData, PriceData, UserList } from '@types';
+import type { ItemData, PriceData, PriceMarker } from '@types';
 import {
   buildLastSeenCards,
   buildLastSeenStaticCards,
@@ -70,22 +71,6 @@ type ItemPriceLabels = {
 
 // --- Price table (server) ---
 
-function getMarkerLabel(
-  t: ItemPriceLabels['t'],
-  markerType?: 'added-to' | 'available-at' | 'unavailable-at'
-) {
-  switch (markerType) {
-    case 'added-to':
-      return t('ItemPage.added-to');
-    case 'available-at':
-      return t('ItemPage.available-at');
-    case 'unavailable-at':
-      return t('ItemPage.unavailable-at');
-    default:
-      return '';
-  }
-}
-
 function PriceTableRow({
   price,
   sortedData,
@@ -107,15 +92,20 @@ function PriceTableRow({
   const nextPrice = getNextPrice(sortedData, index);
 
   if (price.marker) {
-    const markerLabel = getMarkerLabel(t, price.markerType);
     return (
       <Table.Row h={42} bg={bgColor} borderLeft={`3px solid ${price.color}85`}>
         <Table.Cell colSpan={isAdmin ? 4 : 3} border={0}>
           <Flex flexFlow="column" alignItems="center" gap={2}>
-            <Badge>{markerLabel}</Badge>
-            <I18nLink href={`/lists/official/${price.slug}`} style={{ color: price.color }}>
-              {price.title}
-            </I18nLink>
+            <Badge>{price.badgeText}</Badge>
+            {price.slug ? (
+              <I18nLink href={`/lists/official/${price.slug}`} style={{ color: price.color }}>
+                {price.title}
+              </I18nLink>
+            ) : (
+              <Text as="span" style={{ color: price.color }}>
+                {price.title}
+              </Text>
+            )}
             <Text fontSize="xs">
               {format.dateTime(new Date(price.addedAt!), {
                 year: 'numeric',
@@ -123,6 +113,20 @@ function PriceTableRow({
                 day: 'numeric',
               })}
             </Text>
+            {!!price.description && (
+              <Box
+                whiteSpace="normal"
+                fontSize="0.8rem"
+                color="whiteAlpha.700"
+                textAlign="center"
+                bg="blackAlpha.300"
+                p={1}
+                borderRadius="md"
+                maxW="90%"
+              >
+                <Markdown>{price.description}</Markdown>
+              </Box>
+            )}
           </Flex>
         </Table.Cell>
       </Table.Row>
@@ -261,20 +265,20 @@ function PriceTableRow({
 
 function PriceTableView({
   data,
-  lists,
+  markers = [],
   isAdmin,
   item,
   t,
   format,
 }: {
   data: PriceData[];
-  lists?: UserList[];
+  markers?: PriceMarker[];
   isAdmin?: boolean;
   item: ItemData;
   t: ItemPriceLabels['t'];
   format: ItemPriceLabels['format'];
 }) {
-  const sortedData = buildPriceTableData(data, lists, item);
+  const sortedData = buildPriceTableData(data, markers, t);
   const linkColor = Color(item.color.hex).alpha(0.8).lightness(70).hexa();
 
   return (
@@ -289,7 +293,7 @@ function PriceTableView({
         <Table.Body>
           {sortedData.map((price, index) => (
             <PriceTableRow
-              key={price.addedAt + '_item' + (price.marker ? '_marker' : '')}
+              key={price.addedAt + '_item' + (price.marker ? `_${price.badgeText}` : '')}
               price={price}
               sortedData={sortedData}
               index={index}
@@ -337,16 +341,16 @@ async function PriceTableTabFull({
   t,
   format,
 }: ItemProps & ItemPriceShellProps & ItemPriceLabels) {
-  const [{ user }, lists] = await Promise.all([
+  const [{ user }, markers] = await Promise.all([
     getServerCurrentUser(),
-    getOfficialItemLists(item.internal_id, shouldShowTradeLists(item)),
+    loadItemPriceMarkers(item, shouldShowTradeLists(item)),
   ]);
 
   return (
     <PriceTableView
       item={item}
       data={prices}
-      lists={lists}
+      markers={markers}
       isAdmin={!!user?.isAdmin}
       t={t}
       format={format}

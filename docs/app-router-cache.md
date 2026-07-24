@@ -116,6 +116,7 @@ File: [`app/_components/Item/loadUtils.ts`](../app/_components/Item/loadUtils.ts
 |-------------------|----------------|--------------|-----------|-------------------|
 | `getOfficialItemLists` | `getOfficialItemListsCached` | `lists` | `itemFast` | `ItemAvyCard` (`loadAvyData`); indirectly via `loadItemPageLists` |
 | `loadItemPageLists` | *(React.cache)* → `getOfficialItemLists` | `lists` | `itemFast` | `ItemHeader`, `ItemOfficialListsSection`, `ItemPriceSection`, `RelatedLinksCard` |
+| `loadItemPriceMarkers` | *(React.cache)* → `getOfficialItemLists` + `resolveOfficialListMarkers` | `markers`, `lists` | `itemFast` | `ItemPriceSection` (price table markers; chart in PR2) |
 | `loadItemEffects` | `loadItemEffectsCached` | `effects` | `homeSlow` | `ItemEffectsSection`, `ItemPageWearablePreview`, `ItemPageEditSectionLoader`, `RelatedLinksCard` |
 | `loadItemColors` | `loadItemColorsCached` | `colors` | `homeSlow` | `ColorInfoSection` |
 | `loadItemWearableData` | `loadItemWearableDataCached` | `wearable` | `homeSlow` | `ItemPageWearablePreview` |
@@ -169,7 +170,7 @@ File: [`loadItemDrops.ts`](../app/_components/Item/Drops/loadItemDrops.ts)
 
 ```
 ItemPage
-├── ItemPriceSection          → loadNPPrices*, loadItemPageLists*, loadLastSeen*, loadTradeLists*
+├── ItemPriceSection          → loadNPPrices*, loadItemPriceMarkers*, loadLastSeen*, loadTradeLists*, getOfficialItemLists* (chart until PR2)
 ├── NCTradeSection            → loadNCTradeInsights*, loadLebronTradeHistory, loadTradeLists
 ├── ItemEffectsSection        → loadItemEffects
 ├── ItemOfficialListsSection  → loadItemPageLists

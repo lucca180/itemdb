@@ -1,7 +1,6 @@
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
-import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
-import { resolveItemListSeries } from '@utils/item/itemListSeries';
+import type { ItemData, PriceData, PriceMarker, PricingInfo, UserList } from '@types';
 
 export type ItemPriceStatLabels = {
   inflation: string;
@@ -103,16 +102,15 @@ export function buildLastSeenCards(
 
 export type PriceOrMarker = Partial<PriceData> & {
   marker?: boolean;
+  /** Already-translated Badge copy (or custom manual badge). */
+  badgeText?: string;
+  /** List name / marker title shown under the badge. */
   title?: string;
+  description?: string | null;
   color?: string;
-  slug?: string;
+  slug?: string | null;
   addedAt?: string;
   hasEnding?: boolean;
-  markerType?: 'added-to' | 'available-at' | 'unavailable-at';
-};
-
-const dateMax = (...dates: Date[]) => {
-  return dates.reduce((max, date) => (date > max ? date : max), new Date(0));
 };
 
 export function filterNPSeekingLists(lists?: UserList[]) {
@@ -158,49 +156,45 @@ export function getHelpNeededData(
   };
 }
 
+/**
+ * Interleaves price rows with presentation-ready markers.
+ * Clamping / date validation already happened in the price-markers engine.
+ * Official-list badge copy is resolved via i18n here into `badgeText`.
+ */
 export function buildPriceTableData(
   data: PriceData[],
-  lists: UserList[] | undefined,
-  item: ItemData
+  markers: PriceMarker[] = [],
+  t: TranslateFn = (key) => key
 ): PriceOrMarker[] {
   const sorted: PriceOrMarker[] = [...data];
-  const itemAdded = new Date(item.firstSeen ?? 0);
 
-  resolveItemListSeries(lists).forEach((series) => {
-    let startDate: string | null = series.startAt;
-    let markerType = 'added-to';
-    let hasEnding = !!series.endAt;
+  markers.forEach((marker) => {
+    const hasEnding = !!marker.endAt;
+    const slug = marker.type === 'officialList' ? marker.slug : null;
 
-    if (series.endAt) {
-      markerType = 'available-at';
-
-      if (new Date(series.endAt) <= itemAdded) return;
-
-      hasEnding = !!startDate;
-
+    if (marker.endAt) {
       sorted.push({
         marker: true,
-        title: series.name,
-        slug: series.slug,
-        hasEnding: hasEnding,
-        addedAt: series.endAt,
-        color: series.color,
-        markerType: 'unavailable-at',
+        badgeText: marker.badgeText ?? t('ItemPage.unavailable-at'),
+        title: marker.title,
+        description: marker.description,
+        slug,
+        hasEnding,
+        addedAt: marker.endAt,
+        color: marker.color,
       });
     }
 
-    startDate = startDate ? dateMax(itemAdded, new Date(startDate)).toJSON() : null;
-
-    if (startDate)
-      sorted.push({
-        marker: true,
-        title: series.name,
-        slug: series.slug,
-        addedAt: startDate,
-        color: series.color,
-        hasEnding: hasEnding,
-        markerType: markerType as 'added-to' | 'available-at' | 'unavailable-at',
-      });
+    sorted.push({
+      marker: true,
+      badgeText: marker.badgeText ?? t(hasEnding ? 'ItemPage.available-at' : 'ItemPage.added-to'),
+      title: marker.title,
+      description: marker.description,
+      slug,
+      addedAt: marker.startAt,
+      color: marker.color,
+      hasEnding,
+    });
   });
 
   sorted.sort((a, b) => {
