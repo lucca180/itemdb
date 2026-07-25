@@ -199,20 +199,18 @@ export const syncDynamicList = async (list_id: number, force = false) => {
 
   const dynamicChanges: {
     create: { list_id: number; item_iid: number }[];
-    deleteByInternalId: number[];
     deleteByIid: number[];
   } = {
     create: [],
-    deleteByInternalId: [],
     deleteByIid: [],
   };
 
   if (linkedListId) {
     if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
-        select item_iid from listitems 
-        where list_id = ${linkedListId} 
-        and item_iid not in (select item_iid from listitems where list_id = ${list_id}) 
+        select item_iid from listitems
+        where list_id = ${linkedListId}
+        and item_iid not in (select item_iid from listitems where list_id = ${list_id})
         and isHidden = 0
       `) as any;
 
@@ -224,14 +222,14 @@ export const syncDynamicList = async (list_id: number, force = false) => {
 
     if (dynamicType === 'removeOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
-        select internal_id from listitems 
-        where list_id = ${list_id} 
+        select item_iid from listitems
+        where list_id = ${list_id}
         and item_iid not in (select item_iid from listitems where list_id = ${linkedListId} and isHidden = 0)
       `) as any;
 
-      for (const item of res as { internal_id: number }[]) {
-        logData.removed.push(item.internal_id);
-        dynamicChanges.deleteByInternalId.push(item.internal_id);
+      for (const item of res as { item_iid: number }[]) {
+        logData.removed.push(item.item_iid);
+        dynamicChanges.deleteByIid.push(item.item_iid);
       }
     }
   }

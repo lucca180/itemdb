@@ -19,7 +19,8 @@ import { useToast } from '@utils/theme/toast';
 import React, { useEffect, useRef, useState } from 'react';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import type { ItemV2For, SearchStats, UserList } from '@types';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from '@i18n/navigation';
+import { useSearchParams } from 'next/navigation';
 import type { SearchFilters as SearchFiltersType } from '@types';
 import Pagination from '@components/Input/Pagination';
 import { SearchFilterModalProps } from '@components/Search/SearchFiltersModal';
@@ -77,6 +78,7 @@ function getSearchQuery(search: string): string {
 
 export function SearchPageClient(props: SearchPageClientProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamsString = searchParams?.toString() ?? '';
   const t = useTranslations();
@@ -105,6 +107,16 @@ export function SearchPageClient(props: SearchPageClientProps) {
 
     if (!isEqual(currentFilters, queryFilters)) {
       setFilters({ ...defaultFilters, ...queryFilters });
+      return false;
+    }
+
+    // Match Pages `router.query.s` handling: new `s` resets to page 1 and lets the
+    // filters effect run the search (shallow-push equivalent via router.push).
+    if (getSearchQuery(searchParamsString) !== searchQuery && searchQuery !== null) {
+      setFilters((oldFilters) => ({
+        ...oldFilters,
+        page: 1,
+      }));
       return false;
     }
 
@@ -217,22 +229,15 @@ export function SearchPageClient(props: SearchPageClientProps) {
     paramsString = paramsString ? '&' + paramsString : '';
 
     const url = pathname + '?s=' + encodeURIComponent(query) + paramsString;
-    window.history.pushState(null, '', url);
+    // App Router stand-in for Pages `router.push(..., { shallow: true })`.
+    router.push(url, { scroll: false });
   };
 
+  // Mirror Pages effect on `router.query`: only sync filters from the URL.
+  // Search runs via the filters effect (including after back/forward).
   useEffect(() => {
     if (!prevFilter.current) return;
-    if (!parseQueryString()) return;
-
-    const query = getSearchQuery(searchParamsString);
-    if (query === searchQuery) return;
-
-    if (filters.page !== 1) {
-      setFilters((oldFilters) => ({ ...oldFilters, page: 1 }));
-      return;
-    }
-
-    void doSearch(true, true);
+    parseQueryString();
   }, [searchParamsString]);
 
   useEffect(() => {

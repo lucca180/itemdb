@@ -1,10 +1,11 @@
+'use client';
+
 import { Table, Text, Flex, HStack, Spinner, Center } from '@chakra-ui/react';
-import React from 'react';
-import { ItemData, ItemRestockData } from '../../types';
+import type { ItemData, ItemRestockData } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
-import axios, { AxiosRequestConfig } from 'axios';
-import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
 import useSWRImmutable from 'swr/immutable';
+import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
+import { loadRestockHistory } from '@app/server/items/seenHistoryActions';
 
 type Props = {
   data: ItemRestockData[];
@@ -14,27 +15,16 @@ export type RestockHistoryProps = {
   item: ItemData;
 };
 
-type RestockHistoryResponse = {
-  recent: ItemRestockData[];
-  item: ItemData | null;
-  appearances: number;
-  totalStock: number;
-};
-
-async function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
-  const res = await axios.get(url, config);
-  return res.data;
-}
-
 export const RestockHistory = (props: RestockHistoryProps) => {
   const { item } = props;
   const format = useFormatter();
   const t = useTranslations();
 
-  const { data, isLoading: loading } = useSWRImmutable<RestockHistoryResponse>(
-    `/api/v1/items/${item.name}/restock`,
-    fetcher
-  );
+  const {
+    data,
+    error,
+    isLoading: loading,
+  } = useSWRImmutable(['seen-history', 'restock', item.name], () => loadRestockHistory(item.name));
 
   return (
     <Flex flexFlow="column">
@@ -76,7 +66,12 @@ export const RestockHistory = (props: RestockHistoryProps) => {
             x: 40,
           })}
         </Text>
-        {!loading && <RestockHistoryTable data={data?.recent ?? []} />}
+        {!loading && !error && <RestockHistoryTable data={data?.recent ?? []} />}
+        {error && !loading && (
+          <Text textAlign="center" fontSize="xs" color="red.300">
+            {t('General.error')}
+          </Text>
+        )}
         {loading && (
           <Center>
             <Spinner />

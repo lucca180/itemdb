@@ -14,10 +14,11 @@ import {
 } from '@chakra-ui/react';
 import Color from 'color';
 import { ChangeEvent, useEffect, useState } from 'react';
-import axios from 'axios';
-import { ItemData, ItemEffect } from '@types';
+import { useTranslations } from 'next-intl';
 import { EffectsCard } from '@components/Hubs/Effects/EffectsCard';
+import { useToast } from '@utils/theme/toast';
 import type { ItemEffectsField, ItemEffectsPageLabels } from './buildItemEffectsPageProps';
+import { loadItemEffectsItems, type ItemEffectsHubItem } from './actions';
 
 const LIMIT_PER_PAGE = 18;
 const GRADIENT_RGB = Color('#f86dba').rgb().round().array();
@@ -27,47 +28,61 @@ type ItemEffectsPageClientProps = {
 };
 
 export function ItemEffectsPageClient({ labels }: ItemEffectsPageClientProps) {
+  const t = useTranslations();
+  const toast = useToast();
   const [field, setField] = useState<ItemEffectsField>('stats');
-  const [items, setItems] = useState<(ItemData & { effects: ItemEffect[] })[]>([]);
+  const [items, setItems] = useState<ItemEffectsHubItem[]>([]);
   const [statsName, setStatsName] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [page, setPage] = useState(1);
 
-  const fetchItems = async (
-    newPage: number,
-    activeField: ItemEffectsField,
-    activeStats: string
-  ) => {
-    setIsLoading(true);
-    try {
-      const res = await axios.get(`/api/v1/items/effects`, {
-        params: {
-          field: activeField,
-          page: newPage,
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      setIsLoading(true);
+      setLoadError(false);
+      try {
+        const res = await loadItemEffectsItems({
+          field,
+          page,
           limit: LIMIT_PER_PAGE,
-          name: activeField === 'stats' && activeStats !== 'all' ? activeStats : undefined,
-        },
-      });
-      setItems(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
+          name: field === 'stats' && statsName !== 'all' ? statsName : undefined,
+        });
+        if (!cancelled) setItems(res);
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) {
+          setLoadError(true);
+          toast({
+            id: 'item-effects-load-error',
+            title: t('General.error'),
+            status: 'error',
+            duration: 8000,
+            isClosable: true,
+          });
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [page, field, statsName, toast, t]);
+
+  const selectField = (nextField: ItemEffectsField) => {
+    setField(nextField);
+    setPage(1);
   };
 
-  useEffect(() => {
-    void fetchItems(1, field, statsName);
-  }, []);
-
-  useEffect(() => {
+  const selectStatsName = (nextStats: string) => {
+    setStatsName(nextStats);
     setPage(1);
-    void fetchItems(1, field, statsName);
-  }, [field, statsName]);
-
-  useEffect(() => {
-    void fetchItems(page, field, statsName);
-  }, [page]);
+  };
 
   return (
     <>
@@ -101,7 +116,7 @@ export function ItemEffectsPageClient({ labels }: ItemEffectsPageClientProps) {
               key={type}
               field={type}
               selectedField={field}
-              setField={setField}
+              setField={selectField}
               disabled={isLoading}
             >
               {label}
@@ -113,7 +128,7 @@ export function ItemEffectsPageClient({ labels }: ItemEffectsPageClientProps) {
         <Center mt={3}>
           <NativeSelect.Root maxW={200} size="sm" variant="subtle" colorPalette="pink">
             <NativeSelect.Field
-              onChange={(e: ChangeEvent<HTMLSelectElement>) => setStatsName(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => selectStatsName(e.target.value)}
             >
               <option value="all">{labels.allStatsLabel}</option>
               {labels.statsOptions.map((type) => (
@@ -127,11 +142,17 @@ export function ItemEffectsPageClient({ labels }: ItemEffectsPageClientProps) {
         </Center>
       )}
       <Center alignItems={'stretch'} flexWrap={'wrap'} gap={3} mt={3}>
+        {loadError && !isLoading && (
+          <Text color="red.300" textAlign="center" w="100%">
+            {t('General.error')}
+          </Text>
+        )}
         {!isLoading &&
+          !loadError &&
           items.map((item) => (
             <EffectsCard uniqueID={`${field}-item-effect`} key={item.internal_id} item={item} />
           ))}
-        {!isLoading && items.length === 0 && (
+        {!isLoading && !loadError && items.length === 0 && (
           <VStack>
             <Text>{labels.emptyMessage}</Text>
           </VStack>

@@ -1,37 +1,43 @@
-import {
-  Badge,
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  Link,
-  Separator,
-  Text,
-  Tooltip,
-  useMediaQuery,
-} from '@chakra-ui/react';
-import { ItemImage } from '@components/Items/ItemCard';
-import ItemCtxMenu, { CtxTrigger } from '@components/Menus/ItemCtxMenu';
+'use client';
+
+import { Box, Flex, HStack, Link, Separator, Text, useMediaQuery } from '@chakra-ui/react';
 import MainLink from '@components/Utils/MainLink';
 import Color from 'color';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useFormatter, useTranslations } from 'next-intl';
-import { AiFillWarning } from 'react-icons/ai';
-import { ItemData, ItemEffect } from '../../../types';
+import React, { useState } from 'react';
+import type { ItemEffect, ItemV2For } from '@types';
 import { EffectText, EffectTypes } from '@components/Items/EffectCard';
+import { ItemCardBadgeV2 } from '@components/Items/v2/ItemCardBadgeV2';
+import { ItemImageV2 } from '@components/Items/v2/ItemImageV2';
+import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
+
+const ItemCtxMenuV2 = dynamic(() => import('@components/Menus/ItemCtxMenuV2'), { ssr: false });
+
+const FALLBACK_COLOR_HEX = '#4A5568';
 
 type EffectsCardProps = {
-  item: ItemData & { effects?: ItemEffect[] };
+  item: ItemV2For<'card'> & { effects?: ItemEffect[] };
   uniqueID: string;
 };
 
 export const EffectsCard = (props: EffectsCardProps) => {
-  const t = useTranslations();
-  const format = useFormatter();
-  const { item } = props;
-  const color = Color(item.color.hex);
+  const { item, uniqueID } = props;
+  const color = Color(item.colorHex ?? FALLBACK_COLOR_HEX);
   const rgb = color.rgb().array();
   const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
+  const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
+  const menuId = uniqueID + item.internal_id.toString();
+
+  const loadContextMenu = () => {
+    if (!isMobile) {
+      void import('@components/Menus/ItemCtxMenuV2');
+      setIsContextMenuLoaded(true);
+    }
+  };
+  const loadContextMenuOnRightClick = (event: React.MouseEvent) => {
+    if (event.button === 2) loadContextMenu();
+  };
 
   return (
     <Flex
@@ -43,47 +49,29 @@ export const EffectsCard = (props: EffectsCardProps) => {
       borderRadius={'md'}
       flexFlow={'column'}
     >
-      <ItemCtxMenu menuId={props.uniqueID + item.internal_id.toString()} item={item} />
+      {isContextMenuLoaded && <ItemCtxMenuV2 menuId={menuId} item={item} />}
       <CtxTrigger
-        id={props.uniqueID + item.internal_id.toString()}
+        id={menuId}
         //@ts-ignore
         disableWhileShiftPressed
         disable={isMobile ? true : undefined}
+        attributes={{
+          onPointerEnter: loadContextMenu,
+          onFocus: loadContextMenu,
+          onMouseDownCapture: loadContextMenuOnRightClick,
+          onContextMenuCapture: loadContextMenu,
+        }}
       >
         <Link asChild _hover={{ textDecoration: 'none' }} color="white">
           <MainLink prefetch={false} href={'/item/' + (item.slug ?? item.internal_id)}>
             <Flex gap={2}>
               <Box w="50px" h="50px">
-                <ItemImage item={item} width={50} height={50} />
+                <ItemImageV2 item={item} width={50} height={50} />
               </Box>
               <Flex flexFlow={'column'} gap={1}>
                 <Text fontSize={'sm'}>{item.name}</Text>
-                <Flex gap={1}>
-                  {item.status === 'no trade' && <Badge fontSize={'xs'}>No Trade</Badge>}
-
-                  {item.price.value && !item.price.inflated && (
-                    <Badge whiteSpace="normal">{format.number(item.price.value)} NP</Badge>
-                  )}
-
-                  {item.price.value && item.price.inflated && (
-                    <Tooltip.Root positioning={{ placement: 'top' }}>
-                      <Tooltip.Trigger asChild>
-                        <Badge colorPalette="red" whiteSpace="normal">
-                          <Icon as={AiFillWarning} verticalAlign="middle" />{' '}
-                          {format.number(item.price.value)} NP
-                        </Badge>
-                      </Tooltip.Trigger>
-                      <Tooltip.Positioner>
-                        <Tooltip.Content bg="blackAlpha.900" color="white" fontSize="xs">
-                          {t('General.inflation')}
-                        </Tooltip.Content>
-                      </Tooltip.Positioner>
-                    </Tooltip.Root>
-                  )}
-
-                  {item.isNC && <Badge colorPalette="purple">NC</Badge>}
-
-                  {item.type === 'pb' && <Badge colorPalette="yellow">PB</Badge>}
+                <Flex gap={1} flexWrap={'wrap'}>
+                  <ItemCardBadgeV2 item={item} />
                 </Flex>
               </Flex>
             </Flex>

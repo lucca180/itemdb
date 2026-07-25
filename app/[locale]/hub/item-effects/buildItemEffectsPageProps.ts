@@ -11,13 +11,16 @@ export const ITEM_EFFECTS_STATS = [
   'Height',
 ] as const;
 
-export type ItemEffectsField =
-  | 'stats'
-  | 'disease'
-  | 'cureDisease'
-  | 'heal'
-  | 'colorSpecies'
-  | 'other';
+export const ITEM_EFFECTS_FIELDS = [
+  'stats',
+  'disease',
+  'cureDisease',
+  'heal',
+  'colorSpecies',
+  'other',
+] as const;
+
+export type ItemEffectsField = (typeof ITEM_EFFECTS_FIELDS)[number];
 
 export type ItemEffectsPageLabels = {
   heading: string;

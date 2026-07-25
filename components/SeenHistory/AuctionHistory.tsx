@@ -1,11 +1,16 @@
+'use client';
+
 import { Badge, Table, Text, Flex, HStack, Tabs, Spinner } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
-import { ContributeWallData, ItemAuctionData, ItemData } from '../../types';
+import type { ItemAuctionData, ItemData } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
-import axios, { AxiosRequestConfig } from 'axios';
-import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
+import useSWR from 'swr';
 import useSWRImmutable from 'swr/immutable';
+import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
 import { ContributeWall } from '../Utils/ContributeWall';
+import { loadAuctionHistory } from '@app/server/items/seenHistoryActions';
+
+/** Re-check contribute gate / sold auctions periodically while the modal is open. */
+const GATED_REFRESH_MS = 60_000;
 
 type Props = {
   data: ItemAuctionData[];
@@ -15,52 +20,31 @@ export type AuctionHistoryProps = {
   item: ItemData;
 };
 
-type AuctionHistoryResponse = {
-  recent: ItemAuctionData[];
-  item: ItemData | null;
-  total: number;
-  sold: number;
-  uniqueOwners: number;
-  priceMedian: number | null;
-};
-
-async function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
-  const res = await axios.get(url, config);
-  return res.data;
-}
-
 export const AuctionHistory = (props: AuctionHistoryProps) => {
   const { item } = props;
   const t = useTranslations();
-  const [wall, setWall] = React.useState<ContributeWallData | null>(null);
-  const [soldData, setSoldData] = React.useState<AuctionHistoryResponse | null>(null);
-  const { data, isLoading: loading } = useSWRImmutable<AuctionHistoryResponse>(
-    `/api/v1/items/${item.name}/auction`,
-    fetcher
+
+  const {
+    data: recentResult,
+    error: recentError,
+    isLoading: loading,
+  } = useSWRImmutable(['seen-history', 'auction', item.name, false], () =>
+    loadAuctionHistory(item.name, false)
   );
 
-  const init = async () => {
-    setWall(null);
-    try {
-      const res = await axios.get(`/api/v1/items/${item.name}/auction?sold=true`);
+  const {
+    data: soldResult,
+    error: soldError,
+    isLoading: soldLoading,
+  } = useSWR(
+    ['seen-history', 'auction', item.name, true],
+    () => loadAuctionHistory(item.name, true),
+    { refreshInterval: GATED_REFRESH_MS, revalidateOnFocus: true }
+  );
 
-      setSoldData(res.data);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(error);
-
-        if (error.response?.status === 403) {
-          setWall(error.response?.data);
-          console.error(error.response?.data);
-        }
-      }
-    }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    init();
-  }, []);
+  const data = recentResult?.ok ? recentResult.data : null;
+  const soldData = soldResult?.ok ? soldResult.data : null;
+  const wall = soldResult && !soldResult.ok ? soldResult.wall : null;
 
   return (
     <Flex flexFlow="column">
@@ -96,7 +80,7 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
         <SeenHistoryStatusCard
           title={t('ItemPage.sold-median-price')}
           status={soldData?.priceMedian ?? '???'}
-          loading={!wall && !soldData}
+          loading={!wall && soldLoading}
           isNP
         />
       </HStack>
@@ -121,13 +105,25 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
             </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="recent" pb={0} px={1}>
-            {!loading && <AuctionHistoryTable data={data?.recent ?? []} />}
+            {recentError && !loading && (
+              <Text textAlign="center" fontSize="xs" color="red.300">
+                {t('General.error')}
+              </Text>
+            )}
+            {!loading && !recentError && <AuctionHistoryTable data={data?.recent ?? []} />}
             {loading && <Spinner />}
           </Tabs.Content>
           <Tabs.Content value="sold" pb={0} px={1}>
             {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
-            {!wall && soldData && <AuctionHistoryTable data={soldData.recent ?? []} />}
-            {!wall && !soldData && <Spinner />}
+            {soldError && !wall && !soldLoading && (
+              <Text textAlign="center" fontSize="xs" color="red.300">
+                {t('General.error')}
+              </Text>
+            )}
+            {!wall && !soldError && soldData && (
+              <AuctionHistoryTable data={soldData.recent ?? []} />
+            )}
+            {!wall && !soldData && soldLoading && <Spinner />}
           </Tabs.Content>
         </Tabs.Root>
         <Text textAlign={'center'} fontSize={'xs'} mt={1} color="whiteAlpha.600">

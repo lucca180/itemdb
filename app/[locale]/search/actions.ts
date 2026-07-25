@@ -6,15 +6,10 @@ import type { SearchV2Result } from '@app/server/search/searchV2';
 import { ItemService } from '@services/ItemService';
 import type { SearchFilters, SearchStats } from '@types';
 import { verifyListJWT } from '@utils/api/api-utils';
+import { normalizeInteger } from '@utils/normalizeInteger';
 
 type ListScope = { id: number; includeHidden: boolean };
 const MAX_SEARCH_LIMIT = 192;
-
-function normalizeInteger(value: unknown, fallback: number, min: number, max: number) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(Math.max(Math.trunc(parsed), min), max);
-}
 
 function normalizeQuery(query: unknown) {
   return typeof query === 'string' ? query.trim() : '';

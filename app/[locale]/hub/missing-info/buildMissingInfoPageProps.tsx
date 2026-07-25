@@ -3,13 +3,16 @@ import { Link as I18nLink } from '@i18n/navigation';
 import { Link } from '@chakra-ui/react';
 import { getTranslations } from 'next-intl/server';
 
-export type MissingInfoField =
-  | 'item_id'
-  | 'category'
-  | 'rarity'
-  | 'est_val'
-  | 'weight'
-  | 'description';
+export const MISSING_INFO_FIELDS = [
+  'item_id',
+  'category',
+  'rarity',
+  'est_val',
+  'weight',
+  'description',
+] as const;
+
+export type MissingInfoField = (typeof MISSING_INFO_FIELDS)[number];
 
 export type MissingInfoPageLabels = {
   heading: string;
@@ -35,7 +38,7 @@ export async function buildMissingInfoPageProps(): Promise<MissingInfoPageLabels
         </Link>
       ),
     }),
-    metaDescription: t('MissingHub.description').replace(/<\/?Link>/g, ''),
+    metaDescription: String(t.raw('MissingHub.description')).replace(/<\/?Link>/g, ''),
     typeButtons: {
       item_id: t('General.item-id'),
       category: t('General.category'),

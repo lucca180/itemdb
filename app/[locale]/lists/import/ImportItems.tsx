@@ -16,14 +16,22 @@ import { useToast } from '@utils/theme/toast';
 import ListSelect from '@components/UserLists/ListSelect';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
-import { ItemData, UserList } from '@types';
-import ItemCard from '@components/Items/ItemCard';
+import type { ItemV2For, UserList } from '@types';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import { useAuth } from '@utils/auth';
 import { CreateLinkedListButton } from '@components/DynamicLists/CreateLinkedList';
 import { useRouter } from '@i18n/navigation';
 import MainLink from '@components/Utils/MainLink';
 import { useTranslations } from 'next-intl';
 import { dynamicListCan } from '@utils/utils';
+import { fetchManyItems } from '@app/server/items/actions';
+
+/** Mirrors `encodeNameImageKey` in `@app/server/items/v2` (client-safe copy). */
+function encodeNameImageKey(name: string, imageId: string): string {
+  return `${encodeURI(name.toLowerCase())}_${imageId}`;
+}
+
+type LookupType = 'id' | 'item_id' | 'name_image_id' | 'image_id' | 'name' | 'slug';
 
 type ImportItemsExperienceProps = {
   items: { [item_id: number | string]: number };
@@ -43,14 +51,43 @@ const DefaultImportInfo = {
   action: 'add' as 'add' | 'remove' | 'hide',
 };
 
+function npPriceValue(item: ItemV2For<'full'> | ItemV2For<'card'>): number {
+  return item.price?.type === 'np' ? item.price.value : 0;
+}
+
+/** Resolve how many of this item were in the import payload. */
+function importQuantity(
+  items: { [key: number | string]: number },
+  item: ItemV2For<'full'>,
+  responseKey: string
+): number {
+  return (
+    items[responseKey] ??
+    items[item.item_id ?? -1] ??
+    items[item.name] ??
+    items[item.image.id] ??
+    items[`${item.name},${item.image.id}`] ??
+    1
+  );
+}
+
+function isLookupType(value: string): value is LookupType {
+  return (
+    value === 'id' ||
+    value === 'item_id' ||
+    value === 'name_image_id' ||
+    value === 'image_id' ||
+    value === 'name' ||
+    value === 'slug'
+  );
+}
+
 export function ImportItems({ items, indexType, recommended_list }: ImportItemsExperienceProps) {
   const t = useTranslations();
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
-  const [itemData, setItemData] = useState<{ [identifier: string | number]: ItemData } | null>(
-    null
-  );
+  const [itemData, setItemData] = useState<Record<string, ItemV2For<'full'>> | null>(null);
   const [notFound, setNotFound] = useState<number>(0);
   const [importInfo, setImportInfo] = useState(DefaultImportInfo);
 
@@ -59,42 +96,60 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
   }, [toast]);
 
   const loadedItems = useMemo(
-    () =>
-      Object.entries(itemData ?? {}).sort(
-        (a, b) => (b[1].price.value ?? 0) - (a[1].price.value ?? 0)
-      ),
+    () => Object.entries(itemData ?? {}).sort((a, b) => npPriceValue(b[1]) - npPriceValue(a[1])),
     [itemData]
   );
 
   const init = async () => {
-    const itemsKeys =
-      indexType !== 'name_image_id'
-        ? Object.keys(items)
-        : Object.keys(items).map((key) => key.split(/,(?=[^,]*$)/));
+    if (!isLookupType(indexType)) {
+      console.error('Invalid import indexType:', indexType);
+      setItemData({});
+      setNotFound(Object.keys(items).length);
+      return;
+    }
 
-    const itemRes = await axios.post(`/api/v1/items/many`, {
-      [indexType]: itemsKeys,
-    });
+    const query =
+      indexType === 'name_image_id'
+        ? {
+            type: 'name_image_id' as const,
+            data: Object.keys(items).map((key) => {
+              const parts = key.split(/,(?=[^,]*$)/);
+              return [parts[0] ?? '', parts[1] ?? ''] as [string, string];
+            }),
+          }
+        : {
+            type: indexType,
+            data: Object.keys(items),
+          };
 
-    const data: { [identifier: string | number]: ItemData } = itemRes.data;
-    const nullItems = Object.values(items).length - Object.values(data).length;
-    const notFoundItems = Object.keys(items)
-      .map((key) => {
-        let newKey = key;
+    try {
+      const data = await fetchManyItems(query, { intent: 'full' });
 
+      const notFoundItems = Object.keys(items).filter((key) => {
         if (indexType === 'name_image_id') {
           const params = key.split(/,(?=[^,]*$)/);
-          newKey = `${encodeURI(params[0])}_${params[1]}`.toLowerCase();
+          return !data[encodeNameImageKey(params[0] ?? '', params[1] ?? '')];
         }
+        return !data[key];
+      });
 
-        return data[newKey] ? null : key;
-      })
-      .filter((item) => item);
+      if (notFoundItems.length > 0) console.error('not found items:', notFoundItems);
 
-    if (notFoundItems.length > 0) console.error('not found items:', notFoundItems);
-
-    setNotFound(nullItems);
-    setItemData(data);
+      setNotFound(Object.keys(items).length - Object.keys(data).length);
+      setItemData(data);
+    } catch (err) {
+      console.error(err);
+      setItemData({});
+      setNotFound(Object.keys(items).length);
+      toast({
+        id: 'import-items-load-error',
+        title: t('General.error'),
+        description: t('Lists.import-error'),
+        status: 'error',
+        duration: 10000,
+        isClosable: true,
+      });
+    }
   };
 
   const handleImport = async () => {
@@ -105,8 +160,8 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
       capValue?: number;
       amount?: number;
       imported: boolean;
-    }[] = Object.values(itemData)
-      .filter((item: ItemData) => {
+    }[] = Object.entries(itemData)
+      .filter(([, item]) => {
         if (item == null) return false;
         if (importInfo.ignore.includes('np') && item.type === 'np') return false;
         if (importInfo.ignore.includes('nc') && item.type === 'nc') return false;
@@ -117,11 +172,8 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
 
         return true;
       })
-      .map((item: ItemData) => {
-        let importedItem = items[item.item_id ?? -1];
-        if (!importedItem) importedItem = items[item.name];
-        if (!importedItem) importedItem = items[item.image_id];
-        if (!importedItem) importedItem = items[`${item.name},${item.image_id}`];
+      .map(([responseKey, item]) => {
+        const importedItem = importQuantity(items, item, responseKey);
 
         return {
           item_iid: item.canonical_id ?? item.internal_id,
@@ -129,7 +181,7 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
             ? 1
             : item.canonical_id
               ? canonicalAmount[item.canonical_id]
-              : (importedItem ?? 1),
+              : importedItem,
           imported: true,
         };
       });
@@ -288,17 +340,19 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
             {itemData &&
               loadedItems
                 .slice(0, 30)
-                .map((item) => (
-                  <ItemCard
+                .map(([key, item]) => (
+                  <ItemCardV2
                     uniqueID={`import-list`}
                     disablePrefetch={true}
-                    key={item[0]}
-                    item={item[1]}
-                    quantity={items[item[0]]}
+                    key={key}
+                    item={item}
+                    quantity={importQuantity(items, item, key)}
                   />
                 ))}
             {!itemData &&
-              [...Array(20)].map((_, i) => <ItemCard uniqueID={`import-list`} key={i} />)}
+              [...Array(20)].map((_, i) => (
+                <ItemCardV2 uniqueID={`import-list`} key={i} isLoading />
+              ))}
           </Flex>
           {itemData && loadedItems.length > 30 && (
             <Text textAlign="center">

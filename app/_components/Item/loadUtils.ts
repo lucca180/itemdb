@@ -1,11 +1,8 @@
 import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getItemForPage } from '@app/server/items';
-import {
-  getAuctionData,
-  getLebronItemData,
-  getTradeData,
-} from '@pages/api/v1/items/[id_name]/[tradings]';
+import { getAuctionData, getTradeData } from '@app/server/items/tradingHistoryData';
+import { getLebronItemData } from '@pages/api/v1/items/[id_name]/[tradings]';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
 import { getItemPrices } from '@pages/api/v1/items/[id_name]/prices';
 import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';

@@ -4,14 +4,10 @@ import { ItemData, ItemEffect } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
-import { ItemEffect as PrimsaItemEffect } from '@prisma/generated/client';
-import {
-  allNeopetsColors,
-  allSpecies,
-  getPetColorId,
-  getSpeciesId,
-  petpetColors,
-} from '../../../../../utils/pet-utils';
+import { formatEffect } from '@utils/item/formatEffect';
+import { getPetColorId, getSpeciesId } from '../../../../../utils/pet-utils';
+
+export { formatEffect };
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -203,29 +199,4 @@ export const getItemEffects = async (item_id_name: ItemData | string | number) =
   }
 
   return effects as ItemEffect[];
-};
-
-export const formatEffect = (effect: PrimsaItemEffect) => {
-  let colorTarget = null;
-  if (effect.colorTarget && effect.type === 'colorSpecies') {
-    colorTarget = allNeopetsColors[`${effect.colorTarget}`];
-  } else if (effect.colorTarget && effect.type === 'petpetColor') {
-    colorTarget = petpetColors[`${effect.colorTarget}`];
-  }
-
-  const obj: ItemEffect = {
-    internal_id: effect.internal_id,
-    type: effect.type as ItemEffect['type'],
-    name: effect.name,
-    species: effect.species?.split(',') ?? null,
-    isChance: effect.isChance,
-    minVal: effect.minVal,
-    maxVal: effect.maxVal,
-    strVal: effect.strVal,
-    colorTarget: colorTarget,
-    speciesTarget: effect.speciesTarget ? allSpecies[`${effect.speciesTarget}`] : null,
-    text: effect.text,
-  };
-
-  return JSON.parse(JSON.stringify(obj)) as ItemEffect;
 };

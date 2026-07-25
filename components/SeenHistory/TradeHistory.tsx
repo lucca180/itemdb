@@ -1,63 +1,47 @@
+'use client';
+
 import { Text, Flex, HStack, Box, Spinner, Tabs, Center } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
-import { ContributeWallData, ItemData, TradeData } from '../../types';
+import type { ItemData } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
-import axios, { AxiosRequestConfig } from 'axios';
+import useSWR from 'swr';
+import useSWRImmutable from 'swr/immutable';
 import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
 import TradeTable from '../Trades/TradeTable';
-import useSWRImmutable from 'swr/immutable';
 import { ContributeWall } from '../Utils/ContributeWall';
+import { loadTradeHistory } from '@app/server/items/seenHistoryActions';
+
+/** Re-check contribute gate / priced trades periodically while the modal is open. */
+const GATED_REFRESH_MS = 60_000;
 
 export type TradeHistoryProps = {
   item: ItemData;
 };
 
-type TradeHistoryResponse = {
-  recent: TradeData[];
-  total: number;
-  uniqueOwners: number;
-  priced: number;
-};
-
-async function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
-  const res = await axios.get(url, config);
-  return res.data;
-}
-
 export const TradeHistory = (props: TradeHistoryProps) => {
   const { item } = props;
   const format = useFormatter();
   const t = useTranslations();
-  const [wall, setWall] = React.useState<ContributeWallData | null>(null);
-  const [soldData, setSoldData] = React.useState<TradeHistoryResponse | null>(null);
 
-  const { data, isLoading: loading } = useSWRImmutable<TradeHistoryResponse>(
-    `/api/v1/items/${item.name}/trades`,
-    fetcher
+  const {
+    data: recentResult,
+    error: recentError,
+    isLoading: loading,
+  } = useSWRImmutable(['seen-history', 'trades', item.name, false], () =>
+    loadTradeHistory(item.name, false)
   );
 
-  const init = async () => {
-    setWall(null);
-    try {
-      const res = await axios.get(`/api/v1/items/${item.name}/trades?priced=true`);
+  const {
+    data: pricedResult,
+    error: pricedError,
+    isLoading: pricedLoading,
+  } = useSWR(['seen-history', 'trades', item.name, true], () => loadTradeHistory(item.name, true), {
+    refreshInterval: GATED_REFRESH_MS,
+    revalidateOnFocus: true,
+  });
 
-      setSoldData(res.data);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(error);
-
-        if (error.response?.status === 403) {
-          setWall(error.response?.data);
-          console.error(error.response?.data);
-        }
-      }
-    }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    init();
-  }, []);
+  const data = recentResult?.ok ? recentResult.data : null;
+  const soldData = pricedResult?.ok ? pricedResult.data : null;
+  const wall = pricedResult && !pricedResult.ok ? pricedResult.wall : null;
 
   return (
     <Flex flexFlow="column">
@@ -119,14 +103,19 @@ export const TradeHistory = (props: TradeHistoryProps) => {
             </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="recent" textAlign="left">
-            {!loading && (
+            {recentError && !loading && (
+              <Text textAlign="center" fontSize="xs" color="red.300">
+                {t('General.error')}
+              </Text>
+            )}
+            {!loading && !recentError && (
               <Box maxH="500px" overflow="auto">
                 {data?.recent.map((trade) => (
                   <TradeTable featuredItem={item} key={trade.trade_id} data={trade} />
                 ))}
               </Box>
             )}
-            {!loading && data && data.recent.length === 0 && (
+            {!loading && !recentError && data && data.recent.length === 0 && (
               <Text textAlign="center" fontSize="xs" color="whiteAlpha.600">
                 {t('ItemPage.no-trade-history')}
               </Text>
@@ -139,19 +128,24 @@ export const TradeHistory = (props: TradeHistoryProps) => {
           </Tabs.Content>
           <Tabs.Content value="priced" textAlign="left">
             {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
-            {!wall && soldData && (
+            {pricedError && !wall && !pricedLoading && (
+              <Text textAlign="center" fontSize="xs" color="red.300">
+                {t('General.error')}
+              </Text>
+            )}
+            {!wall && !pricedError && soldData && (
               <Box maxH="500px" overflow="auto">
                 {soldData.recent.map((trade) => (
                   <TradeTable featuredItem={item} key={trade.trade_id} data={trade} />
                 ))}
               </Box>
             )}
-            {!wall && soldData && soldData.recent.length === 0 && (
+            {!wall && !pricedError && soldData && soldData.recent.length === 0 && (
               <Text textAlign="center" fontSize="xs" color="whiteAlpha.600">
                 {t('ItemPage.no-trade-history')}
               </Text>
             )}
-            {!wall && !soldData && (
+            {!wall && !soldData && pricedLoading && (
               <Center>
                 <Spinner />
               </Center>

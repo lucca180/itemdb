@@ -1,4 +1,3 @@
- 
 'use client';
 
 import {
@@ -14,11 +13,14 @@ import {
 } from '@chakra-ui/react';
 import Color from 'color';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { ItemData } from '@types';
-import ItemCard from '@components/Items/ItemCard';
+import { useTranslations } from 'next-intl';
+import type { ItemV2For } from '@types';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
+import { useToast } from '@utils/theme/toast';
 import type { MissingInfoField, MissingInfoPageLabels } from './buildMissingInfoPageProps';
+import { loadMissingInfoItems } from './actions';
 
+const LIMIT_PER_PAGE = 100;
 const GRADIENT_RGB = Color('#f0fa94').rgb().round().array();
 
 type MissingInfoPageClientProps = {
@@ -26,37 +28,50 @@ type MissingInfoPageClientProps = {
 };
 
 export function MissingInfoPageClient({ labels }: MissingInfoPageClientProps) {
+  const t = useTranslations();
+  const toast = useToast();
   const [field, setField] = useState<MissingInfoField>('item_id');
-  const [items, setItems] = useState<ItemData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [items, setItems] = useState<ItemV2For<'card'>[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [page, setPage] = useState(1);
 
-  const fetchItems = async (newPage: number, activeField: MissingInfoField) => {
-    setIsLoading(true);
-    try {
-      const res = await axios.get(`/api/v1/items/missing`, {
-        params: { field: activeField, page: newPage },
-      });
-      setItems(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    void fetchItems(1, field);
-  }, []);
+    let cancelled = false;
 
-  useEffect(() => {
+    const run = async () => {
+      setIsLoading(true);
+      setLoadError(false);
+      try {
+        const result = await loadMissingInfoItems({ field, page, limit: LIMIT_PER_PAGE });
+        if (!cancelled) setItems(result);
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) {
+          setLoadError(true);
+          toast({
+            id: 'missing-info-load-error',
+            title: t('General.error'),
+            status: 'error',
+            duration: 8000,
+            isClosable: true,
+          });
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [field, page, toast, t]);
+
+  const selectField = (nextField: MissingInfoField) => {
+    setField(nextField);
     setPage(1);
-    void fetchItems(1, field);
-  }, [field]);
-
-  useEffect(() => {
-    void fetchItems(page, field);
-  }, [page]);
+  };
 
   return (
     <>
@@ -90,7 +105,7 @@ export function MissingInfoPageClient({ labels }: MissingInfoPageClientProps) {
               key={type}
               field={type}
               selectedField={field}
-              setField={setField}
+              setField={selectField}
               disabled={isLoading}
             >
               {label}
@@ -99,11 +114,17 @@ export function MissingInfoPageClient({ labels }: MissingInfoPageClientProps) {
         )}
       </Center>
       <Center alignItems={'stretch'} flexWrap={'wrap'} gap={3} mt={3}>
+        {loadError && !isLoading && (
+          <Text color="red.300" textAlign="center" w="100%">
+            {t('General.error')}
+          </Text>
+        )}
         {!isLoading &&
+          !loadError &&
           items.map((item) => (
-            <ItemCard uniqueID="missing-info" key={item.internal_id} item={item} />
+            <ItemCardV2 uniqueID="missing-info" key={item.internal_id} item={item} />
           ))}
-        {!isLoading && items.length === 0 && (
+        {!isLoading && !loadError && items.length === 0 && (
           <VStack>
             <Image maxW="300px" src="/api/cache/preview/bg_waitingrestock.png" alt="empty image" />
             <Text>{labels.emptyMessage}</Text>
@@ -118,7 +139,10 @@ export function MissingInfoPageClient({ labels }: MissingInfoPageClientProps) {
           </Button>
         )}
         {!isLoading && (
-          <Button disabled={!items.length} onClick={() => setPage(page + 1)}>
+          <Button
+            disabled={!items.length || items.length < LIMIT_PER_PAGE}
+            onClick={() => setPage(page + 1)}
+          >
             {labels.nextPage}
           </Button>
         )}
