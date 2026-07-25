@@ -10,9 +10,12 @@ export type ImportPageLabels = {
   breadcrumbList: BreadcrumbItem[];
   heading: string;
   description: string;
-  items: { [index: number | string]: number } | null;
+  importToken: string | null;
+  itemCount: number;
   indexType?: string;
   recommended_list: UserList | null;
+  /** Token was present in the URL but the Redis/dev session is gone. */
+  sessionExpired: boolean;
 };
 
 export async function buildImportPageProps(
@@ -42,8 +45,10 @@ export async function buildImportPageProps(
     ],
     heading: t('Lists.checklists-and-importing-items'),
     description: t('Lists.import-page-description'),
-    items,
+    importToken: items ? (importToken ?? null) : null,
+    itemCount: items ? Object.keys(items).length : 0,
     indexType: items ? indexType : undefined,
     recommended_list,
+    sessionExpired: Boolean(importToken && !items),
   };
 }

@@ -8,7 +8,9 @@ export type ListImportSession = {
   createdAt: number;
 };
 
-const LIST_IMPORT_SESSION_TTL_SECONDS = 5 * 60; // 5 minutes
+// The apply action resolves the full payload from this session after the user configures
+// the target list, so keep it alive long enough for large imports and review time.
+const LIST_IMPORT_SESSION_TTL_SECONDS = 30 * 60; // 30 minutes
 const isDev = process.env.NODE_ENV === 'development';
 
 type DevEntry = {

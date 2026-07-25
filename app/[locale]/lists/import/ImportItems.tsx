@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Alert,
   Flex,
   Heading,
   Link,
@@ -14,137 +15,99 @@ import {
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import ListSelect from '@components/UserLists/ListSelect';
-import axios from 'axios';
-import { useEffect, useMemo, useState } from 'react';
-import type { ItemV2For, UserList } from '@types';
+import { useEffect, useState } from 'react';
+import type { UserList } from '@types';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
-import { useAuth } from '@utils/auth';
 import { CreateLinkedListButton } from '@components/DynamicLists/CreateLinkedList';
 import { useRouter } from '@i18n/navigation';
 import MainLink from '@components/Utils/MainLink';
 import { useTranslations } from 'next-intl';
 import { dynamicListCan } from '@utils/utils';
-import { fetchManyItems } from '@app/server/items/actions';
-
-/** Mirrors `encodeNameImageKey` in `@app/server/items/v2` (client-safe copy). */
-function encodeNameImageKey(name: string, imageId: string): string {
-  return `${encodeURI(name.toLowerCase())}_${imageId}`;
-}
-
-type LookupType = 'id' | 'item_id' | 'name_image_id' | 'image_id' | 'name' | 'slug';
+import { applyListImport, loadImportPreview } from './actions';
+import {
+  IMPORT_ERROR,
+  MAX_IMPORT_ITEMS,
+  type ImportErrorCode,
+  type ImportPreviewItem,
+} from './importShared';
 
 type ImportItemsExperienceProps = {
-  items: { [item_id: number | string]: number };
-  indexType: string;
+  importToken: string;
+  itemCount: number;
   recommended_list?: UserList | null;
 };
 
 const DefaultImportInfo = {
   list: undefined as UserList | undefined,
-  items: [] as {
-    item_iid: number;
-    capValue?: number;
-    amount?: number;
-    imported: boolean;
-  }[],
   ignore: [] as ('np' | 'nc' | 'quantity')[],
   action: 'add' as 'add' | 'remove' | 'hide',
 };
 
-function npPriceValue(item: ItemV2For<'full'> | ItemV2For<'card'>): number {
-  return item.price?.type === 'np' ? item.price.value : 0;
+const IMPORT_ERROR_CODES = new Set<string>(Object.values(IMPORT_ERROR));
+
+function getImportErrorCode(err: unknown): ImportErrorCode | null {
+  if (!(err instanceof Error)) return null;
+  return IMPORT_ERROR_CODES.has(err.message) ? (err.message as ImportErrorCode) : null;
 }
 
-/** Resolve how many of this item were in the import payload. */
-function importQuantity(
-  items: { [key: number | string]: number },
-  item: ItemV2For<'full'>,
-  responseKey: string
-): number {
-  return (
-    items[responseKey] ??
-    items[item.item_id ?? -1] ??
-    items[item.name] ??
-    items[item.image.id] ??
-    items[`${item.name},${item.image.id}`] ??
-    1
-  );
-}
-
-function isLookupType(value: string): value is LookupType {
-  return (
-    value === 'id' ||
-    value === 'item_id' ||
-    value === 'name_image_id' ||
-    value === 'image_id' ||
-    value === 'name' ||
-    value === 'slug'
-  );
-}
-
-export function ImportItems({ items, indexType, recommended_list }: ImportItemsExperienceProps) {
+export function ImportItems({
+  importToken,
+  itemCount,
+  recommended_list,
+}: ImportItemsExperienceProps) {
   const t = useTranslations();
-  const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
-  const [itemData, setItemData] = useState<Record<string, ItemV2For<'full'>> | null>(null);
-  const [notFound, setNotFound] = useState<number>(0);
+  const [previewItems, setPreviewItems] = useState<ImportPreviewItem[] | null>(null);
+  const [loadError, setLoadError] = useState<ImportErrorCode | 'UNKNOWN' | null>(null);
   const [importInfo, setImportInfo] = useState(DefaultImportInfo);
 
-  useEffect(() => {
-    return () => toast.closeAll();
-  }, [toast]);
+  const isTooLarge = itemCount > MAX_IMPORT_ITEMS;
+  const canSubmit = Boolean(importInfo.list) && !isTooLarge && !loadError;
 
-  const loadedItems = useMemo(
-    () => Object.entries(itemData ?? {}).sort((a, b) => npPriceValue(b[1]) - npPriceValue(a[1])),
-    [itemData]
-  );
+  const describeImportError = (code: ImportErrorCode | 'UNKNOWN' | null, action: string) => {
+    switch (code) {
+      case IMPORT_ERROR.TOO_LARGE:
+        return t('Lists.import-error-too-large', { count: itemCount, max: MAX_IMPORT_ITEMS });
+      case IMPORT_ERROR.EXPIRED:
+        return t('Lists.import-error-expired');
+      case IMPORT_ERROR.UNAUTHORIZED:
+        return t('Lists.import-error-unauthorized');
+      case IMPORT_ERROR.FORBIDDEN_ACTION:
+        return t('Lists.import-error-forbidden');
+      case IMPORT_ERROR.LIST_NOT_FOUND:
+        return t('Lists.import-error-list-not-found');
+      case IMPORT_ERROR.NO_ITEMS:
+      case IMPORT_ERROR.EMPTY:
+        return t('Lists.import-error');
+      case IMPORT_ERROR.INVALID_TYPE:
+        return t('Lists.import-error-invalid');
+      default:
+        return t('Lists.import-error-action', { action });
+    }
+  };
 
   const init = async () => {
-    if (!isLookupType(indexType)) {
-      console.error('Invalid import indexType:', indexType);
-      setItemData({});
-      setNotFound(Object.keys(items).length);
+    if (isTooLarge) {
+      setPreviewItems([]);
+      setLoadError(IMPORT_ERROR.TOO_LARGE);
       return;
     }
 
-    const query =
-      indexType === 'name_image_id'
-        ? {
-            type: 'name_image_id' as const,
-            data: Object.keys(items).map((key) => {
-              const parts = key.split(/,(?=[^,]*$)/);
-              return [parts[0] ?? '', parts[1] ?? ''] as [string, string];
-            }),
-          }
-        : {
-            type: indexType,
-            data: Object.keys(items),
-          };
-
     try {
-      const data = await fetchManyItems(query, { intent: 'full' });
-
-      const notFoundItems = Object.keys(items).filter((key) => {
-        if (indexType === 'name_image_id') {
-          const params = key.split(/,(?=[^,]*$)/);
-          return !data[encodeNameImageKey(params[0] ?? '', params[1] ?? '')];
-        }
-        return !data[key];
-      });
-
-      if (notFoundItems.length > 0) console.error('not found items:', notFoundItems);
-
-      setNotFound(Object.keys(items).length - Object.keys(data).length);
-      setItemData(data);
+      const preview = await loadImportPreview(importToken);
+      setPreviewItems(preview.items);
+      setLoadError(null);
     } catch (err) {
       console.error(err);
-      setItemData({});
-      setNotFound(Object.keys(items).length);
+      setPreviewItems([]);
+      const code = getImportErrorCode(err) ?? 'UNKNOWN';
+      setLoadError(code);
       toast({
         id: 'import-items-load-error',
         title: t('General.error'),
-        description: t('Lists.import-error'),
+        description:
+          code === 'UNKNOWN' ? t('Lists.import-error-load') : describeImportError(code, ''),
         status: 'error',
         duration: 10000,
         isClosable: true,
@@ -153,50 +116,14 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
   };
 
   const handleImport = async () => {
-    if (!itemData || !user || !importInfo.list) return;
-    const canonicalAmount = {} as { [canonical_id: number]: number };
-    const importData: {
-      item_iid: number;
-      capValue?: number;
-      amount?: number;
-      imported: boolean;
-    }[] = Object.entries(itemData)
-      .filter(([, item]) => {
-        if (item == null) return false;
-        if (importInfo.ignore.includes('np') && item.type === 'np') return false;
-        if (importInfo.ignore.includes('nc') && item.type === 'nc') return false;
+    if (!importInfo.list || !canSubmit) return;
 
-        if (item.canonical_id) {
-          canonicalAmount[item.canonical_id] = (canonicalAmount[item.canonical_id] ?? 0) + 1;
-        }
-
-        return true;
-      })
-      .map(([responseKey, item]) => {
-        const importedItem = importQuantity(items, item, responseKey);
-
-        return {
-          item_iid: item.canonical_id ?? item.internal_id,
-          amount: importInfo.ignore.includes('quantity')
-            ? 1
-            : item.canonical_id
-              ? canonicalAmount[item.canonical_id]
-              : importedItem,
-          imported: true,
-        };
-      });
-
-    if (!importData.length) {
-      toast({
-        id: 'import-list-no-data',
-        title: t('General.error'),
-        description: t('Lists.import-error'),
-        status: 'error',
-        duration: 10000,
-      });
-
-      return;
-    }
+    const actionLabel =
+      importInfo.action === 'add'
+        ? t('Lists.toast-importing')
+        : importInfo.action === 'hide'
+          ? t('Lists.toast-hidding')
+          : t('Lists.toast-removing');
 
     const toastInfo = toast({
       id: 'import-list',
@@ -216,22 +143,12 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
     });
 
     try {
-      if (importInfo.action === 'add') {
-        await axios.put(`/api/v1/lists/${user.username}/${importInfo.list.internal_id}/`, {
-          items: importData,
-        });
-      }
-
-      if (importInfo.action === 'remove' || importInfo.action === 'hide') {
-        await axios.delete(`/api/v1/lists/${user.username}/${importInfo.list.internal_id}/`, {
-          data: {
-            item_iid: importData.map((item) => item.item_iid),
-          },
-          params: {
-            hide: importInfo.action === 'hide',
-          },
-        });
-      }
+      const result = await applyListImport({
+        importToken,
+        listId: importInfo.list.internal_id,
+        action: importInfo.action,
+        ignore: importInfo.ignore,
+      });
 
       toast.update(toastInfo, {
         id: toastInfo,
@@ -249,20 +166,31 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
         isClosable: true,
       });
 
-      router.push(`/lists/${user.username}/${importInfo.list.internal_id}`);
+      if (result.notFoundCount > 0) {
+        toast({
+          id: 'import-not-found',
+          title: t('General.tip'),
+          description: t.rich('Lists.import-notFound', {
+            notFound: result.notFoundCount,
+            b: (chunk) => <b>{chunk}</b>,
+          }),
+          status: 'warning',
+          duration: 12000,
+          isClosable: true,
+        });
+      }
+
+      router.push(result.listPath);
     } catch (e) {
       console.error(e);
+      const code = getImportErrorCode(e);
+      if (code === IMPORT_ERROR.EXPIRED || code === IMPORT_ERROR.TOO_LARGE) {
+        setLoadError(code);
+      }
       toast.update(toastInfo, {
         id: toastInfo,
         title: t('General.error'),
-        description: t('Lists.import-error-action', {
-          action:
-            importInfo.action === 'add'
-              ? t('Lists.toast-importing')
-              : importInfo.action === 'hide'
-                ? t('Lists.toast-hidding')
-                : t('Lists.toast-removing'),
-        }),
+        description: describeImportError(code ?? 'UNKNOWN', actionLabel),
         status: 'error',
         duration: null,
         isClosable: true,
@@ -318,45 +246,73 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void init();
-  }, [items, indexType]);
+  }, [importToken]);
 
   return (
     <Flex flexFlow="column" gap={3} css={{ '& a': { color: '#b8e9a9' } }}>
-      <Heading size="lg">
-        {t('Lists.importing-x-items', { x: Object.values(itemData ?? items).length })}
-      </Heading>
-      {notFound > 0 && (
-        <Text fontSize="sm" color="red.400">
-          {t.rich('Lists.import-notFound', {
-            b: (children) => <b>{children}</b>,
-            notFound: notFound,
-          })}
-          ;
-        </Text>
+      <Heading size="lg">{t('Lists.importing-x-items', { x: itemCount })}</Heading>
+
+      {isTooLarge && (
+        <Alert.Root status="error" variant="surface" maxW="750px">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>{t('Lists.import-error-too-large-title')}</Alert.Title>
+            <Alert.Description>
+              {t('Lists.import-error-too-large', {
+                count: itemCount,
+                max: MAX_IMPORT_ITEMS,
+              })}
+            </Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
       )}
+
+      {!isTooLarge && loadError === IMPORT_ERROR.EXPIRED && (
+        <Alert.Root status="error" variant="surface" maxW="750px">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>{t('Lists.import-error-expired-title')}</Alert.Title>
+            <Alert.Description>{t('Lists.import-error-expired')}</Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
+      )}
+
+      {!isTooLarge && loadError && loadError !== IMPORT_ERROR.EXPIRED && (
+        <Alert.Root status="error" variant="surface" maxW="750px">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>{t('General.error')}</Alert.Title>
+            <Alert.Description>
+              {loadError === 'UNKNOWN'
+                ? t('Lists.import-error-load')
+                : describeImportError(loadError, '')}
+            </Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
+      )}
+
       <Flex flexFlow={{ base: 'column-reverse', md: 'row' }} gap={6}>
         <Flex flex="2" css={{ '& a': { color: 'initial' } }} flexFlow="column">
           <Flex flexWrap="wrap" gap={3} justifyContent="center">
-            {itemData &&
-              loadedItems
-                .slice(0, 30)
-                .map(([key, item]) => (
-                  <ItemCardV2
-                    uniqueID={`import-list`}
-                    disablePrefetch={true}
-                    key={key}
-                    item={item}
-                    quantity={importQuantity(items, item, key)}
-                  />
-                ))}
-            {!itemData &&
+            {previewItems &&
+              previewItems.map(({ key, item, quantity }) => (
+                <ItemCardV2
+                  uniqueID="import-list"
+                  disablePrefetch
+                  key={key}
+                  item={item}
+                  quantity={quantity}
+                />
+              ))}
+            {!previewItems &&
+              !isTooLarge &&
               [...Array(20)].map((_, i) => (
                 <ItemCardV2 uniqueID={`import-list`} key={i} isLoading />
               ))}
           </Flex>
-          {itemData && loadedItems.length > 30 && (
+          {previewItems && itemCount > previewItems.length && (
             <Text textAlign="center">
-              {t('Lists.import-and-more', { value: loadedItems.length - 30 })}
+              {t('Lists.import-and-more', { value: itemCount - previewItems.length })}
             </Text>
           )}
         </Flex>
@@ -423,7 +379,7 @@ export function ImportItems({ items, indexType, recommended_list }: ImportItemsE
             </VStack>
           </Field.Root>
           <HStack mt={3}>
-            <Button onClick={handleImport} disabled={!importInfo.list}>
+            <Button onClick={handleImport} disabled={!canSubmit}>
               {t('General.submit')}
             </Button>
           </HStack>

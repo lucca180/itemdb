@@ -78,11 +78,11 @@ async function ImportPageContent({ params, searchParams }: ImportPageProps) {
           {labels.description}
         </Text>
       </HeaderCard>
-      {!labels.items && <ImportLanding />}
-      {labels.items && labels.indexType && (
+      {!labels.importToken && <ImportLanding sessionExpired={labels.sessionExpired} />}
+      {labels.importToken && labels.indexType && (
         <ImportItems
-          items={labels.items}
-          indexType={labels.indexType}
+          importToken={labels.importToken}
+          itemCount={labels.itemCount}
           recommended_list={labels.recommended_list}
         />
       )}

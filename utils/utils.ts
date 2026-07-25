@@ -1795,7 +1795,10 @@ const getSortPrice = (item: ItemData, listInfo?: ListItemInfo | undefined, qty =
   return Infinity;
 };
 
-export const dynamicListCan = (list: UserList | undefined, permission: 'add' | 'remove') => {
+export const dynamicListCan = (
+  list: Pick<UserList, 'dynamicType'> | undefined,
+  permission: 'add' | 'remove'
+) => {
   if (!list) return false;
 
   if (!list.dynamicType) return true;
