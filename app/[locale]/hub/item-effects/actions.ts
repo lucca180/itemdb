@@ -23,7 +23,7 @@ export type LoadItemEffectsItemsInput = {
 
 /**
  * Page of items that have effects of a given type (ItemV2 `card` + effects).
- * Replaces in-app `GET /api/v1/items/effects` — does not consume API quota.
+ * Replaces in-app `GET /api/v1/items/effects`
  */
 export async function loadItemEffectsItems(
   input: LoadItemEffectsItemsInput

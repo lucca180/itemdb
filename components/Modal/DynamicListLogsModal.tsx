@@ -27,6 +27,8 @@ import {
 const LOGS_PAGE_SIZE = 20;
 /** Max ItemCardV2s shown per added/removed section before "show more". */
 const ITEMS_PAGE_SIZE = 48;
+/** Must stay ≤ `fetchManyItems` server MAX (100). */
+const FETCH_MANY_CHUNK = 100;
 const NST_TZ = 'America/Los_Angeles';
 
 /** Calendar day in NST as `YYYY-MM-DD` (lexicographically comparable). */
@@ -141,10 +143,17 @@ const DynamicListLogsModal = (props: DynamicListLogsModalProps) => {
     setPanelError((prev) => ({ ...prev, [logId]: false }));
     try {
       const unique = [...new Set(needed)];
-      const data = await fetchManyItems({ type: 'id', data: unique }, { intent: 'card' });
+      const merged: Record<string, ItemV2For<'card'>> = {};
+
+      for (let i = 0; i < unique.length; i += FETCH_MANY_CHUNK) {
+        const chunk = unique.slice(i, i + FETCH_MANY_CHUNK);
+        const data = await fetchManyItems({ type: 'id', data: chunk }, { limit: chunk.length });
+        Object.assign(merged, data);
+      }
+
       setItemCache((prev) => {
         const next = { ...prev };
-        for (const item of Object.values(data)) {
+        for (const item of Object.values(merged)) {
           next[item.internal_id] = item;
         }
         return next;
