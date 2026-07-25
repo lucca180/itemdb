@@ -284,6 +284,18 @@ export function verifyApiToken(token: string) {
 
 // -------- search lists -------- //
 
+export function signListJWT(listId: number) {
+  return jwt.sign(
+    {
+      aud: 'itemdb.com.br',
+      listId,
+      ctx: 'list_access',
+    },
+    process.env.SITE_PROOF_SECRET!,
+    { expiresIn: '15m' }
+  );
+}
+
 export async function generateListJWT(listId: number, req: NextApiRequest) {
   const listService = await ListService.initReq(req);
   const list = await listService.getList({
@@ -293,17 +305,7 @@ export async function generateListJWT(listId: number, req: NextApiRequest) {
 
   if (!list) return null;
 
-  const token = jwt.sign(
-    {
-      aud: 'itemdb.com.br',
-      listId,
-      ctx: 'list_access',
-    },
-    process.env.SITE_PROOF_SECRET!,
-    { expiresIn: '15m' }
-  );
-
-  return { token, list };
+  return { token: signListJWT(listId), list };
 }
 
 export function verifyListJWT(token: string, list_id: number) {

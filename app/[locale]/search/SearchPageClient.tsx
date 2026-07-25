@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
+'use client';
+
 import {
   Box,
-  // Button,
   Center,
   Flex,
   HStack,
@@ -15,14 +16,11 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
-import { getPageRouterBasePath, resolvePageLocale } from '@utils/locales';
 import React, { useEffect, useRef, useState } from 'react';
-import Layout from '@components/Layout';
-import ItemCard from '@components/Items/ItemCard';
-import { SearchStats, UserList } from '@types';
-import { useRouter } from 'next/router';
-import axios from 'axios';
-import { SearchFilters as SearchFiltersType, SearchResults } from '@types';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
+import type { ItemV2For, SearchStats, UserList } from '@types';
+import { usePathname, useSearchParams } from 'next/navigation';
+import type { SearchFilters as SearchFiltersType } from '@types';
 import Pagination from '@components/Input/Pagination';
 import { SearchFilterModalProps } from '@components/Search/SearchFiltersModal';
 import { BsFilter } from 'react-icons/bs';
@@ -37,11 +35,9 @@ import dynamic from 'next/dynamic';
 import { useLists } from '@utils/useLists';
 import queryString from 'query-string';
 import isEqual from 'lodash/isEqual';
-import { loadTranslation } from '@utils/load-translation';
-import { installProofInterceptor } from '@utils/api/proofInterceptor';
-import { generateListJWT } from '@utils/api/api-utils';
-import { GetServerSidePropsContext } from 'next/types';
 import { ListBreadcrumb } from '@components/Breadcrumbs/ListBreadcrumb';
+import { loadSearchStats, runSearch, runSearchCount } from './actions';
+
 const Markdown = dynamic(() => import('@components/Utils/Markdown'));
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
@@ -50,97 +46,74 @@ const SearchFilterModal = dynamic<SearchFilterModalProps>(
 
 const SearchFilterCard = dynamic(() => import('@components/Search/SearchFiltersCard'));
 
-const itemdb = axios.create({
-  baseURL: '/api/v1/',
-});
-
-installProofInterceptor(itemdb);
-
-itemdb.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (axios.isCancel(error)) {
-      return Promise.reject(error);
-    }
-    const data = error.response?.data;
-    if (data) return Promise.reject(data);
-    return Promise.reject(new Error(error.message || 'Request failed'));
-  }
-);
-
-const ignoreCanceledSearchRequest = (error: unknown) => {
-  if (!axios.isCancel(error)) console.error(error);
-};
-
 const color = Color('#4A5568');
 const rgb = color.rgb().round().array();
 
-// Separate controllers so pagination/sort does not cancel in-flight facet/count requests.
-let SEARCH_ABORT = new AbortController();
-let STATS_ABORT = new AbortController();
-let COUNT_ABORT = new AbortController();
+type SearchPageResult = {
+  content: ItemV2For<'card'>[];
+  page: number;
+  resultsPerPage: number;
+};
 
-type SearchPageProps = {
-  listJWT?: string | null;
+type SearchPageClientProps = {
   userList?: UserList | null;
+  listJWT?: string | null;
   searchTip: number;
 };
 
-const SearchPage = (props: SearchPageProps) => {
-  const router = useRouter();
+function parseSearchQuery(search: string) {
+  return queryString.parse(search, {
+    arrayFormat: 'bracket',
+    parseNumbers: true,
+  });
+}
+
+function getSearchQuery(search: string): string {
+  const s = parseSearchQuery(search).s;
+  if (typeof s === 'string') return s;
+  if (Array.isArray(s) && typeof s[0] === 'string') return s[0];
+  return '';
+}
+
+export function SearchPageClient(props: SearchPageClientProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsString = searchParams?.toString() ?? '';
   const t = useTranslations();
   const format = useFormatter();
   const { addItemToList } = useLists();
   const toast = useToast();
   const [totalResults, setTotalResults] = useState<number | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [searchResult, setResult] = useState<SearchResults | null>(null);
+  const [searchResult, setResult] = useState<SearchPageResult | null>(null);
   const [searchQuery, setQuery] = useState<string | null>(null);
-  const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
+  const [isColorSearch, setIsColorSearch] = useState(false);
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
   const prevFilter = useRef<SearchFiltersType>(null);
-  // Keys of the latest stats/count request — avoids abort+stuck-null on pagination.
   const statsKeyRef = useRef<string | null>(null);
+  const searchGenerationRef = useRef(0);
+  const countGenerationRef = useRef(0);
+  const statsGenerationRef = useRef(0);
   const [isLargerThanLG] = useMediaQuery(['(min-width: 62em)'], { fallback: [true] });
   const { open, onOpen, onClose } = useDisclosure();
 
   const parseQueryString = () => {
-    const queryStrings = queryString.parse(router.asPath.split('?')[1] || '', {
-      arrayFormat: 'bracket',
-      parseNumbers: true,
-    });
-
+    const queryStrings = parseSearchQuery(searchParamsString);
     const queryFilters = getFiltersDiff(queryStrings);
     const currentFilters = getFiltersDiff(filters);
 
     if (!isEqual(currentFilters, queryFilters)) {
       setFilters({ ...defaultFilters, ...queryFilters });
-
-      return false;
-    } else if (router.query.s !== searchQuery && searchQuery !== null) {
-      setFilters((oldFilters) => ({
-        ...oldFilters,
-        page: 1,
-      }));
-
       return false;
     }
 
     return true;
   };
 
-  useEffect(() => {
-    // skip initial render
-    if (!router.isReady || !prevFilter.current) return;
-
-    parseQueryString();
-  }, [router.query, router.isReady]);
-
   const doSearch = async (fetchStats = false, fetchCount = false) => {
-    const query = (router.query.s as string) ?? '';
+    const query = getSearchQuery(searchParamsString);
     const params = getFiltersDiff(filters);
-    // Facets only depend on the search term + list scope.
     const statsKey = `${query}\0${params.list_id ?? 0}`;
 
     if (query !== searchQuery) {
@@ -162,7 +135,6 @@ const SearchPage = (props: SearchPageProps) => {
           ...oldFilters,
           sortBy: oldFilters.sortBy !== 'name' ? oldFilters.sortBy : 'color',
         }));
-
         return;
       }
     } else setIsColorSearch(false);
@@ -172,67 +144,43 @@ const SearchPage = (props: SearchPageProps) => {
     if (fetchStats) setStatus(null);
     if (fetchCount) setTotalResults(null);
 
-    SEARCH_ABORT.abort();
-    SEARCH_ABORT = new AbortController();
-
-    const headers = { 'x-itemdb-list-jwt': props.listJWT ?? undefined };
-
     if (fetchCount) {
-      COUNT_ABORT.abort();
-      COUNT_ABORT = new AbortController();
-
-      itemdb
-        .get('search', {
-          signal: COUNT_ABORT.signal,
-          params: {
-            ...params,
-            s: query,
-            limit: 1,
-            onlyStats: true,
-          },
-          headers,
+      const countGeneration = ++countGenerationRef.current;
+      runSearchCount(query, filters, props.listJWT)
+        .then((count) => {
+          if (countGenerationRef.current !== countGeneration) return;
+          setTotalResults(count);
         })
-        .then((res) => setTotalResults(res.data.totalResults))
-        .catch(ignoreCanceledSearchRequest);
+        .catch((error) => {
+          if (countGenerationRef.current !== countGeneration) return;
+          console.error(error);
+        });
     }
 
     if (fetchStats) {
       statsKeyRef.current = statsKey;
-      STATS_ABORT.abort();
-      STATS_ABORT = new AbortController();
-
-      itemdb
-        .get('search/stats', {
-          signal: STATS_ABORT.signal,
-          params: {
-            s: query,
-            list_id: params.list_id,
-          },
-          headers,
+      const statsGeneration = ++statsGenerationRef.current;
+      loadSearchStats(query, params.list_id, props.listJWT)
+        .then((stats) => {
+          if (statsGenerationRef.current !== statsGeneration) return;
+          setStatus(stats);
         })
-        .then((res) => setStatus(res.data))
         .catch((error) => {
-          if (axios.isCancel(error)) return;
-          // Allow a later search to retry this stats key.
+          if (statsGenerationRef.current !== statsGeneration) return;
           if (statsKeyRef.current === statsKey) statsKeyRef.current = null;
           console.error(error);
         });
     }
 
-    try {
-      const res = await itemdb.get('search', {
-        signal: SEARCH_ABORT.signal,
-        params: {
-          ...params,
-          skipStats: true,
-          s: query,
-        },
-        headers,
-      });
-      setResult(res.data);
-    } catch (err) {
-      if (axios.isCancel(err)) return;
+    const searchGeneration = ++searchGenerationRef.current;
 
+    try {
+      const result = await runSearch(query, filters, props.listJWT);
+      if (searchGenerationRef.current !== searchGeneration) return;
+      setResult(result);
+    } catch (err) {
+      if (searchGenerationRef.current !== searchGeneration) return;
+      console.error(err);
       toast({
         id: 'search-error',
         title: t('General.an-error-occurred'),
@@ -245,13 +193,21 @@ const SearchPage = (props: SearchPageProps) => {
   };
 
   const changeQueryString = () => {
-    const query = (router.query.s as string) ?? '';
+    const query = getSearchQuery(searchParamsString);
 
     if (!prevFilter.current) return;
     const newParams = getFiltersDiff(filters);
     const oldParams = getFiltersDiff(prevFilter.current);
 
     if (isEqual(newParams, oldParams)) return;
+
+    const currentQuery = parseSearchQuery(searchParamsString);
+    if (
+      getSearchQuery(searchParamsString) === query &&
+      isEqual(getFiltersDiff(currentQuery), newParams)
+    ) {
+      return;
+    }
 
     let paramsString = queryString.stringify(newParams, {
       arrayFormat: 'bracket',
@@ -260,23 +216,32 @@ const SearchPage = (props: SearchPageProps) => {
 
     paramsString = paramsString ? '&' + paramsString : '';
 
-    const searchPath = getPageRouterBasePath(router);
-
-    router.push(searchPath + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
-      shallow: true,
-    });
+    const url = pathname + '?s=' + encodeURIComponent(query) + paramsString;
+    window.history.pushState(null, '', url);
   };
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!prevFilter.current) return;
+    if (!parseQueryString()) return;
 
-    // parse initial query string and set filters
+    const query = getSearchQuery(searchParamsString);
+    if (query === searchQuery) return;
+
+    if (filters.page !== 1) {
+      setFilters((oldFilters) => ({ ...oldFilters, page: 1 }));
+      return;
+    }
+
+    void doSearch(true, true);
+  }, [searchParamsString]);
+
+  useEffect(() => {
     if (!prevFilter.current && !parseQueryString()) return;
 
     doSearch(undefined, shouldUpdateCount(filters, prevFilter.current));
     changeQueryString();
     prevFilter.current = filters;
-  }, [filters, router.isReady]);
+  }, [filters]);
 
   const selectItem = (id?: number, checkAll?: boolean) => {
     if (!id && !checkAll) setSelectedItems([]);
@@ -306,14 +271,12 @@ const SearchPage = (props: SearchPageProps) => {
   };
 
   const resetFilters = () => {
-    const newFilter = {
+    setFilters({
       ...defaultFilters,
       sortBy: filters.sortBy,
       sortDir: filters.sortDir,
       page: 1,
-    };
-
-    setFilters(newFilter);
+    });
   };
 
   const changePage = (page: number) => {
@@ -351,28 +314,13 @@ const SearchPage = (props: SearchPageProps) => {
       });
   };
 
-  const onItemClick = (e: React.MouseEvent<any>, id: number) => {
+  const onItemClick = (_e: React.MouseEvent, id: number) => {
     if (selectedItems.length <= 0) return;
-
     selectItem(id);
   };
 
-  const pageTitle = props.userList
-    ? `${props.userList.name} - ${t('Lists.neopets-lists')}`
-    : router.query.s
-      ? `${router.query.s as string} - ${t('Search.search')}`
-      : t('Search.search');
-
   return (
-    <Layout
-      SEO={{
-        title: pageTitle,
-        canonical: 'https://itemdb.com.br/search',
-        noindex: true,
-        nofollow: true,
-      }}
-      mainColor="#4A5568c7"
-    >
+    <>
       {open && (
         <SearchFilterModal
           isOpen={open}
@@ -386,18 +334,18 @@ const SearchPage = (props: SearchPageProps) => {
       )}
       <Box position="absolute" h="20vh" left="0" width="100%" bg="blackAlpha.200" zIndex={-1} />
       <Flex
-        position={'relative'}
+        position="relative"
         w="100%"
         mx="auto"
         py={3}
-        alignItems={'center'}
-        justifyContent={'space-between'}
+        alignItems="center"
+        justifyContent="space-between"
         flexDir={{ base: 'column-reverse', lg: 'row' }}
         gap={3}
-        textAlign={'center'}
+        textAlign="center"
       >
-        <HStack justifyContent={'space-between'}>
-          <Flex color={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }} gap={3}>
+        <HStack justifyContent="space-between">
+          <Flex color="gray.300" fontSize={{ base: 'xs', sm: 'sm' }} gap={3}>
             {totalResults !== null && searchResult && (
               <SelectItemsCheckbox
                 checked={selectedItems}
@@ -427,7 +375,7 @@ const SearchPage = (props: SearchPageProps) => {
               <HStack gap={2}>
                 {!props.userList && (
                   <CreateDynamicListButton
-                    resultCount={searchResult?.totalResults}
+                    resultCount={totalResults ?? undefined}
                     isLoading={!searchResult}
                     filters={filters}
                     query={searchQuery ?? ''}
@@ -454,7 +402,7 @@ const SearchPage = (props: SearchPageProps) => {
           gap={2}
           alignItems="center"
         >
-          <Text flex="0 0 auto" color={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
+          <Text flex="0 0 auto" color="gray.300" fontSize={{ base: 'xs', sm: 'sm' }}>
             {t('General.sort-by')}
           </Text>
           <HStack gap={2} flex="0 1 auto">
@@ -533,7 +481,7 @@ const SearchPage = (props: SearchPageProps) => {
             applyFilters={applyFilterChange}
           />
           {!props.userList && (
-            <Flex justifyContent={'center'}>
+            <Flex justifyContent="center">
               <CreateDynamicListButton
                 resultCount={totalResults ?? undefined}
                 isLoading={!searchResult}
@@ -545,7 +493,7 @@ const SearchPage = (props: SearchPageProps) => {
         </Box>
         <Box flex="1">
           <Text
-            textAlign={'center'}
+            textAlign="center"
             fontSize="xs"
             color="whiteAlpha.600"
             display={{ base: 'none', lg: 'block' }}
@@ -569,8 +517,8 @@ const SearchPage = (props: SearchPageProps) => {
                 onClick={(e) => onItemClick(e, item.internal_id)}
                 cursor={selectedItems.length > 0 ? 'pointer' : 'default'}
               >
-                <ItemCard
-                  uniqueID={`search`}
+                <ItemCardV2
+                  uniqueID="search"
                   item={item}
                   onSelect={() => selectItem(item.internal_id)}
                   disableLink={selectedItems.length > 0}
@@ -580,7 +528,7 @@ const SearchPage = (props: SearchPageProps) => {
               </Box>
             ))}
             {!searchResult &&
-              [...Array(48)].map((_, i) => <ItemCard uniqueID={`search`} key={i} />)}
+              [...Array(48)].map((_, i) => <ItemCardV2 uniqueID="search" key={i} />)}
             {searchResult && searchResult.content.length === 0 && (
               <Center h="60vh" flexFlow="column" gap={3}>
                 <Image
@@ -602,38 +550,8 @@ const SearchPage = (props: SearchPageProps) => {
           {!searchResult && <Pagination />}
         </Box>
       </Flex>
-    </Layout>
+    </>
   );
-};
-
-export default SearchPage;
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const locale = resolvePageLocale(context.params?.locale as string);
-  const list_id = context.query?.list_id ? parseInt(context.query.list_id as string) : undefined;
-
-  let listJWT = null;
-  let userList = null;
-
-  if (list_id && !isNaN(list_id)) {
-    const result = await generateListJWT(list_id, context.req as any);
-    if (result) {
-      listJWT = result.token;
-      userList = result.list;
-    }
-  }
-
-  const totalTips = 4;
-  const searchTip = new Date().getMinutes() % totalTips;
-
-  return {
-    props: {
-      listJWT,
-      userList,
-      searchTip,
-      messages: await loadTranslation(locale!, 'search'),
-    },
-  };
 }
 
 const shouldUpdateCount = (newFilter: SearchFiltersType, prevFilter: SearchFiltersType | null) => {
@@ -704,9 +622,9 @@ const SpecialListSearch = (props: { userList: UserList }) => {
       mb={4}
       flexDir="column"
       alignItems="center"
-      textAlign={'center'}
+      textAlign="center"
     >
-      <Text opacity={0.66} fontSize={'xs'} as="div">
+      <Text opacity={0.66} fontSize="xs" as="div">
         <ListBreadcrumb list={props.userList} show={2} skipCurrent />
       </Text>
       <Text mb={2} fontSize="lg" fontWeight="bold">
