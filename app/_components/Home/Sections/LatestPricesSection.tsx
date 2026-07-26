@@ -1,4 +1,4 @@
-// import { Suspense } from 'react';
+import { Suspense } from 'react';
 import { Text } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import type { ItemV2For } from '@types';
@@ -10,6 +10,10 @@ import { cacheLife, cacheTag } from 'next/cache';
 export type LatestPricesRes = {
   count: number | null;
   items: ItemV2For<'card'>[];
+};
+
+type LatestPricesSectionProps = {
+  title: string;
 };
 
 async function getLatestPrices(): Promise<LatestPricesRes> {
@@ -27,7 +31,28 @@ async function getLatestPrices(): Promise<LatestPricesRes> {
   }
 }
 
-export async function LatestPricesSection() {
+/** Matches the loaded card chrome + 16 ItemCard skeletons. */
+export function LatestPricesSectionSkeleton({ title }: LatestPricesSectionProps) {
+  return (
+    <HorizontalHomeCard
+      color="#2e333b"
+      image="https://images.neopets.com/quests/images/neopoint-bag.png"
+      title={title}
+    >
+      <LatestPricesItemsClient items={[]} />
+    </HorizontalHomeCard>
+  );
+}
+
+export function LatestPricesSection({ title }: LatestPricesSectionProps) {
+  return (
+    <Suspense fallback={<LatestPricesSectionSkeleton title={title} />}>
+      <LatestPricesSectionContent title={title} />
+    </Suspense>
+  );
+}
+
+async function LatestPricesSectionContent({ title }: LatestPricesSectionProps) {
   const [t, formatter, latestPrices] = await Promise.all([
     getTranslations(),
     getFormatter(),
@@ -38,7 +63,7 @@ export async function LatestPricesSection() {
     <HorizontalHomeCard
       color="#2e333b"
       image="https://images.neopets.com/quests/images/neopoint-bag.png"
-      title={t('HomePage.latest-prices')}
+      title={title}
     >
       <LatestPricesItemsClient items={latestPrices.items} />
 

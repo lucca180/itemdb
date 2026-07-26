@@ -51,7 +51,15 @@ export async function ItemHeader({ item }: ItemHeaderProps) {
           minW="100px"
           minH="100px"
         >
-          <Image src={item.image} width={80} height={80} alt="" unoptimized />
+          <Image
+            src={item.image}
+            width={80}
+            height={80}
+            alt={item.name}
+            priority
+            fetchPriority="high"
+            unoptimized
+          />
         </Flex>
         <Box>
           <Stack direction="row" mb={1} wrap="wrap" gap={0.5}>

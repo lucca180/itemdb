@@ -32,7 +32,9 @@ import ItemAvyCard from '@app/_components/Item/Avy/ItemAvyCard';
 import AuctionCardSection from '@app/_components/Item/Auction/AuctionCardSection';
 import TradeCardSection from '@app/_components/Item/Trade/TradeCardSection';
 import NCTradeSection from '@app/_components/Item/NCTrade/NCTradeSection';
+import { NCTradeSectionSkeleton } from '@app/_components/Item/NCTrade/NCTradePanelSkeleton';
 import ItemPriceSection from '@app/_components/Item/Price/ItemPriceSection';
+import { ItemPriceSectionSkeleton } from '@app/_components/Item/Price/ItemPriceSectionSkeleton';
 import { getTranslations } from 'next-intl/server';
 
 type ItemPageProps = {
@@ -91,8 +93,27 @@ export async function ItemPage({ item }: ItemPageProps) {
             <ItemPageSidebarMobile item={item}>
               <FindAtCard item={item} />
             </ItemPageSidebarMobile>
-            {!item.isNC && <ItemPriceSection key={getKey('price')} item={item} />}
-            {item.isNC && <NCTradeSection key={getKey('nc-trade')} item={item} />}
+            {!item.isNC && (
+              <Suspense
+                fallback={
+                  <ItemPriceSectionSkeleton
+                    color={item.color.rgb}
+                    title={t('ItemPage.price-overview')}
+                  />
+                }
+              >
+                <ItemPriceSection key={getKey('price')} item={item} />
+              </Suspense>
+            )}
+            {item.isNC && (
+              <Suspense
+                fallback={
+                  <NCTradeSectionSkeleton color={item.color.rgb} title={t('ItemPage.nc-trade')} />
+                }
+              >
+                <NCTradeSection key={getKey('nc-trade')} item={item} />
+              </Suspense>
+            )}
             <ItemEffectsSection key={getKey('item-effects')} item={item} />
             <ItemOfficialListsSection key={getKey('official-lists')} item={item} />
             <Suspense fallback={null}>

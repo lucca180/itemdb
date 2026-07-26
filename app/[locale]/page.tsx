@@ -101,7 +101,7 @@ async function HomePageContent({ params }: HomePageProps) {
         safetyLinkLabel={t('HomePage.is-it-safe')}
       />
       <Flex mt={8} gap={8} flexDirection="column">
-        <LatestPricesSection />
+        <LatestPricesSection title={t('HomePage.latest-prices')} />
         {/* <CupHomeCard /> */}
         <NewItemsCountSection />
         <Grid

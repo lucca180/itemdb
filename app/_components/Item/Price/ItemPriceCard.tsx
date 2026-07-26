@@ -114,10 +114,6 @@ export function ItemPriceTabProvider({
   const [activeTab, setActiveTab] = useState<ItemPriceTab>(defaultTab);
 
   useEffect(() => {
-    void import('@components/Charts/PriceChart');
-  }, []);
-
-  useEffect(() => {
     if (activeTab === 'chart') window.umami?.track('price-chart');
   }, [activeTab]);
 
