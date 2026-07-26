@@ -7,7 +7,7 @@ import { generateAPIToken } from '../pages/api/auth/token';
 import { createHash } from 'crypto';
 
 describe.concurrent('API Access tests', () => {
-  test('Access API with valid proof', async () => {
+  test('Access API with valid proof is blocked', async () => {
     const proof = generateSiteProof();
 
     expect(proof).toBeDefined();
@@ -22,7 +22,37 @@ describe.concurrent('API Access tests', () => {
     });
 
     const response = await apiMiddleware(request);
+    expect(response.status).toBe(401);
+  });
+
+  test('getSession accepts valid site proof', async () => {
+    const proof = generateSiteProof();
+    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/users/getSession');
+
+    const request = new NextRequest('http://localhost/api/v1/users/getSession', {
+      method: 'GET',
+      headers: {
+        'x-itemdb-proof': solvedProof,
+      },
+    });
+
+    const response = await apiMiddleware(request);
     expect(response.status).toBe(200);
+  });
+
+  test('getSession rejects proof solved for another path', async () => {
+    const proof = generateSiteProof();
+    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/items');
+
+    const request = new NextRequest('http://localhost/api/v1/users/getSession', {
+      method: 'GET',
+      headers: {
+        'x-itemdb-proof': solvedProof,
+      },
+    });
+
+    const response = await apiMiddleware(request);
+    expect(response.status).toBe(401);
   });
 
   test('Access API with invalid proof', async () => {
@@ -37,7 +67,7 @@ describe.concurrent('API Access tests', () => {
     });
 
     const response = await apiMiddleware(request);
-    expect(response.status).toBe(401); // change this after block is effective
+    expect(response.status).toBe(401);
   });
 
   test('Access API with proof solved for another path', async () => {
@@ -55,11 +85,12 @@ describe.concurrent('API Access tests', () => {
     expect(response.status).toBe(401);
   });
 
-  test('Valid proof skips item count without x-itemdb-valid forwarding header', async () => {
+  test('Valid proof does not skip item quota', async () => {
     const proof = generateSiteProof();
     const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/items');
+    const ip = `proof-quota-${Date.now()}`;
 
-    const request = {
+    const countRequest = {
       method: 'GET',
       url: '/api/v1/items',
       headers: {
@@ -68,18 +99,20 @@ describe.concurrent('API Access tests', () => {
       cookies: {},
     } as any;
 
-    await redis_setItemCount('proof-test', 999_999, request);
+    // Quota still applies even when a valid site proof header is present.
+    await redis_setItemCount(ip, 5000, countRequest);
 
     const response = await apiMiddleware(
       new NextRequest('http://localhost/api/v1/items', {
         method: 'GET',
         headers: {
-          'X-Forwarded-For': 'proof-test',
+          'X-Forwarded-For': ip,
           'x-itemdb-proof': solvedProof,
         },
       })
     );
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(429);
+    expect(response.headers.get('Retry-After')).toBeDefined();
   });
 
   test('Access Skip API route', async () => {

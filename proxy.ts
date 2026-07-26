@@ -128,16 +128,20 @@ export const apiMiddleware = async (request: NextRequest) => {
   requestHeaders.set('x-itemdb-score', score.toString());
   requestHeaders.set('x-itemdb-likely', isBrowser ? 'true' : 'false');
   Sentry.setTag('x-itemdb-score', score);
-  // request is trusted if it has a valid site proof, skip all checks
+
+  // Site proof only bootstraps the API session — it no longer bypasses other /api routes.
   const itemdb_proof = request.headers.get('x-itemdb-proof');
+  const pathname = request.nextUrl.pathname;
+  const isSessionBootstrap = request.method === 'GET' && pathname === '/api/v1/users/getSession';
 
   const proofContext = {
     method: request.method,
-    pathname: request.nextUrl.pathname,
+    pathname,
   };
 
-  if (itemdb_proof && verifySiteProof(itemdb_proof, 0, proofContext)) {
-    // check if proof is close to expiration, if so, refresh it
+  const hasValidProof = !!(itemdb_proof && verifySiteProof(itemdb_proof, 0, proofContext));
+
+  if (isSessionBootstrap && hasValidProof && itemdb_proof) {
     const challenge = itemdb_proof.slice(0, itemdb_proof.lastIndexOf(':'));
     if (!verifySiteChallenge(challenge, 300) && isBrowser) {
       const proof = generateSiteProof('long');
@@ -158,7 +162,7 @@ export const apiMiddleware = async (request: NextRequest) => {
     });
     Sentry.setTag('api_type', 'site-proof');
     return finalizeApiResponse(request, response, startTime);
-  } else if (itemdb_proof) {
+  } else if (itemdb_proof && !hasValidProof) {
     response.cookies.set({ name: 'itemdb-proof', value: '', maxAge: 0 });
   }
 

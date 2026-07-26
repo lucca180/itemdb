@@ -9,6 +9,7 @@ import { categoryToShopID, restockShopInfo } from '../../../../utils/utils';
 import { rawToList } from '@services/ListService';
 import { Prisma, UserList as RawList, User as RawUser } from '@prisma/generated/client';
 import { CheckAuth } from '@utils/googleCloud';
+import { redis_setDataCount } from '@utils/api/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET' && req.url) return GET(req, res);
@@ -99,8 +100,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     shops.push(...additionalShops.slice(0, maxShopResults - shops.length));
   }
 
+  redis_setDataCount(items.length, req);
+
   return res.status(200).json({
-    items: searchRes.content,
+    items,
     officialLists: officialLists,
     userLists,
     restockShop: shops,

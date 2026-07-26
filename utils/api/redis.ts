@@ -1,12 +1,7 @@
 import { Redis as RedisRaw } from 'ioredis';
 import { NextApiRequest } from 'next/types';
 import { NextRequest } from 'next/server';
-import {
-  generateSessionToken,
-  normalizeIP,
-  verifySessionToken,
-  verifySiteProof,
-} from './api-utils';
+import { generateSessionToken, normalizeIP, verifySessionToken } from './api-utils';
 import jwt from 'jsonwebtoken';
 import requestIp from 'request-ip';
 
@@ -128,15 +123,6 @@ export async function trackItemQuota(count: number, request: NextRequest): Promi
   return redis_setItemCount(ip, count, request);
 }
 
-function pathnameFromUrl(url: string | undefined): string {
-  if (!url) return '/';
-  try {
-    return new URL(url, 'https://itemdb.com.br').pathname;
-  } catch {
-    return url.split('?')[0] || '/';
-  }
-}
-
 /** `NextRequest` (App Router / Edge) already parses headers/cookies/URL — `NextApiRequest` (Pages) hasn't. */
 function isNextRequest(req: NextApiRequest | NextRequest): req is NextRequest {
   return req.headers instanceof Headers;
@@ -151,20 +137,6 @@ export const redis_setItemCount = async (
     if (!ip || !itemCount || !redis) return;
 
     const edge = isNextRequest(req);
-    const pathname = edge ? req.nextUrl.pathname : pathnameFromUrl(req.url);
-    const itemdbProof = edge
-      ? (req.headers.get('x-itemdb-proof') ?? undefined)
-      : firstHeaderValue(req.headers['x-itemdb-proof']);
-
-    const isValidProof =
-      itemdbProof &&
-      verifySiteProof(itemdbProof, 0, {
-        method: req.method,
-        pathname,
-      });
-
-    if (isValidProof) return;
-
     const apiToken = edge
       ? (req.headers.get('x-itemdb-token') ?? undefined)
       : firstHeaderValue(req.headers['x-itemdb-token']);
