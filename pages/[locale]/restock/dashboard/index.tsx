@@ -171,6 +171,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
       const [res, chartRes] = await Promise.all([dataProm, chartProm]);
 
       if (!res.data) {
+        setSessionStats(null);
+        setPastSessionStats(null);
         setAlertMsg({
           type: 'warning',
           description: (

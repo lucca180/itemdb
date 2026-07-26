@@ -1,7 +1,6 @@
 import { tz } from '@date-fns/tz';
-import { endOfDay } from 'date-fns';
+import { endOfDay, setDate, startOfDay, subDays, subMonths } from 'date-fns';
 import type { RestockStats } from '@types';
-import { getDateNST } from '@utils/utils';
 
 export type ShopRankingEntry = RestockStats['shopRanking'][number];
 
@@ -32,41 +31,27 @@ export type PeriodFilter = {
 
 const NST = tz('America/Los_Angeles');
 
-const getNstStartOfDay = (date: Date = getDateNST()) => {
-  const nst = getDateNST(date.getTime());
-  nst.setHours(0, 0, 0, 0);
-  return nst.getTime();
-};
-
-export const getNstEndOfDay = (timestamp: number) =>
-  endOfDay(getDateNST(timestamp), { in: NST }).getTime();
+export const getNstEndOfDay = (timestamp: number) => endOfDay(timestamp, { in: NST }).getTime();
 
 export const getRollingStartDate = (timePeriod: number) =>
   Date.now() - timePeriod * 24 * 60 * 60 * 1000;
 
-export const getTodayTimestamp = () => getNstStartOfDay();
+export const getTodayTimestamp = () => startOfDay(new Date(), { in: NST }).getTime();
 
-export const getYesterdayTimestamp = () => {
-  const yesterday = getDateNST();
-  yesterday.setDate(yesterday.getDate() - 1);
-  yesterday.setHours(0, 0, 0, 0);
-  return yesterday.getTime();
-};
+export const getYesterdayTimestamp = () =>
+  startOfDay(subDays(new Date(), 1, { in: NST }), { in: NST }).getTime();
 
 export const getLatestHalfPriceDayTimestamp = () => {
-  const todayNST = getDateNST();
-  const hpdThisMonth = getDateNST();
-  hpdThisMonth.setFullYear(todayNST.getFullYear(), todayNST.getMonth(), 3);
-  hpdThisMonth.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const hpdThisMonth = startOfDay(setDate(now, 3, { in: NST }), { in: NST });
 
-  if (todayNST.getTime() >= hpdThisMonth.getTime()) {
+  if (now.getTime() >= hpdThisMonth.getTime()) {
     return hpdThisMonth.getTime();
   }
 
-  const hpdPrevMonth = getDateNST();
-  hpdPrevMonth.setFullYear(todayNST.getFullYear(), todayNST.getMonth() - 1, 3);
-  hpdPrevMonth.setHours(0, 0, 0, 0);
-  return hpdPrevMonth.getTime();
+  return startOfDay(setDate(subMonths(now, 1, { in: NST }), 3, { in: NST }), {
+    in: NST,
+  }).getTime();
 };
 
 export const getFilterSelectValue = (filter: PeriodFilter) => {
