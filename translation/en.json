@@ -1298,9 +1298,11 @@
     "auction-helper-text": "So the first bid will need to be at least {x} NP"
   },
   "OutfitPage": {
-    "description": "Find out every exclusive clothes for your {specie} Neopet! Discover rare wearable items to upgrade your wardrobe and customize your {specie} in style.",
+    "description": "Find out every exclusive clothes for your {specie} Neopet! Discover rare wearable items to upgrade yourwardrobe and customize your {specie} in style.",
     "exclusive-species-clothes": "Exclusive {species} Clothes",
-    "exclusive-clothes-guide": "Exclusive Clothes Guide"
+    "exclusive-clothes-guide": "Exclusive Clothes Guide",
+    "show-items": "Show items",
+    "hide-items": "Hide items"
   },
   "Effects": {
     "effects-disease": "This item {random, select, true {can cause} other{causes}} <Disease></Disease> {species, select, true {to <Neopet></Neopet>} other {}}",

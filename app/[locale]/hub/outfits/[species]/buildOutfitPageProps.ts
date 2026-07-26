@@ -6,6 +6,8 @@ export type OutfitPageLabels = {
   description: string;
   selectSpecies: string;
   previewCredit: string;
+  showItems: string;
+  hideItems: string;
 };
 
 export async function buildOutfitPageProps(species: string): Promise<OutfitPageLabels> {
@@ -17,6 +19,8 @@ export async function buildOutfitPageProps(species: string): Promise<OutfitPageL
     description: t('OutfitPage.description', { specie: species }),
     selectSpecies: t('PetColors.select-species'),
     previewCredit: 'Outfit previews powered by Dress to Impress',
+    showItems: t('OutfitPage.show-items'),
+    hideItems: t('OutfitPage.hide-items'),
   };
 }
 

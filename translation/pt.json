@@ -1301,7 +1301,9 @@
   "OutfitPage": {
     "exclusive-clothes-guide": "Guia de Roupas Exclusivas",
     "description": "Descubra todas as roupas exclusivas para seu Neopet {specie}! Encontre itens aplicáveis raros para incrementar seu armário e customizar seu {specie} com estilo!",
-    "exclusive-species-clothes": "Roupas Exclusivas de {species}"
+    "exclusive-species-clothes": "Roupas Exclusivas de {species}",
+    "show-items": "Mostrar itens",
+    "hide-items": "Ocultar itens"
   },
   "Effects": {
     "effects-cure-disease": "Esse item {random, select, true {tem a <b>chance</b> de curar} other{cura}} <Disease></Disease> {species, select, true {em <Neopet></Neopet>} other {}}",
