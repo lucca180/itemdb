@@ -4,11 +4,14 @@ import { atomWithStorage, useHydrateAtoms } from 'jotai/utils';
 import { User, UserPreferences } from '@types';
 import axios from 'axios';
 import { getCookie } from 'cookies-next/client';
+import { notifyApiSessionSettled, waitForApiSession } from '@utils/api/apiSessionGate';
 
 type AuthContextType = {
   user: User | null;
   signout: () => Promise<void>;
   authLoading: boolean;
+  apiSessionReady: boolean;
+  waitForApiSession: () => Promise<void>;
   setUser: (user: User) => void;
   updatePref: (key: keyof UserPreferences, value: UserPreferences[keyof UserPreferences]) => void;
   userPref: UserPreferences | null;
@@ -20,6 +23,8 @@ const AuthContext = createContext<AuthContextType>({
 
   signout: async () => {},
   authLoading: true,
+  apiSessionReady: false,
+  waitForApiSession,
 
   setUser: () => {},
   updatePref: () => {},
@@ -40,6 +45,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const [user, setUser] = useAtom(UserState);
   const [userPref, setUserPref] = useAtom(UserPrefs);
   const [authLoading, setAuthLoading] = useState<boolean>(typeof initialUser === 'undefined');
+  const [apiSessionReady, setApiSessionReady] = useState(false);
 
   const checkProof = () => {
     const proof = getCookie('itemdb-proof');
@@ -54,21 +60,6 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     }
   };
 
-  const getSession = async () => {
-    try {
-      checkProof();
-
-      const sessionExp = getCookie('idb-session-exp');
-      if (!navigator.cookieEnabled || (document.cookie && sessionExp)) return;
-
-      const res = await axios.get('/api/v1/users/getSession');
-      return res.data;
-    } catch (e) {
-      console.error('getSession error', e);
-      return null;
-    }
-  };
-
   const signout = async () => {
     await axios.post('/api/auth/logout');
     await resetUser();
@@ -77,6 +68,26 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
 
   useEffect(() => {
     let isMounted = true;
+
+    // Always bootstrap the API rate-limit session (App Router SSR sets initialUser,
+    // so this must not be gated on auth sync).
+    const ensureApiSession = async () => {
+      try {
+        checkProof();
+
+        const sessionExp = getCookie('idb-session-exp');
+        if (!navigator.cookieEnabled || (document.cookie && sessionExp)) return;
+
+        await axios.get('/api/v1/users/getSession');
+      } catch (e) {
+        console.error('getSession error', e);
+      } finally {
+        notifyApiSessionSettled();
+        if (isMounted) setApiSessionReady(true);
+      }
+    };
+
+    void ensureApiSession();
 
     const syncFromClientApi = async () => {
       try {
@@ -88,9 +99,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       } catch {
         if (isMounted) setUser(null);
       } finally {
-        if (!isMounted) return;
-        setAuthLoading(false);
-        void getSession();
+        if (isMounted) setAuthLoading(false);
       }
     };
 
@@ -121,6 +130,8 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         user: user ?? null,
         signout,
         authLoading,
+        apiSessionReady,
+        waitForApiSession,
         setUser,
         updatePref,
         userPref,

@@ -1,11 +1,13 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { getCookie } from 'cookies-next/client';
+import { waitForApiSession } from '@utils/api/apiSessionGate';
 
 const INTERCEPTOR_MARKER = Symbol.for('itemdb.proof-interceptor-id');
 
 const SITE_PROOF_COOKIE = 'itemdb-proof';
 const SITE_PROOF_HEADER = 'X-itemdb-Proof';
 const PRIMARY_HOST = 'itemdb.com.br';
+const SESSION_BOOTSTRAP_PATH = '/api/v1/users/getSession';
 const YIELD_EVERY_ATTEMPTS = 64;
 
 type SiteProofPayload = {
@@ -40,20 +42,28 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig) => 
 
   if (!isTrustedHost) return config;
 
+  const pathname = url.pathname;
+  const isApi = pathname.startsWith('/api/');
+  const isSessionBootstrap = pathname === SESSION_BOOTSTRAP_PATH;
+  const isAuthRoute = pathname.startsWith('/api/auth');
+
+  // Non-bootstrap /api calls need the rate-limit session cookie first.
+  if (isApi && !isSessionBootstrap && !isAuthRoute) {
+    await waitForApiSession();
+  }
+
+  // Site proof is only required to bootstrap the session endpoint.
+  if (!isSessionBootstrap) return config;
+
   const proof = getCookie(SITE_PROOF_COOKIE);
 
-  let hasProof = false;
-
   if (proof) {
-    const solvedProof = await solveSiteProof(String(proof), config.method, url.pathname);
+    const solvedProof = await solveSiteProof(String(proof), config.method, pathname);
     if (solvedProof) {
       setHeader(config, SITE_PROOF_HEADER, solvedProof);
       setHeader(config, 'X-Requested-With', 'itemdb-web');
-      hasProof = true;
     }
   }
-
-  if (!hasProof) console.error('Site proof not found. Unable to attach site proof to request.');
 
   return config;
 };
