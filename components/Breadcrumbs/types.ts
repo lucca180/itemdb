@@ -3,6 +3,8 @@ export type BreadcrumbItem = {
   name: string;
   item: string;
   skip?: boolean;
+  /** HTML rel=nofollow; also excluded from BreadcrumbList JSON-LD. */
+  nofollow?: boolean;
 };
 
 export type BreadcrumbJsonLdItem = BreadcrumbItem & {

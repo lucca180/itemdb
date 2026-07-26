@@ -7,21 +7,24 @@ import { Breadcrumbs } from './Breadcrumbs';
 import { categoryToShopID, restockShopInfo, slugify } from '../../utils/utils';
 import { resolvePageLocale } from '../../utils/locales';
 import { ProductJsonLd, ProductJsonLdProps } from 'next-seo';
+import type { BreadcrumbItem } from './types';
 
 type ItemBreadcrumbProps = {
   item: ItemData;
   officialLists?: UserList[];
   useAppDir?: boolean;
+  /** When false, skip Product/Breadcrumb JSON-LD (e.g. Suspense fallback). Default true. */
+  includeJsonLd?: boolean;
 };
 
 export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
-  const { item, officialLists, useAppDir = false } = props;
+  const { item, officialLists, useAppDir = false, includeJsonLd = true } = props;
   const t = useTranslations();
   const locale = useLocale();
   const category = (item.category ?? 'unknown').toLowerCase();
 
   const breadcrumbList = useMemo(() => {
-    const breadList = [
+    const breadList: BreadcrumbItem[] = [
       {
         position: 1,
         name: t('Layout.home'),
@@ -31,11 +34,13 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
         position: 2,
         name: t('General.items'),
         item: '/search?s=',
+        nofollow: true,
       },
       {
         position: 3,
         name: capitalize(category),
         item: `/search?s=&category[]=${category}`,
+        nofollow: true,
       },
       {
         position: 4,
@@ -66,13 +71,14 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
     return breadList;
   }, [item, locale, category, t, officialLists]);
 
-  const productJson = getItemJSONLD(item);
+  const productJson = includeJsonLd ? getItemJSONLD(item) : null;
   return (
     <>
       <Breadcrumbs
         breadcrumbList={breadcrumbList}
         useAppDir={useAppDir}
         locale={resolvePageLocale(locale)}
+        includeJsonLd={includeJsonLd}
       />
       {productJson && <ProductJsonLd {...productJson} useAppDir={useAppDir} />}
     </>
@@ -87,7 +93,11 @@ const capitalize = (s: string) => {
     .join(' ');
 };
 
-const getItemJSONLD = (item: ItemData): ProductJsonLdProps | null => {
+/**
+ * Product schema without Offer — NP/NC are not ISO 4217 currencies,
+ * so priceCurrency values like "XXX" fail Google rich-result validation.
+ */
+const getItemJSONLD = (item: ItemData): ProductJsonLdProps => {
   const cacheHash = item.cacheHash ? '?hash=' + item.cacheHash : '';
 
   const img = [
@@ -97,33 +107,10 @@ const getItemJSONLD = (item: ItemData): ProductJsonLdProps | null => {
     item.image,
   ].filter(Boolean) as string[];
 
-  const offers = [];
-  if (item.price.value) {
-    offers.push({
-      price: item.price.value,
-      priceCurrency: 'XXX',
-    });
-  }
-
-  if (item.mallData?.price) {
-    offers.push({
-      price: item.mallData.price,
-      priceCurrency: 'XXX',
-    });
-  } else if (item.ncValue?.minValue) {
-    offers.push({
-      price: item.ncValue.minValue,
-      priceCurrency: 'XXX',
-    });
-  }
-
-  if (!offers.length) return null;
-
   return {
     productName: item.name,
     description: item.description,
     sku: (item.item_id || item.internal_id).toString(),
     images: img,
-    offers: offers,
   };
 };

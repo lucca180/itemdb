@@ -10,6 +10,7 @@ export type BreadcrumbsViewProps = {
   locale: string;
   linkLast?: boolean;
   useAppDir?: boolean;
+  includeJsonLd?: boolean;
 };
 
 export function BreadcrumbsView({
@@ -17,8 +18,9 @@ export function BreadcrumbsView({
   locale,
   linkLast = false,
   useAppDir = false,
+  includeJsonLd = true,
 }: BreadcrumbsViewProps) {
-  const jsonLdItems = formatBreadcrumbJsonLd(breadcrumbList, locale);
+  const jsonLdItems = includeJsonLd ? formatBreadcrumbJsonLd(breadcrumbList, locale) : [];
 
   return (
     <>
@@ -48,6 +50,7 @@ export function BreadcrumbsView({
                   >
                     <Link
                       href={crumb.item}
+                      rel={crumb.nofollow ? 'nofollow' : undefined}
                       data-umami-event="breadcrumb-link"
                       data-umami-event-label={crumb.name}
                     >
@@ -61,7 +64,9 @@ export function BreadcrumbsView({
           ))}
         </Breadcrumb.List>
       </Breadcrumb.Root>
-      <BreadcrumbJsonLd itemListElements={jsonLdItems} useAppDir={useAppDir} />
+      {includeJsonLd && jsonLdItems.length > 0 && (
+        <BreadcrumbJsonLd itemListElements={jsonLdItems} useAppDir={useAppDir} />
+      )}
     </>
   );
 }

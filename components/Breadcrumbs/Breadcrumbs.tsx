@@ -11,6 +11,7 @@ type BreadcrumbsProps = {
   breadcrumbList: BreadcrumbItem[];
   linkLast?: boolean;
   useAppDir?: boolean;
+  includeJsonLd?: boolean;
   /** When omitted, resolved from next-intl (Pages Router and client trees). */
   locale?: AppLocale;
 };
@@ -24,6 +25,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
     locale,
     linkLast: props.linkLast,
     useAppDir: props.useAppDir,
+    includeJsonLd: props.includeJsonLd,
   };
 
   return <BreadcrumbsView {...viewProps} />;

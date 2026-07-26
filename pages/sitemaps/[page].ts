@@ -10,15 +10,20 @@ import { restockShopInfo, slugify } from '@utils/utils';
 import { listCategoriesData } from '@utils/lists/listCategoriesData';
 import { allSpecies, allNeopetsColors } from '@utils/pet-utils';
 
+const ITEMS_PER_PAGE = 5000;
+
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const page = ctx.query.page as string;
   const siteURL = 'https://itemdb.com.br';
 
-  if (!page || isNaN(parseInt(page)))
+  if (!page || isNaN(parseInt(page))) {
+    const itemCount = await prisma.items.count();
+    const pageCount = Math.max(1, Math.ceil(itemCount / ITEMS_PER_PAGE));
     return getServerSideSitemapIndexLegacy(
       ctx,
-      [...Array(25)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
+      [...Array(pageCount)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
     );
+  }
 
   const [itemInfo, officialLists, colorSpecies] = await Promise.all([
     prisma.items.findMany({
@@ -39,8 +44,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       orderBy: {
         name: 'asc',
       },
-      take: 5000,
-      skip: parseInt(page) * 5000,
+      take: ITEMS_PER_PAGE,
+      skip: parseInt(page) * ITEMS_PER_PAGE,
     }),
     prisma.userList.findMany({
       where: {

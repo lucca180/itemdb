@@ -7,14 +7,13 @@ module.exports = {
   alternateRefs: [{ href: 'https://itemdb.com.br/pt', hrefLang: 'pt' }],
   exclude: ['/sitemaps/*', '/admin/*'], // <= exclude here
   robotsTxtOptions: {
-    additionalSitemaps: [
-      'https://itemdb.com.br/sitemaps/index.xml',
-      ...Array.from({ length: 25 }, (_, i) => `https://itemdb.com.br/sitemaps/${i}.xml`),
-    ],
+    // Only the dynamic index — shard count is computed from DB at request time.
+    // Listing fixed /sitemaps/0..N.xml here goes stale when item volume changes.
+    additionalSitemaps: ['https://itemdb.com.br/sitemaps/index.xml'],
     policies: [
       {
         userAgent: '*',
-        disallow: ['*/admin/*', '*/api/*'],
+        disallow: ['*/admin/*', '*/api/*', '*/search/*'],
       },
     ],
   },

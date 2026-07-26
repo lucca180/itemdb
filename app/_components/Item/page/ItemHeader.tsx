@@ -32,7 +32,7 @@ export async function ItemHeader({ item }: ItemHeaderProps) {
         zIndex={-1}
       />
       <Box pt={2}>
-        <Suspense fallback={<ItemBreadcrumb item={item} useAppDir />}>
+        <Suspense fallback={<ItemBreadcrumb item={item} useAppDir includeJsonLd={false} />}>
           <ItemHeaderBreadcrumb item={item} />
         </Suspense>
       </Box>

@@ -10,8 +10,11 @@ export function formatBreadcrumbJsonLd(
 ): BreadcrumbJsonLdItem[] {
   const normalizedLocale = resolvePageLocale(locale);
 
-  return breadcrumbList.map((crumb) => ({
-    ...crumb,
-    item: `${SITE_ORIGIN}${getLocalizedHref(crumb.item, normalizedLocale)}`,
-  }));
+  return breadcrumbList
+    .filter((crumb) => !crumb.nofollow)
+    .map((crumb, index) => ({
+      position: index + 1,
+      name: crumb.name,
+      item: `${SITE_ORIGIN}${getLocalizedHref(crumb.item, normalizedLocale)}`,
+    }));
 }

@@ -97,4 +97,20 @@ describe('i18n routing helpers', () => {
     expect(items[1].item).toBe('https://itemdb.com.br/pt/faq');
     expect(items[1].item).toBe(`https://itemdb.com.br${getLocalizedHref('/faq', 'pt')}`);
   });
+
+  it('omits nofollow crumbs from breadcrumb JSON-LD and reindexes positions', () => {
+    const items = formatBreadcrumbJsonLd(
+      [
+        { position: 1, name: 'Home', item: '/' },
+        { position: 2, name: 'Items', item: '/search?s=', nofollow: true },
+        { position: 3, name: 'Green Apple', item: '/item/green-apple' },
+      ],
+      'en'
+    );
+
+    expect(items).toEqual([
+      { position: 1, name: 'Home', item: 'https://itemdb.com.br/' },
+      { position: 2, name: 'Green Apple', item: 'https://itemdb.com.br/item/green-apple' },
+    ]);
+  });
 });
