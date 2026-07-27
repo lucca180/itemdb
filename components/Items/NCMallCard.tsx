@@ -3,24 +3,24 @@ import { ItemData, ItemMallData, NCMallData } from '@types';
 import CardBase from '@components/Card/CardBase';
 import Image from 'next/image';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import { UTCDate } from '@date-fns/utc';
 
 type Props = {
   item: ItemData;
   ncMallData: NCMallData;
+  now: number;
+  startDate: number | null;
+  endDate: number | null;
 };
 
 export default async function NcMallCard(props: Props) {
   const t = await getTranslations();
   const format = await getFormatter();
-  const { item, ncMallData } = props;
+  const { item, ncMallData, now, startDate, endDate } = props;
 
-  const isDiscounted = isMallDiscounted(ncMallData);
+  const isDiscounted = isMallDiscounted(ncMallData, now);
 
   const isBuyable =
-    ncMallData.active && (!ncMallData.saleEnd || new Date(ncMallData.saleEnd) > new Date());
-
-  const { startDate, endDate } = getNCMallDataDates(ncMallData, item);
+    ncMallData.active && (!ncMallData.saleEnd || new Date(ncMallData.saleEnd).getTime() > now);
 
   return (
     <CardBase title={t('ItemPage.nc-mall-info')} color={item.color.rgb}>
@@ -119,45 +119,13 @@ export default async function NcMallCard(props: Props) {
   );
 }
 
-export const getNCMallDataDates = (ncMallData: NCMallData, item: ItemData) => {
-  const startDate = ncMallData.saleBegin
-    ? maxDate(new UTCDate(ncMallData.saleBegin), new UTCDate(item.firstSeen ?? 0))
-    : null;
-
-  const endDate = !ncMallData.active
-    ? minDate(new UTCDate(ncMallData.saleEnd ?? '2099-01-01'), new UTCDate(ncMallData.updatedAt))
-    : ncMallData.saleEnd
-      ? new UTCDate(ncMallData.saleEnd)
-      : null;
-
-  const discountBegin = ncMallData.discountBegin
-    ? maxDate(startDate ?? new UTCDate(0), new UTCDate(ncMallData.discountBegin ?? 0))
-    : null;
-
-  const discountEnd = ncMallData.discountEnd
-    ? minDate(endDate ?? new UTCDate(9999, 11, 31), new UTCDate(ncMallData.discountEnd ?? 0))
-    : null;
-
-  return {
-    startDate: startDate?.getTime() ?? null,
-    endDate: endDate?.getTime() ?? null,
-    discountBegin: discountBegin?.getTime() ?? null,
-    discountEnd: discountEnd?.getTime() ?? null,
-  };
-};
-
-export const isMallDiscounted = (ncMallData?: ItemMallData | null): boolean => {
+export const isMallDiscounted = (
+  ncMallData?: ItemMallData | null,
+  now: number = Date.now()
+): boolean => {
   if (!ncMallData) return false;
-  return !!ncMallData.discountPrice && new Date(ncMallData.discountEnd ?? 0) > new Date();
+  return !!ncMallData.discountPrice && new Date(ncMallData.discountEnd ?? 0).getTime() > now;
 };
-
-function maxDate(...dates: Date[]): Date {
-  return new UTCDate(Math.max(...dates.map((d) => d.getTime())));
-}
-
-function minDate(...dates: Date[]): Date {
-  return new UTCDate(Math.min(...dates.map((d) => d.getTime())));
-}
 
 export const getNCMallLink = (item: ItemData) => {
   const name = encodeURI(item.name.split(' ').join('+').toLowerCase());

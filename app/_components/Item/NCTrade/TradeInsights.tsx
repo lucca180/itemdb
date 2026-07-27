@@ -2,7 +2,8 @@ import { Badge, Flex, HStack, Link, Text } from '@chakra-ui/react';
 import { MdHelp, MdInsights } from 'react-icons/md';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
-import { getNCMallDataDates, getNCMallLink, isMallDiscounted } from '@components/Items/NCMallCard';
+import { getNCMallLink, isMallDiscounted } from '@components/Items/NCMallCard';
+import { getNCMallDataDates } from '@app/_components/Item/NCMall/getNCMallDataDates';
 import {
   dateMax,
   isBuyable,
@@ -10,6 +11,7 @@ import {
   sortTradeInsightReleases,
 } from '@app/_components/Item/NCTrade/ncTradeInsightsUtils';
 import { TradeInsightsMore } from '@app/_components/Item/NCTrade/TradeInsightsMore';
+import { getCachedNow } from '@utils/getCachedNow';
 import type { InsightsResponse, ItemData, NCMallData, UserList } from '@types';
 
 type Props = {
@@ -18,8 +20,8 @@ type Props = {
 };
 
 export async function TradeInsights({ item, insights }: Props) {
-  const t = await getTranslations();
-  const releases = sortTradeInsightReleases(insights);
+  const [t, now] = await Promise.all([getTranslations(), getCachedNow()]);
+  const releases = sortTradeInsightReleases(insights, now);
 
   return (
     <Flex direction="column" w="100%">
@@ -31,7 +33,13 @@ export async function TradeInsights({ item, insights }: Props) {
           </Text>
         </HStack>
         {releases.slice(0, 2).map((release) => (
-          <ReleaseRow key={release.internal_id} release={release} item={item} insights={insights} />
+          <ReleaseRow
+            key={release.internal_id}
+            release={release}
+            item={item}
+            insights={insights}
+            now={now}
+          />
         ))}
         {releases.length > 2 && (
           <TradeInsightsMore
@@ -46,6 +54,7 @@ export async function TradeInsights({ item, insights }: Props) {
                 release={release}
                 item={item}
                 insights={insights}
+                now={now}
               />
             ))}
           </TradeInsightsMore>
@@ -59,9 +68,10 @@ type ReleaseRowProps = {
   release: NCMallData | UserList;
   item: ItemData;
   insights: InsightsResponse;
+  now: number;
 };
 
-function ReleaseRow({ release, item, insights }: ReleaseRowProps) {
+function ReleaseRow({ release, item, insights, now }: ReleaseRowProps) {
   return (
     <Flex
       bg="blackAlpha.400"
@@ -79,9 +89,12 @@ function ReleaseRow({ release, item, insights }: ReleaseRowProps) {
           parentData={insights.parentData}
           itemData={insights.itemData}
           item={item}
+          now={now}
         />
       )}
-      {(release as UserList).name && <ListReleaseCard release={release as UserList} item={item} />}
+      {(release as UserList).name && (
+        <ListReleaseCard release={release as UserList} item={item} now={now} />
+      )}
     </Flex>
   );
 }
@@ -91,15 +104,17 @@ type MallReleaseCardProps = {
   parentData: InsightsResponse['parentData'];
   itemData: InsightsResponse['itemData'];
   item: ItemData;
+  now: number;
 };
 
-async function MallReleaseCard({ release, parentData, itemData, item }: MallReleaseCardProps) {
+async function MallReleaseCard({ release, parentData, itemData, item, now }: MallReleaseCardProps) {
   const t = await getTranslations();
   const format = await getFormatter();
   const isLE = parentData[release.item_iid]?.isLE ?? false;
   const capItem = itemData[release.item_iid.toString()];
   const isDirect = release.item_iid === item.internal_id;
-  const isDiscounted = isMallDiscounted(release);
+  const isDiscounted = isMallDiscounted(release, now);
+  const buyable = isBuyable(release, now);
 
   const hasDiscountPrice = !!(
     release.discountPrice &&
@@ -108,7 +123,10 @@ async function MallReleaseCard({ release, parentData, itemData, item }: MallRele
     release.discountEnd
   );
 
-  const { startDate, endDate, discountBegin, discountEnd } = getNCMallDataDates(release, item);
+  const { startDate, endDate, discountBegin, discountEnd } = await getNCMallDataDates(
+    release,
+    item
+  );
 
   const discountTooltip =
     hasDiscountPrice && discountBegin != null && discountEnd != null
@@ -118,16 +136,14 @@ async function MallReleaseCard({ release, parentData, itemData, item }: MallRele
   return (
     <>
       <HStack>
-        {isBuyable(release) && <Badge colorPalette="yellow">{t('ItemPage.buyable-now')}</Badge>}
+        {buyable && <Badge colorPalette="yellow">{t('ItemPage.buyable-now')}</Badge>}
         {!isDirect && (
           <Badge colorPalette={isLE ? 'green' : 'gray'}>{isLE ? 'LE' : 'Cap'} Prize</Badge>
         )}
         <Badge
           colorPalette="purple"
           textDecoration={
-            (isBuyable(release) && isDiscounted) || (!isBuyable(release) && hasDiscountPrice)
-              ? 'line-through'
-              : undefined
+            (buyable && isDiscounted) || (!buyable && hasDiscountPrice) ? 'line-through' : undefined
           }
         >
           {release.price > 0 && `${format.number(release.price)} NC`}
@@ -196,12 +212,13 @@ async function getDiscountTooltipLabel(discountBegin: number, discountEnd: numbe
 type ListReleaseCardProps = {
   release: UserList;
   item: ItemData;
+  now: number;
 };
 
-async function ListReleaseCard({ release, item }: ListReleaseCardProps) {
+async function ListReleaseCard({ release, item, now }: ListReleaseCardProps) {
   const t = await getTranslations();
   const format = await getFormatter();
-  const isActive = isEventActive(release);
+  const isActive = isEventActive(release, now);
   const releaseItem = release.itemInfo?.[0];
   const seriesStart =
     releaseItem?.seriesStart ||
