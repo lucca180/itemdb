@@ -60,6 +60,7 @@ describe('listItemsWrite', () => {
 
     expect(mockCreateMany).toHaveBeenCalledWith({
       data: [{ list_id: 5, item_iid: 99 }],
+      skipDuplicates: true,
     });
     expect(mockCountSql).toHaveBeenCalledWith(5, expect.any(Object));
   });
@@ -69,5 +70,34 @@ describe('listItemsWrite', () => {
 
     expect(mockTransaction).not.toHaveBeenCalled();
     expect(mockCountSql).not.toHaveBeenCalled();
+  });
+
+  test('applyDynamicItemChanges retries on P2034 write conflicts', async () => {
+    const conflict = Object.assign(new Error('write conflict'), { code: 'P2034' });
+    mockTransaction
+      .mockRejectedValueOnce(conflict)
+      .mockImplementationOnce(async (fn: (tx: unknown) => unknown) => {
+        const tx = {
+          listItems: {
+            updateMany: mockUpdateMany,
+            deleteMany: mockDeleteMany,
+            createMany: mockCreateMany,
+          },
+          userList: { update: mockUserListUpdate },
+          $executeRaw: vi.fn(),
+        };
+        return fn(tx);
+      });
+    mockCreateMany.mockResolvedValue({ count: 1 });
+
+    await applyDynamicItemChanges(5, {
+      create: [{ list_id: 5, item_iid: 99 }],
+    });
+
+    expect(mockTransaction).toHaveBeenCalledTimes(2);
+    expect(mockCreateMany).toHaveBeenCalledWith({
+      data: [{ list_id: 5, item_iid: 99 }],
+      skipDuplicates: true,
+    });
   });
 });

@@ -4,7 +4,7 @@ import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { doSearch } from '../../../search';
 import { Prisma } from '@prisma/generated/client';
-import { isSameHour } from 'date-fns';
+import { isSameHour, startOfHour } from 'date-fns';
 import { ListService } from '@services/ListService';
 import { LogService } from '@services/ActionLogService';
 
@@ -182,130 +182,160 @@ export const syncDynamicList = async (list_id: number, force = false) => {
   )
     return null;
 
-  if (targetList.lastSync && isSameHour(targetList.lastSync, new Date()) && !force) return null;
-
+  const previousLastSync = targetList.lastSync;
   const firstSync = !targetList.lastSync;
 
-  const { linkedListId, dynamicType } = targetList;
-  let dynamicQueries = targetList.dynamicQuery as ExtendedSearchQuery | ExtendedSearchQuery[];
+  // Claim this hour atomically so concurrent page loads cannot all sync the same list
+  // (that race caused Prisma P2034 deadlocks on ListItems inserts).
+  if (!force) {
+    if (previousLastSync && isSameHour(previousLastSync, new Date())) return null;
 
-  const logData: DynamicSyncLog = {
-    added: [],
-    removed: [],
-    runtime: 0,
-  };
+    const hourStart = startOfHour(new Date());
+    const claimed = await prisma.userList.updateMany({
+      where: {
+        internal_id: list_id,
+        OR: [{ lastSync: null }, { lastSync: { lt: hourStart } }],
+      },
+      data: { lastSync: new Date() },
+    });
+    if (claimed.count === 0) return null;
+  }
 
-  const isFullSync = dynamicType === 'fullSync' || dynamicType === 'search';
+  try {
+    const { linkedListId, dynamicType } = targetList;
+    let dynamicQueries = targetList.dynamicQuery as ExtendedSearchQuery | ExtendedSearchQuery[];
 
-  const dynamicChanges: {
-    create: { list_id: number; item_iid: number }[];
-    deleteByIid: number[];
-  } = {
-    create: [],
-    deleteByIid: [],
-  };
+    const logData: DynamicSyncLog = {
+      added: [],
+      removed: [],
+      runtime: 0,
+    };
 
-  if (linkedListId) {
-    if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
-      const res = (await prisma.$queryRaw`
+    const isFullSync = dynamicType === 'fullSync' || dynamicType === 'search';
+
+    const dynamicChanges: {
+      create: { list_id: number; item_iid: number }[];
+      deleteByIid: number[];
+    } = {
+      create: [],
+      deleteByIid: [],
+    };
+
+    if (linkedListId) {
+      if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
+        const res = (await prisma.$queryRaw`
         select item_iid from listitems
         where list_id = ${linkedListId}
         and item_iid not in (select item_iid from listitems where list_id = ${list_id})
         and isHidden = 0
       `) as any;
 
-      for (const item of res as { item_iid: number }[]) {
-        logData.added.push(item.item_iid);
-        dynamicChanges.create.push({ list_id, item_iid: item.item_iid });
+        for (const item of res as { item_iid: number }[]) {
+          logData.added.push(item.item_iid);
+          dynamicChanges.create.push({ list_id, item_iid: item.item_iid });
+        }
       }
-    }
 
-    if (dynamicType === 'removeOnly' || dynamicType === 'fullSync' || firstSync) {
-      const res = (await prisma.$queryRaw`
+      if (dynamicType === 'removeOnly' || dynamicType === 'fullSync' || firstSync) {
+        const res = (await prisma.$queryRaw`
         select item_iid from listitems
         where list_id = ${list_id}
         and item_iid not in (select item_iid from listitems where list_id = ${linkedListId} and isHidden = 0)
       `) as any;
 
-      for (const item of res as { item_iid: number }[]) {
-        logData.removed.push(item.item_iid);
-        dynamicChanges.deleteByIid.push(item.item_iid);
+        for (const item of res as { item_iid: number }[]) {
+          logData.removed.push(item.item_iid);
+          dynamicChanges.deleteByIid.push(item.item_iid);
+        }
       }
     }
-  }
 
-  if (dynamicQueries) {
-    if (!Array.isArray(dynamicQueries)) dynamicQueries = [dynamicQueries];
-    const idsSet = new Set<number>();
+    if (dynamicQueries) {
+      if (!Array.isArray(dynamicQueries)) dynamicQueries = [dynamicQueries];
+      const idsSet = new Set<number>();
 
-    const prom = [];
+      const prom = [];
 
-    for (const dynamicQuery of dynamicQueries) {
-      dynamicQuery.limit = dynamicType === 'search' ? 100000 : 4000;
-      dynamicQuery.page = 0;
+      for (const dynamicQuery of dynamicQueries) {
+        dynamicQuery.limit = dynamicType === 'search' ? 100000 : 4000;
+        dynamicQuery.page = 0;
 
-      const searchProm = doSearch(dynamicQuery.s, dynamicQuery, false).then((searchRes) => {
-        searchRes.content.map((item) => idsSet.add(item.internal_id));
-      });
+        const searchProm = doSearch(dynamicQuery.s, dynamicQuery, false).then((searchRes) => {
+          searchRes.content.map((item) => idsSet.add(item.internal_id));
+        });
 
-      prom.push(searchProm);
-    }
+        prom.push(searchProm);
+      }
 
-    await Promise.all(prom);
+      await Promise.all(prom);
 
-    let item_iids = Array.from(idsSet);
-    item_iids = item_iids.length > 0 ? item_iids : [-1]; // join() throws an error if the array is empty
+      let item_iids = Array.from(idsSet);
+      item_iids = item_iids.length > 0 ? item_iids : [-1]; // join() throws an error if the array is empty
 
-    if (dynamicType === 'addOnly' || isFullSync || firstSync) {
-      const res = (await prisma.$queryRaw`
+      if (dynamicType === 'addOnly' || isFullSync || firstSync) {
+        const res = (await prisma.$queryRaw`
         select internal_id from items where internal_id in (${Prisma.join(item_iids)})
         and internal_id not in (select item_iid from listitems where list_id = ${list_id})
       `) as any;
 
-      for (const item of res as { internal_id: number }[]) {
-        logData.added.push(item.internal_id);
-        dynamicChanges.create.push({ list_id, item_iid: item.internal_id });
+        for (const item of res as { internal_id: number }[]) {
+          logData.added.push(item.internal_id);
+          dynamicChanges.create.push({ list_id, item_iid: item.internal_id });
+        }
       }
-    }
 
-    if (dynamicType === 'removeOnly' || isFullSync || firstSync) {
-      const res = (await prisma.$queryRaw`
+      if (dynamicType === 'removeOnly' || isFullSync || firstSync) {
+        const res = (await prisma.$queryRaw`
         select item_iid from listitems where list_id = ${list_id} 
         and item_iid not in (${Prisma.join(item_iids)})
       `) as any;
 
-      for (const item of res as { item_iid: number }[]) {
-        logData.removed.push(item.item_iid);
-        dynamicChanges.deleteByIid.push(item.item_iid);
+        for (const item of res as { item_iid: number }[]) {
+          logData.removed.push(item.item_iid);
+          dynamicChanges.deleteByIid.push(item.item_iid);
+        }
       }
     }
+
+    await ListService.applyDynamicItemChanges(list_id, dynamicChanges);
+
+    logData.runtime = Date.now() - start;
+    const isLogEmpty = !logData.added.length && !logData.removed.length;
+
+    await Promise.all([
+      prisma.userList.update({
+        where: {
+          internal_id: list_id,
+        },
+        data: {
+          lastSync: new Date(),
+        },
+      }),
+      !isLogEmpty && !firstSync
+        ? LogService.createLog(
+            'dynamicListSync',
+            logData,
+            targetList.internal_id.toString(),
+            'itemdb_system'
+          )
+        : null,
+    ]);
+
+    return true;
+  } catch (error) {
+    // Release the hour claim so a later request can retry after a failed sync.
+    if (!force) {
+      try {
+        await prisma.userList.update({
+          where: { internal_id: list_id },
+          data: { lastSync: previousLastSync },
+        });
+      } catch {
+        // ignore restore failure; original error is more important
+      }
+    }
+    throw error;
   }
-
-  await ListService.applyDynamicItemChanges(list_id, dynamicChanges);
-
-  logData.runtime = Date.now() - start;
-  const isLogEmpty = !logData.added.length && !logData.removed.length;
-
-  await Promise.all([
-    prisma.userList.update({
-      where: {
-        internal_id: list_id,
-      },
-      data: {
-        lastSync: new Date(),
-      },
-    }),
-    !isLogEmpty && !firstSync
-      ? LogService.createLog(
-          'dynamicListSync',
-          logData,
-          targetList.internal_id.toString(),
-          'itemdb_system'
-        )
-      : null,
-  ]);
-
-  return true;
 };
 
 type DynamicSyncLog = {

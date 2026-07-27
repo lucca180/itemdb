@@ -225,6 +225,8 @@ export async function removeItems(listId: number, itemIids: number[]) {
  *
  * Runs all mutations and a single {@link countSql} refresh in one transaction.
  * Empty or omitted change arrays are skipped.
+ * Retries transient write conflicts (P2034/P2028); `createMany` uses `skipDuplicates`
+ * so concurrent syncs of the same list do not fail on the unique `(list_id, item_iid)` key.
  *
  * @param listId - List receiving creates and `deleteByIid` removals.
  * @param changes - Optional `create`, `deleteByInternalId`, and `deleteByIid` batches.
@@ -238,23 +240,36 @@ export async function applyDynamicItemChanges(listId: number, changes: DynamicIt
     return;
   }
 
-  await prisma.$transaction(async (tx) => {
-    if (creates.length) {
-      await tx.listItems.createMany({ data: creates });
-    }
-    if (deleteByInternalId.length) {
-      await tx.listItems.deleteMany({
-        where: { internal_id: { in: deleteByInternalId }, list_id: listId },
+  const maxRetries = 3;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      await prisma.$transaction(async (tx) => {
+        if (creates.length) {
+          await tx.listItems.createMany({ data: creates, skipDuplicates: true });
+        }
+        if (deleteByInternalId.length) {
+          await tx.listItems.deleteMany({
+            where: { internal_id: { in: deleteByInternalId }, list_id: listId },
+          });
+        }
+        if (deleteByIid.length) {
+          await tx.listItems.deleteMany({
+            where: { list_id: listId, item_iid: { in: deleteByIid } },
+          });
+        }
+        await countSql(listId, tx);
       });
+      await invalidateListItemIds([listId]);
+      return;
+    } catch (error) {
+      const code = (error as { code?: string })?.code;
+      if (code && ['P2034', 'P2028'].includes(code) && attempt < maxRetries - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 50 * 2 ** attempt));
+        continue;
+      }
+      throw error;
     }
-    if (deleteByIid.length) {
-      await tx.listItems.deleteMany({
-        where: { list_id: listId, item_iid: { in: deleteByIid } },
-      });
-    }
-    await countSql(listId, tx);
-  });
-  await invalidateListItemIds([listId]);
+  }
 }
 
 /** Builds a parameterized `INSERT … ON DUPLICATE KEY UPDATE` for {@link upsertItems}. */
