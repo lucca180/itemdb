@@ -4,17 +4,32 @@ import { Alert, Box, Heading, Icon, List, Text } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { BsXLg, BsXCircleFill, BsCheckCircleFill, BsCheckLg } from 'react-icons/bs';
 
-export function TradeGuidelines() {
+type TradeGuidelinesProps = {
+  forVoting?: boolean;
+};
+
+export function TradeGuidelines({ forVoting = false }: TradeGuidelinesProps) {
   const t = useTranslations();
 
   return (
     <Box fontSize={'sm'}>
-      <Text>
-        {t.rich('Feedback.pt-1', {
-          b: (chunk) => <b>{chunk}</b>,
-        })}
-      </Text>
-      <Alert.Root my={6} variant="subtle" borderRadius={'md'}>
+      {forVoting ? (
+        <Alert.Root status="warning" variant="subtle" borderRadius="md" mb={4} size="sm">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description fontSize="xs">
+              {t('Feedback.vote-guidelines-intro')}
+            </Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
+      ) : (
+        <Text>
+          {t.rich('Feedback.pt-1', {
+            b: (chunk) => <b>{chunk}</b>,
+          })}
+        </Text>
+      )}
+      <Alert.Root mt={forVoting ? 0 : 6} mb={6} variant="subtle" borderRadius={'md'}>
         <Alert.Indicator />
         <Alert.Content w="100%">
           <Alert.Title>{t('Feedback.20-12-2025-new-baby-paint-brush-policy')}</Alert.Title>

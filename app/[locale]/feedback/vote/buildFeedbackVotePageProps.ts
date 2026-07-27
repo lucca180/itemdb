@@ -24,7 +24,7 @@ export async function buildFeedbackVotePageProps(locale: string): Promise<Feedba
       { position: 2, name: t('Layout.feedback'), item: '/feedback' },
       { position: 3, name: t('Feedback.feedback-voting'), item: '/feedback/vote' },
     ],
-    heading: t('Feedback.the-feedback-system'),
-    description: t('Feedback.feedback-system-description'),
+    heading: t('Feedback.vote-page-heading'),
+    description: t('Feedback.vote-page-description'),
   };
 }
