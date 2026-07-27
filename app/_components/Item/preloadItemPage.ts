@@ -1,52 +1,50 @@
 import type { ItemData } from '@types';
 import {
-  // needsDrops,
-  // needsDye,
+  needsAuctionCard,
+  needsDrops,
+  needsDye,
   needsLebronTradeHistory,
-  // needsMME,
+  needsMME,
   needsNCMall,
   needsNCTrade,
   needsNPPrices,
-  // needsOutfitSection,
-  // needsPetpet,
-  // needsRecipes,
+  needsOutfitSection,
+  needsPetpet,
+  needsRecipes,
   needsRestockLastSeen,
-  // needsAuctionCard,
-  // needsTradeCard,
+  needsTradeCard,
   needsTradeLists,
   needsWearableData,
 } from '@app/_components/Item/itemPageGates';
-// import { shouldShowTradeRelisting } from '@utils/item/tradeRelisting';
-// import { loadItemOpenableMeta } from '@app/_components/Item/Drops/loadItemDrops';
+import { shouldShowTradeRelisting } from '@utils/item/tradeRelisting';
+import { loadItemOpenableMeta } from '@app/_components/Item/Drops/loadItemDrops';
 import {
-  // loadAvyData,
-  // loadDyeData,
+  loadAvyData,
+  loadDyeData,
   loadItemColors,
-  // loadItemEffects,
+  loadItemEffects,
   getOfficialItemLists,
-  // loadItemParentData,
-  // loadItemRecipes,
-  // loadItemAuctions,
-  // loadItemTrades,
+  loadItemParentData,
+  loadItemRecipes,
+  loadItemAuctions,
+  loadItemTrades,
   loadItemWearableData,
   loadLastSeen,
   loadLebronTradeHistory,
-  // loadMMEData,
+  loadMMEData,
   loadNCMallData,
   loadNCTradeInsights,
   loadNPPrices,
-  // loadPetpetData,
+  loadPetpetData,
   loadTradeLists,
 } from '@app/_components/Item/loadUtils';
-// import { loadSimilarItemData } from '@app/_components/Item/SimilarItems/loadSimilarItems';
+import { loadSimilarItemData } from '@app/_components/Item/SimilarItems/loadSimilarItems';
 import pMap from 'p-map';
 
 const ITEM_PAGE_PRELOAD_CONCURRENCY = 3;
 
 /**
  * Starts item-page data fetches early; sections reuse the same cached loaders.
- * Below-fold preloads are commented out so Suspense sections fetch without
- * competing for DB/CPU on first paint — uncomment to restore eager warm-up.
  */
 export async function preloadItemPageData(item: ItemData): Promise<void> {
   const tasks: Array<() => Promise<unknown>> = [];
@@ -67,9 +65,9 @@ export async function preloadItemPageData(item: ItemData): Promise<void> {
     preload(() => loadNCMallData(item.internal_id));
   }
 
-  // preload(() => loadAvyData(item.internal_id, includeTrade));
-  // preload(() => loadItemEffects(item.internal_id));
-  // preload(() => loadSimilarItemData(item.internal_id, item.name));
+  preload(() => loadAvyData(item.internal_id, includeTrade));
+  preload(() => loadItemEffects(item.internal_id));
+  preload(() => loadSimilarItemData(item.internal_id, item.name));
 
   if (needsNCTrade(item)) {
     preload(() => loadNCTradeInsights(item.internal_id));
@@ -79,24 +77,24 @@ export async function preloadItemPageData(item: ItemData): Promise<void> {
     }
   }
 
-  // if (needsAuctionCard(item)) preload(() => loadItemAuctions(item.internal_id));
-  // if (needsTradeCard(item)) {
-  //   preload(() => loadItemTrades(item.internal_id, shouldShowTradeRelisting(item)));
-  // }
+  if (needsAuctionCard(item)) preload(() => loadItemAuctions(item.internal_id));
+  if (needsTradeCard(item)) {
+    preload(() => loadItemTrades(item.internal_id, shouldShowTradeRelisting(item)));
+  }
 
-  // if (needsPetpet(item)) preload(() => loadPetpetData(item.internal_id));
-  // if (needsRecipes(item)) preload(() => loadItemRecipes(item.internal_id));
-  // if (needsDye(item)) preload(() => loadDyeData(item.internal_id));
-  // if (needsMME(item)) preload(() => loadMMEData(item.internal_id));
+  if (needsPetpet(item)) preload(() => loadPetpetData(item.internal_id));
+  if (needsRecipes(item)) preload(() => loadItemRecipes(item.internal_id));
+  if (needsDye(item)) preload(() => loadDyeData(item.internal_id));
+  if (needsMME(item)) preload(() => loadMMEData(item.internal_id));
 
   if (needsRestockLastSeen(item)) preload(() => loadLastSeen(item.internal_id));
   if (needsWearableData(item)) preload(() => loadItemWearableData(item.internal_id));
 
-  // if (needsDrops(item) || needsOutfitSection(item)) {
-  //   preload(() => loadItemOpenableMeta(item.internal_id, item.useTypes.canOpen));
-  // }
+  if (needsDrops(item) || needsOutfitSection(item)) {
+    preload(() => loadItemOpenableMeta(item.internal_id, item.useTypes.canOpen));
+  }
 
-  // preload(() => loadItemParentData(item.internal_id));
+  preload(() => loadItemParentData(item.internal_id));
 
   void pMap(tasks, (task) => task(), { concurrency: ITEM_PAGE_PRELOAD_CONCURRENCY });
 }

@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   cacheLife: {
-    itemFast: { stale: 180, revalidate: 300, expire: 600 },
+    itemFast: { stale: 300, revalidate: 300, expire: 600 },
     itemSection: { stale: 300, revalidate: 600, expire: 3600 },
     itemMedium: { stale: 600, revalidate: 900, expire: 3600 },
     homeSection: { stale: 180, revalidate: 300, expire: 3600 },
