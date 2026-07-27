@@ -41,8 +41,8 @@ export const loadDropItemCardData = cache(
     applyItemSectionCacheTags(parentInternalId, 'drop-items');
     cacheLife('itemFast');
     if (dropInternalIds.length === 0) return [];
-    const sortedIds = [...dropInternalIds].sort((a, b) => a - b);
-    return fetchManyItemDataByIids(sortedIds);
+    // Caller must pass IDs already sorted — order is part of the cache key.
+    return fetchManyItemDataByIids(dropInternalIds);
   }
 );
 
@@ -50,10 +50,10 @@ export async function loadItemDropsCardData(item: ItemData): Promise<ItemDropsCa
   const itemOpenable = await loadItemOpenableMeta(item.internal_id, item.useTypes.canOpen);
   if (!itemOpenable) return null;
 
-  const dropItemData = await loadDropItemCardData(
-    item.internal_id,
-    Object.keys(itemOpenable.drops).map(Number)
-  );
+  const dropInternalIds = Object.keys(itemOpenable.drops)
+    .map(Number)
+    .sort((a, b) => a - b);
+  const dropItemData = await loadDropItemCardData(item.internal_id, dropInternalIds);
 
   return { itemOpenable, dropItemData };
 }

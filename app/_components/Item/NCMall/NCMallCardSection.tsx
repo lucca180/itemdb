@@ -23,7 +23,15 @@ async function NCMallCardSectionContent({ item }: Props) {
   const [ncMallData, now] = await Promise.all([loadNCMallData(item.internal_id), getCachedNow()]);
   if (!ncMallData) return null;
 
-  const { startDate, endDate } = await getNCMallDataDates(ncMallData, item);
+  const { startDate, endDate } = await getNCMallDataDates({
+    saleBegin: ncMallData.saleBegin,
+    saleEnd: ncMallData.saleEnd,
+    discountBegin: ncMallData.discountBegin,
+    discountEnd: ncMallData.discountEnd,
+    active: ncMallData.active,
+    updatedAt: ncMallData.updatedAt,
+    firstSeen: item.firstSeen,
+  });
 
   return (
     <NcMallCard

@@ -1,28 +1,38 @@
 import { cacheLife } from 'next/cache';
 import { UTCDate } from '@date-fns/utc';
-import type { ItemData, NCMallData } from '@types';
+
+/** Primitive inputs only — full objects make `'use cache'` keys non-deterministic across prerender phases. */
+export type NCMallDataDatesInput = {
+  saleBegin: string | null;
+  saleEnd: string | null;
+  discountBegin: string | null;
+  discountEnd: string | null;
+  active: boolean;
+  updatedAt: string;
+  firstSeen: string | null;
+};
 
 /** Caches so UTCDate's constructor may use `new Date()` during prerender. */
-export async function getNCMallDataDates(ncMallData: NCMallData, item: ItemData) {
+export async function getNCMallDataDates(input: NCMallDataDatesInput) {
   'use cache';
   cacheLife('hours');
 
-  const startDate = ncMallData.saleBegin
-    ? maxDate(new UTCDate(ncMallData.saleBegin), new UTCDate(item.firstSeen ?? 0))
+  const startDate = input.saleBegin
+    ? maxDate(new UTCDate(input.saleBegin), new UTCDate(input.firstSeen ?? 0))
     : null;
 
-  const endDate = !ncMallData.active
-    ? minDate(new UTCDate(ncMallData.saleEnd ?? '2099-01-01'), new UTCDate(ncMallData.updatedAt))
-    : ncMallData.saleEnd
-      ? new UTCDate(ncMallData.saleEnd)
+  const endDate = !input.active
+    ? minDate(new UTCDate(input.saleEnd ?? '2099-01-01'), new UTCDate(input.updatedAt))
+    : input.saleEnd
+      ? new UTCDate(input.saleEnd)
       : null;
 
-  const discountBegin = ncMallData.discountBegin
-    ? maxDate(startDate ?? new UTCDate(0), new UTCDate(ncMallData.discountBegin ?? 0))
+  const discountBegin = input.discountBegin
+    ? maxDate(startDate ?? new UTCDate(0), new UTCDate(input.discountBegin ?? 0))
     : null;
 
-  const discountEnd = ncMallData.discountEnd
-    ? minDate(endDate ?? new UTCDate(9999, 11, 31), new UTCDate(ncMallData.discountEnd ?? 0))
+  const discountEnd = input.discountEnd
+    ? minDate(endDate ?? new UTCDate(9999, 11, 31), new UTCDate(input.discountEnd ?? 0))
     : null;
 
   return {

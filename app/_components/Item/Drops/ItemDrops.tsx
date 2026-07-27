@@ -11,8 +11,11 @@ type Props = {
 };
 
 export default async function ItemDrops({ item, itemOpenable }: Props) {
+  const dropInternalIds = Object.keys(itemOpenable.drops)
+    .map(Number)
+    .sort((a, b) => a - b);
   const [dropItems, t, contentProps] = await Promise.all([
-    loadDropItemCardData(item.internal_id, Object.keys(itemOpenable.drops).map(Number)),
+    loadDropItemCardData(item.internal_id, dropInternalIds),
     getTranslations(),
     buildItemDropsContentProps(item, itemOpenable),
   ]);

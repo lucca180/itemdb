@@ -33,7 +33,10 @@ import {
   getPriceDiff,
 } from '@app/_components/Item/Price/itemPriceUtils';
 import { PriceTableView } from '@app/_components/Item/Price/PriceTable';
-import { getCachedPriceTableData } from '@app/_components/Item/Price/loadPriceTableData';
+import {
+  getCachedPriceTableData,
+  sortPriceTableCacheArgs,
+} from '@app/_components/Item/Price/loadPriceTableData';
 import {
   HelpNeeded,
   ItemPriceModalProvider,
@@ -66,7 +69,7 @@ function priceTableMarkerLabels(t: ItemPriceLabels['t']) {
     unavailableAt: t('ItemPage.unavailable-at'),
     availableAt: t('ItemPage.available-at'),
     addedTo: t('ItemPage.added-to'),
-  };
+  } as const;
 }
 
 // --- Price table (shared via PriceTable.tsx) ---
@@ -116,7 +119,15 @@ async function PriceTableViewCached({
   t: ItemPriceLabels['t'];
   format: ItemPriceLabels['format'];
 }) {
-  const sortedData = await getCachedPriceTableData(data, markers, priceTableMarkerLabels(t));
+  const labels = priceTableMarkerLabels(t);
+  const { data: sortedPrices, markers: sortedMarkers } = sortPriceTableCacheArgs(data, markers);
+  const sortedData = await getCachedPriceTableData(
+    sortedPrices,
+    sortedMarkers,
+    labels.unavailableAt,
+    labels.availableAt,
+    labels.addedTo
+  );
 
   return (
     <PriceTableView
