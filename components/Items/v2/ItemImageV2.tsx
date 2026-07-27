@@ -22,6 +22,7 @@ export const ItemImageV2 = (
       width={80}
       height={80}
       unoptimized
+      loading="lazy"
       alt=""
       title={item.description}
       onError={() => setError(true)}

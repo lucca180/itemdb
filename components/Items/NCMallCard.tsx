@@ -31,7 +31,6 @@ export default async function NcMallCard(props: Props) {
               src={'https://images.neopets.com/ncmall/shopkeepers/exclusive_shop1.png'}
               width={600}
               height={200}
-              priority
               alt="nc mall thumb"
               quality={100}
             />

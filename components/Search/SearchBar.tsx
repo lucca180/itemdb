@@ -37,16 +37,6 @@ export const SearchBar = () => {
     setIsMac(/Mac/i.test(navigator.userAgent));
   }, []);
 
-  // Warm the SearchModal chunk so the first open does not wait on the network.
-  React.useEffect(() => {
-    const ric = window.requestIdleCallback?.(preloadSearchModal, { timeout: 3000 });
-    if (ric == null) {
-      const t = window.setTimeout(preloadSearchModal, 1500);
-      return () => window.clearTimeout(t);
-    }
-    return () => window.cancelIdleCallback?.(ric);
-  }, []);
-
   // Mirror the current ?s= query in the read-only bar (Pages Router or App Router fallback).
   React.useEffect(() => {
     if (router?.isReady) {

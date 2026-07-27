@@ -63,7 +63,6 @@ export default async function ItemRestock(props: Props) {
                       }.gif`
                     : 'https://images.neopets.com/faerieland/tower_1.gif'
                 }
-                priority
                 alt={item.category.toLowerCase() + ' shop'}
                 width={276}
                 height={92}
