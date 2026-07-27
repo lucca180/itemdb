@@ -83,7 +83,7 @@ export const HomeCard = (props: HomeCardProps) => {
         border={`2px solid ${Color('#fff').alpha(0.1).hexa()}`}
       >
         <Flex alignItems={'center'} gap={4} flexShrink={0} h="70px">
-          <NextImage src={image} quality={100} width={w ?? 71} height={h ?? 71} alt={title} />
+          <NextImage src={image} quality={80} width={w ?? 71} height={h ?? 71} alt={title} />
           <Heading size={'lg'} css={{ textWrap: 'balance' }}>
             {title}
           </Heading>

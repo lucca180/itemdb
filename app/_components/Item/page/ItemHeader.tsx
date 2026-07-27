@@ -121,9 +121,7 @@ export async function ItemHeader({ item }: ItemHeaderProps) {
           <Heading as="h1" size={{ base: 'lg', md: undefined }} fontWeight="bold">
             {item.name}
           </Heading>
-          <Text fontSize={{ base: 'sm', md: 'inherit' }} as="h2">
-            {item.description}
-          </Text>
+          <Text fontSize={{ base: 'sm', md: 'inherit' }}>{item.description}</Text>
         </Box>
       </Flex>
     </Box>

@@ -23,6 +23,7 @@ async function OfficialListsHeader({ locale }: OfficialListsHeaderProps) {
         src: 'https://images.neopets.com/games/tradingcards/premium/0911.gif',
         alt: 'grundo warehouse thumbnail',
       }}
+      imagePriority
       color="#4962ec"
       breadcrumb={
         <BreadcrumbsView

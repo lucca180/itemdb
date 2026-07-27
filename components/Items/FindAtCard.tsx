@@ -31,7 +31,7 @@ function FindAtLink({ href, label, title, icon, alt }: FindAtLinkProps) {
       data-umami-event="find-at"
       data-umami-event-label={label}
     >
-      <Image src={icon} alt={alt} title={title} height={32} quality={100} />
+      <Image src={icon} alt={alt} title={title} height={32} quality={90} />
     </a>
   );
 }

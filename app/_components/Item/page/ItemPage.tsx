@@ -131,7 +131,11 @@ export async function ItemPage({ item }: ItemPageProps) {
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isNC && <NCMallCardSection key={getKey('nc-mall-card')} item={item} />}
-            {item.findAt.restockShop && <ItemRestock key={getKey('item-restock')} item={item} />}
+            {item.findAt.restockShop && (
+              <Suspense fallback={null}>
+                <ItemRestock key={getKey('item-restock')} item={item} />
+              </Suspense>
+            )}
             <ItemPageOutfitSectionLoader item={item} />
             <ItemPageWearablePreview item={item} />
             <ItemAvyCard key={getKey('item-avy-card')} item={item} />

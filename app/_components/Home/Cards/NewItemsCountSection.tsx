@@ -45,7 +45,7 @@ async function NewItemsCountSectionContent() {
             alt=""
             width={100}
             height={100}
-            quality={100}
+            quality={90}
             style={{ borderRadius: '0.375rem' }}
           />
           <Flex direction="column" ml={3}>
@@ -80,7 +80,7 @@ async function NewItemsCountSectionContent() {
             alt=""
             width={100}
             height={100}
-            quality={100}
+            quality={80}
             style={{ borderRadius: '0.375rem' }}
           />
           <Flex direction="column" ml={3}>

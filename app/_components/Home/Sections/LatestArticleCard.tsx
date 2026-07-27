@@ -40,7 +40,7 @@ export function LatestArticleCard({ article, isNew }: LatestArticleCardProps) {
           <NextImage
             src={article.thumbnail ?? '/logo.png'}
             alt="article thumbnail"
-            quality={100}
+            quality={80}
             width={150}
             height={150}
             style={{

@@ -71,7 +71,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
             {image && title && (
               <NextImage
                 src={image}
-                quality={100}
+                quality={80}
                 width={w ?? 70}
                 height={h ?? 70}
                 alt={title!}

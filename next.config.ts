@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   skipProxyUrlNormalize: true,
   images: {
-    qualities: [100, 90],
+    qualities: [100, 90, 80],
     remotePatterns: [
       {
         protocol: 'https',

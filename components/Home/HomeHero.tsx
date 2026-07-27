@@ -51,7 +51,7 @@ export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroPro
         src={logo}
         alt="itemdb logo"
         width={500}
-        quality={100}
+        quality={90}
         priority
         fetchPriority="high"
       />

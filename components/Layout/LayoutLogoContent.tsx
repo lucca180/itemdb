@@ -2,8 +2,8 @@
 
 import { Box } from '@chakra-ui/react';
 import NextImage from 'next/image';
-import logo from '@assets/logo_white_compressed.svg';
-import logoIcon from '@assets/logo_icon.svg';
+import logo from '@assets/logo_white_compressed.webp';
+import logoIcon from '@assets/logo_icon.png';
 
 export function LayoutLogoContent() {
   return (

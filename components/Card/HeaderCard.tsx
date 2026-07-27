@@ -11,10 +11,12 @@ type Props = {
   color?: string;
   breadcrumb?: React.ReactNode;
   isCenter?: boolean;
+  /** Mark header image as LCP candidate (e.g. official lists hub). */
+  imagePriority?: boolean;
 };
 
 const HeaderCard = (props: Props) => {
-  const { image, children, color: colorProps, breadcrumb, isCenter } = props;
+  const { image, children, color: colorProps, breadcrumb, isCenter, imagePriority } = props;
   const color = Color(colorProps ?? '#4A5568');
   const rgb = color.rgb().round().array();
 
@@ -69,6 +71,8 @@ const HeaderCard = (props: Props) => {
               h={{ base: '100px', md: '150px' }}
               borderRadius="md"
               alt={image.alt}
+              priority={imagePriority}
+              fetchPriority={imagePriority ? 'high' : undefined}
             />
           )}
         </Box>
