@@ -58,7 +58,7 @@ export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroPro
       <Heading as="h1" unstyled mt={4} fontSize="1rem" fontWeight="bold" lineHeight={1.5}>
         {renderHighlightedText(title, highlightQuery)}{' '}
         <ChakraLink asChild color="gray.400" _hover={{ textDecoration: 'underline' }}>
-          <MainLink href="/faq" prefetch={false}>
+          <MainLink viaNextLink href="/faq" prefetch={false}>
             {safetyLinkLabel}
           </MainLink>
         </ChakraLink>

@@ -578,7 +578,7 @@ const SearchTips = (props: { searchTip: number }) => {
         t.rich('Search.tip-advanced-operators', {
           Link: (chunk) => (
             <Link asChild color="whiteAlpha.800">
-              <MainLink href="/articles/advanced-search-queries" prefetch={false}>
+              <MainLink viaNextLink href="/articles/advanced-search-queries" prefetch={false}>
                 {chunk}
               </MainLink>
             </Link>
@@ -588,7 +588,7 @@ const SearchTips = (props: { searchTip: number }) => {
         t.rich('Search.tip-dynamic-lists', {
           Link: (chunk) => (
             <Link asChild color="whiteAlpha.800">
-              <MainLink href="/articles/checklists-and-dynamic-lists" prefetch={false}>
+              <MainLink viaNextLink href="/articles/checklists-and-dynamic-lists" prefetch={false}>
                 {chunk}
               </MainLink>
             </Link>
@@ -598,7 +598,7 @@ const SearchTips = (props: { searchTip: number }) => {
         t.rich('Search.tip-price-calculator', {
           Link: (chunk) => (
             <Link asChild color="whiteAlpha.800">
-              <MainLink href="/tools/price-calculator" prefetch={false}>
+              <MainLink viaNextLink href="/tools/price-calculator" prefetch={false}>
                 {chunk}
               </MainLink>
             </Link>
@@ -608,7 +608,7 @@ const SearchTips = (props: { searchTip: number }) => {
         t.rich('Search.tip-advanced-import', {
           Link: (chunk) => (
             <Link asChild color="whiteAlpha.800">
-              <MainLink href="/lists/import/advanced" prefetch={false}>
+              <MainLink viaNextLink href="/lists/import/advanced" prefetch={false}>
                 {chunk}
               </MainLink>
             </Link>

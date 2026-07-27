@@ -30,6 +30,8 @@ export const SiteAlert = () => {
               color={alert.color}
             >
               <MainLink
+                viaNextLink
+                prefetch={false}
                 href={alert.link}
                 target={isLocalizableHref(alert.link) ? undefined : '_blank'}
                 isExternal={!isLocalizableHref(alert.link)}

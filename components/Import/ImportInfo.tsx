@@ -175,12 +175,20 @@ export const ImportInfo = () => {
               {t.rich('Lists.import-text-4', {
                 Dynamic: (chunk) => (
                   <Link asChild>
-                    <MainLink href={'/articles/checklists-and-dynamic-lists'}>{chunk}</MainLink>
+                    <MainLink
+                      viaNextLink
+                      prefetch={false}
+                      href={'/articles/checklists-and-dynamic-lists'}
+                    >
+                      {chunk}
+                    </MainLink>
                   </Link>
                 ),
                 Official: (chunk) => (
                   <Link asChild>
-                    <MainLink href={'/lists/official'}>{chunk}</MainLink>
+                    <MainLink viaNextLink prefetch={false} href={'/lists/official'}>
+                      {chunk}
+                    </MainLink>
                   </Link>
                 ),
               })}
@@ -194,7 +202,7 @@ export const ImportInfo = () => {
             b: (chunk) => <b>{chunk}</b>,
             Link: (chunk) => (
               <Link asChild>
-                <MainLink prefetch={false} href={'/lists/import/advanced'}>
+                <MainLink viaNextLink prefetch={false} href={'/lists/import/advanced'}>
                   {chunk}
                 </MainLink>
               </Link>
@@ -227,14 +235,18 @@ export const ImportInfo = () => {
             b: (chunk) => <b>{chunk}</b>,
             Link2: (chunk) => (
               <Link asChild>
-                <MainLink prefetch={false} href={'/articles/checklists-and-dynamic-lists'}>
+                <MainLink
+                  viaNextLink
+                  prefetch={false}
+                  href={'/articles/checklists-and-dynamic-lists'}
+                >
                   {chunk}
                 </MainLink>
               </Link>
             ),
             Link: (chunk) => (
               <Link asChild>
-                <MainLink prefetch={false} href={'/lists/official'}>
+                <MainLink viaNextLink prefetch={false} href={'/lists/official'}>
                   {chunk}
                 </MainLink>
               </Link>
@@ -255,7 +267,13 @@ export const ImportInfo = () => {
         <Text>
           {t.rich('Lists.scripts-troubleshooting-text', {
             Link: (chunk) => (
-              <MainLink href="/articles/help-my-scripts-are-not-working">{chunk}</MainLink>
+              <MainLink
+                viaNextLink
+                prefetch={false}
+                href="/articles/help-my-scripts-are-not-working"
+              >
+                {chunk}
+              </MainLink>
             ),
           })}
         </Text>

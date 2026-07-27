@@ -84,6 +84,8 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
               {viewAllLink && (
                 <Button asChild variant={'ghost'} size={'sm'}>
                   <MainLink
+                    viaNextLink
+                    prefetch={false}
                     href={viewAllLink}
                     trackEvent={utm_content}
                     trackEventLabel={utm_content ? 'view-all' : undefined}

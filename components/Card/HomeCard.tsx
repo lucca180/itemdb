@@ -139,6 +139,8 @@ export const HomeCard = (props: HomeCardProps) => {
           {viewAllLink && (
             <Button asChild variant={'ghost'} size={'sm'}>
               <MainLink
+                viaNextLink
+                prefetch={false}
                 href={viewAllLink}
                 trackEvent={utm_content}
                 trackEventLabel={linkText || 'view-all'}

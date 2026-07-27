@@ -28,7 +28,7 @@ const SearchMenu = () => {
               _hover={{ bg: 'blackAlpha.400' }}
               cursor="pointer"
             >
-              <MainLink href="/search" prefetch={false}>
+              <MainLink viaNextLink href="/search" prefetch={false}>
                 {t('Layout.advanced-search')}
               </MainLink>
             </Menu.Item>
@@ -38,7 +38,7 @@ const SearchMenu = () => {
               _hover={{ bg: 'blackAlpha.400' }}
               cursor="pointer"
             >
-              <MainLink href="/lists/official" prefetch={false}>
+              <MainLink viaNextLink href="/lists/official" prefetch={false}>
                 {t('Layout.official-lists')}
               </MainLink>
             </Menu.Item>

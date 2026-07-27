@@ -91,7 +91,9 @@ function FeedbackCard({
   if (href) {
     return (
       <Card.Root {...cardProps} asChild cursor="pointer">
-        <MainLink href={href}>{cardContent}</MainLink>
+        <MainLink viaNextLink prefetch={false} href={href}>
+          {cardContent}
+        </MainLink>
       </Card.Root>
     );
   }

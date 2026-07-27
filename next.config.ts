@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   cacheComponents: true,
+  partialPrefetching: true,
   cacheLife: {
     itemFast: { stale: 180, revalidate: 300, expire: 600 },
     itemSection: { stale: 300, revalidate: 600, expire: 3600 },
@@ -62,10 +63,11 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   experimental: {
     globalNotFound: true,
-    webpackBuildWorker: true,
-    parallelServerCompiles: true,
+    // webpackBuildWorker: true,
+    // parallelServerCompiles: true,
     largePageDataBytes: 512 * 1000,
     turbopackFileSystemCacheForDev: true,
+    turbopackRustReactCompiler: true,
     optimizePackageImports: [
       '@sentry/nextjs',
       'axios',

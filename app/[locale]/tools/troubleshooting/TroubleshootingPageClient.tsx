@@ -50,7 +50,7 @@ const ScriptStatus = () => {
         description={
           <>
             That usually means there is an issue with your browser extension. Please check our{' '}
-            <MainLink href="/articles/help-my-scripts-are-not-working">
+            <MainLink viaNextLink prefetch={false} href="/articles/help-my-scripts-are-not-working">
               Scripts Not Working
             </MainLink>{' '}
             article
@@ -71,7 +71,11 @@ const ScriptStatus = () => {
         description={
           <>
             The following scripts are outdated: {outdatedScripts.join(', ')}. Please update them to
-            the latest version <MainLink href="/articles/userscripts">here</MainLink>.
+            the latest version{' '}
+            <MainLink viaNextLink prefetch={false} href="/articles/userscripts">
+              here
+            </MainLink>
+            .
           </>
         }
         status="warning"

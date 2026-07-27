@@ -117,6 +117,8 @@ function LayoutFooterColumns({
           {column.links.map((link, index) => (
             <MainLink
               key={`${column.title}-${link.href}-${index}`}
+              viaNextLink
+              prefetch={false}
               href={link.href}
               isExternal={link.isExternal}
               trackEvent="footer-links"

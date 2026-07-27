@@ -122,7 +122,7 @@ function StatCard(props: StatCardProps) {
 function LinkedStatLabel({ href, children }: LinkedStatLabelProps) {
   return (
     <Link asChild color="gray.300" _hover={{ color: 'whiteAlpha.900' }}>
-      <MainLink href={href}>
+      <MainLink viaNextLink prefetch={false} href={href}>
         <Box as="span" display="inline-flex" alignItems="center" gap={1}>
           {children}
           <LuExternalLink />

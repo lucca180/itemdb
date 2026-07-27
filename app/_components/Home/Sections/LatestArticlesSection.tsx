@@ -40,7 +40,9 @@ function LatestArticlesSectionFallback({ title, limit }: { title: string; limit:
   return (
     <Flex flex={1} direction="column">
       <Heading as="h2" size="md" lineHeight="1.2" textAlign="center" mb={5}>
-        <MainLink href="/articles">{title}</MainLink>
+        <MainLink viaNextLink prefetch={false} href="/articles">
+          {title}
+        </MainLink>
       </Heading>
       <Flex direction="column" gap={2}>
         {Array.from({ length: limit }, (_, index) => (
@@ -71,7 +73,9 @@ async function LatestArticlesSectionContent({ title, limit = 5 }: LatestArticles
   return (
     <Flex flex={1} direction="column">
       <Heading as="h2" size="md" lineHeight="1.2" textAlign="center" mb={5}>
-        <MainLink href="/articles">{title}</MainLink>
+        <MainLink viaNextLink prefetch={false} href="/articles">
+          {title}
+        </MainLink>
       </Heading>
       <Flex direction="column" gap={2}>
         {articles.map(({ article, isNew }) => (

@@ -96,7 +96,7 @@ export const AuthButton = (props: AuthButtonProps) => {
                       _hover={{ bg: 'blackAlpha.400' }}
                       cursor="pointer"
                     >
-                      <MainLink prefetch={false} href={`/lists/${user.username}`}>
+                      <MainLink viaNextLink prefetch={false} href={`/lists/${user.username}`}>
                         {t('Layout.my-lists')}
                       </MainLink>
                     </Menu.Item>
@@ -106,7 +106,7 @@ export const AuthButton = (props: AuthButtonProps) => {
                       _hover={{ bg: 'blackAlpha.400' }}
                       cursor="pointer"
                     >
-                      <MainLink prefetch={false} href="/contribute">
+                      <MainLink viaNextLink prefetch={false} href="/contribute">
                         {t('Layout.how-to-contribute')}
                       </MainLink>
                     </Menu.Item>
@@ -184,7 +184,7 @@ const ScriptStatus = () => {
         _hover={{ bg: 'blackAlpha.400' }}
         cursor="pointer"
       >
-        <MainLink prefetch={false} href="/tools/troubleshooting">
+        <MainLink viaNextLink prefetch={false} href="/tools/troubleshooting">
           {t('Layout.troubleshooting')}
         </MainLink>
       </Menu.Item>

@@ -17,6 +17,12 @@ export interface MainLinkProps {
   isExternal?: boolean;
   style?: React.CSSProperties;
   hardNavigation?: boolean;
+  /**
+   * Soft-nav via next-intl `Link` (default prefetch false).
+   * Skips legacy `<a>` + `router.push`. With PPR/instant nav the load bar
+   * may not appear — that's acceptable on this path.
+   */
+  viaNextLink?: boolean;
 }
 
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
@@ -32,6 +38,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       isExternal,
       style,
       hardNavigation,
+      viaNextLink,
     }: MainLinkProps,
     ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
@@ -81,7 +88,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       );
     }
 
-    if (prefetch) {
+    if (viaNextLink || prefetch) {
       return (
         <Link
           ref={ref}
@@ -90,7 +97,8 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
           href={internalPath}
           onClick={handleTracking}
           style={style}
-          prefetch={prefetch}
+          prefetch={prefetch ?? false}
+          data-mainlink-via="next-link"
         >
           {children}
         </Link>
@@ -105,6 +113,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
         href={resolvedHref}
         onClick={handleClick}
         style={style}
+        data-mainlink-via="anchor-push"
       >
         {children}
       </a>
