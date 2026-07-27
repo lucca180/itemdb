@@ -21,6 +21,8 @@ export type PriceTableFormat = Awaited<ReturnType<typeof getFormatter>>;
 type PriceTableViewProps = {
   data: PriceData[];
   markers?: PriceMarker[];
+  /** Precomputed rows; when omitted, builds sync (e.g. client previews). */
+  sortedData?: PriceOrMarker[];
   isAdmin?: boolean;
   /** Item accent color used for price-row borders and context link tint. */
   itemColor: string;
@@ -224,6 +226,7 @@ function PriceTableRow({
 export function PriceTableView({
   data,
   markers = [],
+  sortedData: sortedDataProp,
   isAdmin,
   itemColor,
   t,
@@ -231,7 +234,7 @@ export function PriceTableView({
   minH = { base: 100 },
   maxH = { base: 200, md: 300 },
 }: PriceTableViewProps) {
-  const sortedData = buildPriceTableData(data, markers, t);
+  const sortedData = sortedDataProp ?? buildPriceTableData(data, markers, t);
   const linkColor = Color(itemColor).alpha(0.8).lightness(70).hexa();
 
   return (

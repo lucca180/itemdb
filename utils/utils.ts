@@ -616,11 +616,12 @@ export const getRestockPrice = (
 
 export const getRestockProfit = (
   item: RestockPriceItem & { price: { value: number | null } },
-  ignoreSpecialDays = false
+  ignoreSpecialDays = false,
+  date?: number
 ) => {
   if (!item.price.value) return null;
 
-  const prices = getRestockPrice(item, ignoreSpecialDays);
+  const prices = getRestockPrice(item, ignoreSpecialDays, date);
 
   if (!prices) return null;
 
@@ -1819,17 +1820,19 @@ export const dynamicListCan = (
   return true;
 };
 
-export const shouldShowTradeLists = (item: ItemData) => {
+export const shouldShowTradeLists = (item: ItemData, now: number | Date) => {
+  const nowDate = typeof now === 'number' ? new Date(now) : now;
+
   if (item.status === 'no trade') return false;
 
-  if (item.firstSeen && differenceInCalendarDays(new Date(), new Date(item.firstSeen)) < 2)
+  if (item.firstSeen && differenceInCalendarDays(nowDate, new Date(item.firstSeen)) < 2)
     return false;
 
   if (item.isNC) return true;
   if (!item.price.value) return true;
   if (item.price.inflated) return true;
   if (item.price.value > 500000) return true;
-  if (differenceInCalendarDays(new Date(item.price.addedAt!), new Date()) >= 30) return true;
+  if (differenceInCalendarDays(new Date(item.price.addedAt!), nowDate) >= 30) return true;
 
   return false;
 };

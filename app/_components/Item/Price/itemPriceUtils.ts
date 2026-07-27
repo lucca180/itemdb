@@ -36,7 +36,7 @@ type LastSeenData = {
 
 type TranslateFn = (key: string) => string;
 type FormatFn = {
-  relativeTime: (date: Date) => string;
+  relativeTime: (date: Date, now?: number | Date) => string;
 };
 
 const LAST_SEEN_CARD_TYPES = ['sw', 'tp', 'auction', 'restock'] as const;
@@ -59,7 +59,8 @@ export function buildLastSeenCards(
   item: ItemData,
   lastSeen: LastSeenData | null | undefined,
   t: TranslateFn,
-  format: FormatFn
+  format: FormatFn,
+  now: number | Date
 ): LastSeenCardData[] {
   const isAlways = item.findAt.restockShop?.includes('hiddentower');
   const doesNotRestock = !item.findAt.restockShop;
@@ -70,7 +71,7 @@ export function buildLastSeenCards(
     restockDoesNotRestock?: boolean,
     restockIsAlways?: boolean
   ) => {
-    if (seen) return format.relativeTime(new Date(seen));
+    if (seen) return format.relativeTime(new Date(seen), now);
     if (type === 'restock' && restockDoesNotRestock) return t('ItemPage.does-not-restock');
     if (restockIsAlways) return t('General.always');
     return t('General.never');

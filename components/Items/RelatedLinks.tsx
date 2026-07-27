@@ -10,6 +10,7 @@ import {
   loadItemEffects,
   loadPetpetData,
 } from '@app/_components/Item/loadUtils';
+import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
 import {
   getPetpetColorId,
@@ -34,7 +35,7 @@ async function RelatedLinksCardContent({ item }: Props) {
   const [t, itemEffects, lists, petpetData] = await Promise.all([
     getTranslations(),
     loadItemEffects(item),
-    getOfficialItemLists(item.internal_id, shouldShowTradeLists(item)),
+    getOfficialItemLists(item.internal_id, shouldShowTradeLists(item, await getCachedNow())),
     loadPetpetData(item.internal_id),
   ]);
   const relatedLinks = buildRelatedLinks(item, t, {

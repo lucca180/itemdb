@@ -11,6 +11,7 @@ import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
 import { getLastSeen } from '@pages/api/v1/prices/stats';
 import { getPriceStatus } from '@pages/api/v1/prices/[iid]/status';
 import { applyItemSectionCacheTags } from '@utils/item/applyItemCacheTags';
+import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
 import { getManualPriceMarkers, resolveOfficialListMarkers } from '@app/server/items/priceMarkers';
 import type {
@@ -134,7 +135,7 @@ export const loadPriceStatus = cache((internalId: number, userId?: string) =>
 
 export const loadTradeLists = cache(async (item: ItemData) => {
   'use cache';
-  if (!shouldShowTradeLists(item)) {
+  if (!shouldShowTradeLists(item, await getCachedNow())) {
     cacheLife('itemMedium');
     return [];
   }

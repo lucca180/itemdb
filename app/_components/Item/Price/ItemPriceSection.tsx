@@ -20,8 +20,9 @@ import {
   loadTradeLists,
 } from '@app/_components/Item/loadUtils';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
-import type { ItemData, PriceData } from '@types';
+import type { ItemData, PriceData, PriceMarker } from '@types';
 import {
   buildLastSeenCards,
   buildLastSeenStaticCards,
@@ -32,6 +33,7 @@ import {
   getPriceDiff,
 } from '@app/_components/Item/Price/itemPriceUtils';
 import { PriceTableView } from '@app/_components/Item/Price/PriceTable';
+import { getCachedPriceTableData } from '@app/_components/Item/Price/loadPriceTableData';
 import {
   HelpNeeded,
   ItemPriceModalProvider,
@@ -59,6 +61,14 @@ type ItemPriceLabels = {
   format: Awaited<ReturnType<typeof getFormatter>>;
 };
 
+function priceTableMarkerLabels(t: ItemPriceLabels['t']) {
+  return {
+    unavailableAt: t('ItemPage.unavailable-at'),
+    availableAt: t('ItemPage.available-at'),
+    addedTo: t('ItemPage.added-to'),
+  };
+}
+
 // --- Price table (shared via PriceTable.tsx) ---
 
 function PriceTablePanel({
@@ -81,11 +91,43 @@ function PriceTablePanel({
   return (
     <Box bg="blackAlpha.300" borderRadius="md" overflow="hidden">
       <Suspense
-        fallback={<PriceTableView itemColor={item.color.hex} data={prices} t={t} format={format} />}
+        fallback={
+          <PriceTableViewCached itemColor={item.color.hex} data={prices} t={t} format={format} />
+        }
       >
         <PriceTableTabFull item={item} prices={prices} t={t} format={format} />
       </Suspense>
     </Box>
+  );
+}
+
+async function PriceTableViewCached({
+  data,
+  markers = [],
+  isAdmin,
+  itemColor,
+  t,
+  format,
+}: {
+  data: PriceData[];
+  markers?: PriceMarker[];
+  isAdmin?: boolean;
+  itemColor: string;
+  t: ItemPriceLabels['t'];
+  format: ItemPriceLabels['format'];
+}) {
+  const sortedData = await getCachedPriceTableData(data, markers, priceTableMarkerLabels(t));
+
+  return (
+    <PriceTableView
+      itemColor={itemColor}
+      data={data}
+      markers={markers}
+      sortedData={sortedData}
+      isAdmin={isAdmin}
+      t={t}
+      format={format}
+    />
   );
 }
 
@@ -97,11 +139,11 @@ async function PriceTableTabFull({
 }: ItemProps & ItemPriceShellProps & ItemPriceLabels) {
   const [{ user }, markers] = await Promise.all([
     getServerCurrentUser(),
-    loadItemPriceMarkers(item, shouldShowTradeLists(item)),
+    loadItemPriceMarkers(item, shouldShowTradeLists(item, await getCachedNow())),
   ]);
 
   return (
-    <PriceTableView
+    <PriceTableViewCached
       itemColor={item.color.hex}
       data={prices}
       markers={markers}
@@ -113,7 +155,10 @@ async function PriceTableTabFull({
 }
 
 async function PriceChartTabFull({ item, prices }: ItemProps & ItemPriceShellProps) {
-  const markers = await loadItemPriceMarkers(item, shouldShowTradeLists(item));
+  const markers = await loadItemPriceMarkers(
+    item,
+    shouldShowTradeLists(item, await getCachedNow())
+  );
 
   return <PriceChartPanel item={item} prices={prices} markers={markers} />;
 }
@@ -163,12 +208,13 @@ async function NPTradingTab({ item }: ItemProps) {
 }
 
 async function LastSeenStats({ item }: ItemProps) {
-  const [lastSeen, t, format] = await Promise.all([
+  const [lastSeen, t, format, now] = await Promise.all([
     loadLastSeen(item.internal_id),
     getTranslations(),
     getFormatter(),
+    getCachedNow(),
   ]);
-  return <LastSeenCards cards={buildLastSeenCards(item, lastSeen, t, format)} />;
+  return <LastSeenCards cards={buildLastSeenCards(item, lastSeen, t, format, now)} />;
 }
 
 // --- Orchestrator ---
@@ -178,8 +224,8 @@ function ItemPriceModalShell({ item, children }: ItemProps & { children: ReactNo
 }
 
 async function ItemPriceTradeableCard({ item, prices }: ItemPriceShellProps) {
-  const [t, format] = await Promise.all([getTranslations(), getFormatter()]);
-  const shouldShowLists = shouldShowTradeLists(item);
+  const [t, format, now] = await Promise.all([getTranslations(), getFormatter(), getCachedNow()]);
+  const shouldShowLists = shouldShowTradeLists(item, now);
   const price = getLatestPrice(prices);
   const priceDiff = getPriceDiff(prices);
 

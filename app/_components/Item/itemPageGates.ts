@@ -1,11 +1,12 @@
 import type { ItemData } from '@types';
 import { isMME } from '@pages/api/v1/items/[id_name]/mme';
+import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
 
 export const isPetDayCapsule = (name: string) => /Day Y\d+ Mini Mystery Capsule/i.test(name);
 
-export function needsTradeLists(item: ItemData) {
-  return shouldShowTradeLists(item);
+export async function needsTradeLists(item: ItemData) {
+  return shouldShowTradeLists(item, await getCachedNow());
 }
 
 export function needsNPPrices(item: ItemData) {

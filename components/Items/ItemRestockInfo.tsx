@@ -3,6 +3,7 @@ import { MdHelp } from 'react-icons/md';
 import Tooltip from '@components/Utils/Tooltip';
 import { ItemData } from '@types';
 import { loadLastSeen } from '@app/_components/Item/loadUtils';
+import { getCachedNow } from '@utils/getCachedNow';
 import {
   categoryToShopID,
   faerielandShops,
@@ -32,13 +33,14 @@ export default async function ItemRestock(props: Props) {
   const isHT = item.findAt.restockShop?.includes('hiddentower938');
 
   const lastSeen = !isHT ? await loadLastSeen(item.internal_id) : null;
-  const todayNST = getDateNST();
+  const now = await getCachedNow();
+  const todayNST = getDateNST(now);
   const specialDay = getRestockSpecialDay(item, isHT, todayNST);
 
-  const restockPrice = getRestockPrice(item);
-  const originalRestockPrice = getRestockPrice(item, true);
-  const restockProfit = getRestockProfit(item);
-  const restockOriginalProfit = getRestockProfit(item, true);
+  const restockPrice = getRestockPrice(item, false, now);
+  const originalRestockPrice = getRestockPrice(item, true, now);
+  const restockProfit = getRestockProfit(item, false, now);
+  const restockOriginalProfit = getRestockProfit(item, true, now);
 
   const shopInfo = item.category
     ? restockShopInfo[isHT ? '-3' : categoryToShopID[item.category.toLowerCase()]]
@@ -172,7 +174,7 @@ export default async function ItemRestock(props: Props) {
             <HStack>
               <Tooltip
                 label={t('Restock.ht-next-discount-day', {
-                  x: format.dateTime(nextThirdWednesday(), {
+                  x: format.dateTime(nextThirdWednesday(todayNST), {
                     month: 'short',
                     day: 'numeric',
                   }),
@@ -215,7 +217,7 @@ function getRestockSpecialDay(item: ItemData, isHT: boolean | undefined, todayNS
   const category = item.category.toLowerCase();
 
   if (isHT) {
-    if (isThirdWednesday()) return 'ht';
+    if (isThirdWednesday(todayNST)) return 'ht';
     return;
   }
 

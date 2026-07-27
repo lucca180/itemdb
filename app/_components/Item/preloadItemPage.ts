@@ -44,13 +44,13 @@ import pMap from 'p-map';
 const ITEM_PAGE_PRELOAD_CONCURRENCY = 3;
 
 /** Starts item-page data fetches early; sections reuse the same cached loaders. */
-export function preloadItemPageData(item: ItemData): void {
+export async function preloadItemPageData(item: ItemData): Promise<void> {
   const tasks: Array<() => Promise<unknown>> = [];
   const preload = (task: () => Promise<unknown>) => {
     tasks.push(task);
   };
 
-  const includeTrade = needsTradeLists(item);
+  const includeTrade = await needsTradeLists(item);
 
   preload(() => getOfficialItemLists(item.internal_id, includeTrade));
   preload(() => loadItemColors(item));
