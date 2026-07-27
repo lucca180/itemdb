@@ -81,31 +81,34 @@ export const getOfficialItemLists = cache(
  * Presentation-ready price markers for the item page (table/chart).
  * Uses the shared official-lists cache, then resolves dates/clamping server-side.
  */
-export const loadItemPriceMarkers = cache(async (item: ItemData, includeTrade = false) => {
+export const loadItemPriceMarkers = cache(
+  async (internalId: number, firstSeen: string | null, includeTrade = false) => {
+    'use cache';
+    applyItemSectionCacheTags(internalId, 'markers', 'lists');
+    cacheLife('itemFast');
+    const itemRef = { internal_id: internalId, firstSeen };
+    const [lists, manual] = await Promise.all([
+      getOfficialItemLists(internalId, includeTrade),
+      getManualPriceMarkers(itemRef),
+    ]);
+    return [...resolveOfficialListMarkers(lists, itemRef), ...manual];
+  }
+);
+
+export const loadItemEffects = cache(async (internalId: number): Promise<ItemEffect[]> => {
   'use cache';
-  applyItemSectionCacheTags(item.internal_id, 'markers', 'lists');
-  cacheLife('itemFast');
-  const [lists, manual] = await Promise.all([
-    getOfficialItemLists(item.internal_id, includeTrade),
-    getManualPriceMarkers(item),
-  ]);
-  return [...resolveOfficialListMarkers(lists, item), ...manual];
+  applyItemSectionCacheTags(internalId, 'effects');
+  cacheLife('homeSlow');
+  const fresh = await getCachedItem(internalId, true);
+  return getItemEffects(fresh ?? ({ internal_id: internalId } as ItemData));
 });
 
-export const loadItemEffects = cache(async (item: ItemData): Promise<ItemEffect[]> => {
+export const loadItemColors = cache(async (internalId: number) => {
   'use cache';
-  applyItemSectionCacheTags(item.internal_id, 'effects');
+  applyItemSectionCacheTags(internalId, 'colors');
   cacheLife('homeSlow');
-  const fresh = await getCachedItem(item.internal_id, true);
-  return getItemEffects(fresh ?? item);
-});
-
-export const loadItemColors = cache(async (item: ItemData) => {
-  'use cache';
-  applyItemSectionCacheTags(item.internal_id, 'colors');
-  cacheLife('homeSlow');
-  const fresh = await getCachedItem(item.internal_id, true);
-  return getSingleItemColor(fresh ?? ({ internal_id: item.internal_id } as ItemData));
+  const fresh = await getCachedItem(internalId, true);
+  return getSingleItemColor(fresh ?? ({ internal_id: internalId } as ItemData));
 });
 
 export const loadItemWearableData = cache(async (internalId: number): Promise<WearableData> => {
@@ -133,13 +136,14 @@ export const loadPriceStatus = cache((internalId: number, userId?: string) =>
   getPriceStatus(internalId, userId)
 );
 
-export const loadTradeLists = cache(async (item: ItemData) => {
+export const loadTradeLists = cache(async (internalId: number) => {
   'use cache';
-  if (!shouldShowTradeLists(item, await getCachedNow())) {
+  const item = await getCachedItem(internalId);
+  if (!item || !shouldShowTradeLists(item, await getCachedNow())) {
     cacheLife('itemMedium');
     return [];
   }
-  const { trade } = await loadItemListCollections(item.internal_id, true);
+  const { trade } = await loadItemListCollections(internalId, true);
 
   cacheLife('itemSection');
 

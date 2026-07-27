@@ -57,7 +57,7 @@ export async function preloadItemPageData(item: ItemData): Promise<void> {
   const includeTrade = await needsTradeLists(item);
 
   preload(() => getOfficialItemLists(item.internal_id, includeTrade));
-  preload(() => loadItemColors(item));
+  preload(() => loadItemColors(item.internal_id));
 
   if (needsNPPrices(item)) {
     preload(() => loadNPPrices(item.internal_id));
@@ -68,12 +68,12 @@ export async function preloadItemPageData(item: ItemData): Promise<void> {
   }
 
   // preload(() => loadAvyData(item.internal_id, includeTrade));
-  // preload(() => loadItemEffects(item));
-  // preload(() => loadSimilarItemData(item));
+  // preload(() => loadItemEffects(item.internal_id));
+  // preload(() => loadSimilarItemData(item.internal_id, item.name));
 
   if (needsNCTrade(item)) {
     preload(() => loadNCTradeInsights(item.internal_id));
-    if (includeTrade) preload(() => loadTradeLists(item));
+    if (includeTrade) preload(() => loadTradeLists(item.internal_id));
     if (needsLebronTradeHistory(item)) {
       preload(() => loadLebronTradeHistory(item.internal_id, item.name));
     }
@@ -93,7 +93,7 @@ export async function preloadItemPageData(item: ItemData): Promise<void> {
   if (needsWearableData(item)) preload(() => loadItemWearableData(item.internal_id));
 
   // if (needsDrops(item) || needsOutfitSection(item)) {
-  //   preload(() => loadItemOpenableMeta(item));
+  //   preload(() => loadItemOpenableMeta(item.internal_id, item.useTypes.canOpen));
   // }
 
   // preload(() => loadItemParentData(item.internal_id));

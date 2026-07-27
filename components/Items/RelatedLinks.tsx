@@ -34,7 +34,7 @@ export default function RelatedLinksCard(props: Props) {
 async function RelatedLinksCardContent({ item }: Props) {
   const [t, itemEffects, lists, petpetData] = await Promise.all([
     getTranslations(),
-    loadItemEffects(item),
+    loadItemEffects(item.internal_id),
     getOfficialItemLists(item.internal_id, shouldShowTradeLists(item, await getCachedNow())),
     loadPetpetData(item.internal_id),
   ]);

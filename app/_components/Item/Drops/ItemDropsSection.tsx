@@ -10,7 +10,10 @@ type Props = {
 };
 
 export async function ItemDropsSection({ item }: Props) {
-  const [itemOpenable, t] = await Promise.all([loadItemOpenableMeta(item), getTranslations()]);
+  const [itemOpenable, t] = await Promise.all([
+    loadItemOpenableMeta(item.internal_id, item.useTypes.canOpen),
+    getTranslations(),
+  ]);
 
   if (!itemOpenable) return null;
 

@@ -21,17 +21,19 @@ export type ItemDropsCardData = {
 async function fetchManyItemDataByIids(internalIds: number[]): Promise<ItemData[]> {
   if (internalIds.length === 0) return [];
   const items = await getManyItems({ id: internalIds.map(String) });
-  return Object.values(items);
+  return Object.values(items).sort((a, b) => a.internal_id - b.internal_id);
 }
 
-export const loadItemOpenableMeta = cache(async (item: ItemData): Promise<ItemOpenable | null> => {
-  'use cache';
-  applyItemSectionCacheTags(item.internal_id, 'drops');
-  cacheLife('itemFast');
-  if (item.useTypes.canOpen === 'false') return null;
-  if (SKIP_ITEMS.includes(item.internal_id)) return null;
-  return getItemDrops(item.internal_id);
-});
+export const loadItemOpenableMeta = cache(
+  async (internalId: number, canOpen: string): Promise<ItemOpenable | null> => {
+    'use cache';
+    applyItemSectionCacheTags(internalId, 'drops');
+    cacheLife('itemFast');
+    if (canOpen === 'false') return null;
+    if (SKIP_ITEMS.includes(internalId)) return null;
+    return getItemDrops(internalId);
+  }
+);
 
 export const loadDropItemCardData = cache(
   async (parentInternalId: number, dropInternalIds: number[]): Promise<ItemData[]> => {
@@ -45,7 +47,7 @@ export const loadDropItemCardData = cache(
 );
 
 export async function loadItemDropsCardData(item: ItemData): Promise<ItemDropsCardData | null> {
-  const itemOpenable = await loadItemOpenableMeta(item);
+  const itemOpenable = await loadItemOpenableMeta(item.internal_id, item.useTypes.canOpen);
   if (!itemOpenable) return null;
 
   const dropItemData = await loadDropItemCardData(

@@ -230,7 +230,7 @@ export async function NCTradeSection({ item }: Props) {
   if (!item.isNC) return null;
 
   const [tradeLists, insights] = await Promise.all([
-    loadTradeLists(item),
+    loadTradeLists(item.internal_id),
     loadNCTradeInsights(item.internal_id),
   ]);
   const hasInsights = hasNCTradeInsights(insights);

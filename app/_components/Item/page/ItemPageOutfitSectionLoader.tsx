@@ -6,7 +6,7 @@ import type { ItemData } from '@types';
 const isPetDayCapsule = (name: string) => /Day Y\d+ Mini Mystery Capsule/i.test(name);
 
 async function ItemPageOutfitSectionContent({ item }: { item: ItemData }) {
-  const itemOpenable = await loadItemOpenableMeta(item);
+  const itemOpenable = await loadItemOpenableMeta(item.internal_id, item.useTypes.canOpen);
   if (!itemOpenable) return null;
 
   return <ItemPageOutfitSection item={item} itemOpenable={itemOpenable} />;

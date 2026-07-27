@@ -139,7 +139,11 @@ async function PriceTableTabFull({
 }: ItemProps & ItemPriceShellProps & ItemPriceLabels) {
   const [{ user }, markers] = await Promise.all([
     getServerCurrentUser(),
-    loadItemPriceMarkers(item, shouldShowTradeLists(item, await getCachedNow())),
+    loadItemPriceMarkers(
+      item.internal_id,
+      item.firstSeen,
+      shouldShowTradeLists(item, await getCachedNow())
+    ),
   ]);
 
   return (
@@ -156,7 +160,8 @@ async function PriceTableTabFull({
 
 async function PriceChartTabFull({ item, prices }: ItemProps & ItemPriceShellProps) {
   const markers = await loadItemPriceMarkers(
-    item,
+    item.internal_id,
+    item.firstSeen,
     shouldShowTradeLists(item, await getCachedNow())
   );
 
@@ -190,7 +195,7 @@ async function PriceHelpBannerAsync({
 }
 
 async function NPSeekingTab({ item }: ItemProps) {
-  const tradeLists = await loadTradeLists(item);
+  const tradeLists = await loadTradeLists(item.internal_id);
   return (
     <Box bg="blackAlpha.300" borderRadius="md" overflow="hidden">
       <MatchTable data={filterNPSeekingLists(tradeLists)} matches={null} type="seeking" />
@@ -199,7 +204,7 @@ async function NPSeekingTab({ item }: ItemProps) {
 }
 
 async function NPTradingTab({ item }: ItemProps) {
-  const tradeLists = await loadTradeLists(item);
+  const tradeLists = await loadTradeLists(item.internal_id);
   return (
     <Box bg="blackAlpha.300" borderRadius="md" overflow="hidden">
       <MatchTable data={filterNPTradingLists(tradeLists)} matches={null} type="trading" />

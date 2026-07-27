@@ -23,7 +23,10 @@ export async function SimilarItemsCard({ item }: Props) {
 }
 
 async function SimilarItemsCardContent({ item }: Props) {
-  const [similarItemData, t] = await Promise.all([loadSimilarItemData(item), getTranslations()]);
+  const [similarItemData, t] = await Promise.all([
+    loadSimilarItemData(item.internal_id, item.name),
+    getTranslations(),
+  ]);
 
   return (
     <CardBase title={t('ItemPage.suggestion')} color={item.color.rgb}>

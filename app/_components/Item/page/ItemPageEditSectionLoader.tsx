@@ -11,6 +11,6 @@ type Props = {
 };
 
 export async function ItemPageEditSectionLoader({ item, labels }: Props) {
-  const itemEffects = await loadItemEffects(item);
+  const itemEffects = await loadItemEffects(item.internal_id);
   return <ItemPageEditSection item={item} itemEffects={itemEffects} labels={labels} />;
 }

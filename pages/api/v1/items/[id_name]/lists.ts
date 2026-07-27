@@ -132,6 +132,8 @@ async function queryItemLists(id: number, listCondition: Prisma.Sql): Promise<Us
       -- 2. Secondary Filter (The List Conditions):
       -- These are applied only to the lists found in the step above.
       AND ${listCondition}
+
+    ORDER BY ul.internal_id ASC
 `) as ItemListRow[];
 
   return mapItemListRows(id, listsRaw);

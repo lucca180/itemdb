@@ -16,7 +16,7 @@ export function ItemEffectsSection({ item }: Props) {
 }
 
 async function ItemEffectsSectionContent({ item }: Props) {
-  const effects = await loadItemEffects(item);
+  const effects = await loadItemEffects(item.internal_id);
   if (!effects.length) return null;
   return <ItemEffectsCard item={item} effects={effects} />;
 }

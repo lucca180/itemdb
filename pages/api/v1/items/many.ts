@@ -117,6 +117,7 @@ export const getManyItems = async (
     LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
     LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
     WHERE ${query}
+    ORDER BY a.internal_id ASC
     LIMIT ${limit}
     `) as any[];
 

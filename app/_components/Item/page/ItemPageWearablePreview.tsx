@@ -16,7 +16,7 @@ export function ItemPageWearablePreview({ item }: Props) {
 }
 
 async function ItemPageWearablePreviewContent({ item }: Props) {
-  const itemEffects = await loadItemEffects(item);
+  const itemEffects = await loadItemEffects(item.internal_id);
   const colorSpeciesEffect =
     itemEffects.length > 0
       ? (itemEffects.find((effect) => effect.type === 'colorSpecies') ?? null)

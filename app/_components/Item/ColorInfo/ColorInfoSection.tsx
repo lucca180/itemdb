@@ -16,7 +16,7 @@ export function ColorInfoSection({ item }: Props) {
 }
 
 async function ColorInfoSectionContent({ item }: Props) {
-  const colors = await loadItemColors(item);
+  const colors = await loadItemColors(item.internal_id);
   if (!colors?.vibrant) return null;
   return <ColorInfoCard colors={colors as FullItemColors} />;
 }

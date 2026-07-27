@@ -46,6 +46,7 @@ export async function getManualPriceMarkers(
   const rows = await prisma.manualPriceMarkerItem.findMany({
     where: { item_iid: item.internal_id },
     select: { marker: true },
+    orderBy: { marker_id: 'asc' },
   });
 
   return resolveManualMarkers(
