@@ -1,9 +1,13 @@
 import { Suspense } from 'react';
-import TradeCard from '@components/Trades/TradeCard';
+import dynamic from 'next/dynamic';
 import { needsTradeCard } from '@app/_components/Item/itemPageGates';
 import { loadItemTrades } from '@app/_components/Item/loadUtils';
 import type { ItemData } from '@types';
 import { shouldShowTradeRelisting } from '@utils/item/tradeRelisting';
+
+const TradeCard = dynamic(() => import('@components/Trades/TradeCard'), {
+  loading: () => null,
+});
 
 type Props = {
   item: ItemData;

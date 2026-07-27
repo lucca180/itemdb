@@ -1,10 +1,16 @@
 import { Suspense } from 'react';
-import AuctionCard from '@components/Auctions/AuctionCard';
-import TradeCard from '@components/Trades/TradeCard';
+import dynamic from 'next/dynamic';
 import { needsAuctionCard } from '@app/_components/Item/itemPageGates';
 import { loadItemAuctions, loadItemTrades } from '@app/_components/Item/loadUtils';
 import type { ItemData } from '@types';
 import { shouldShowTradeRelisting } from '@utils/item/tradeRelisting';
+
+const AuctionCard = dynamic(() => import('@components/Auctions/AuctionCard'), {
+  loading: () => null,
+});
+const TradeCard = dynamic(() => import('@components/Trades/TradeCard'), {
+  loading: () => null,
+});
 
 type Props = {
   item: ItemData;
