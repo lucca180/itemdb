@@ -17,12 +17,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   try {
     const authRes = await CheckAuth(req);
-    const decodedToken = authRes.decodedToken;
     const authUser = authRes.user;
     if (!authUser || authUser.banned) return res.status(401).json({ error: 'Unauthorized' });
 
     const dbUser = (await prisma.user.update({
-      where: { id: decodedToken.uid },
+      where: { id: authUser.id },
       data: {
         neo_user: neopetsUser,
         username: username,
@@ -32,7 +31,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (!dbUser) return res.status(400).json({ error: 'user not found' });
 
-    void invalidateCachedUser(decodedToken.uid);
+    void invalidateCachedUser(authUser.id);
 
     const user = rawToUser(dbUser, true);
 

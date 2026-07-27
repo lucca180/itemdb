@@ -27,20 +27,32 @@ export const Auth = {
   // intentionally empty — Firebase Auth has been removed
 } as const;
 
+export type CheckAuthResult = {
+  decodedToken: DecodedToken | null;
+  user: ReturnType<typeof rawToUser> | null;
+};
+
+/**
+ * Validates the session cookie and loads the user.
+ *
+ * Expected auth failures (missing / invalid / expired session) return
+ * `{ decodedToken: null, user: null }` instead of throwing — callers should
+ * treat that as unauthenticated. Only unexpected failures (e.g. DB) throw.
+ */
 export const CheckAuth = async (
   req: NextApiRequest | null,
   _token?: string,
   sessionOverride?: string,
   skipUser = false
-): Promise<{ decodedToken: DecodedToken; user: ReturnType<typeof rawToUser> | null }> => {
+): Promise<CheckAuthResult> => {
   const sessionCookie = sessionOverride ?? req?.cookies?.session;
-  if (!sessionCookie) throw new Error('No session cookie');
+  if (!sessionCookie) return { decodedToken: null, user: null };
 
   let payload: VerifiedSession;
   try {
     payload = await verifySession(sessionCookie);
   } catch {
-    throw new Error('Invalid or expired session');
+    return { decodedToken: null, user: null };
   }
 
   const decodedToken: DecodedToken = {

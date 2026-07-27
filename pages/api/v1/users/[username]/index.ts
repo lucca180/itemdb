@@ -44,7 +44,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const authRes = await CheckAuth(req);
-    const decodedToken = authRes.decodedToken;
     const user = authRes.user;
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -87,7 +86,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const tempUser = await prisma.user.update({
-      where: { id: decodedToken.uid },
+      where: { id: user.id },
       data: {
         neo_user: neopetsUser,
         username: user.username ?? username,
@@ -101,7 +100,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!tempUser) return res.status(400).json({ error: 'user not found' });
 
-    void invalidateCachedUser(decodedToken.uid);
+    void invalidateCachedUser(user.id);
 
     const updatedUser = rawToUser(tempUser, true);
 

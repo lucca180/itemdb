@@ -18,20 +18,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (!feedback_id || !action) return res.status(400).json({ error: 'Missing required fields' });
 
-  let user_id;
+  const { user } = await CheckAuth(req);
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+  if (user.banned) return res.status(403).send('Forbidden');
 
-  let voteMultiplier = 1;
+  const user_id = user.id;
+  const isAdmin = user.role === 'ADMIN';
+  let voteMultiplier = isAdmin ? FEEDBACK_VOTE_TARGET * 2 : getVoteMultiplier(user.xp);
 
   try {
-    const { user } = await CheckAuth(req);
-    if (!user) throw new Error('User not found');
-    if (user.banned) return res.status(403).send('Forbidden');
-    user_id = user.id;
-    const isAdmin = user.role === 'ADMIN';
-
-    if (isAdmin) voteMultiplier = FEEDBACK_VOTE_TARGET * 2;
-    else voteMultiplier = getVoteMultiplier(user.xp);
-
     const feedbackRaw = await prisma.feedbacks.findUniqueOrThrow({
       where: {
         feedback_id: parseInt(feedback_id),

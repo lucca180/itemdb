@@ -27,7 +27,7 @@ export async function getCurrentUser(
   const { req = null, sessionCookie, updateLastLogin = false, ip = '' } = options;
   const { user, decodedToken } = await CheckAuth(req, undefined, sessionCookie);
 
-  if (!user) {
+  if (!user || !decodedToken) {
     return { user: null, refreshedSessionCookie: null };
   }
 

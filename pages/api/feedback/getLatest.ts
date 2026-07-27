@@ -19,18 +19,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const order = req.query.order as string;
   const skipList = req.query.skipList ? (req.query.skipList as string).split(',').map(Number) : [];
 
-  let user_id;
-  let user;
-
-  try {
-    user = (await CheckAuth(req))?.user;
-    if (!user) throw new Error('User not found');
-    user_id = user.id;
-  } catch (e) {
-    console.error(e);
+  const user = (await CheckAuth(req)).user;
+  if (!user) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
+  const user_id = user.id;
 
   let feedbackRaw: Feedbacks[] = [];
 
