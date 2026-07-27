@@ -8,5 +8,4 @@ Disallow: */search/*
 Host: https://itemdb.com.br
 
 # Sitemaps
-Sitemap: https://itemdb.com.br/sitemap.xml
 Sitemap: https://itemdb.com.br/sitemaps/index.xml

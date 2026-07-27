@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<sitemap><loc>https://itemdb.com.br/sitemap-0.xml</loc></sitemap>
-<sitemap><loc>https://itemdb.com.br/sitemaps/index.xml</loc></sitemap>
-</sitemapindex>
+<!--
+  Static placeholder. Full URL coverage is at /sitemaps/index.xml (see robots.txt).
+  next-sitemap regenerates this file on postbuild with generateIndexSitemap: false;
+  do not nest the dynamic index here (invalid for Google).
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+</urlset>
