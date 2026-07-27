@@ -76,6 +76,10 @@ export const getOfficialItemLists = cache(
  * Presentation-ready price markers for the item page (table/chart).
  * Uses the shared official-lists cache, then resolves dates/clamping server-side.
  */
+/**
+ * Presentation-ready price markers for the item page (table/chart).
+ * Uses the shared official-lists cache, then resolves dates/clamping server-side.
+ */
 export const loadItemPriceMarkers = cache(async (item: ItemData, includeTrade = false) => {
   'use cache';
   applyItemSectionCacheTags(item.internal_id, 'markers', 'lists');
@@ -120,7 +124,7 @@ export const loadNPPrices = cache(async (internalId: number) => {
 export const loadLastSeen = cache(async (internalId: number) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'last-seen');
-  cacheLife('seconds');
+  cacheLife({ stale: 30, revalidate: 60, expire: 300 });
   return getLastSeen({ item_iid: internalId });
 });
 

@@ -7,7 +7,8 @@ import { Link } from '@chakra-ui/react';
 
 export async function getCachedSiteAlert() {
   'use cache';
-  cacheLife('seconds');
+  // Prefer expire >= 300s — shorter profiles break PPR Resume Data Cache warming.
+  cacheLife('itemFast');
   return getCurrentSiteAlert();
 }
 
