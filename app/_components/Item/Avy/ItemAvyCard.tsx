@@ -19,8 +19,9 @@ export async function ItemAvyCard({ item }: Props) {
 }
 
 async function ItemAvyCardContent({ item }: Props) {
+  const includeTrade = await needsTradeLists(item);
   const [avyData, t] = await Promise.all([
-    loadAvyData(item.internal_id, needsTradeLists(item)),
+    loadAvyData(item.internal_id, includeTrade),
     getTranslations(),
   ]);
 
