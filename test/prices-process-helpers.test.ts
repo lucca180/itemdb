@@ -346,4 +346,117 @@ describe('handleInflation auto-approve', () => {
     expect(result.isManualCheck).toBe(true);
     expect(LogService.createLog).not.toHaveBeenCalled();
   });
+
+  test('auto-approves inflation when previous price is 0', async () => {
+    const priceValue = 351_000;
+    const priceHistory = [
+      historyEntry(0, 12, { internal_id: 42 }),
+      historyEntry(100_000, 20),
+      historyEntry(100_000, 30),
+      historyEntry(200_000, 40),
+      historyEntry(100_000, 50),
+    ] as any;
+    const newPriceData = { price: priceValue, item_iid: 11 } as any;
+
+    const result = await handleInflation({
+      latestDate,
+      priceHistory,
+      priceValue,
+      newPriceData,
+    });
+
+    expect(result.msg).toBe('inflation');
+    expect(result.isManualCheck).toBe(false);
+    expect(result.newPriceData.noInflation_id).toBe(42);
+    expect(LogService.createLog).toHaveBeenCalledWith(
+      'inflationAutoApprove',
+      expect.objectContaining({
+        newPrice: priceValue,
+        oldPrice: 0,
+        reason: 'zeroPrice',
+      }),
+      '11'
+    );
+  });
+
+  test('auto-approves inflation when previous price is outdated', async () => {
+    // Same threshold as ItemCardBadge / itemV2Price (6 months)
+    const outdatedDays = PRICING.OUTDATED_AFTER_MONTHS * 31;
+    const priceHistory = [
+      historyEntry(260_000, outdatedDays, { internal_id: 42 }),
+      historyEntry(100_000, outdatedDays + 8),
+      historyEntry(100_000, outdatedDays + 18),
+      historyEntry(200_000, outdatedDays + 28),
+      historyEntry(100_000, outdatedDays + 38),
+    ] as any;
+    const newPriceData = { price: 351_000, item_iid: 12 } as any;
+
+    const result = await handleInflation({
+      latestDate,
+      priceHistory,
+      priceValue: 351_000,
+      newPriceData,
+    });
+
+    expect(result.msg).toBe('inflation');
+    expect(result.isManualCheck).toBe(false);
+    expect(result.newPriceData.noInflation_id).toBe(42);
+    expect(LogService.createLog).toHaveBeenCalledWith(
+      'inflationAutoApprove',
+      expect.objectContaining({
+        newPrice: 351_000,
+        oldPrice: 260_000,
+        reason: 'outdatedPrice',
+      }),
+      '12'
+    );
+  });
+
+  test('auto-approves legacy inflation when previous price is 0', async () => {
+    const priceValue = 300_000;
+    const priceHistory = [
+      historyEntry(0, 12, { internal_id: 42 }),
+      historyEntry(0, 20),
+      historyEntry(0, 30),
+    ] as any;
+    const newPriceData = { price: priceValue, item_iid: 13 } as any;
+
+    const result = await handleInflation({
+      latestDate,
+      priceHistory,
+      priceValue,
+      newPriceData,
+    });
+
+    expect(result.msg).toBe('inflation');
+    expect(result.isManualCheck).toBe(false);
+    expect(LogService.createLog).toHaveBeenCalledWith(
+      'inflationAutoApprove',
+      expect.objectContaining({ reason: 'zeroPrice' }),
+      '13'
+    );
+  });
+
+  test('never auto-approves zero/outdated under forceMode', async () => {
+    const outdatedDays = PRICING.OUTDATED_AFTER_MONTHS * 31;
+    const priceHistory = [
+      historyEntry(0, outdatedDays, { internal_id: 42 }),
+      historyEntry(100_000, outdatedDays + 8),
+      historyEntry(100_000, outdatedDays + 18),
+      historyEntry(200_000, outdatedDays + 28),
+      historyEntry(100_000, outdatedDays + 38),
+    ] as any;
+    const newPriceData = { price: 351_000 } as any;
+
+    const result = await handleInflation({
+      latestDate,
+      priceHistory,
+      priceValue: 351_000,
+      newPriceData,
+      forceMode: true,
+    });
+
+    expect(result.isManualCheck).toBe(true);
+    expect(LogService.createLog).not.toHaveBeenCalled();
+  });
 });

@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/generated/client';
 import { Decimal } from '@prisma/client/runtime/client';
 import { coefficientOfVariation } from '@utils/utils';
-import { differenceInCalendarDays } from 'date-fns';
+import { differenceInCalendarDays, differenceInMonths } from 'date-fns';
 import { mean, standardDeviation } from 'simple-statistics';
 import prisma from '@utils/prisma';
 import { LogService } from '@services/ActionLogService';
@@ -18,6 +18,8 @@ export const PRICING = {
   /** Absolute margin above the pricing window's ownerMin (effective mult decays as 1+k/ownerMin). */
   AUTO_APPROVE_OWNER_EXTRA: 4,
   AUTO_APPROVE_MAX_SHARE: 0.35,
+  /** Same threshold as ItemCardBadge / itemV2Price: price older than 6 months is outdated. */
+  OUTDATED_AFTER_MONTHS: 6,
 } as const;
 
 export const getAutoApproveOwnerNeed = (ownerMin: number) =>
@@ -163,6 +165,23 @@ export const canAutoApprove = (signals: PriceSignals | undefined, forceMode = fa
   );
 };
 
+/** Auto-approve when the previous price is unreliable (0 / unknown, or outdated). */
+export const canAutoApproveFromOldPrice = (
+  oldPriceRaw: PriceHistory,
+  latestDate: Date,
+  forceMode = false
+): 'zeroPrice' | 'outdatedPrice' | false => {
+  if (forceMode) return false;
+
+  if (oldPriceRaw.price.toNumber() === 0) return 'zeroPrice';
+
+  if (differenceInMonths(latestDate, oldPriceRaw.addedAt) >= PRICING.OUTDATED_AFTER_MONTHS) {
+    return 'outdatedPrice';
+  }
+
+  return false;
+};
+
 /** Pure check: would this priceValue be flagged as a *new* inflation vs priceHistory[0]? */
 export const isNewInflation = (priceHistory: PriceHistory[], priceValue: number) => {
   if (!priceHistory.length) return false;
@@ -214,22 +233,18 @@ export const handleInflation = async (
   if (!isInflation && isNewInflation(priceHistory, priceValue)) {
     newPriceData.noInflation_id = oldPriceRaw.internal_id;
 
-    // Legacy path never auto-approves (same as before)
-    if (!hasZScores) {
-      return {
-        msg: 'inflation',
-        isManualCheck: true,
-        newPriceData,
-      };
-    }
+    const oldPriceReason = canAutoApproveFromOldPrice(oldPriceRaw, latestDate, forceMode);
+    const signalsApprove = hasZScores && canAutoApprove(signals, forceMode);
 
-    if (canAutoApprove(signals, forceMode) && signals) {
+    // Legacy path only auto-approves on unreliable old prices (0 / outdated)
+    if (oldPriceReason || signalsApprove) {
       await LogService.createLog(
         'inflationAutoApprove',
         {
           newPrice: priceValue,
           oldPrice,
-          ...signals,
+          ...(oldPriceReason ? { reason: oldPriceReason } : {}),
+          ...(signalsApprove && signals ? signals : {}),
         },
         newPriceData.item_iid?.toString()
       );
