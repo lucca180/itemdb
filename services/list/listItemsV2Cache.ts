@@ -12,7 +12,7 @@
  * Mutations invalidate via {@link invalidateListItemIds}. App Router / RSC list
  * loaders must not use this cache — Redis item/id caches are HTTP API only.
  */
-import { redisCache } from '@utils/api/redis';
+import { redisCache, withRedisTimeout } from '@utils/api/redis';
 import { runAfter } from '@utils/api/after';
 
 /** Longer TTL for official lists (they change rarely); shorter for user lists. */
@@ -24,14 +24,7 @@ const listIdsKey = (listId: number) => `iv2:list:ids:${listId}`;
 export async function readListItemIds(listId: number): Promise<number[] | null> {
   if (!redisCache) return null;
 
-  let raw: string | null;
-  try {
-    // `commandTimeout` on redisCache enforces the fail-open latency ceiling.
-    raw = await redisCache.get(listIdsKey(listId));
-  } catch (error) {
-    console.error('listItemsV2Cache redis error', error);
-    return null;
-  }
+  const raw = await withRedisTimeout(redisCache.get(listIdsKey(listId)));
   if (!raw) return null;
 
   try {

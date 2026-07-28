@@ -17,7 +17,7 @@ import {
   type FindManyItemsV2Query,
   type FindManyItemsV2Type,
 } from '@app/server/items/v2';
-import { redisCache as redis } from '@utils/api/redis';
+import { redisCache as redis, withRedisTimeout } from '@utils/api/redis';
 import { runAfter } from '@utils/api/after';
 import { getIntentTtl, type ItemIntent, type ItemV2 } from '@types';
 
@@ -216,14 +216,8 @@ export async function readItemCache(
 
   const redisKeys = keys.map((key) => itemCacheKey(type, key, intent));
 
-  let values: (string | null)[];
-  try {
-    // `commandTimeout` on redisCache enforces the fail-open latency ceiling.
-    values = await redis.mget(...redisKeys);
-  } catch (error) {
-    console.error('itemV2Cache redis error', error);
-    return hits;
-  }
+  const values = await withRedisTimeout(redis.mget(...redisKeys));
+  if (!values) return hits;
 
   for (let i = 0; i < keys.length; i++) {
     const value = values[i];

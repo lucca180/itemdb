@@ -26,12 +26,17 @@ vi.mock('@app/server/items/v2', async (importOriginal) => {
   };
 });
 
-vi.mock('@utils/api/redis', () => {
+vi.mock('@utils/api/redis', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@utils/api/redis')>();
   const client = {
     mget: mgetMock,
     pipeline: pipelineMock,
   };
-  return { redis: client, redisCache: client };
+  return {
+    ...actual,
+    redis: client,
+    redisCache: client,
+  };
 });
 
 import {

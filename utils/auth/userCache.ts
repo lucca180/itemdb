@@ -10,13 +10,12 @@
  * JSON-round-trips cleanly (no Date revival needed).
  *
  * Fail-open by design: when Redis is absent (dev/test) or slow, reads return
- * `undefined` (caller falls back to Prisma) and writes are no-ops. The hard
- * latency ceiling comes from the client's `commandTimeout` (see `redisCache`),
- * so a slow/timed-out command simply throws and is swallowed here. Correctness
+ * `undefined` (caller falls back to Prisma) and writes are no-ops. Reads use
+ * {@link withRedisTimeout}; writes have no timeout (fire-and-forget). Correctness
  * for user-driven edits is preserved via `invalidateCachedUser` on writes; a
  * bounded staleness window (up to the TTL) is accepted for role/banned/xp.
  */
-import { redisCache as redis } from '@utils/api/redis';
+import { redisCache as redis, withRedisTimeout } from '@utils/api/redis';
 import type { User } from '@types';
 
 /** Bounds staleness of role/banned/xp for changes not routed through invalidation. */
@@ -30,11 +29,11 @@ export async function getCachedUser(uid: string): Promise<User | undefined> {
   if (!redis || !uid) return undefined;
 
   try {
-    const value = await redis.get(authUserKey(uid));
+    const value = await withRedisTimeout(redis.get(authUserKey(uid)));
     if (typeof value !== 'string') return undefined;
     return JSON.parse(value) as User;
   } catch {
-    // No redis, command timeout, or corrupt value — treat as a miss.
+    // Corrupt value or unexpected failure — treat as a miss.
     return undefined;
   }
 }

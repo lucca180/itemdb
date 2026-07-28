@@ -28,8 +28,33 @@ const globalForRedis = globalThis as unknown as {
   redisCache: RedisRaw | undefined;
 };
 
-/** Hard per-command ceiling for the cache DB — lets callers fail open on a plain try/catch. */
-export const CACHE_REDIS_COMMAND_TIMEOUT_MS = 200;
+/** Fail-open ceiling for cache *reads* — applied at the caller via {@link withRedisTimeout}. */
+export const CACHE_REDIS_READ_TIMEOUT_MS = 200;
+
+/**
+ * Race a Redis read against a short timeout. Resolves to `null` on timeout or
+ * error so callers can fail open without stalling the request. Writes should
+ * not use this — they are fire-and-forget / off the hot path.
+ */
+export async function withRedisTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = CACHE_REDIS_READ_TIMEOUT_MS
+): Promise<T | null> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<null>((resolve) => {
+        timeoutId = setTimeout(() => resolve(null), timeoutMs);
+      }),
+    ]);
+  } catch (error) {
+    console.error('redis read error', error);
+    return null;
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
 
 const redisOpts =
   process.env.NODE_ENV !== 'development' &&
@@ -50,18 +75,11 @@ export const redis =
 
 /**
  * ItemV2 HTTP cache + auth-user cache — same Redis host, logical DB 1 (rate
- * limit stays on DB 0). `commandTimeout` enforces the fail-open latency ceiling
- * at the client level, so callers don't need their own `Promise.race` timeout.
+ * limit stays on DB 0). Read callers enforce fail-open via {@link withRedisTimeout}.
  */
 export const redisCache =
   globalForRedis.redisCache ??
-  (redisOpts
-    ? (globalForRedis.redisCache = new RedisRaw({
-        ...redisOpts,
-        db: 1,
-        commandTimeout: CACHE_REDIS_COMMAND_TIMEOUT_MS,
-      }))
-    : undefined);
+  (redisOpts ? (globalForRedis.redisCache = new RedisRaw({ ...redisOpts, db: 1 })) : undefined);
 
 export const createSession = (logged = false) => {
   const { LOGGED_LIMIT, MIN_LIMIT_COUNT, SESSION_EXPIRE, SESSION_EXPIRE_LOGGED } = API_CONST;
