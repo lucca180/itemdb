@@ -10,11 +10,11 @@ itemdb uses a **email magic link** flow. There are no passwords. Users receive a
 1. POST /api/auth/sendLink  { cred: email | username }
         │
         ▼
-   createMagicToken(email, origin)
+   resolve credential → createMagicToken(email, origin)
    ├─ dev:  token stored in memory, full link printed to terminal
-   └─ prod: sha256(token) stored in Redis with 15-min TTL
+   └─ prod: sha256(token) stored in Redis with short TTL
         │
-        ▼  (link sent via Resend in production)
+        ▼  (link sent via email in production)
    /login?token=<raw token>&email=<email>
 
 2. Browser lands on /login
@@ -29,14 +29,16 @@ itemdb uses a **email magic link** flow. There are no passwords. Users receive a
    prisma.user.upsert(email)         ← creates account on first login
         │
         ▼
-   signSession({ uid, email, role }) ← HS256 JWT, 13-day expiry
+   signSession({ uid, email, role }) ← HS256 JWT
         │
         ▼
-   Set-Cookie: session=<jwt>; HttpOnly; Secure; SameSite=Strict
+   Set-Cookie: session=<jwt>; HttpOnly; Secure; SameSite=Lax
         │
         ▼
    returns User object to client
 ```
+
+`sendLink` accepts an email or an existing username, rate-limits abuse, and may ask the client to confirm before creating a brand-new account. See the handler for the exact request/response contract.
 
 ---
 
@@ -95,6 +97,7 @@ GET /api/auth/me
 | `utils/auth/firebaseAdmin.ts` | Legacy Firebase session cookie verification (migration only) |
 | `utils/googleCloud.ts` | `CheckAuth` — used by every protected API route |
 | `pages/api/auth/sendLink.ts` | Issue a magic link for a given email or username |
+| `utils/auth/loginRateLimit.ts` | Rate limiting for sendLink |
 | `pages/api/auth/login.ts` | Consume magic token, upsert user, set JWT cookie |
 | `pages/api/auth/me.ts` | Return current user; refresh cookie if nearing expiry |
 | `pages/api/auth/logout.ts` | Clear the `session` cookie |

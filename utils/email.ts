@@ -14,13 +14,13 @@ export const getEmail = (link: string) => {
   const email: Mailgen.Content = {
     body: {
       greeting: 'Hello!',
-      title: 'Welcome to itemdb!',
+      title: 'Sign in to itemdb',
       action: {
         instructions:
-          'Thanks for joining itemdb! To log in to your account, please click the button below.',
+          'Click the button below to sign in. If this is your first time, your account will be created automatically.',
         button: {
           color: '#2D3748',
-          text: 'Confirm your account',
+          text: 'Sign in',
           fallback: true,
           link: link,
         },

@@ -1120,7 +1120,7 @@
   "Login": {
     "invalid-email-address": "Endereço de email inválido",
     "itemdb-username": "Nome de Usuário itemdb",
-    "moreInfo": "Heey, nós precisamos de algumas informações para completar seu cadastro",
+    "moreInfo": "Heey, precisamos de algumas informações para terminar de configurar sua conta",
     "neopets-username": "Nome de Usuário Neopets",
     "neopetsUsernameReason": "Precisamos dessas informações para que outros usuários possam entrar em contato com você sobre Trocas NC, etc.",
     "only-letters-numbers": "Somente letras, números e underlines são permitidos",
@@ -1129,9 +1129,19 @@
     "please-fill-all-fields": "Por favor preencha todos os campos",
     "username": "Nome de usuário",
     "username-already-taken": "Nome de Usuário já utilizado",
-    "email-sent": "Nós enviamos um email com o link para entrar. Por favor cheque sua caixa de entrada.",
-    "login-modal-text": "Use seu email/nome de usuário para <b>entrar</b> ou apenas email para <b>criar uma nova conta</b>",
-    "email-address-or-username": "Endereço de e-mail ou nome de usuário"
+    "email-sent": "Enviamos um link para entrar. Confira sua caixa de entrada (e a pasta de spam).",
+    "email-sent-username": "Se existir uma conta com esse nome de usuário, enviamos um link para entrar. Confira a caixa de entrada (e a pasta de spam).",
+    "login-modal-text": "Digite seu email (ou nome de usuário, se já tiver conta). Enviaremos um link para entrar.",
+    "login-modal-new-account-hint": "Não tem conta? Use seu email — criamos uma na primeira vez que você entrar.",
+    "email-address-or-username": "Endereço de e-mail ou nome de usuário",
+    "send-link": "Enviar link",
+    "title-sign-in": "Entrar",
+    "title-create-account": "Criar conta?",
+    "title-link-sent": "Link enviado",
+    "go-back": "Voltar",
+    "new-account-confirm": "Nenhuma conta encontrada com este email. Continuar cria uma conta nova. Se você já tinha conta, volte e tente outro email ou seu nome de usuário do itemdb.",
+    "confirm-create-and-send": "Criar conta e enviar link",
+    "rate-limited": "Muitas tentativas de login. Tente novamente mais tarde."
   },
   "Profile": {
     "allowedDomains": "Somente imagens de neopets.com, magnetismotimes.com e itemdb.com.br são permitidas",
