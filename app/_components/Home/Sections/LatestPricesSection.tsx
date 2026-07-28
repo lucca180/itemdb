@@ -51,28 +51,21 @@ function LatestPricesItemsGrid({ items }: { items: ItemV2For<'card'>[] }) {
   );
 }
 
-/** Matches the loaded card chrome + 16 ItemCard skeletons. */
-export function LatestPricesSectionSkeleton({ title }: LatestPricesSectionProps) {
+export function LatestPricesSection({ title }: LatestPricesSectionProps) {
   return (
     <HorizontalHomeCard
       color="#2e333b"
       image="https://images.neopets.com/quests/images/neopoint-bag.png"
       title={title}
     >
-      <LatestPricesItemsGrid items={[]} />
+      <Suspense fallback={<LatestPricesItemsGrid items={[]} />}>
+        <LatestPricesSectionContent />
+      </Suspense>
     </HorizontalHomeCard>
   );
 }
 
-export function LatestPricesSection({ title }: LatestPricesSectionProps) {
-  return (
-    <Suspense fallback={<LatestPricesSectionSkeleton title={title} />}>
-      <LatestPricesSectionContent title={title} />
-    </Suspense>
-  );
-}
-
-async function LatestPricesSectionContent({ title }: LatestPricesSectionProps) {
+async function LatestPricesSectionContent() {
   const [t, formatter, latestPrices] = await Promise.all([
     getTranslations(),
     getFormatter(),
@@ -80,11 +73,7 @@ async function LatestPricesSectionContent({ title }: LatestPricesSectionProps) {
   ]);
 
   return (
-    <HorizontalHomeCard
-      color="#2e333b"
-      image="https://images.neopets.com/quests/images/neopoint-bag.png"
-      title={title}
-    >
+    <>
       <LatestPricesItemsGrid items={latestPrices.items} />
       {latestPrices.count && (
         <Text textAlign="right" mt={4} fontSize="xs" color="whiteAlpha.400">
@@ -94,6 +83,6 @@ async function LatestPricesSectionContent({ title }: LatestPricesSectionProps) {
           })}
         </Text>
       )}
-    </HorizontalHomeCard>
+    </>
   );
 }
