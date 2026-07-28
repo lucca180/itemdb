@@ -67,12 +67,11 @@ export const SearchBar = () => {
       (!isMac && event.ctrlKey && event.key === 'k')
     ) {
       event.preventDefault();
-      preloadSearchModal();
       if (isOpen) {
         onClose();
         return;
       }
-      onOpen();
+      openSearch();
     }
   };
 
@@ -85,12 +84,13 @@ export const SearchBar = () => {
 
   return (
     <>
-      <SearchModal isOpen={isOpen} onClose={handleClose} />
+      {isOpen && <SearchModal isOpen={isOpen} onClose={handleClose} />}
       <InputGroup
         maxW="700px"
         w="100%"
         h="100%"
         maxH="50px"
+        onPointerDown={preloadSearchModal}
         onPointerEnter={preloadSearchModal}
         startElement={<SearchIcon color="gray.300" />}
         startElementProps={{ pointerEvents: 'none', h: '100%' }}

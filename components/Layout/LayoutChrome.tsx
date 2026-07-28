@@ -1,7 +1,6 @@
 'use client';
 
 import { useSyncExternalStore, type ReactNode } from 'react';
-import Color from 'color';
 import { Center, Flex, Spinner, Text } from '@chakra-ui/react';
 import NextImage from 'next/image';
 import { Link } from '@i18n/navigation';
@@ -11,7 +10,7 @@ import brasil from '@assets/icons/brasil.png';
 import { DropdownButton, DropdownOption } from '@components/Menus/HeaderDropdown';
 import { SearchBar } from '@components/Search/SearchBar';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
-import { LAYOUT_BASE_COLOR, LayoutFrame } from '@components/Layout/LayoutFrame';
+import { LayoutFrame } from '@components/Layout/LayoutFrame';
 import { LayoutLogoContent } from '@components/Layout/LayoutLogoContent';
 import MainLink from '@components/Utils/MainLink';
 import type { LayoutFooterColumn, LayoutNavSection } from '@components/Layout/layoutData';
@@ -43,10 +42,6 @@ export type LayoutChromeProps = {
   footerActions: ReactNode;
   hardNavigation?: boolean;
 };
-
-function getLayoutFooterGradientRgb() {
-  return Color(LAYOUT_BASE_COLOR).rgb().round().array();
-}
 
 function LayoutLogo({ hardNavigation }: { hardNavigation?: boolean }) {
   const locale = useLocale() as AppLocale;
@@ -148,7 +143,7 @@ function LayoutFooter({
   hardNavigation?: boolean;
 }) {
   const copyrightYear = useCopyrightYear();
-  const rgb = getLayoutFooterGradientRgb();
+  const rgb = [74, 85, 104];
 
   return (
     <Flex

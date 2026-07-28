@@ -14,14 +14,14 @@ if (isProd) {
       'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 0.1,
-    profileSessionSampleRate: 0.1,
+    profileSessionSampleRate: 0,
     ignoreErrors: [
       "Can't find variable: $",
       'userscript.html',
       'window.RufflePlayer.config',
       'Connection closed.',
     ],
-    sampleRate: 0.8,
+    sampleRate: 0.2,
     tracePropagationTargets: [
       'localhost', // For local development
       /^\/api\//, // For same-origin API calls

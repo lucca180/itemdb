@@ -188,6 +188,7 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
         ) : (
           <Link asChild _hover={{ textDecoration: 'none' }} outline={'none'}>
             <MainLink
+              viaNextLink
               prefetch={disablePrefetch !== false ? false : undefined}
               trackEvent={utm_content || undefined}
               trackEventLabel={item.slug || undefined}

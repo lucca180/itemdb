@@ -1,4 +1,12 @@
-import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
+import {
+  useState,
+  useEffect,
+  useContext,
+  createContext,
+  useRef,
+  useCallback,
+  ReactNode,
+} from 'react';
 import { atom, useAtom } from 'jotai';
 import { atomWithStorage, useHydrateAtoms } from 'jotai/utils';
 import { User, UserPreferences } from '@types';
@@ -12,7 +20,9 @@ type AuthContextType = {
   authLoading: boolean;
   apiSessionReady: boolean;
   waitForApiSession: () => Promise<void>;
-  setUser: (user: User) => void;
+  setUser: (user: User | null) => void;
+  /** App Router: apply SSR user from LayoutAuth and skip /api/auth/me. */
+  hydrateFromSSR: (user: User | null) => void;
   updatePref: (key: keyof UserPreferences, value: UserPreferences[keyof UserPreferences]) => void;
   userPref: UserPreferences | null;
   resetUser: () => Promise<void>;
@@ -27,6 +37,7 @@ const AuthContext = createContext<AuthContextType>({
   waitForApiSession,
 
   setUser: () => {},
+  hydrateFromSSR: () => {},
   updatePref: () => {},
   userPref: null,
   resetUser: async () => {},
@@ -46,6 +57,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const [userPref, setUserPref] = useAtom(UserPrefs);
   const [authLoading, setAuthLoading] = useState<boolean>(typeof initialUser === 'undefined');
   const [apiSessionReady, setApiSessionReady] = useState(false);
+  const skipClientSyncRef = useRef(typeof initialUser !== 'undefined');
 
   const checkProof = () => {
     const proof = getCookie('itemdb-proof');
@@ -65,6 +77,15 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     await resetUser();
     location.reload();
   };
+
+  const hydrateFromSSR = useCallback(
+    (ssrUser: User | null) => {
+      skipClientSyncRef.current = true;
+      setUser(ssrUser);
+      setAuthLoading(false);
+    },
+    [setUser]
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -103,9 +124,11 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       }
     };
 
-    if (typeof initialUser === 'undefined') {
+    if (skipClientSyncRef.current || typeof initialUser !== 'undefined') {
+      setAuthLoading(false);
+    } else {
       void syncFromClientApi();
-    } else setAuthLoading(false);
+    }
 
     return () => {
       isMounted = false;
@@ -133,6 +156,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         apiSessionReady,
         waitForApiSession,
         setUser,
+        hydrateFromSSR,
         updatePref,
         userPref,
         resetUser,

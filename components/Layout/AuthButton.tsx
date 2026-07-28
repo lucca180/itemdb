@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDownIcon } from '@utils/theme/chakraIcons';
 import { Box, Button, Icon, Menu, Portal, Text, Flex, useDisclosure } from '@chakra-ui/react';
@@ -199,8 +199,15 @@ type LayoutAuthProps = {
 export function LayoutAuth({ initialUser }: LayoutAuthProps) {
   const router = useRouter();
   const pathname = usePathname() ?? '/';
-  const { user } = useAuth();
+  const { user, hydrateFromSSR } = useAuth();
   const resolvedUser = user ?? initialUser;
+
+  // Apply SSR user before AuthProvider's useEffect so /api/auth/me is skipped.
+  useLayoutEffect(() => {
+    if (typeof initialUser !== 'undefined') {
+      hydrateFromSSR(initialUser);
+    }
+  }, [hydrateFromSSR, initialUser]);
 
   useEffect(() => {
     if (!resolvedUser) {
