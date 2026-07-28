@@ -1,5 +1,6 @@
 import { Box, Card, Heading, Link, List, Stack, StackSeparator, Text } from '@chakra-ui/react';
 import { UTCDate } from '@date-fns/utc';
+import { cacheLife } from 'next/cache';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
 import {
@@ -14,23 +15,34 @@ type Props = {
   item?: ItemData;
 };
 
+/** Caches so UTCDate's constructor may use `new Date()` during prerender. */
+async function getCachedTradeDateMs(tradeDate: number) {
+  'use cache';
+  cacheLife('hours');
+  const date = new UTCDate(tradeDate);
+  return isValidTradeDate(date) ? date.getTime() : null;
+}
+
 export async function NCTradeHistoryCard({ trade, item }: Props) {
-  const t = await getTranslations();
-  const format = await getFormatter();
+  const [t, format, tradeDateMs] = await Promise.all([
+    getTranslations(),
+    getFormatter(),
+    getCachedTradeDateMs(trade.tradeDate),
+  ]);
   const color: number[] = item?.color.rgb ?? [71, 178, 248];
 
   return (
     <Card.Root bg="blackAlpha.500" textAlign="left" borderRadius="xl">
       <Card.Body>
         <Heading size="sm" mb={3} opacity="0.75">
-          {isValidTradeDate(new Date(trade.tradeDate)) &&
-            format.dateTime(new UTCDate(trade.tradeDate), {
+          {tradeDateMs != null &&
+            format.dateTime(new Date(tradeDateMs), {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
               timeZone: 'utc',
             })}
-          {!isValidTradeDate(new Date(trade.tradeDate)) && t('General.unknown-date')}
+          {tradeDateMs == null && t('General.unknown-date')}
         </Heading>
         <Stack separator={<StackSeparator />} gap="3">
           <Box>

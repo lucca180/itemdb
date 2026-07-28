@@ -1,8 +1,10 @@
 import { Badge, Link, Table, Text } from '@chakra-ui/react';
-import { isToday } from 'date-fns';
+import { isSameDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
+import { cacheLife } from 'next/cache';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
+import { getCachedNow } from '@utils/getCachedNow';
 import type { UserList } from '@types';
 
 type Props = {
@@ -11,11 +13,20 @@ type Props = {
   type: 'seeking' | 'trading';
 };
 
+/** Caches so date-fns `tz()` may use `new Date()` during prerender. */
+async function isLastSeenTodayNST(lastSeen: string, now: number) {
+  'use cache';
+  cacheLife('hours');
+  return isSameDay(new Date(lastSeen), now, { in: tz('America/Los_Angeles') });
+}
+
 export async function MatchTable({ data, matches, type }: Props) {
-  const t = await getTranslations();
-  const format = await getFormatter();
+  const [t, format, now] = await Promise.all([getTranslations(), getFormatter(), getCachedNow()]);
   const sortedData = [...data].sort(
     (a, b) => new Date(b.owner.lastSeen).getTime() - new Date(a.owner.lastSeen).getTime()
+  );
+  const lastSeenToday = await Promise.all(
+    sortedData.map((list) => isLastSeenTodayNST(list.owner.lastSeen, now))
   );
 
   return (
@@ -59,7 +70,7 @@ export async function MatchTable({ data, matches, type }: Props) {
               </Table.Cell>
             </Table.Row>
           )}
-          {sortedData.map((list) => (
+          {sortedData.map((list, index) => (
             <Table.Row key={list.internal_id}>
               <Table.Cell maxW="200px" overflow="hidden" textOverflow="ellipsis">
                 <I18nLink
@@ -96,9 +107,9 @@ export async function MatchTable({ data, matches, type }: Props) {
                 </Table.Cell>
               )}
               <Table.Cell>
-                {isToday(new Date(list.owner.lastSeen), { in: tz('America/Los_Angeles') })
+                {lastSeenToday[index]
                   ? t('General.today')
-                  : format.relativeTime(new Date(list.owner.lastSeen))}
+                  : format.relativeTime(new Date(list.owner.lastSeen), now)}
               </Table.Cell>
             </Table.Row>
           ))}
