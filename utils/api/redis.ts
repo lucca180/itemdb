@@ -120,7 +120,12 @@ export const getBanTTL = async (ip: string) => {
   return ttl > 0 ? ttl : 0;
 };
 
-/** v1 Pages Router entry — increments the per-IP / API-key item quota. */
+/**
+ * Increments the per-IP item quota (may ban the IP).
+ * Routes that call this MUST match ITEM_QUOTA_ROUTES in
+ * `@utils/api/itemQuotaRoutes` so proxy.ts can early-reject banned IPs.
+ * Coverage is enforced by test/item-quota-routes.guard.test.ts.
+ */
 export const redis_setDataCount = async (count: number, req: NextApiRequest) => {
   const ip = requestIp.getClientIp(req);
   return redis_setItemCount(ip, count, req);
@@ -129,6 +134,9 @@ export const redis_setDataCount = async (count: number, req: NextApiRequest) => 
 /**
  * v2 App Router quota entry (same rules as `redis_setDataCount`).
  * Call only for Prisma-backed items — cache hits should pass count=0 / skip.
+ * Routes that call this MUST match ITEM_QUOTA_ROUTES in
+ * `@utils/api/itemQuotaRoutes` so proxy.ts can early-reject banned IPs.
+ * Coverage is enforced by test/item-quota-routes.guard.test.ts.
  */
 export async function trackItemQuota(count: number, request: NextRequest): Promise<void> {
   // Same extraction as `proxy.ts` for App Router / Edge requests.

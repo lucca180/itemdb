@@ -19,6 +19,7 @@ import {
   finalizePageResponse,
 } from '@utils/api/proxy';
 import { checkSession } from '@utils/api/redis';
+import { isItemQuotaRoute } from '@utils/api/itemQuotaRoutes';
 import { routing } from './i18n/routing';
 
 const handleI18nRouting = createIntlMiddleware(routing);
@@ -166,8 +167,8 @@ export const apiMiddleware = async (request: NextRequest) => {
     response.cookies.set({ name: 'itemdb-proof', value: '', maxAge: 0 });
   }
 
-  // check ip ban
-  if (ip) {
+  // check ip ban — only for routes that feed the item quota (blocklist)
+  if (ip && isItemQuotaRoute(request.method, pathname)) {
     try {
       await Redis.checkBan(ip);
     } catch (e) {
