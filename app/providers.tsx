@@ -26,7 +26,7 @@ export function Providers({ children, initialAuthState }: ProvidersProps) {
       <ChakraProvider value={system}>
         <Provider>
           <ProgressProvider color="#718096">
-            <AuthProvider initialUser={initialAuthState?.user}>
+            <AuthProvider initialUser={initialAuthState?.user} clientAuthSync={false}>
               {children}
               <Toaster />
             </AuthProvider>

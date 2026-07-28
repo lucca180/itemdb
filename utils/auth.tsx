@@ -1,12 +1,4 @@
-import {
-  useState,
-  useEffect,
-  useContext,
-  createContext,
-  useRef,
-  useCallback,
-  ReactNode,
-} from 'react';
+import { useState, useEffect, useContext, createContext, useCallback, ReactNode } from 'react';
 import { atom, useAtom } from 'jotai';
 import { atomWithStorage, useHydrateAtoms } from 'jotai/utils';
 import { User, UserPreferences } from '@types';
@@ -21,7 +13,7 @@ type AuthContextType = {
   apiSessionReady: boolean;
   waitForApiSession: () => Promise<void>;
   setUser: (user: User | null) => void;
-  /** App Router: apply SSR user from LayoutAuth and skip /api/auth/me. */
+  /** App Router: apply SSR user from LayoutAuth (no /api/auth/me). */
   hydrateFromSSR: (user: User | null) => void;
   updatePref: (key: keyof UserPreferences, value: UserPreferences[keyof UserPreferences]) => void;
   userPref: UserPreferences | null;
@@ -49,15 +41,21 @@ export const UserPrefs = atomWithStorage<UserPreferences | null>('UserPrefs', nu
 type AuthProviderProps = {
   children: ReactNode;
   initialUser?: User | null;
+  /**
+   * When false (App Router), skip /api/auth/me — LayoutAuth hydrates from SSR.
+   * Pages Router keeps the default true.
+   */
+  clientAuthSync?: boolean;
 };
 
-export function AuthProvider({ children, initialUser }: AuthProviderProps) {
+export function AuthProvider({ children, initialUser, clientAuthSync = true }: AuthProviderProps) {
   useHydrateAtoms([[UserState, initialUser]]);
   const [user, setUser] = useAtom(UserState);
   const [userPref, setUserPref] = useAtom(UserPrefs);
-  const [authLoading, setAuthLoading] = useState<boolean>(typeof initialUser === 'undefined');
+  const [authLoading, setAuthLoading] = useState<boolean>(
+    clientAuthSync && typeof initialUser === 'undefined'
+  );
   const [apiSessionReady, setApiSessionReady] = useState(false);
-  const skipClientSyncRef = useRef(typeof initialUser !== 'undefined');
 
   const checkProof = () => {
     const proof = getCookie('itemdb-proof');
@@ -80,7 +78,6 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
 
   const hydrateFromSSR = useCallback(
     (ssrUser: User | null) => {
-      skipClientSyncRef.current = true;
       setUser(ssrUser);
       setAuthLoading(false);
     },
@@ -124,7 +121,9 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       }
     };
 
-    if (skipClientSyncRef.current || typeof initialUser !== 'undefined') {
+    // App Router: LayoutAuthServer → LayoutAuth.hydrateFromSSR — never /api/auth/me.
+    // Pages Router: no SSR auth slot → client sync when initialUser is omitted.
+    if (!clientAuthSync || typeof initialUser !== 'undefined') {
       setAuthLoading(false);
     } else {
       void syncFromClientApi();
@@ -133,7 +132,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     return () => {
       isMounted = false;
     };
-  }, [initialUser]);
+  }, [clientAuthSync, initialUser]);
 
   const updatePref = (
     key: keyof UserPreferences,
