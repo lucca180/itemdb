@@ -1,5 +1,3 @@
-'use client';
-
 import { Box } from '@chakra-ui/react';
 import NextImage from 'next/image';
 import logo from '@assets/logo_white_compressed.webp';

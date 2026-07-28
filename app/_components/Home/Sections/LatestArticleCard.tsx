@@ -1,5 +1,3 @@
-'use client';
-
 import MainLink from '@components/Utils/MainLink';
 import NextImage from 'next/image';
 import type { CSSProperties } from 'react';

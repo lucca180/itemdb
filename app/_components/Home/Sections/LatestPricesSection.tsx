@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
-import { Text } from '@chakra-ui/react';
+import { Flex, Text } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import type { ItemV2For } from '@types';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
-import { LatestPricesItemsClient } from '@components/Home/LatestPricesItemsClient';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import { ItemService } from '@services/ItemService';
 import { cacheLife, cacheTag } from 'next/cache';
 
@@ -31,6 +31,26 @@ async function getLatestPrices(): Promise<LatestPricesRes> {
   }
 }
 
+function LatestPricesItemsGrid({ items }: { items: ItemV2For<'card'>[] }) {
+  return (
+    <Flex flexWrap="wrap" gap={4} justifyContent="center">
+      {items.length > 0 &&
+        items.map((item) => (
+          <ItemCardV2
+            uniqueID="latest-prices"
+            item={item}
+            key={item.internal_id}
+            utm_content="latest-prices"
+          />
+        ))}
+      {items.length === 0 &&
+        [...Array(16)].map((_, index) => (
+          <ItemCardV2 uniqueID="latest-prices" key={index} isLoading />
+        ))}
+    </Flex>
+  );
+}
+
 /** Matches the loaded card chrome + 16 ItemCard skeletons. */
 export function LatestPricesSectionSkeleton({ title }: LatestPricesSectionProps) {
   return (
@@ -39,7 +59,7 @@ export function LatestPricesSectionSkeleton({ title }: LatestPricesSectionProps)
       image="https://images.neopets.com/quests/images/neopoint-bag.png"
       title={title}
     >
-      <LatestPricesItemsClient items={[]} />
+      <LatestPricesItemsGrid items={[]} />
     </HorizontalHomeCard>
   );
 }
@@ -65,8 +85,7 @@ async function LatestPricesSectionContent({ title }: LatestPricesSectionProps) {
       image="https://images.neopets.com/quests/images/neopoint-bag.png"
       title={title}
     >
-      <LatestPricesItemsClient items={latestPrices.items} />
-
+      <LatestPricesItemsGrid items={latestPrices.items} />
       {latestPrices.count && (
         <Text textAlign="right" mt={4} fontSize="xs" color="whiteAlpha.400">
           {t('HomePage.x-prices-updated-last-y', {

@@ -1,5 +1,3 @@
-'use client';
-
 import { useTranslations } from 'next-intl';
 import { HorizontalHomeCard } from './HorizontalHomeCard';
 import { UserList } from '@types';

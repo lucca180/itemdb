@@ -1,5 +1,3 @@
-'use client';
-
 import { Flex } from '@chakra-ui/react';
 import { UserAchievement } from '../../types';
 import AchievBadge from './AchievBadge';

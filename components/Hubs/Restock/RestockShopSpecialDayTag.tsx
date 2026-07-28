@@ -1,5 +1,3 @@
-'use client';
-
 import { Tag } from '@chakra-ui/react';
 import { getShopRestockSpecialDay, type ShopRestockSpecialDay } from '@utils/utils';
 

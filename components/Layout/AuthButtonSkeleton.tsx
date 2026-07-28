@@ -1,5 +1,3 @@
-'use client';
-
 import { Box, Skeleton } from '@chakra-ui/react';
 
 export function AuthButtonSkeleton() {
