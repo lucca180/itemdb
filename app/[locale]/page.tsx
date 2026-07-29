@@ -2,12 +2,10 @@ import type { Metadata } from 'next';
 import Color from 'color';
 import { Fragment, Suspense } from 'react';
 import { Flex, Grid, Heading } from '@chakra-ui/react';
-import { createTranslator } from 'next-intl';
 import { HomeHero } from '@components/Home/HomeHero';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@app/utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
-import { loadTranslation } from '@utils/load-translation';
 import {
   FeaturedListsHomeCard,
   LeavingNcMallHomeCard,
@@ -20,7 +18,7 @@ import { NewItemsCountSection } from '@app/_components/Home/Cards/NewItemsCountS
 import { LatestArticlesSection } from '@app/_components/Home/Sections/LatestArticlesSection';
 import { LatestPricesSection } from '@app/_components/Home/Sections/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from '@app/_components/Home/Cards/StatsCard';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { routing } from '@i18n/routing';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 // import { CupHomeCard } from '@app/_components/Home/Cards/EventCard';
@@ -31,19 +29,13 @@ type HomePageProps = {
   params: Promise<{ locale: string }>;
 };
 
-async function getHomePageDescription(locale: string) {
-  const messages = await loadTranslation(locale, 'page', true);
-  const t = createTranslator({ messages, locale });
-
-  return t('HomePage.seo-description');
-}
-
 export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations();
   const normalizedLocale = normalizeItemDbLocale(locale);
   const canonical = getItemDbCanonical('/', normalizedLocale);
-  const description = await getHomePageDescription(locale);
+  const description = t('HomePage.seo-description');
   const defaultSeo = getDefaultSEO(locale);
 
   return {
@@ -90,8 +82,7 @@ export default function HomePage({ params }: HomePageProps) {
 async function HomePageContent({ params }: HomePageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const messages = await loadTranslation(locale, 'page', true);
-  const t = createTranslator({ messages, locale });
+  const t = await getTranslations();
 
   return (
     <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
