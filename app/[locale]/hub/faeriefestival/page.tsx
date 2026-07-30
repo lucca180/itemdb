@@ -65,7 +65,11 @@ async function loadFaerieFestivalLists(): Promise<UserList[]> {
   cacheTag('hub-faeriefestival');
   cacheLife({ stale: 300, revalidate: 300, expire: 3600 });
 
-  return (await getTrendingCatLists('Faerie Festival', 100)).filter(
-    (list) => new Date(list.createdAt).getFullYear() === EVENT_YEAR
-  );
+  try {
+    return (await getTrendingCatLists('Faerie Festival', 100)).filter(
+      (list) => new Date(list.createdAt).getFullYear() === EVENT_YEAR
+    );
+  } catch {
+    return [];
+  }
 }

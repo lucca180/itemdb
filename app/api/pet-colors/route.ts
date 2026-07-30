@@ -1,4 +1,4 @@
-import { getAllNeopetsColors } from '@utils/pet-colors';
+import { getAllNeopetsColors } from '@app/server/petColors';
 
 export async function GET() {
   const colors = await getAllNeopetsColors();

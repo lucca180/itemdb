@@ -4,7 +4,7 @@ import { formatEffect } from '@utils/item/formatEffect';
 import { ItemService } from '@services/ItemService';
 import type { ItemEffect, ItemV2For } from '@types';
 import prisma from '@utils/prisma';
-import { getAllNeopetsColors } from '@utils/pet-colors';
+import { getAllNeopetsColors } from '@app/server/petColors';
 
 export type ItemWithEffectsCard = ItemV2For<'card'> & { effects: ItemEffect[] };
 

@@ -65,5 +65,9 @@ async function loadTheVoidWithinLists(): Promise<UserList[]> {
   cacheTag('hub-the-void-within');
   cacheLife({ stale: 300, revalidate: 300, expire: 3600 });
 
-  return getTVWLists(3000);
+  try {
+    return await getTVWLists(3000);
+  } catch {
+    return [];
+  }
 }

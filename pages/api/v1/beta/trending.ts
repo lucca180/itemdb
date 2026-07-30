@@ -64,7 +64,7 @@ export const getTrendingItems = async (limit: number) => {
 
   const popularItemsStats: any = {};
 
-  statsRes.data.map((data) => {
+  (statsRes.data ?? []).map((data) => {
     const slug = data.x.split('/').pop();
     if (!slug) return;
 
@@ -100,7 +100,7 @@ export const getTrendingLists = async (limit: number, excludeCats: string[] = []
 
   const popularListsStats: any = {};
 
-  statsRes.data.map((pageData) => {
+  (statsRes.data ?? []).map((pageData) => {
     if (!pageData.x.startsWith('/lists/official/')) return;
     const slug = pageData.x.split('/').pop();
     if (!slug) return;
@@ -168,7 +168,7 @@ export const getTrendingShops = async (limit: number) => {
 
   const popularShopsStats: any = {};
 
-  statsRes.data.map((pageData) => {
+  (statsRes.data ?? []).map((pageData) => {
     const slug = pageData.x.split('/').pop();
     if (!slug || slug.includes('dashboard')) return;
 
