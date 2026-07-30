@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AutoComplete,
   AutoCompleteInput,
@@ -6,7 +6,7 @@ import {
   AutoCompleteList,
   AutoCompleteTag,
 } from '@choc-ui/chakra-autocomplete';
-import { allNeopetsColors, petpetColors } from '../../utils/pet-utils';
+import { petpetColors } from '@utils/pet-utils';
 
 type Props = {
   value?: string;
@@ -15,15 +15,47 @@ type Props = {
   placeHolder?: string;
   isMultiple?: boolean;
   isPetpet?: boolean;
+  /** Preloaded Neopet color names; when omitted, fetched from /api/pet-colors */
+  colors?: string[];
 };
 
 const NeoColorSelect = (props: Props) => {
-  const { value: valueProps, onChange, disabled, placeHolder, isMultiple, isPetpet } = props;
+  const {
+    value: valueProps,
+    onChange,
+    disabled,
+    placeHolder,
+    isMultiple,
+    isPetpet,
+    colors,
+  } = props;
 
-  const allColorsSorted = useMemo(
-    () => Object.values(!isPetpet ? allNeopetsColors : petpetColors).sort(),
-    [allNeopetsColors, petpetColors, isPetpet]
-  );
+  const [fetchedColors, setFetchedColors] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isPetpet || colors) return;
+
+    let cancelled = false;
+    fetch('/api/pet-colors')
+      .then((res) => res.json())
+      .then((data: { colors?: Record<string, string> }) => {
+        if (cancelled || !data.colors) return;
+        setFetchedColors(Object.values(data.colors).sort());
+      })
+      .catch(() => {
+        if (!cancelled) setFetchedColors([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPetpet, colors]);
+
+  const allColorsSorted = useMemo(() => {
+    if (isPetpet) return Object.values(petpetColors).sort();
+    if (colors) return [...colors].sort();
+    return fetchedColors;
+  }, [isPetpet, colors, fetchedColors]);
 
   return (
     <AutoComplete

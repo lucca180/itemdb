@@ -1,124 +1,28 @@
-export const allNeopetsColors: { [id: string]: string } = {
-  '1': 'Alien',
-  '2': 'Apple',
-  '3': 'Asparagus',
-  '4': 'Aubergine',
-  '5': 'Avocado',
-  '6': 'Baby',
-  '7': 'Biscuit',
-  '8': 'Blue',
-  '9': 'Blueberry',
-  '10': 'Brown',
-  '11': 'Camouflage',
-  '12': 'Carrot',
-  '13': 'Checkered',
-  '14': 'Chocolate',
-  '15': 'Chokato',
-  '16': 'Christmas',
-  '17': 'Clay',
-  '18': 'Cloud',
-  '19': 'Coconut',
-  '20': 'Custard',
-  '21': 'Darigan',
-  '22': 'Desert',
-  '23': 'Disco',
-  '24': 'Durian',
-  '25': 'Electric',
-  '26': 'Faerie',
-  '27': 'Fire',
-  '28': 'Garlic',
-  '29': 'Ghost',
-  '30': 'Glowing',
-  '31': 'Gold',
-  '32': 'Gooseberry',
-  '33': 'Grape',
-  '34': 'Green',
-  '35': 'Grey',
-  '36': 'Halloween',
-  '37': 'Ice',
-  '38': 'Invisible',
-  '39': 'Island',
-  '40': 'Jelly',
-  '41': 'Lemon',
-  '42': 'Lime',
-  '43': 'Mallow',
-  '44': 'Maraquan',
-  '45': 'Msp',
-  '46': 'Mutant',
-  '47': 'Orange',
-  '48': 'Pea',
-  '49': 'Peach',
-  '50': 'Pear',
-  '51': 'Pepper',
-  '52': 'Pineapple',
-  '53': 'Pink',
-  '54': 'Pirate',
-  '55': 'Plum',
-  '56': 'Plushie',
-  '57': 'Purple',
-  '58': 'Quigukiboy',
-  '59': 'Quigukigirl',
-  '60': 'Rainbow',
-  '61': 'Red',
-  '62': 'Robot',
-  '63': 'Royalboy',
-  '64': 'Royalgirl',
-  '65': 'Shadow',
-  '66': 'Silver',
-  '67': 'Sketch',
-  '68': 'Skunk',
-  '69': 'Snot',
-  '70': 'Snow',
-  '71': 'Speckled',
-  '72': 'Split',
-  '73': 'Sponge',
-  '74': 'Spotted',
-  '75': 'Starry',
-  '76': 'Strawberry',
-  '77': 'Striped',
-  '78': 'Thornberry',
-  '79': 'Tomato',
-  '80': 'Tyrannian',
-  '81': 'Usuki Boy',
-  '82': 'Usuki Girl',
-  '83': 'White',
-  '84': 'Yellow',
-  '85': 'Zombie',
-  '86': 'Onion',
-  '87': 'Magma',
-  '88': 'Relic',
-  '89': 'Woodland',
-  '90': 'Transparent',
-  '91': 'Maractite',
-  '92': '8-Bit',
-  '93': 'Swamp Gas',
-  '94': 'Water',
-  '95': 'Wraith',
-  '96': 'Eventide',
-  '97': 'Elderlyboy',
-  '98': 'Elderlygirl',
-  '99': 'Stealthy',
-  '100': 'Dimensional',
-  '101': 'Agueena',
-  '102': 'Pastel',
-  '103': 'Ummagine',
-  '104': 'Polka Dot',
-  '105': 'Candy',
-  '106': 'Marble',
-  '107': 'Steampunk',
-  '108': 'Toy',
-  '109': 'Origami',
-  '110': 'Oil Paint',
-  '111': 'Mosaic',
-  '112': 'Burlap',
-  '114': 'Juppie Swirl',
-  '115': 'Valentine',
-  '116': 'Sroom',
-  '117': 'Potato',
-  '118': 'Banana',
-  '119': 'Void',
-  '120': '25th Anniversary',
+export const PET_COLORS_CACHE_TAG = 'pet-colors';
+
+/** Preferred display/URL names when the upstream API uses a different spelling. */
+export const PET_COLOR_NAME_OVERRIDES: Record<number, string> = {
+  81: 'Usuki Boy',
+  82: 'Usuki Girl',
+  98: 'Elderlygirl',
 };
+
+export type PetColorsCatalog = Record<string, string>;
+
+export function findPetColorId(color: string, colors: PetColorsCatalog): number | null {
+  if (!color) return null;
+  const id = Object.keys(colors).find((key) => colors[key].toLowerCase() === color.toLowerCase());
+  if (!id) return null;
+  return parseInt(id, 10);
+}
+
+export function findPetColorName(
+  id: number | string,
+  colors: PetColorsCatalog
+): string | undefined {
+  return colors[String(id)];
+}
+
 export const allSpecies: { [id: string]: string } = {
   '1': 'Acara',
   '2': 'Aisha',
@@ -176,15 +80,6 @@ export const allSpecies: { [id: string]: string } = {
   '54': 'Zafara',
   '55': 'Vandagyre',
   '56': 'Varwolf',
-};
-
-export const getPetColorId = (color: string) => {
-  if (!color) return null;
-  const x = Object.keys(allNeopetsColors).find(
-    (x) => allNeopetsColors[x].toLowerCase() === color.toLowerCase()
-  );
-  if (!x) return null;
-  return parseInt(x);
 };
 
 export const getSpeciesId = (species: string) => {

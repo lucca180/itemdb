@@ -3,11 +3,12 @@ import { dti } from '../../../../../utils/item/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { cdnExists, uploadToS3 } from '../../../../../utils/googleCloud';
 import {
-  allNeopetsColors,
   allSpecies,
-  getPetColorId,
+  findPetColorId,
+  findPetColorName,
   getSpeciesId,
 } from '../../../../../utils/pet-utils';
+import { fetchAllNeopetsColors } from '@utils/pet-colors';
 import { checkPetColorExists } from '../../../v1/tools/petcolors';
 import prisma from '../../../../../utils/prisma';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
@@ -35,7 +36,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const species = img_id.split('_')[0];
     const color = img_id.split('_')[1];
 
-    let colorId = getPetColorId(color);
+    const colors = await fetchAllNeopetsColors();
+    let colorId = color ? findPetColorId(color, colors) : null;
     let speciesId = getSpeciesId(species);
 
     if (!colorId && !speciesId) return res.status(404).send('Pet Color Combo Not Found');
@@ -54,7 +56,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       if (!colorId) colorId = existentCombo.color_id;
       if (!speciesId) speciesId = existentCombo.species_id;
 
-      img_id = `${allSpecies[speciesId]}_${allNeopetsColors[colorId]}`;
+      img_id = `${allSpecies[speciesId]}_${findPetColorName(colorId, colors)}`;
     }
 
     const path = `colors/${img_id}.png`;

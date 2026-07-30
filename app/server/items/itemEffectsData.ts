@@ -4,6 +4,7 @@ import { formatEffect } from '@utils/item/formatEffect';
 import { ItemService } from '@services/ItemService';
 import type { ItemEffect, ItemV2For } from '@types';
 import prisma from '@utils/prisma';
+import { getAllNeopetsColors } from '@utils/pet-colors';
 
 export type ItemWithEffectsCard = ItemV2For<'card'> & { effects: ItemEffect[] };
 
@@ -38,9 +39,10 @@ export async function getItemsWithEffectsPage(options: {
 
   const iids = itemIds.map((item) => item.internal_id);
 
-  const [effectsRaw, items] = await Promise.all([
+  const [effectsRaw, items, colors] = await Promise.all([
     prisma.itemEffect.findMany({ where: { item_iid: { in: iids } } }),
     ItemService.getManyItems({ type: 'id', data: iids }, { intent: 'card', limit }),
+    getAllNeopetsColors(),
   ]);
 
   return Object.values(items)
@@ -49,7 +51,7 @@ export async function getItemsWithEffectsPage(options: {
       effects: effectsRaw
         .filter((effect) => effect.item_iid === item.internal_id)
         .sort((a, b) => b.type.localeCompare(a.type))
-        .map((effect) => formatEffect(effect)),
+        .map((effect) => formatEffect(effect, colors)),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

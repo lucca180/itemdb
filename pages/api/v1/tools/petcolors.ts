@@ -1,11 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
-  allNeopetsColors,
   allSpecies,
-  getPetColorId,
+  findPetColorId,
+  findPetColorName,
   getSpeciesId,
-} from '../../../../utils/pet-utils';
-import prisma from '../../../../utils/prisma';
+  type PetColorsCatalog,
+} from '@utils/pet-utils';
+import { fetchAllNeopetsColors } from '@utils/pet-colors';
+import prisma from '@utils/prisma';
 import { getManyItems } from '../items/many';
 import axios from 'axios';
 
@@ -25,11 +27,13 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   const colorTarget = req.query.colorTarget as string | undefined;
   const speciesTarget = req.query.speciesTarget as string | undefined;
 
+  const colors = await fetchAllNeopetsColors();
+
   let colorTargetId: number | undefined = colorTarget ? Number(colorTarget) : undefined;
   let speciesTargetId: number | undefined = speciesTarget ? Number(speciesTarget) : undefined;
 
   if (colorTarget && (!colorTargetId || isNaN(colorTargetId))) {
-    colorTargetId = getPetColorId(colorTarget) ?? undefined;
+    colorTargetId = findPetColorId(colorTarget, colors) ?? undefined;
   }
 
   if (speciesTarget && (!speciesTargetId || isNaN(speciesTargetId))) {
@@ -45,7 +49,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     if (!exists) return res.status(400).json({ error: 'pet_color_not_found' });
   }
 
-  const response = await getPetColorData(colorTargetId, speciesTargetId);
+  const response = await getPetColorData(colorTargetId, speciesTargetId, colors);
 
   return res.status(200).json(response);
 }
@@ -91,8 +95,11 @@ export const checkPetColorExists = async (colorTargetId: number, speciesTargetId
 
 export const getPetColorData = async (
   colorTargetId: number | undefined,
-  speciesTargetId: number | undefined
+  speciesTargetId: number | undefined,
+  colors?: PetColorsCatalog
 ) => {
+  const colorCatalog = colors ?? (await fetchAllNeopetsColors());
+
   const SpeciesOR = [
     {
       species: {
@@ -180,7 +187,9 @@ export const getPetColorData = async (
 
   const thumbnail = {
     species: speciesTargetId ? allSpecies[speciesTargetId].toLowerCase() : '',
-    color: colorTargetId ? allNeopetsColors[colorTargetId].toLowerCase() : '',
+    color: colorTargetId
+      ? (findPetColorName(colorTargetId, colorCatalog)?.toLowerCase() ?? '')
+      : '',
   };
 
   if (!speciesTargetId) {
@@ -193,7 +202,8 @@ export const getPetColorData = async (
   if (!colorTargetId) {
     const cheapestEffect = rawData.find((data) => data.item_iid === cheapestChange.at(-1));
     if (cheapestEffect && cheapestEffect.colorTarget) {
-      thumbnail.color = allNeopetsColors[cheapestEffect.colorTarget].toLowerCase();
+      thumbnail.color =
+        findPetColorName(cheapestEffect.colorTarget, colorCatalog)?.toLowerCase() ?? '';
     }
   }
 
@@ -202,7 +212,7 @@ export const getPetColorData = async (
     colorId: colorTargetId || null,
     thumbnail,
     speciesName: speciesTargetId ? allSpecies[speciesTargetId] : null,
-    colorName: colorTargetId ? allNeopetsColors[colorTargetId] : null,
+    colorName: colorTargetId ? (findPetColorName(colorTargetId, colorCatalog) ?? null) : null,
     perfectMatch: perfectMatch.map((id) => itemData[id]),
     colorChanges: colorChanges.map((id) => itemData[id]),
     speciesChanges: speciesChanges.map((id) => itemData[id]),
@@ -216,11 +226,13 @@ export const getPetColorDataStr = async (
   colorTarget: string | undefined,
   speciesTarget: string | undefined
 ) => {
+  const colors = await fetchAllNeopetsColors();
+
   let colorTargetId: number | undefined = colorTarget ? Number(colorTarget) : undefined;
   let speciesTargetId: number | undefined = speciesTarget ? Number(speciesTarget) : undefined;
 
   if (colorTarget && (!colorTargetId || isNaN(colorTargetId))) {
-    colorTargetId = getPetColorId(colorTarget) ?? undefined;
+    colorTargetId = findPetColorId(colorTarget, colors) ?? undefined;
   }
 
   if (speciesTarget && (!speciesTargetId || isNaN(speciesTargetId))) {
@@ -236,5 +248,5 @@ export const getPetColorDataStr = async (
     if (!exists) throw { error: 'pet_color_not_found' };
   }
 
-  return getPetColorData(colorTargetId, speciesTargetId);
+  return getPetColorData(colorTargetId, speciesTargetId, colors);
 };

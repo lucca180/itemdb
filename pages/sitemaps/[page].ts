@@ -7,7 +7,8 @@ import { GetServerSideProps } from 'next';
 import prisma from '@utils/prisma';
 import { restockShopInfo, slugify } from '@utils/utils';
 import { listCategoriesData } from '@utils/lists/listCategoriesData';
-import { allSpecies, allNeopetsColors } from '@utils/pet-utils';
+import { allSpecies, findPetColorName } from '@utils/pet-utils';
+import { fetchAllNeopetsColors } from '@utils/pet-colors';
 import { wp } from '@pages/api/wp/posts';
 import { SITE_URL, STATIC_SITEMAP_PATHS, bilingualSitemapFields } from '@utils/sitemap';
 
@@ -28,46 +29,48 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const pageNum = parseInt(page);
 
-  const [itemInfo, officialLists, colorSpecies, articleFields] = await Promise.all([
-    prisma.items.findMany({
-      select: {
-        slug: true,
-        updatedAt: true,
-        prices: {
-          select: {
-            addedAt: true,
+  const [itemInfo, officialLists, colorSpecies, articleFields, allNeopetsColors] =
+    await Promise.all([
+      prisma.items.findMany({
+        select: {
+          slug: true,
+          updatedAt: true,
+          prices: {
+            select: {
+              addedAt: true,
+            },
+          },
+          owlsPrice: {
+            select: {
+              addedAt: true,
+            },
           },
         },
-        owlsPrice: {
-          select: {
-            addedAt: true,
-          },
+        orderBy: {
+          name: 'asc',
         },
-      },
-      orderBy: {
-        name: 'asc',
-      },
-      take: ITEMS_PER_PAGE,
-      skip: pageNum * ITEMS_PER_PAGE,
-    }),
-    prisma.userList.findMany({
-      where: {
-        official: true,
-      },
-      select: {
-        internal_id: true,
-        updatedAt: true,
-        slug: true,
-      },
-      take: 50,
-      skip: pageNum * 50,
-    }),
-    prisma.colorSpecies.findMany({
-      skip: pageNum * 200,
-      take: 200,
-    }),
-    pageNum === 0 ? loadArticleSitemapFields() : Promise.resolve([] as ISitemapField[]),
-  ]);
+        take: ITEMS_PER_PAGE,
+        skip: pageNum * ITEMS_PER_PAGE,
+      }),
+      prisma.userList.findMany({
+        where: {
+          official: true,
+        },
+        select: {
+          internal_id: true,
+          updatedAt: true,
+          slug: true,
+        },
+        take: 50,
+        skip: pageNum * 50,
+      }),
+      prisma.colorSpecies.findMany({
+        skip: pageNum * 200,
+        take: 200,
+      }),
+      pageNum === 0 ? loadArticleSitemapFields() : Promise.resolve([] as ISitemapField[]),
+      fetchAllNeopetsColors(),
+    ]);
 
   const staticPaths: ISitemapField[] =
     pageNum === 0 ? STATIC_SITEMAP_PATHS.flatMap((path) => bilingualSitemapFields(path)) : [];
@@ -103,7 +106,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const colorSpeciesPaths: ISitemapField[] = colorSpecies.flatMap((info, i) => {
     const speciesName = allSpecies[info.species_id]?.toLowerCase();
-    const colorName = allNeopetsColors[info.color_id]?.toLowerCase();
+    const colorName = findPetColorName(info.color_id, allNeopetsColors)?.toLowerCase();
 
     const locArr: ISitemapField[] = [];
 

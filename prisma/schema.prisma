@@ -679,6 +679,12 @@ model ColorSpecies {
   @@unique([species_id, color_id])
 }
 
+model PetColor {
+  id      Int      @id
+  name    String
+  addedAt DateTime @default(now())
+}
+
 model SaleStats {
   internal_id Int           @id @default(autoincrement())
   item_iid    Int

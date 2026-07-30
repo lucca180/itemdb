@@ -1,12 +1,20 @@
 import type { ItemEffect } from '@types';
 import { ItemEffect as PrismaItemEffect } from '@prisma/generated/client';
-import { allNeopetsColors, allSpecies, petpetColors } from '@utils/pet-utils';
+import {
+  allSpecies,
+  findPetColorName,
+  petpetColors,
+  type PetColorsCatalog,
+} from '@utils/pet-utils';
 
 /** Maps a Prisma `ItemEffect` row to the public `ItemEffect` shape. */
-export const formatEffect = (effect: PrismaItemEffect): ItemEffect => {
+export const formatEffect = (
+  effect: PrismaItemEffect,
+  colors: PetColorsCatalog = {}
+): ItemEffect => {
   let colorTarget = null;
   if (effect.colorTarget && effect.type === 'colorSpecies') {
-    colorTarget = allNeopetsColors[`${effect.colorTarget}`];
+    colorTarget = findPetColorName(effect.colorTarget, colors) ?? null;
   } else if (effect.colorTarget && effect.type === 'petpetColor') {
     colorTarget = petpetColors[`${effect.colorTarget}`];
   }

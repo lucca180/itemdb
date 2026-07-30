@@ -19,7 +19,13 @@ import { useToast } from '@utils/theme/toast';
 import Layout from '@components/Layout';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import NextImage from 'next/image';
-import { allNeopetsColors, allSpecies, getPetColorId, getSpeciesId } from '@utils/pet-utils';
+import {
+  allSpecies,
+  findPetColorId,
+  findPetColorName,
+  getSpeciesId,
+  type PetColorsCatalog,
+} from '@utils/pet-utils';
 import { ChangeEvent, ReactElement, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { ItemData } from '@types';
@@ -64,6 +70,7 @@ type PetColorToolPageProps = {
   color: string;
   petColorData: PetColorData | null;
   speciesInfo: SpeciesInfo | null;
+  neopetsColors: PetColorsCatalog;
 };
 
 const PetColorToolPage = (props: PetColorToolPageProps) => {
@@ -77,6 +84,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
   const [error, setError] = useState<string>('');
   const [loadedPreviewUrl, setLoadedPreviewUrl] = useState('');
   const [speciesInfo, setSpeciesInfo] = useState<SpeciesInfo | null>(props.speciesInfo);
+  const neopetsColors = props.neopetsColors;
 
   const isPerfectCheapest = useMemo(() => {
     if (!petColorData) return false;
@@ -179,7 +187,10 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
       }
     }
     if (color) {
-      newColor = allNeopetsColors[getPetColorId(queryColor as string) ?? ''];
+      newColor = findPetColorName(
+        findPetColorId(queryColor as string, neopetsColors) ?? '',
+        neopetsColors
+      );
       if (newColor && newColor !== color) {
         setColor(newColor);
         hasChanged = true;
@@ -266,7 +277,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
               value={color}
             >
               <option value="">{t('PetColors.select-color')}</option>
-              {Object.values(allNeopetsColors)
+              {Object.values(neopetsColors)
                 .sort()
                 .map((colorOption) => (
                   <option key={colorOption} value={colorOption}>
@@ -529,12 +540,16 @@ export async function getStaticProps(context: any) {
 
   if (species) speciesInfo = await getSpeciesInfo(species);
 
+  const { fetchAllNeopetsColors } = await import('@utils/pet-colors');
+  const neopetsColors = await fetchAllNeopetsColors();
+
   return {
     props: {
       speciesInfo,
       species: preloadData ? preloadData.speciesName : '',
       color: preloadData ? preloadData.colorName : '',
       petColorData: preloadData,
+      neopetsColors,
       messages: await loadTranslation(locale as string, 'tools/rainbow-pool/[[...slug]]'),
       locale: locale,
     },

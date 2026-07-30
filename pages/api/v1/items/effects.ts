@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from './many';
 import { formatEffect } from '@utils/item/formatEffect';
+import { fetchAllNeopetsColors } from '@utils/pet-colors';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -50,16 +51,19 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   });
 
   // Get full item data
-  const itemData = await getManyItems({
-    id: items_id.map((item) => item.internal_id.toString()),
-  });
+  const [itemData, colors] = await Promise.all([
+    getManyItems({
+      id: items_id.map((item) => item.internal_id.toString()),
+    }),
+    fetchAllNeopetsColors(),
+  ]);
 
   const result = Object.values(itemData)
     .map((item) => {
       const effects = itemEffects
         .filter((effect) => effect.item_iid === item.internal_id)
         .sort((a, b) => b.type.localeCompare(a.type))
-        .map((x) => formatEffect(x));
+        .map((x) => formatEffect(x, colors));
       return {
         ...item,
         effects,
