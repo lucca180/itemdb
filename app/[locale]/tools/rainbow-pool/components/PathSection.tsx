@@ -39,7 +39,8 @@ export function PathSection({
         bg="blackAlpha.400"
         borderRadius="lg"
         w="100%"
-        align="flex-start"
+        align={{ base: 'center', md: 'flex-start' }}
+        textAlign={{ base: 'center', md: 'start' }}
       >
         <Badge colorPalette={colorPalette}>{label}</Badge>
         {emptyMessage}
@@ -55,7 +56,8 @@ export function PathSection({
       bg="blackAlpha.400"
       borderRadius="lg"
       w="100%"
-      align="flex-start"
+      align={{ base: 'center', md: 'flex-start' }}
+      textAlign={{ base: 'center', md: 'start' }}
     >
       <Badge colorPalette={colorPalette}>{label}</Badge>
       {hint && (
@@ -63,7 +65,7 @@ export function PathSection({
           {hint}
         </Text>
       )}
-      <Flex flexWrap="wrap" gap={2}>
+      <Flex flexWrap="wrap" gap={2} justify={{ base: 'center', md: 'flex-start' }} w="100%">
         {visible.map((item) => (
           <ItemCard uniqueID={uniqueIdPrefix} small key={item.internal_id} item={item} />
         ))}

@@ -1,5 +1,6 @@
-import { Badge, Box, Flex, Heading, HStack, Link, Text, VStack } from '@chakra-ui/react';
+import { Badge, Box, Flex, Heading, Link, Text, VStack } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
+import type { ReactNode } from 'react';
 import { IconLink } from '@components/Utils/IconLink';
 import ItemCard from '@components/Items/ItemCard';
 import MainLink from '@components/Utils/MainLink';
@@ -87,6 +88,20 @@ export async function ComboContent({
         />
       </Flex>
 
+      {/* Mobile fold: title + share → species → preview → cheapest → … */}
+      <Box display={{ base: 'block', md: 'none' }} maxW="1100px" mx="auto" px={2} mb={4}>
+        <ComboHeader
+          title={howToGetComboTitle(t, colorName, speciesName)}
+          shareLabel={labels.copyLinkLabel}
+          shareToastTitle={labels.linkCopiedTitle}
+          speciesInfo={
+            speciesInfo ? (
+              <SpeciesInfoInline speciesInfo={speciesInfo} t={t} formatter={formatter} />
+            ) : null
+          }
+        />
+      </Box>
+
       <Flex
         direction={{ base: 'column', md: 'row' }}
         gap={{ base: 5, md: 6 }}
@@ -110,27 +125,28 @@ export async function ComboContent({
             poweredByLabel={labels.poweredByLabel}
           />
 
-          <OtherWays
-            availability={{ fountainAvailable, labAvailable }}
-            colorName={colorName}
-            compact
-          />
+          <Box display={{ base: 'none', md: 'block' }} w="100%">
+            <OtherWays
+              availability={{ fountainAvailable, labAvailable }}
+              colorName={colorName}
+              compact
+            />
+          </Box>
         </VStack>
 
         <VStack align="stretch" gap={4} flex={1} w="100%" minW={0}>
-          <HStack justify="space-between" align="flex-start" gap={2}>
-            <Box>
-              <Heading as="h1" size="xl">
-                {howToGetComboTitle(t, colorName, speciesName)}
-              </Heading>
-              {speciesInfo && (
-                <Text fontSize="sm" mt={2} color="whiteAlpha.800" css={{ textWrap: 'pretty' }}>
+          <Box display={{ base: 'none', md: 'block' }}>
+            <ComboHeader
+              title={howToGetComboTitle(t, colorName, speciesName)}
+              shareLabel={labels.copyLinkLabel}
+              shareToastTitle={labels.linkCopiedTitle}
+              speciesInfo={
+                speciesInfo ? (
                   <SpeciesInfoInline speciesInfo={speciesInfo} t={t} formatter={formatter} />
-                </Text>
-              )}
-            </Box>
-            <ShareLinkButton label={labels.copyLinkLabel} toastTitle={labels.linkCopiedTitle} />
-          </HStack>
+                ) : null
+              }
+            />
+          </Box>
 
           {cheapestChange.length > 0 && (
             <CostHeroInline
@@ -180,6 +196,14 @@ export async function ComboContent({
             hint={t('PetColors.pb-outfit-hint')}
           />
 
+          <Box display={{ base: 'block', md: 'none' }} w="100%">
+            <OtherWays
+              availability={{ fountainAvailable, labAvailable }}
+              colorName={colorName}
+              compact
+            />
+          </Box>
+
           <Flex gap={3} flexWrap="wrap" fontSize="sm">
             <Link asChild color="teal.200">
               <MainLink href={`${BASE_PATH}/${petColorSlug(speciesName)}`}>
@@ -205,6 +229,42 @@ export async function ComboContent({
   );
 }
 
+function ComboHeader({
+  title,
+  shareLabel,
+  shareToastTitle,
+  speciesInfo,
+}: {
+  title: string;
+  shareLabel: string;
+  shareToastTitle: string;
+  speciesInfo?: ReactNode;
+}) {
+  return (
+    <Box>
+      <Flex justify="space-between" align="flex-start" gap={2}>
+        <Heading
+          as="h1"
+          size={{ base: 'lg', md: 'xl' }}
+          flex={1}
+          minW={0}
+          css={{ textWrap: 'balance' }}
+        >
+          {title}
+        </Heading>
+        <Box flexShrink={0} pt={0.5}>
+          <ShareLinkButton label={shareLabel} toastTitle={shareToastTitle} />
+        </Box>
+      </Flex>
+      {speciesInfo && (
+        <Text fontSize="sm" mt={2} color="whiteAlpha.800" css={{ textWrap: 'pretty' }}>
+          {speciesInfo}
+        </Text>
+      )}
+    </Box>
+  );
+}
+
 function CostHeroInline({
   items,
   totalLabel,
@@ -225,20 +285,22 @@ function CostHeroInline({
       boxShadow="0 0 0 1px rgba(251, 146, 60, 0.15)"
     >
       <Flex
-        justify="space-between"
-        align={{ base: 'flex-start', sm: 'center' }}
+        justify={{ base: 'center', sm: 'space-between' }}
+        align="center"
+        direction={{ base: 'column', sm: 'row' }}
         gap={2}
         flexWrap="wrap"
         mb={3}
+        textAlign={{ base: 'center', sm: 'start' }}
       >
         <Badge colorPalette="orange" size="lg">
           {badgeLabel}
         </Badge>
-        <Text fontSize={{ base: 'xl', md: '2xl' }} fontWeight="bold" color="orange.200">
+        <Text fontSize={{ base: 'md', md: '2xl' }} fontWeight="bold" color="orange.200">
           {totalLabel}
         </Text>
       </Flex>
-      <Flex flexWrap="wrap" gap={2}>
+      <Flex flexWrap="wrap" gap={2} justify={{ base: 'center', sm: 'flex-start' }}>
         {items.map((item) => (
           <ItemCard uniqueID="cheapest" small key={item.internal_id} item={item} />
         ))}

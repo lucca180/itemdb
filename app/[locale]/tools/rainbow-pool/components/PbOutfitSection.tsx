@@ -20,7 +20,8 @@ export function PbOutfitSection({ items, label, hint }: PbOutfitSectionProps) {
       bg="blackAlpha.400"
       borderRadius="lg"
       w="100%"
-      align="flex-start"
+      align={{ base: 'center', md: 'flex-start' }}
+      textAlign={{ base: 'center', md: 'start' }}
     >
       <Badge colorPalette="yellow">{label}</Badge>
       {hint && (
@@ -28,7 +29,7 @@ export function PbOutfitSection({ items, label, hint }: PbOutfitSectionProps) {
           {hint}
         </Text>
       )}
-      <Flex flexWrap="wrap" gap={2} w="100%" justify={{ base: 'center', sm: 'flex-start' }}>
+      <Flex flexWrap="wrap" gap={2} w="100%" justify={{ base: 'center', md: 'flex-start' }}>
         {items.map((item) => (
           <ItemCard uniqueID="pb-outfit" small key={item.internal_id} item={item} />
         ))}
