@@ -27,8 +27,8 @@ export async function buildRainbowPoolLabels(): Promise<RainbowPoolLabels> {
   const t = await getTranslations();
 
   return {
-    toolTitle: t('PetColors.pet-color-tool'),
-    cta: t('PetColors.cta'),
+    toolTitle: t('PetColors.hub-h1'),
+    cta: t('PetColors.hub-lede'),
     eyebrowLabel: t('Layout.tools'),
     selectColorLabel: t('PetColors.select-color'),
     selectSpeciesLabel: t('PetColors.select-species'),

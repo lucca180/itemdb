@@ -17,6 +17,14 @@ export function howToGetComboTitle(t: Translator, color: string, species: string
   });
 }
 
+export function howToGetComboSeoTitle(t: Translator, color: string, species: string): string {
+  return t('PetColors.species-color-seo-title', {
+    article: indefiniteArticle(color),
+    0: color,
+    1: species,
+  });
+}
+
 export function browseSpeciesTitle(t: Translator, species: string): string {
   return t('PetColors.species-title', { article: indefiniteArticle(species), 0: species });
 }

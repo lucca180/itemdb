@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   setRequestLocale(locale);
   const t = await getTranslations();
   const pageProps = getStaticAppPageProps(locale, {
-    title: t('PetColors.pet-color-tool'),
-    description: t('PetColors.cta'),
+    title: t('PetColors.hub-seo-title'),
+    description: t('PetColors.hub-seo-description'),
     pathname: BASE_PATH,
   });
 
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     twitter: { ...pageProps.metadata.twitter, card: 'summary_large_image' },
     openGraph: {
       ...pageProps.metadata.openGraph,
-      images: [{ ...ogImage, alt: t('PetColors.pet-color-tool') }],
+      images: [{ ...ogImage, alt: t('PetColors.hub-h1') }],
     },
   };
 }

@@ -11,7 +11,7 @@ import { withLocalePrefix, type AppLocale } from '@utils/locales';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ComboContent } from '../../components/ComboContent';
 import { MissingComboContent } from '../../components/MissingComboContent';
-import { howToGetComboTitle, resolveBrowseName } from '@utils/petColorCopy';
+import { howToGetComboSeoTitle, resolveBrowseName } from '@utils/petColorCopy';
 import { BASE_PATH, MAIN_COLOR } from '../../components/RainbowPoolShell';
 
 type PageProps = {
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const previewUrl = `https://itemdb.com.br/api/cache/preview/color/${thumbnail.species}_${thumbnail.color}.png`;
 
   const pageProps = getStaticAppPageProps(locale, {
-    title: howToGetComboTitle(t, colorName, speciesName),
+    title: howToGetComboSeoTitle(t, colorName, speciesName),
     description: t('PetColors.species-color-description', { 0: colorName, 1: speciesName }),
     pathname: `${BASE_PATH}/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
   });

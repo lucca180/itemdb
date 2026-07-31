@@ -20,6 +20,26 @@ import { ComboTile } from './ComboTile';
 import { RainbowPoolPicker } from './RainbowPoolPicker';
 import { BASE_PATH, RainbowPoolShell } from './RainbowPoolShell';
 
+type HubFaqItem = {
+  questionName: string;
+  acceptedAnswerText: string;
+};
+
+function formatFaqPageJsonLd(items: HubFaqItem[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.questionName,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.acceptedAnswerText,
+      },
+    })),
+  };
+}
+
 type HubContentProps = {
   locale: string;
   colors: string[];
@@ -39,6 +59,27 @@ export async function HubContent({ locale, colors, species, recentlyReleased }: 
     name,
     href: `${BASE_PATH}/${petColorSlug(name)}`,
   }));
+
+  const hubSections = [
+    {
+      title: t('PetColors.hub-section-what-title'),
+      body: t('PetColors.hub-section-what-body'),
+    },
+    {
+      title: t('PetColors.hub-section-diff-title'),
+      body: t('PetColors.hub-section-diff-body'),
+    },
+    {
+      title: t('PetColors.hub-section-alt-title'),
+      body: t('PetColors.hub-section-alt-body'),
+    },
+  ];
+
+  const faqItems: HubFaqItem[] = [1, 2, 3, 4].map((i) => ({
+    questionName: t(`PetColors.faq-${i}`),
+    acceptedAnswerText: t(`PetColors.faq-${i}-text`),
+  }));
+  const faqJsonLd = formatFaqPageJsonLd(faqItems);
 
   return (
     <RainbowPoolShell>
@@ -129,6 +170,41 @@ export async function HubContent({ locale, colors, species, recentlyReleased }: 
         </Box>
 
         <Separator borderColor="whiteAlpha.200" />
+
+        <VStack align="stretch" gap={6}>
+          {hubSections.map((section) => (
+            <Box key={section.title}>
+              <Heading as="h2" size="md" mb={2}>
+                {section.title}
+              </Heading>
+              <Text color="whiteAlpha.800" css={{ textWrap: 'pretty' }}>
+                {section.body}
+              </Text>
+            </Box>
+          ))}
+        </VStack>
+
+        <Box>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+          />
+          <Heading as="h2" size="md" mb={4}>
+            {t('PetColors.faq-title')}
+          </Heading>
+          <VStack align="stretch" gap={4}>
+            {faqItems.map((item) => (
+              <Box key={item.questionName}>
+                <Heading as="h3" size="sm" mb={1}>
+                  {item.questionName}
+                </Heading>
+                <Text fontSize="sm" color="whiteAlpha.800" css={{ textWrap: 'pretty' }}>
+                  {item.acceptedAnswerText}
+                </Text>
+              </Box>
+            ))}
+          </VStack>
+        </Box>
       </VStack>
     </RainbowPoolShell>
   );
