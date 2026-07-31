@@ -51,7 +51,7 @@ export async function OtherWays({ availability, colorName, compact = false }: Ot
       description: availability.fountainAvailable
         ? t.rich('PetColors.other-ways-fountain-desc', { Link: richLink(LINKS.fountain) })
         : t('PetColors.other-ways-fountain-unavailable', { 0: colorName }),
-      image: 'https://images.neopets.com/caption/caption_1110.gif',
+      image: 'https://images.neopets.com/faerieland/rainbowfountain2_old.gif',
       imageBg: 'linear-gradient(145deg, #1a5f7a 0%, #57c5b6 100%)',
       available: availability.fountainAvailable,
     },
@@ -61,7 +61,7 @@ export async function OtherWays({ availability, colorName, compact = false }: Ot
       description: availability.labAvailable
         ? t.rich('PetColors.other-ways-lab-desc', { Link: richLink(LINKS.lab) })
         : t('PetColors.other-ways-lab-unavailable', { 0: colorName }),
-      image: 'https://images.neopets.com/caption/caption_585.gif',
+      image: 'https://images.neopets.com/nt/ntimages/149_lab_ray.gif',
       imageBg: 'linear-gradient(145deg, #3b1d6e 0%, #9b5de5 100%)',
       available: availability.labAvailable,
     },
@@ -69,7 +69,7 @@ export async function OtherWays({ availability, colorName, compact = false }: Ot
       id: 'premium',
       title: t('PetColors.other-ways-premium-title'),
       description: t.rich('PetColors.other-ways-premium-desc', { Link: richLink(LINKS.premium) }),
-      image: 'https://images.neopets.com/caption/caption_997.gif',
+      image: 'https://images.neopets.com/premium/2023/icon-changepet.png',
       imageBg: 'linear-gradient(145deg, #5c1a3a 0%, #f72585 100%)',
       available: true,
     },
@@ -137,7 +137,6 @@ function OtherWayCard({
           alt=""
           width={compact ? 44 : 56}
           height={compact ? 44 : 56}
-          unoptimized
           style={{ objectFit: 'cover', width: '100%', height: '100%' }}
         />
       </Box>
