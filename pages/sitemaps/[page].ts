@@ -7,7 +7,7 @@ import { GetServerSideProps } from 'next';
 import prisma from '@utils/prisma';
 import { restockShopInfo, slugify } from '@utils/utils';
 import { listCategoriesData } from '@utils/lists/listCategoriesData';
-import { allSpecies, findPetColorName } from '@utils/pet-utils';
+import { allSpecies, findPetColorName, petColorSlug } from '@utils/pet-utils';
 import { fetchAllNeopetsColors } from '@utils/pet-colors';
 import { wp } from '@pages/api/wp/posts';
 import { SITE_URL, STATIC_SITEMAP_PATHS, bilingualSitemapFields } from '@utils/sitemap';
@@ -105,8 +105,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   });
 
   const colorSpeciesPaths: ISitemapField[] = colorSpecies.flatMap((info, i) => {
-    const speciesName = allSpecies[info.species_id]?.toLowerCase();
-    const colorName = findPetColorName(info.color_id, allNeopetsColors)?.toLowerCase();
+    const speciesName = allSpecies[info.species_id];
+    const colorName = findPetColorName(info.color_id, allNeopetsColors);
 
     const locArr: ISitemapField[] = [];
 
@@ -114,21 +114,25 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       Object.values(allNeopetsColors)
         .slice(pageNum, (pageNum + 1) * 100)
         .forEach((color) => {
-          locArr.push(...bilingualSitemapFields(`/tools/rainbow-pool/${color.toLowerCase()}`));
+          locArr.push(...bilingualSitemapFields(`/tools/rainbow-pool/${petColorSlug(color)}`));
         });
 
       Object.values(allSpecies)
         .slice(pageNum, (pageNum + 1) * 100)
         .forEach((species) => {
-          locArr.push(...bilingualSitemapFields(`/tools/rainbow-pool/${species.toLowerCase()}`));
+          locArr.push(...bilingualSitemapFields(`/tools/rainbow-pool/${petColorSlug(species)}`));
         });
     }
 
     if (!speciesName || !colorName) return locArr;
 
+    const speciesSlug = petColorSlug(speciesName);
+    const colorSlug = petColorSlug(colorName);
+    if (!speciesSlug || !colorSlug) return locArr;
+
     return [
       ...locArr,
-      ...bilingualSitemapFields(`/tools/rainbow-pool/${speciesName}/${colorName}`),
+      ...bilingualSitemapFields(`/tools/rainbow-pool/${speciesSlug}/${colorSlug}`),
     ];
   });
 

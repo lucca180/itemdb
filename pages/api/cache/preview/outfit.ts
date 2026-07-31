@@ -17,7 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET' || !req.url)
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
   let start = Date.now();
-  const { refresh, hash, parent_iid, petId } = req.query;
+  const { refresh, hash, parent_iid, petId, colorId } = req.query;
   const reqQuery = queryString.parse(req.url.split('?')[1], {
     arrayFormat: 'bracket',
   }) as any;
@@ -27,6 +27,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const itemsIds = reqQuery.iid as string[];
   if (!itemsIds || !itemsIds.length) return res.status(400).send('No item iids provided');
+
+  const speciesId = parseOptionalId(petId ?? reqQuery.petId);
+  const parsedColorId = parseOptionalId(colorId ?? reqQuery.colorId);
 
   try {
     const parsedItemIds = itemsIds.map((itemId) => parseInt(itemId));
@@ -46,9 +49,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       .map((itemId) => itemsById.get(itemId))
       .filter((item) => item !== undefined);
 
+    // Keep version 2 + itemIds-only hash when no pet prefs (existing CDN keys).
+    // When species/color are set, include them so clothed previews don't collide.
     const pathHash = objectHash({
       version: 2,
       itemIds: orderedItems.map((item) => item.internal_id),
+      ...(speciesId != null || parsedColorId != null
+        ? { speciesId: speciesId ?? null, colorId: parsedColorId ?? null }
+        : {}),
     });
     const path = `preview/${pathHash}.png`;
 
@@ -73,7 +81,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const imagesURLs = await handleRegularStyle(
         orderedItems.map((item) => item.name),
-        petId ? Number(petId) : undefined
+        { speciesId, colorId: parsedColorId }
       );
       start = updateServerTime('dti-fetch', start, res);
 
@@ -149,8 +157,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 }
 
-const handleRegularStyle = async (itemNames: string[], petId?: number): Promise<string[]> => {
-  const outfitPreview = await dti.fetchOutfitPreview(itemNames, petId);
+const handleRegularStyle = async (
+  itemNames: string[],
+  options?: { speciesId?: number; colorId?: number }
+): Promise<string[]> => {
+  const outfitPreview = await dti.fetchOutfitPreview(itemNames, options);
 
   if (!outfitPreview || !outfitPreview.length) {
     throw new Error('Item Preview not found');
@@ -171,6 +182,13 @@ const handleRegularStyle = async (itemNames: string[], petId?: number): Promise<
   }
 
   return imagesURLs;
+};
+
+const parseOptionalId = (value: unknown): number | undefined => {
+  if (value == null || value === '') return undefined;
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 };
 
 const updateServerTime = (label: string, startTime: number, response: NextApiResponse) => {

@@ -11,9 +11,16 @@ type OutfitCardProps = {
   outfit: ItemData[];
   showItemsLabel: string;
   hideItemsLabel: string;
+  speciesId?: number | null;
 };
 
-export function OutfitCard({ line, outfit, showItemsLabel, hideItemsLabel }: OutfitCardProps) {
+export function OutfitCard({
+  line,
+  outfit,
+  showItemsLabel,
+  hideItemsLabel,
+  speciesId,
+}: OutfitCardProps) {
   return (
     <Collapsible.Root
       lazyMount
@@ -28,7 +35,12 @@ export function OutfitCard({ line, outfit, showItemsLabel, hideItemsLabel }: Out
         <Text as="h2" textTransform="capitalize" fontWeight="bold" fontSize="md" textAlign="center">
           {line}
         </Text>
-        <SkeletonImage url={getPreviewUrl(outfit)} loadkey={line} width={220} height={220} />
+        <SkeletonImage
+          url={getPreviewUrl(outfit, speciesId)}
+          loadkey={line}
+          width={220}
+          height={220}
+        />
         <Collapsible.Trigger asChild>
           <Button variant="ghost" size="sm" gap={1} color="whiteAlpha.800">
             <Collapsible.Context>
@@ -54,8 +66,9 @@ export function OutfitCard({ line, outfit, showItemsLabel, hideItemsLabel }: Out
   );
 }
 
-function getPreviewUrl(items: ItemData[]) {
+function getPreviewUrl(items: ItemData[], speciesId?: number | null) {
   let url = '/api/cache/preview/outfit?';
+  if (speciesId) url += `petId=${speciesId}&`;
   items.forEach((item) => {
     url += `iid[]=${item.internal_id}&`;
   });

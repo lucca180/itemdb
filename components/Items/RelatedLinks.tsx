@@ -12,11 +12,13 @@ import {
 } from '@app/_components/Item/loadUtils';
 import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
+import { browseSpeciesTitle } from '@utils/petColorCopy';
 import {
   getPetpetColorId,
   getPetpetSpeciesFromString,
   getPetpetSpeciesId,
   getSpeciesFromString,
+  petColorSlug,
 } from '@utils/pet-utils';
 
 type Props = {
@@ -120,12 +122,12 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     }
 
     relatedLinks.push({
-      href: `/tools/rainbow-pool/${speciesName?.toLowerCase()}`,
+      href: `/tools/rainbow-pool/${petColorSlug(speciesName)}`,
       imageUrl: img,
       alt: speciesName,
       trackEvent: 'related-link',
       trackEventLabel: 'rainbow-pool',
-      children: t('PetColors.species-title', { 0: speciesName }),
+      children: browseSpeciesTitle(t, speciesName),
     });
 
     relatedLinks.push({
@@ -157,7 +159,7 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
   if (colorEffect && colorEffect.length > 0) {
     colorEffect.forEach((effect) => {
       relatedLinks.push({
-        href: `/tools/rainbow-pool/${effect.colorTarget!.toLowerCase()}`,
+        href: `/tools/rainbow-pool/${petColorSlug(effect.colorTarget!)}`,
         imageUrl: `https://images.neopets.com/themes/h5/basic/images/stylingstudio-icon.png`,
         alt: effect.colorTarget!,
         trackEvent: 'related-link',

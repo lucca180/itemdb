@@ -680,9 +680,11 @@ model ColorSpecies {
 }
 
 model PetColor {
-  id      Int      @id
-  name    String
-  addedAt DateTime @default(now())
+  id                Int      @id
+  name              String
+  fountainAvailable Boolean  @default(true)
+  labAvailable      Boolean  @default(true)
+  addedAt           DateTime @default(now())
 }
 
 model SaleStats {
@@ -958,7 +960,7 @@ model PriceProcess2 {
   item     Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
   owner      String?
-  ownerHash  String?   @db.Char(64)
+  ownerHash  String?  @db.Char(64)
   type       String
   stock      Int      @default(1)
   price      Decimal  @db.Decimal(11, 0)
@@ -983,7 +985,7 @@ model RestockAuctionHistory {
   item     Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
   owner      String?
-  ownerHash  String?   @db.Char(64)
+  ownerHash  String?  @db.Char(64)
   type       String
   otherInfo  String?
   stock      Int      @default(1)

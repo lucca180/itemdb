@@ -90,13 +90,16 @@ export class dti {
     };
   }
 
-  public static async fetchOutfitPreview(itemNames: string[], petId?: number) {
+  public static async fetchOutfitPreview(
+    itemNames: string[],
+    options?: { speciesId?: number; colorId?: number }
+  ) {
     const pet = dti.getRandomPet();
 
     const variables = {
       itemNames: itemNames,
-      species: petId ?? pet.species.id,
-      color: pet.color.id,
+      species: options?.speciesId ?? pet.species.id,
+      color: options?.colorId ?? pet.color.id,
     };
 
     const res = await dti._query(GET_ITEMS_PREVIEW_BY_NAME, variables);

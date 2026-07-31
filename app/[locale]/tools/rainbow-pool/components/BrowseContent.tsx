@@ -1,0 +1,86 @@
+import { Center, Flex, Heading, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { getTranslations } from 'next-intl/server';
+import { createPoolBreadcrumbList, PoolBreadcrumbs } from '@components/Breadcrumbs/PoolBreadcrumbs';
+import { browseColorTitle, browseSpeciesTitle } from '@utils/petColorCopy';
+import { petColorSlug } from '@utils/pet-utils';
+import type { RainbowPoolComboTile } from '@utils/petColorTool';
+import { buildRainbowPoolLabels } from '../buildRainbowPoolLabels';
+import { BASE_PATH, RainbowPoolShell } from './RainbowPoolShell';
+import { ComboTile } from './ComboTile';
+import { RainbowPoolPicker } from './RainbowPoolPicker';
+
+type BrowseContentProps = {
+  locale: string;
+  mode: 'species' | 'color';
+  name: string;
+  combos: RainbowPoolComboTile[];
+  colors: string[];
+  species: string[];
+};
+
+export async function BrowseContent({
+  locale,
+  mode,
+  name,
+  combos,
+  colors,
+  species,
+}: BrowseContentProps) {
+  const [t, labels] = await Promise.all([getTranslations(), buildRainbowPoolLabels()]);
+
+  const h1 = mode === 'species' ? browseSpeciesTitle(t, name) : browseColorTitle(t, name);
+  const subtitle =
+    mode === 'species'
+      ? t('PetColors.species-description', { 0: name })
+      : t('PetColors.paint-description', { 0: name });
+  const gridTitle =
+    mode === 'species'
+      ? t('PetColors.all-colours-of', { 0: name })
+      : t('PetColors.all-pets-of', { 0: name });
+
+  const breadcrumbList = createPoolBreadcrumbList(t, [
+    { name, item: `${BASE_PATH}/${petColorSlug(name)}` },
+  ]);
+
+  return (
+    <RainbowPoolShell>
+      <PoolBreadcrumbs breadcrumbList={breadcrumbList} locale={locale} />
+
+      <Center flexFlow="column" gap={3} textAlign="center" mt={4} mb={6}>
+        <Heading as="h1" size="xl">
+          {h1}
+        </Heading>
+        <Text maxW="640px" fontSize="sm" color="whiteAlpha.900" css={{ textWrap: 'pretty' }}>
+          {subtitle}
+        </Text>
+        <RainbowPoolPicker
+          colors={colors}
+          species={species}
+          initialSpecies={mode === 'species' ? name : ''}
+          initialColor={mode === 'color' ? name : ''}
+          selectColorLabel={labels.selectColorLabel}
+          selectSpeciesLabel={labels.selectSpeciesLabel}
+          searchLabel={labels.searchLabel}
+        />
+      </Center>
+
+      <VStack align="stretch" gap={4} maxW="1100px" mx="auto" px={2}>
+        <Flex justify="space-between" align="baseline" gap={2} flexWrap="wrap">
+          <Heading as="h2" size="md">
+            {gridTitle}
+          </Heading>
+        </Flex>
+
+        <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} gap={3}>
+          {combos.map((combo) => (
+            <ComboTile
+              key={combo.href}
+              combo={combo}
+              titleMode={mode === 'species' ? 'color' : 'species'}
+            />
+          ))}
+        </SimpleGrid>
+      </VStack>
+    </RainbowPoolShell>
+  );
+}

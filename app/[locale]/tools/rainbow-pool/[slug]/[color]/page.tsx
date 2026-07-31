@@ -1,0 +1,154 @@
+import type { Metadata } from 'next';
+import { Suspense } from 'react';
+import { notFound, redirect } from 'next/navigation';
+import AppServerLayout from '@components/Layout/AppServerLayout';
+import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
+import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getAllNeopetsColors } from '@app/server/petColors';
+import { loadComboPbOutfit, loadRainbowPoolCombo, loadSpeciesInfo } from '@app/server/rainbowPool';
+import { allSpecies, findPetColorId, getSpeciesId, petColorSlug } from '@utils/pet-utils';
+import { withLocalePrefix, type AppLocale } from '@utils/locales';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { ComboContent } from '../../components/ComboContent';
+import { MissingComboContent } from '../../components/MissingComboContent';
+import { howToGetComboTitle, resolveBrowseName } from '@utils/petColorCopy';
+import { BASE_PATH, MAIN_COLOR } from '../../components/RainbowPoolShell';
+
+type PageProps = {
+  params: Promise<{ locale: string; slug: string; color: string }>;
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale, slug: speciesSlug, color: colorSlug } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations();
+
+  const fallback = getStaticAppPageProps(locale, {
+    title: t('PetColors.pet-color-tool'),
+    description: t('PetColors.cta'),
+    pathname: BASE_PATH,
+  }).metadata;
+
+  const petColorData = await loadRainbowPoolCombo(colorSlug, speciesSlug);
+  if (!petColorData?.speciesName || !petColorData?.colorName) {
+    const colorsCatalog = await getAllNeopetsColors();
+    const speciesOk = Boolean(getSpeciesId(speciesSlug));
+    const colorOk = Boolean(findPetColorId(colorSlug, colorsCatalog));
+
+    if (speciesOk && colorOk) {
+      const speciesName = resolveBrowseName(speciesSlug, 'species', colorsCatalog);
+      const colorName = resolveBrowseName(colorSlug, 'color', colorsCatalog);
+      return getStaticAppPageProps(locale, {
+        title: t('PetColors.combination-error'),
+        description: t('PetColors.combination-error-desc', { 0: colorName, 1: speciesName }),
+        pathname: `${BASE_PATH}/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
+        noindex: true,
+      }).metadata;
+    }
+
+    return fallback;
+  }
+
+  const { speciesName, colorName, thumbnail } = petColorData;
+  const previewUrl = `https://itemdb.com.br/api/cache/preview/color/${thumbnail.species}_${thumbnail.color}.png`;
+
+  const pageProps = getStaticAppPageProps(locale, {
+    title: howToGetComboTitle(t, colorName, speciesName),
+    description: t('PetColors.species-color-description', { 0: colorName, 1: speciesName }),
+    pathname: `${BASE_PATH}/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
+  });
+
+  return {
+    ...pageProps.metadata,
+    twitter: { ...pageProps.metadata.twitter, card: 'summary_large_image' },
+    openGraph: {
+      ...pageProps.metadata.openGraph,
+      images: [{ url: previewUrl, width: 150, height: 150, alt: `${colorName} ${speciesName}` }],
+    },
+  };
+}
+
+export default function RainbowPoolComboPage({ params }: PageProps) {
+  return (
+    <Suspense fallback={<AppServerLayoutSkeleton mainColor={MAIN_COLOR} />}>
+      <PageContent params={params} />
+    </Suspense>
+  );
+}
+
+async function PageContent({ params }: PageProps) {
+  const { locale, slug: speciesSlug, color: colorSlug } = await params;
+  setRequestLocale(locale);
+
+  const colorsCatalog = await getAllNeopetsColors();
+  const colors = Object.values(colorsCatalog).sort((a, b) => a.localeCompare(b));
+  const species = Object.values(allSpecies).sort((a, b) => a.localeCompare(b));
+
+  const petColorData = await loadRainbowPoolCombo(colorSlug, speciesSlug);
+
+  if (!petColorData?.speciesName || !petColorData?.colorName) {
+    const speciesOk = Boolean(getSpeciesId(speciesSlug));
+    const colorOk = Boolean(findPetColorId(colorSlug, colorsCatalog));
+
+    if (speciesOk && colorOk) {
+      const speciesName = resolveBrowseName(speciesSlug, 'species', colorsCatalog);
+      const colorName = resolveBrowseName(colorSlug, 'color', colorsCatalog);
+
+      return (
+        <AppServerLayout locale={locale} disableNextSeo mainColor={MAIN_COLOR}>
+          <MissingComboContent
+            locale={locale}
+            colorName={colorName}
+            speciesName={speciesName}
+            colors={colors}
+            species={species}
+          />
+        </AppServerLayout>
+      );
+    }
+
+    if (speciesOk) {
+      redirect(withLocalePrefix(`${BASE_PATH}/${petColorSlug(speciesSlug)}`, locale as AppLocale));
+    }
+
+    if (colorOk) {
+      redirect(withLocalePrefix(`${BASE_PATH}/${petColorSlug(colorSlug)}`, locale as AppLocale));
+    }
+
+    notFound();
+  }
+
+  if (
+    petColorSlug(petColorData.speciesName) !== petColorSlug(speciesSlug) ||
+    petColorSlug(petColorData.colorName) !== petColorSlug(colorSlug)
+  ) {
+    redirect(
+      withLocalePrefix(
+        `${BASE_PATH}/${petColorSlug(petColorData.speciesName)}/${petColorSlug(petColorData.colorName)}`,
+        locale as AppLocale
+      )
+    );
+  }
+
+  const [speciesInfo, pbOutfit] = await Promise.all([
+    loadSpeciesInfo(petColorData.speciesName),
+    loadComboPbOutfit(petColorData.colorName, petColorData.speciesName),
+  ]);
+
+  return (
+    <AppServerLayout locale={locale} disableNextSeo mainColor={MAIN_COLOR}>
+      <ComboContent
+        locale={locale}
+        petColorData={petColorData}
+        speciesInfo={speciesInfo}
+        pbOutfit={pbOutfit}
+        colors={colors}
+        species={species}
+      />
+    </AppServerLayout>
+  );
+}
+
+export function generateStaticParams() {
+  return ['en', 'pt'].flatMap((locale) => [{ locale, slug: 'acara', color: 'faerie' }]);
+}

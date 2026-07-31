@@ -1,57 +1,50 @@
-import { useLocale, useTranslations } from 'next-intl';
-import { useMemo } from 'react';
-import { Breadcrumbs } from './Breadcrumbs';
-import { PetColorData } from '@pages/[locale]/tools/rainbow-pool/[[...slug]]';
+import { Box } from '@chakra-ui/react';
+import { BreadcrumbsView } from './BreadcrumbsView';
+import type { BreadcrumbItem } from './types';
+
+const BASE_PATH = '/tools/rainbow-pool';
+
+type PoolBreadcrumbTranslator = {
+  (key: 'Layout.home' | 'Layout.rainbow-pool-tool'): string;
+};
 
 type PoolBreadcrumbsProps = {
-  petColorData: PetColorData | null;
+  breadcrumbList: BreadcrumbItem[];
+  locale: string;
 };
 
-export const PoolBreadcrumbs = (props: PoolBreadcrumbsProps) => {
-  const { petColorData } = props;
-  const t = useTranslations();
-  const locale = useLocale();
+export function PoolBreadcrumbs({ breadcrumbList, locale }: PoolBreadcrumbsProps) {
+  return (
+    <Box mt={2}>
+      <BreadcrumbsView breadcrumbList={breadcrumbList} locale={locale} useAppDir />
+    </Box>
+  );
+}
 
-  const breadcrumbList = useMemo(() => {
-    const breadList = [
-      {
-        position: 1,
-        name: t('Layout.home'),
-        item: '/',
-      },
-      {
-        position: 2,
-        name: t('Layout.rainbow-pool-tool'),
-        item: '/tools/rainbow-pool',
-      },
-    ];
+export function createPoolBreadcrumbList(
+  t: PoolBreadcrumbTranslator,
+  extra: { name: string; item: string }[] = []
+): BreadcrumbItem[] {
+  const breadcrumbList: BreadcrumbItem[] = [
+    {
+      position: 1,
+      name: t('Layout.home'),
+      item: '/',
+    },
+    {
+      position: 2,
+      name: t('Layout.rainbow-pool-tool'),
+      item: BASE_PATH,
+    },
+  ];
 
-    if (petColorData?.speciesName) {
-      breadList.push({
-        position: breadList.length + 1,
-        name: petColorData.speciesName,
-        item: `/tools/rainbow-pool/${petColorData.speciesName.toLowerCase()}`,
-      });
-    }
+  for (const crumb of extra) {
+    breadcrumbList.push({
+      position: breadcrumbList.length + 1,
+      name: crumb.name,
+      item: crumb.item,
+    });
+  }
 
-    if (petColorData?.colorName && !petColorData?.speciesName) {
-      breadList.push({
-        position: breadList.length + 1,
-        name: petColorData.colorName,
-        item: `/tools/rainbow-pool/${petColorData.colorName.toLowerCase()}`,
-      });
-    }
-
-    if (petColorData?.colorName && petColorData?.speciesName) {
-      breadList.push({
-        position: breadList.length + 1,
-        name: `${petColorData.colorName} ${petColorData.speciesName}`,
-        item: `/tools/rainbow-pool/${petColorData.speciesName}/${petColorData.colorName}`,
-      });
-    }
-
-    return breadList;
-  }, [petColorData, locale, t]);
-
-  return <Breadcrumbs breadcrumbList={breadcrumbList} />;
-};
+  return breadcrumbList;
+}

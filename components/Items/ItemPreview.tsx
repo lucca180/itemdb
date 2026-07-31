@@ -7,6 +7,7 @@ import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
+import { petColorSlug } from '@utils/pet-utils';
 
 type Props = {
   item: ItemData;
@@ -40,11 +41,13 @@ const ItemPreview = (props: Props) => {
     if (!colorSpeciesEffect) return '';
 
     const { colorTarget, speciesTarget } = colorSpeciesEffect;
+    if (!colorTarget && !speciesTarget) return '';
 
-    return (
-      `/api/cache/preview/color/${speciesTarget}_${colorTarget}.png`.toLowerCase() +
-      (isRefresh || cacheHash)
-    );
+    // Preview API accepts partial slugs (e.g. null_<color>) and fills the missing side.
+    const speciesPart = speciesTarget ? petColorSlug(speciesTarget) : 'null';
+    const colorPart = colorTarget ? petColorSlug(colorTarget) : 'null';
+
+    return `/api/cache/preview/color/${speciesPart}_${colorPart}.png` + (isRefresh || cacheHash);
   }, [item, colorSpeciesEffect, refresh]);
 
   const handleVarChange = (newVariation: string) => {

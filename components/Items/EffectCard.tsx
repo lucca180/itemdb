@@ -5,7 +5,7 @@ import { ItemEffect } from '@types';
 import { useLocale, useTranslations } from 'next-intl';
 import { getDiseaseTranslation } from '@utils/utils';
 import NextImage from 'next/image';
-import { getPetpetColorId } from '@utils/pet-utils';
+import { getPetpetColorId, petColorSlug } from '@utils/pet-utils';
 import Markdown from '@components/Utils/Markdown';
 import { EffectTypes } from '@components/Items/effectTypes';
 
@@ -150,7 +150,7 @@ export const EffectText = (props: EffectTextProps) => {
               <>
                 {colorTarget && (
                   <Link
-                    href={`/tools/rainbow-pool/${colorTarget.toLowerCase()}`}
+                    href={`/tools/rainbow-pool/${petColorSlug(colorTarget)}`}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -162,7 +162,7 @@ export const EffectText = (props: EffectTextProps) => {
             Target2: () => (
               <>
                 {speciesTarget && (
-                  <Link href={`/tools/rainbow-pool/${speciesTarget.toLowerCase()}`}>
+                  <Link href={`/tools/rainbow-pool/${petColorSlug(speciesTarget)}`}>
                     {speciesTarget}
                   </Link>
                 )}

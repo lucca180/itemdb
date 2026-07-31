@@ -1,3 +1,5 @@
+import { slugify } from '@utils/utils';
+
 export const PET_COLORS_CACHE_TAG = 'pet-colors';
 
 /** Preferred display/URL names when the upstream API uses a different spelling. */
@@ -9,9 +11,15 @@ export const PET_COLOR_NAME_OVERRIDES: Record<number, string> = {
 
 export type PetColorsCatalog = Record<string, string>;
 
+/** URL segment for a colour/species name (`25th Anniversary` → `25th-anniversary`). */
+export function petColorSlug(name: string): string {
+  return slugify(name);
+}
+
 export function findPetColorId(color: string, colors: PetColorsCatalog): number | null {
   if (!color) return null;
-  const id = Object.keys(colors).find((key) => colors[key].toLowerCase() === color.toLowerCase());
+  const needle = petColorSlug(color);
+  const id = Object.keys(colors).find((key) => petColorSlug(colors[key]) === needle);
   if (!id) return null;
   return parseInt(id, 10);
 }
@@ -84,9 +92,8 @@ export const allSpecies: { [id: string]: string } = {
 
 export const getSpeciesId = (species: string) => {
   if (!species) return null;
-  const x = Object.keys(allSpecies).find(
-    (x) => allSpecies[x].toLowerCase() === species.toLowerCase()
-  );
+  const needle = petColorSlug(species);
+  const x = Object.keys(allSpecies).find((id) => petColorSlug(allSpecies[id]) === needle);
   if (!x) return null;
   return parseInt(x);
 };

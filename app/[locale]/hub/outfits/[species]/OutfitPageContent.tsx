@@ -64,6 +64,7 @@ export function OutfitPageContent({ outfits, species, labels }: OutfitPageConten
               key={line}
               line={line}
               outfit={outfit}
+              speciesId={getSpeciesId(species)}
               showItemsLabel={labels.showItems}
               hideItemsLabel={labels.hideItems}
             />
