@@ -131,6 +131,12 @@ export async function ComboContent({
             poweredByLabel={labels.poweredByLabel}
           />
 
+          <PbOutfitSection
+            items={pbOutfit}
+            label={t('PetColors.pb-outfit')}
+            hint={t('PetColors.pb-outfit-hint')}
+          />
+
           <Box display={{ base: 'none', md: 'block' }} w="100%">
             <OtherWays
               availability={{ fountainAvailable, labAvailable }}
@@ -195,12 +201,6 @@ export async function ComboContent({
               initialVisible={4}
             />
           )}
-
-          <PbOutfitSection
-            items={pbOutfit}
-            label={t('PetColors.pb-outfit')}
-            hint={t('PetColors.pb-outfit-hint')}
-          />
 
           <PetStylesSection
             groups={petStyleGroups}

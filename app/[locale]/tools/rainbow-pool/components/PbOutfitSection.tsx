@@ -1,5 +1,5 @@
 import { Badge, Flex, Text } from '@chakra-ui/react';
-import ItemCardV2 from '@components/Items/v2/ItemCardV2';
+import ItemRowV2 from '@components/Items/v2/ItemRowV2';
 import type { ItemV2For } from '@types';
 
 type PbOutfitSectionProps = {
@@ -15,7 +15,7 @@ export function PbOutfitSection({ items, label, hint }: PbOutfitSectionProps) {
   return (
     <Flex
       flexFlow="column"
-      gap={3}
+      gap={2}
       p={3}
       bg="blackAlpha.400"
       borderRadius="lg"
@@ -29,9 +29,9 @@ export function PbOutfitSection({ items, label, hint }: PbOutfitSectionProps) {
           {hint}
         </Text>
       )}
-      <Flex flexWrap="wrap" gap={2} w="100%" justify={{ base: 'center', md: 'flex-start' }}>
+      <Flex flexFlow="column" gap={1.5} w="100%">
         {items.map((item) => (
-          <ItemCardV2 uniqueID="pb-outfit" small key={item.internal_id} item={item} />
+          <ItemRowV2 uniqueID="pb-outfit" key={item.internal_id} item={item} />
         ))}
       </Flex>
     </Flex>
