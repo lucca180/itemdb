@@ -47,6 +47,7 @@ export function ComboPetPreview({
         height={280}
         unoptimized
         priority
+        fetchPriority={activeMode === 'bare' ? 'high' : 'auto'}
         style={{ objectFit: 'contain' }}
       />
 

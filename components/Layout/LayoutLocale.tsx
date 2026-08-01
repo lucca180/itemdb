@@ -1,7 +1,7 @@
 'use client';
 
-import { ChangeEvent, useRef } from 'react';
-import { NativeSelect } from '@chakra-ui/react';
+import { ChangeEvent, useId, useRef } from 'react';
+import { NativeSelect, VisuallyHidden } from '@chakra-ui/react';
 import { useLocale, useTranslations } from 'next-intl';
 import axios from 'axios';
 import { setCookie } from 'cookies-next';
@@ -20,15 +20,17 @@ export function LayoutLocaleSelect({ action, locale }: LayoutLocaleSelectProps) 
 
   return (
     <form ref={formRef} action={action}>
-      <label htmlFor="prefLang" style={{ display: 'none' }}>
-        {t('General.select-language')}
-      </label>
-      <LocaleSelect defaultValue={locale} onChange={() => formRef.current?.requestSubmit()} />
+      <LocaleSelect
+        defaultValue={locale}
+        label={t('General.select-language')}
+        onChange={() => formRef.current?.requestSubmit()}
+      />
     </form>
   );
 }
 
 export function LayoutLocalePages() {
+  const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
   const intlLocale = useLocale();
@@ -54,24 +56,48 @@ export function LayoutLocalePages() {
     router.replace(pathname, { locale: prefLang as AppLocale });
   };
 
-  return <LocaleSelect defaultValue={currentLocale} onChange={changeLang} />;
+  return (
+    <LocaleSelect
+      defaultValue={currentLocale}
+      label={t('General.select-language')}
+      onChange={changeLang}
+    />
+  );
 }
 
-const LocaleSelect = (props: { defaultValue: string; onChange: (value: string) => void }) => {
+const LocaleSelect = (props: {
+  defaultValue: string;
+  label: string;
+  onChange: (value: string) => void;
+}) => {
+  const selectId = useId();
+
   return (
-    <NativeSelect.Root size="xs" variant="subtle" flex="1" minW="120px" borderRadius="md" h="25px">
-      <NativeSelect.Field
-        id="prefLang"
-        name="prefLang"
+    <>
+      <VisuallyHidden asChild>
+        <label htmlFor={selectId}>{props.label}</label>
+      </VisuallyHidden>
+      <NativeSelect.Root
+        size="xs"
+        variant="subtle"
+        flex="1"
+        minW="120px"
+        borderRadius="md"
         h="25px"
-        defaultValue={props.defaultValue}
-        bg="whiteAlpha.200"
-        onChange={(e: ChangeEvent<HTMLSelectElement>) => props.onChange(e.target.value)}
       >
-        <option value="en">English</option>
-        <option value="pt">Português</option>
-      </NativeSelect.Field>
-      <NativeSelect.Indicator />
-    </NativeSelect.Root>
+        <NativeSelect.Field
+          id={selectId}
+          name="prefLang"
+          h="25px"
+          defaultValue={props.defaultValue}
+          bg="whiteAlpha.200"
+          onChange={(e: ChangeEvent<HTMLSelectElement>) => props.onChange(e.target.value)}
+        >
+          <option value="en">English</option>
+          <option value="pt">Português</option>
+        </NativeSelect.Field>
+        <NativeSelect.Indicator />
+      </NativeSelect.Root>
+    </>
   );
 };

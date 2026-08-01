@@ -44,6 +44,7 @@ export const AuthButton = (props: AuthButtonProps) => {
             colorPalette="whiteAlpha"
             _hover={{ bg: 'gray.600' }}
             onClick={onOpen}
+            aria-label={t('Layout.login')}
             px={{ base: 0, md: 4 }}
             // Avoid SSR mismatch: LayoutAuthServer already resolved initialUser (User | null).
             loading={authLoading && typeof initialUser === 'undefined'}
@@ -61,6 +62,7 @@ export const AuthButton = (props: AuthButtonProps) => {
                 cursor="pointer"
                 variant="subtle"
                 colorPalette="whiteAlpha"
+                aria-label={t('Layout.hi-user', { name: user.username ?? '' })}
                 px={{ base: 1, md: 4 }}
                 textAlign="center"
                 data-umami-event="profile-menu-button"

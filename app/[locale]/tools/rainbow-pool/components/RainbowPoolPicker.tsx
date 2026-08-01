@@ -1,8 +1,8 @@
 'use client';
 
-import { Button, HStack, NativeSelect } from '@chakra-ui/react';
+import { Button, HStack, NativeSelect, VisuallyHidden } from '@chakra-ui/react';
 import { useRouter } from '@i18n/navigation';
-import { useState, type ChangeEvent } from 'react';
+import { useId, useState, type ChangeEvent } from 'react';
 import { petColorSlug } from '@utils/pet-utils';
 
 const BASE_PATH = '/tools/rainbow-pool';
@@ -29,6 +29,8 @@ export function RainbowPoolPicker({
   const router = useRouter();
   const [color, setColor] = useState(initialColor);
   const [selectedSpecies, setSelectedSpecies] = useState(initialSpecies);
+  const colorSelectId = useId();
+  const speciesSelectId = useId();
 
   const canSearch = Boolean(color || selectedSpecies);
 
@@ -48,8 +50,12 @@ export function RainbowPoolPicker({
 
   return (
     <HStack mt={1} flexWrap={{ base: 'wrap', sm: 'nowrap' }} justify="center" gap={2}>
+      <VisuallyHidden asChild>
+        <label htmlFor={colorSelectId}>{selectColorLabel}</label>
+      </VisuallyHidden>
       <NativeSelect.Root size="sm" variant="subtle" minW={150} bg="blackAlpha.400">
         <NativeSelect.Field
+          id={colorSelectId}
           value={color}
           onChange={(e: ChangeEvent<HTMLSelectElement>) => setColor(e.target.value)}
         >
@@ -63,8 +69,12 @@ export function RainbowPoolPicker({
         <NativeSelect.Indicator />
       </NativeSelect.Root>
 
+      <VisuallyHidden asChild>
+        <label htmlFor={speciesSelectId}>{selectSpeciesLabel}</label>
+      </VisuallyHidden>
       <NativeSelect.Root size="sm" variant="subtle" minW={175} bg="blackAlpha.400">
         <NativeSelect.Field
+          id={speciesSelectId}
           value={selectedSpecies}
           onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedSpecies(e.target.value)}
         >
