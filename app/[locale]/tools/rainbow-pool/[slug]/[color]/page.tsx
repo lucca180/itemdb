@@ -50,12 +50,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return fallback;
   }
 
-  const { speciesName, colorName, thumbnail } = petColorData;
+  const { speciesName, colorName, thumbnail, speciesId, colorId } = petColorData;
   const previewUrl = `https://itemdb.com.br/api/cache/preview/color/${thumbnail.species}_${thumbnail.color}.png`;
+  const styleGroups = await loadComboPetStyles(speciesId, colorId);
+  const description = styleGroups.length
+    ? t('PetColors.species-color-description-with-styles', { 0: colorName, 1: speciesName })
+    : t('PetColors.species-color-description', { 0: colorName, 1: speciesName });
 
   const pageProps = getStaticAppPageProps(locale, {
     title: howToGetComboSeoTitle(t, colorName, speciesName),
-    description: t('PetColors.species-color-description', { 0: colorName, 1: speciesName }),
+    description,
     pathname: `${BASE_PATH}/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
   });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Box, Flex, IconButton, Skeleton, Text } from '@chakra-ui/react';
+import { Box, Flex, Heading, IconButton, Skeleton, Text } from '@chakra-ui/react';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import Image from '@components/Utils/Image';
 import type { ComboPetStyleGroup } from '@app/server/petStyles';
@@ -15,7 +15,7 @@ const LAZY_ROOT_MARGIN = '200px';
 
 type PetStylesSectionProps = {
   groups: ComboPetStyleGroup[];
-  label: string;
+  heading: string;
   hint?: ReactNode;
 };
 
@@ -53,7 +53,7 @@ function useNearViewport<T extends Element>(rootMargin = LAZY_ROOT_MARGIN) {
 }
 
 /** Pet Style tokens for this species × colour, grouped by series, with wearable preview. */
-export function PetStylesSection({ groups, label, hint }: PetStylesSectionProps) {
+export function PetStylesSection({ groups, heading, hint }: PetStylesSectionProps) {
   if (!groups.length) return null;
 
   return (
@@ -67,7 +67,9 @@ export function PetStylesSection({ groups, label, hint }: PetStylesSectionProps)
       align={{ base: 'center', md: 'flex-start' }}
       textAlign={{ base: 'center', md: 'start' }}
     >
-      <Badge colorPalette="cyan">{label}</Badge>
+      <Heading as="h2" size="sm" color="cyan.200">
+        {heading}
+      </Heading>
       {hint && (
         <Text fontSize="xs" color="whiteAlpha.700" css={{ textWrap: 'pretty' }}>
           {hint}

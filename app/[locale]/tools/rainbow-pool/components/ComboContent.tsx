@@ -204,8 +204,10 @@ export async function ComboContent({
 
           <PetStylesSection
             groups={petStyleGroups}
-            label={t('PetColors.pet-styles')}
+            heading={t('PetColors.pet-styles-heading', { 0: colorName, 1: speciesName })}
             hint={t.rich('PetColors.pet-styles-hint', {
+              0: colorName,
+              1: speciesName,
               Link: (chunks) => (
                 <IconLink
                   href="https://www.neopets.com/mall/stylingstudio/"

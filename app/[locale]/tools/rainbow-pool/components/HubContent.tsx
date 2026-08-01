@@ -10,7 +10,9 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
+import type { ReactNode } from 'react';
 import { createPoolBreadcrumbList, PoolBreadcrumbs } from '@components/Breadcrumbs/PoolBreadcrumbs';
+import { IconLink } from '@components/Utils/IconLink';
 import MainLink from '@components/Utils/MainLink';
 import { getCachedNow } from '@utils/getCachedNow';
 import { petColorSlug } from '@utils/pet-utils';
@@ -20,9 +22,43 @@ import { ComboTile } from './ComboTile';
 import { RainbowPoolPicker } from './RainbowPoolPicker';
 import { BASE_PATH, RainbowPoolShell } from './RainbowPoolShell';
 
+const OFFICIAL_LINKS = {
+  pool: 'https://www.neopets.com/pool/',
+  fountain: 'https://www.neopets.com/faerieland/rainbowfountain.phtml',
+  lab: 'https://www.neopets.com/lab.phtml',
+  premium: 'https://www.neopets.com/premium/',
+  festival: 'https://www.neopets.com/faeriefestival/index.phtml',
+  stylingStudio: 'https://www.neopets.com/mall/stylingstudio/',
+} as const;
+
+function richLink(href: string) {
+  const RichLink = (chunks: ReactNode) => (
+    <IconLink href={href} isExternal color="teal.200" fontWeight="semibold">
+      {chunks}
+    </IconLink>
+  );
+  RichLink.displayName = 'HubRichLink';
+  return RichLink;
+}
+
+const richLinkTags = {
+  PoolLink: richLink(OFFICIAL_LINKS.pool),
+  FountainLink: richLink(OFFICIAL_LINKS.fountain),
+  LabLink: richLink(OFFICIAL_LINKS.lab),
+  PremiumLink: richLink(OFFICIAL_LINKS.premium),
+  FestivalLink: richLink(OFFICIAL_LINKS.festival),
+  StudioLink: richLink(OFFICIAL_LINKS.stylingStudio),
+};
+
+/** Plain text for FAQPage JSON-LD (strip next-intl rich tags). */
+function stripRichTags(value: string): string {
+  return value.replace(/<\/?[A-Za-z][A-Za-z0-9]*>/g, '');
+}
+
 type HubFaqItem = {
   questionName: string;
   acceptedAnswerText: string;
+  acceptedAnswer: ReactNode;
 };
 
 function formatFaqPageJsonLd(items: HubFaqItem[]) {
@@ -63,21 +99,22 @@ export async function HubContent({ locale, colors, species, recentlyReleased }: 
   const hubSections = [
     {
       title: t('PetColors.hub-section-what-title'),
-      body: t('PetColors.hub-section-what-body'),
+      body: t.rich('PetColors.hub-section-what-body', richLinkTags),
     },
     {
       title: t('PetColors.hub-section-diff-title'),
-      body: t('PetColors.hub-section-diff-body'),
+      body: t.rich('PetColors.hub-section-diff-body', richLinkTags),
     },
     {
       title: t('PetColors.hub-section-alt-title'),
-      body: t('PetColors.hub-section-alt-body'),
+      body: t.rich('PetColors.hub-section-alt-body', richLinkTags),
     },
   ];
 
-  const faqItems: HubFaqItem[] = [1, 2, 3, 4].map((i) => ({
+  const faqItems: HubFaqItem[] = [1, 2, 3, 4, 5].map((i) => ({
     questionName: t(`PetColors.faq-${i}`),
-    acceptedAnswerText: t(`PetColors.faq-${i}-text`),
+    acceptedAnswerText: stripRichTags(t.raw(`PetColors.faq-${i}-text`)),
+    acceptedAnswer: t.rich(`PetColors.faq-${i}-text`, richLinkTags),
   }));
   const faqJsonLd = formatFaqPageJsonLd(faqItems);
 
@@ -199,7 +236,7 @@ export async function HubContent({ locale, colors, species, recentlyReleased }: 
                   {item.questionName}
                 </Heading>
                 <Text fontSize="sm" color="whiteAlpha.800" css={{ textWrap: 'pretty' }}>
-                  {item.acceptedAnswerText}
+                  {item.acceptedAnswer}
                 </Text>
               </Box>
             ))}
