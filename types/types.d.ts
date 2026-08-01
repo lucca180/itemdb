@@ -713,6 +713,30 @@ export type WearableData = {
   canonicalSpecies: string;
 };
 
+export type PetStyleData = {
+  internal_id: number;
+  item_iid: number;
+  item_id: number;
+  species_id: number | null;
+  series: string;
+  color_id: number | null;
+  isPrismatic: boolean;
+  prismaticVariant: string | null;
+  needsReview: boolean;
+  addedAt: string;
+  updatedAt: string;
+};
+
+export type PetStyleAvailabilityData = {
+  internal_id: number;
+  style_id: number;
+  availableBegin: string | null;
+  availableEnd: string | null;
+  active: boolean | null;
+  addedAt: string;
+  updatedAt: string;
+};
+
 export type APIKeyData = {
   key_id: number;
   api_key?: string;

@@ -1282,6 +1282,8 @@
     "all-pets-of": "All {0} Neopets",
     "pb-outfit": "Paint Brush Outfit",
     "pb-outfit-hint": "Clothes that come with this Paint Brush colour.",
+    "pet-styles": "Pet Style Tokens",
+    "pet-styles-hint": "Style tokens from the <Link>Styling Studio</Link> for this colour and species. Use the arrows to preview; tap a token to open it.",
     "preview-bare": "Pet",
     "preview-clothed": "Outfit"
   },

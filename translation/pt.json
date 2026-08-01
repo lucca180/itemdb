@@ -1283,6 +1283,8 @@
     "all-pets-of": "Todos os Neopets {0}",
     "pb-outfit": "Roupa do Paint Brush",
     "pb-outfit-hint": "Roupas que vêm com essa cor de Paint Brush.",
+    "pet-styles": "Pet Style Tokens",
+    "pet-styles-hint": "Lista completa de Pet Style Tokens do <Link>Styling Studio</Link> para essa cor e espécie. Use as setas para ver o preview; toque no token para abrir.",
     "preview-bare": "Pet",
     "preview-clothed": "Roupa"
   },

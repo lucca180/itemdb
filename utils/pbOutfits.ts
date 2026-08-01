@@ -51,13 +51,13 @@ export function getPbSpeciesNameAliases(speciesName: string): string[] {
 }
 
 /**
- * Paint Brush (type=`pb`) wearables for a colour × species combo.
+ * Paint Brush (type=`pb`) wearable internal_ids for a colour × species combo.
  * Matching uses item name + WearableData.species_name (no DB FK).
  */
-export async function getComboPbOutfit(
+export async function getComboPbOutfitIds(
   colorName: string,
   speciesName: string
-): Promise<ItemData[]> {
+): Promise<number[]> {
   if (!colorName || !speciesName) return [];
 
   const colorPattern = buildNamePattern(getPbColorNameAliases(colorName));
@@ -87,8 +87,18 @@ export async function getComboPbOutfit(
       AND i.name REGEXP ${`\\b(${speciesPattern})(\\b|\\s)`}
   `) as { item_iid: number }[];
 
-  const ids = [...new Set([...bySpeciesName, ...byItemName].map((row) => row.item_iid))];
+  return [...new Set([...bySpeciesName, ...byItemName].map((row) => row.item_iid))];
+}
 
+/**
+ * PB outfit items hydrated via v1 many API (Pages / legacy callers).
+ * App Router rainbow-pool should use `getComboPbOutfitIds` + ItemService instead.
+ */
+export async function getComboPbOutfit(
+  colorName: string,
+  speciesName: string
+): Promise<ItemData[]> {
+  const ids = await getComboPbOutfitIds(colorName, speciesName);
   if (!ids.length) return [];
 
   const itemData = await getManyItems({
@@ -98,16 +108,4 @@ export async function getComboPbOutfit(
   return Object.values(itemData).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export function buildPbOutfitPreviewUrl(
-  items: ItemData[],
-  speciesId?: number | null,
-  colorId?: number | null
-): string {
-  let url = '/api/cache/preview/outfit?';
-  if (speciesId) url += `petId=${speciesId}&`;
-  if (colorId) url += `colorId=${colorId}&`;
-  for (const item of items) {
-    url += `iid[]=${item.internal_id}&`;
-  }
-  return url;
-}
+export { buildOutfitPreviewUrl as buildPbOutfitPreviewUrl } from '@utils/outfitPreviewUrl';

@@ -6,6 +6,7 @@ import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton'
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { getAllNeopetsColors } from '@app/server/petColors';
 import { loadComboPbOutfit, loadRainbowPoolCombo, loadSpeciesInfo } from '@app/server/rainbowPool';
+import { loadComboPetStyles } from '@app/server/petStyles';
 import { allSpecies, findPetColorId, getSpeciesId, petColorSlug } from '@utils/pet-utils';
 import { withLocalePrefix, type AppLocale } from '@utils/locales';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -130,9 +131,10 @@ async function PageContent({ params }: PageProps) {
     );
   }
 
-  const [speciesInfo, pbOutfit] = await Promise.all([
+  const [speciesInfo, pbOutfit, petStyleGroups] = await Promise.all([
     loadSpeciesInfo(petColorData.speciesName),
     loadComboPbOutfit(petColorData.colorName, petColorData.speciesName),
+    loadComboPetStyles(petColorData.speciesId, petColorData.colorId),
   ]);
 
   return (
@@ -142,6 +144,7 @@ async function PageContent({ params }: PageProps) {
         petColorData={petColorData}
         speciesInfo={speciesInfo}
         pbOutfit={pbOutfit}
+        petStyleGroups={petStyleGroups}
         colors={colors}
         species={species}
       />

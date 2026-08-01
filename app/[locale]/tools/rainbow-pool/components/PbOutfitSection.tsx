@@ -1,9 +1,9 @@
 import { Badge, Flex, Text } from '@chakra-ui/react';
-import ItemCard from '@components/Items/ItemCard';
-import type { ItemData } from '@types';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
+import type { ItemV2For } from '@types';
 
 type PbOutfitSectionProps = {
-  items: ItemData[];
+  items: ItemV2For<'card'>[];
   label: string;
   hint?: string;
 };
@@ -31,7 +31,7 @@ export function PbOutfitSection({ items, label, hint }: PbOutfitSectionProps) {
       )}
       <Flex flexWrap="wrap" gap={2} w="100%" justify={{ base: 'center', md: 'flex-start' }}>
         {items.map((item) => (
-          <ItemCard uniqueID="pb-outfit" small key={item.internal_id} item={item} />
+          <ItemCardV2 uniqueID="pb-outfit" small key={item.internal_id} item={item} />
         ))}
       </Flex>
     </Flex>

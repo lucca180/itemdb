@@ -2,44 +2,40 @@ import 'server-only';
 
 import { cacheLife, cacheTag } from 'next/cache';
 import { getAllNeopetsColors } from '@app/server/petColors';
+import { getPetColorComboV2FromQuery, type PetColorComboV2 } from '@app/server/petColorCombo';
+import { ItemService } from '@services/ItemService';
 import { PET_COLORS_CACHE_TAG } from '@utils/pet-utils';
 import {
-  getPetColorDataStr,
   getSpeciesInfo,
   listCombosByColor,
   listCombosBySpecies,
   listRecentlyReleasedCombos,
-  type PetColorData,
   type RainbowPoolComboTile,
   type SpeciesInfo,
 } from '@utils/petColorTool';
-import { getComboPbOutfit } from '@utils/pbOutfits';
+import { getComboPbOutfitIds } from '@utils/pbOutfits';
 import { findPetColorId, getSpeciesId } from '@utils/pet-utils';
-import type { ItemData } from '@types';
+import type { ItemV2For } from '@types';
 
-export type { PetColorData, RainbowPoolComboTile, SpeciesInfo };
+export type { RainbowPoolComboTile, SpeciesInfo, PetColorComboV2 };
+
+/** @deprecated Prefer PetColorComboV2 — alias kept for combo page props. */
+export type RainbowPoolComboData = PetColorComboV2;
 
 export async function loadRainbowPoolCombo(
   color: string | undefined,
   species: string | undefined
-): Promise<PetColorData | null> {
+): Promise<PetColorComboV2 | null> {
   'use cache';
   cacheTag(PET_COLORS_CACHE_TAG);
   cacheLife({ stale: 300, revalidate: 300, expire: 3600 });
 
-  try {
-    return await getPetColorDataStr(color, species);
-  } catch (err) {
-    if (
-      err &&
-      typeof err === 'object' &&
-      'error' in err &&
-      (err as { error: unknown }).error === 'pet_color_not_found'
-    ) {
-      return null;
-    }
-    throw err;
+  const result = await getPetColorComboV2FromQuery(color, species);
+  if (!result.ok) {
+    if (result.error === 'pet_color_not_found') return null;
+    throw new Error(result.error);
   }
+  return result.data;
 }
 
 export async function loadSpeciesInfo(species: string): Promise<SpeciesInfo | null> {
@@ -94,10 +90,17 @@ export async function resolveSlugKind(slug: string): Promise<'species' | 'color'
 export async function loadComboPbOutfit(
   colorName: string,
   speciesName: string
-): Promise<ItemData[]> {
+): Promise<ItemV2For<'card'>[]> {
   'use cache';
   cacheTag(PET_COLORS_CACHE_TAG);
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
 
-  return getComboPbOutfit(colorName, speciesName);
+  const ids = await getComboPbOutfitIds(colorName, speciesName);
+  if (!ids.length) return [];
+
+  const items = await ItemService.getManyItems(
+    { type: 'id', data: ids },
+    { intent: 'card', limit: ids.length }
+  );
+  return Object.values(items).sort((a, b) => a.name.localeCompare(b.name));
 }

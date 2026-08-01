@@ -3,13 +3,13 @@
 import { Badge, Button, Flex, Text } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
-import ItemCard from '@components/Items/ItemCard';
-import type { ItemData } from '@types';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
+import type { ItemV2For } from '@types';
 
 type PathSectionProps = {
   label: string;
   colorPalette: 'green' | 'blue' | 'purple' | 'orange';
-  items: ItemData[];
+  items: ItemV2For<'card'>[];
   uniqueIdPrefix: string;
   hint?: string;
   initialVisible?: number;
@@ -67,7 +67,7 @@ export function PathSection({
       )}
       <Flex flexWrap="wrap" gap={2} justify={{ base: 'center', md: 'flex-start' }} w="100%">
         {visible.map((item) => (
-          <ItemCard uniqueID={uniqueIdPrefix} small key={item.internal_id} item={item} />
+          <ItemCardV2 uniqueID={uniqueIdPrefix} small key={item.internal_id} item={item} />
         ))}
       </Flex>
       {hasMore && (

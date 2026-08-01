@@ -2,28 +2,33 @@ import { Badge, Box, Flex, Heading, Link, Text, VStack } from '@chakra-ui/react'
 import { getFormatter, getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { IconLink } from '@components/Utils/IconLink';
-import ItemCard from '@components/Items/ItemCard';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import MainLink from '@components/Utils/MainLink';
 import { PoolBreadcrumbs, createPoolBreadcrumbList } from '@components/Breadcrumbs/PoolBreadcrumbs';
+import type { PetColorComboV2 } from '@app/server/petColorCombo';
+import type { ComboPetStyleGroup } from '@app/server/petStyles';
 import { howToGetComboTitle } from '@utils/petColorCopy';
+import { getNpPriceValue } from '@utils/item/v2';
 import { petColorSlug } from '@utils/pet-utils';
 import { buildPbOutfitPreviewUrl } from '@utils/pbOutfits';
-import type { ItemData } from '@types';
-import type { PetColorData, SpeciesInfo } from '@utils/petColorTool';
+import type { SpeciesInfo } from '@utils/petColorTool';
+import type { ItemV2For } from '@types';
 import { buildRainbowPoolLabels } from '../buildRainbowPoolLabels';
 import { ComboPetPreview } from './ComboPetPreview';
 import { OtherWays } from './OtherWays';
 import { PathSection } from './PathSection';
 import { PbOutfitSection } from './PbOutfitSection';
+import { PetStylesSection } from './PetStylesSection';
 import { ShareLinkButton } from './RainbowPoolClient';
 import { RainbowPoolPicker } from './RainbowPoolPicker';
 import { BASE_PATH, RainbowPoolShell } from './RainbowPoolShell';
 
 type ComboContentProps = {
   locale: string;
-  petColorData: PetColorData;
+  petColorData: PetColorComboV2;
   speciesInfo: SpeciesInfo | null;
-  pbOutfit: ItemData[];
+  pbOutfit: ItemV2For<'card'>[];
+  petStyleGroups: ComboPetStyleGroup[];
   colors: string[];
   species: string[];
 };
@@ -33,6 +38,7 @@ export async function ComboContent({
   petColorData,
   speciesInfo,
   pbOutfit,
+  petStyleGroups,
   colors,
   species,
 }: ComboContentProps) {
@@ -61,7 +67,7 @@ export async function ComboContent({
   const previewUrl = `/api/cache/preview/color/${thumbnail.species}_${thumbnail.color}.png`;
   const clothedPreviewUrl =
     pbOutfit.length > 0 ? buildPbOutfitPreviewUrl(pbOutfit, speciesId, colorId) : null;
-  const total = cheapestChange.reduce((acc, item) => acc + (item.price.value ?? 0), 0);
+  const total = cheapestChange.reduce((acc, item) => acc + (getNpPriceValue(item.price) ?? 0), 0);
   const totalLabel = `${total.toLocaleString('en-US')} NP`;
 
   const breadcrumbList = createPoolBreadcrumbList(t, [
@@ -196,6 +202,23 @@ export async function ComboContent({
             hint={t('PetColors.pb-outfit-hint')}
           />
 
+          <PetStylesSection
+            groups={petStyleGroups}
+            label={t('PetColors.pet-styles')}
+            hint={t.rich('PetColors.pet-styles-hint', {
+              Link: (chunks) => (
+                <IconLink
+                  href="https://www.neopets.com/mall/stylingstudio/"
+                  isExternal
+                  color="cyan.200"
+                  fontWeight="semibold"
+                >
+                  {chunks}
+                </IconLink>
+              ),
+            })}
+          />
+
           <Box display={{ base: 'block', md: 'none' }} w="100%">
             <OtherWays
               availability={{ fountainAvailable, labAvailable }}
@@ -270,7 +293,7 @@ function CostHeroInline({
   totalLabel,
   badgeLabel,
 }: {
-  items: ItemData[];
+  items: ItemV2For<'card'>[];
   totalLabel: string;
   badgeLabel: string;
 }) {
@@ -302,7 +325,7 @@ function CostHeroInline({
       </Flex>
       <Flex flexWrap="wrap" gap={2} justify={{ base: 'center', sm: 'flex-start' }}>
         {items.map((item) => (
-          <ItemCard uniqueID="cheapest" small key={item.internal_id} item={item} />
+          <ItemCardV2 uniqueID="cheapest" small key={item.internal_id} item={item} />
         ))}
       </Flex>
     </Box>

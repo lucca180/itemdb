@@ -54,6 +54,15 @@ export function colorHexWithAlpha(colorHex: string, alphaHex = '73'): string {
   return `${hex}${alphaHex}`;
 }
 
+/** NP market value from an ItemV2 price field; null if missing / NC Mall. */
+export function getNpPriceValue(
+  price: ItemV2For<'card'>['price'] | null | undefined
+): number | null {
+  if (!price || price.type !== 'np') return null;
+  if (typeof price.value === 'number' && price.value > 0) return price.value;
+  return null;
+}
+
 /** Sort key for list price / price×qty — mirrors legacy `getSortPrice` for ItemV2. */
 export function getSortPriceV2(
   item: ItemV2For<'card'>,
