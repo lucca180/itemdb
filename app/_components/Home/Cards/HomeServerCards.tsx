@@ -1,11 +1,13 @@
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getTranslations } from 'next-intl/server';
+import { getFormatter, getTranslations } from 'next-intl/server';
 import { getTrendingLists } from '@pages/api/v1/beta/trending';
 import { ItemService } from '@services/ItemService';
+import { loadRecentlyReleasedCombos } from '@app/server/rainbowPool';
 import { HomeCard } from '@components/Card/HomeCard';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { FeaturedListsGrid } from '@components/Home/FeaturedListsGrid';
+import { ComboTile } from '@app/[locale]/tools/rainbow-pool/components/ComboTile';
 
 async function getCachedLatestItems() {
   'use cache';
@@ -25,14 +27,7 @@ async function getCachedLeavingNcMallItems() {
   'use cache';
   cacheTag('home-latest-nc-mall');
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
-  return ItemService.getMall(18, true).catch(() => []);
-}
-
-async function getCachedLatestWearableItems() {
-  'use cache';
-  cacheTag('home-latest-wearable-items');
-  cacheLife('homeSection');
-  return ItemService.getLatest(18, true, true).catch(() => []);
+  return ItemService.getMall(12, true).catch(() => []);
 }
 
 async function getCachedTrendingItems() {
@@ -181,13 +176,13 @@ export function LeavingNcMallHomeCard() {
     <Suspense
       fallback={
         <HomeCard
-          useItemCard
           title="Leaving NC Mall"
           color="#CB9DF0"
           image="https://images.neopets.com/themes/h5/altadorcup/images/calendar-icon.png"
           h={70}
           w={70}
-          perPage={9}
+          showMallLeaveDate
+          perPage={6}
           isLoading
         />
       }
@@ -203,7 +198,7 @@ async function LeavingNcMallHomeCardContent() {
 
   return (
     <HomeCard
-      useItemCard
+      showMallLeaveDate
       href="/mall/leaving"
       utm_content="leaving-nc-mall"
       color="#CB9DF0"
@@ -212,48 +207,59 @@ async function LeavingNcMallHomeCardContent() {
       title={t('HomePage.leaving-nc-mall')}
       h={70}
       w={70}
-      perPage={9}
+      perPage={6}
     />
   );
 }
 
-export function LatestWearableHomeCard() {
+export function RainbowPoolHomeCard() {
   return (
     <Suspense
       fallback={
         <HomeCard
-          useItemCard
-          title="New Clothes"
-          color="#59cde2"
-          image="https://images.neopets.com/themes/h5/basic/images/customise-icon.svg"
-          w={70}
-          h={70}
-          perPage={9}
+          title="Rainbow Pool"
+          color="#83dfff"
+          image="https://images.neopets.com/themes/h5/basic/images/fondipdye-icon.png"
+          href="/tools/rainbow-pool"
+          utm_content="home-rainbow-pool"
+          h={50}
+          w={50}
+          perPage={6}
           isLoading
         />
       }
     >
-      <LatestWearableHomeCardContent />
+      <RainbowPoolHomeCardContent />
     </Suspense>
   );
 }
 
-async function LatestWearableHomeCardContent() {
-  const t = await getTranslations();
-  const items = await getCachedLatestWearableItems();
+async function RainbowPoolHomeCardContent() {
+  const [t, format] = await Promise.all([getTranslations(), getFormatter()]);
+  const combos = await loadRecentlyReleasedCombos(12);
 
   return (
     <HomeCard
-      useItemCard
-      utm_content="latest-wearable"
-      href="/search?s=&sortBy=added&sortDir=desc&type[]=wearable&utm_content=latest-wearable"
-      color="#59cde2"
-      image="https://images.neopets.com/themes/h5/basic/images/customise-icon.svg"
-      items={items}
-      title={t('HomePage.new-clothes')}
-      w={70}
-      h={70}
-      perPage={9}
+      color="#83dfff"
+      image="https://images.neopets.com/themes/h5/basic/images/fondipdye-icon.png"
+      title={t('HomePage.rainbow-pool')}
+      href="/tools/rainbow-pool"
+      utm_content="home-rainbow-pool"
+      h={50}
+      w={50}
+      perPage={6}
+      bodyRows={combos.map((combo) => (
+        <ComboTile
+          key={combo.href}
+          combo={combo}
+          layout="row"
+          releasedLabel={format.dateTime(combo.addedAt, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })}
+        />
+      ))}
     />
   );
 }

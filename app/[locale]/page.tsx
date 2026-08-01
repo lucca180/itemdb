@@ -10,7 +10,7 @@ import {
   FeaturedListsHomeCard,
   LeavingNcMallHomeCard,
   LatestItemsHomeCard,
-  LatestWearableHomeCard,
+  RainbowPoolHomeCard,
   TrendingItemsHomeCard,
   LatestNcMallHomeCard,
 } from '@app/_components/Home/Cards/HomeServerCards';
@@ -113,7 +113,7 @@ async function HomePageContent({ params }: HomePageProps) {
         <FeaturedListsHomeCard />
         <Flex direction={{ base: 'column', lg: 'row' }} gap={{ base: 4, xl: 8 }}>
           <LeavingNcMallHomeCard />
-          <LatestWearableHomeCard />
+          <RainbowPoolHomeCard />
         </Flex>
         <Flex direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
           <Flex direction="column" flex={1} alignItems="center">

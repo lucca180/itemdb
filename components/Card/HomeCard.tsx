@@ -21,8 +21,8 @@ import { ItemImageV2 } from '@components/Items/v2/ItemImageV2';
 import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
 import MainLink from '@components/Utils/MainLink';
 import { GoChevronLeft, GoChevronRight } from 'react-icons/go';
-import { useState, type MouseEvent } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, type MouseEvent, type ReactNode } from 'react';
+import { useFormatter, useTranslations } from 'next-intl';
 
 const ItemCtxMenuV2 = dynamic(() => import('@components/Menus/ItemCtxMenuV2'), { ssr: false });
 
@@ -36,10 +36,14 @@ type HomeCardProps = {
   h?: number;
   w?: number;
   useItemCard?: boolean;
+  /** Show NC Mall leave date (`price.saleEnd`) instead of the price badge. */
+  showMallLeaveDate?: boolean;
   opacity?: number;
   utm_content?: string;
   perPage?: number;
   isLoading?: boolean;
+  /** Custom paginated rows (e.g. Rainbow Pool). Replaces the item list. */
+  bodyRows?: ReactNode[];
 };
 
 export const HomeCard = (props: HomeCardProps) => {
@@ -52,24 +56,31 @@ export const HomeCard = (props: HomeCardProps) => {
     w,
     h,
     useItemCard,
+    showMallLeaveDate,
     opacity,
     utm_content,
     perPage = 10,
     isLoading = false,
+    bodyRows,
   } = props;
   const [page, setPage] = useState(0);
   const color = new Color(props.color);
   const rgb = color.rgb().array();
   const t = useTranslations();
+  const hasBodyRows = bodyRows != null;
+  const pageStart = perPage * page;
+  const pageEnd = perPage * (page + 1);
 
   return (
     <Flex
       w="100%"
+      flex={1}
+      minW={0}
       flexFlow={'column'}
       p={{ base: 4, lg: 2, xl: 4 }}
       bg="gray.700"
       borderRadius={'md'}
-      bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},${
+      bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0, rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},${
         opacity ?? '.5'
       }) 0%)`}
     >
@@ -82,30 +93,41 @@ export const HomeCard = (props: HomeCardProps) => {
         borderRadius={'lg'}
         border={`2px solid ${Color('#fff').alpha(0.1).hexa()}`}
       >
-        <Flex alignItems={'center'} gap={4} flexShrink={0} h="70px">
-          <NextImage src={image} quality={80} width={w ?? 71} height={h ?? 71} alt={title} />
-          <Heading size={'lg'} css={{ textWrap: 'balance' }}>
+        <Flex alignItems={'center'} gap={3} flexShrink={0} minH="70px" minW={0}>
+          <NextImage
+            src={image}
+            quality={90}
+            width={w ?? 71}
+            height={h ?? 71}
+            alt={title}
+            style={{ flexShrink: 0 }}
+          />
+          <Heading size={'lg'} minW={0} css={{ textWrap: 'balance' }}>
             {title}
           </Heading>
         </Flex>
         <Separator borderColor={'whiteAlpha.300'} mt={3} />
-        {isLoading && !useItemCard && <HomeCardLoadingRows />}
+        {isLoading && !useItemCard && <HomeCardLoadingRows count={perPage} />}
         {isLoading && useItemCard && <HomeCardLoadingItemGrid title={title} perPage={perPage} />}
-        {!useItemCard && (
+        {hasBodyRows && !isLoading && (
+          <Flex flexFlow="column">{bodyRows.slice(pageStart, pageEnd)}</Flex>
+        )}
+        {!hasBodyRows && !useItemCard && (
           <Flex flexFlow={'column'} display={isLoading ? 'none' : undefined}>
             {items
-              .filter((_, i) => i >= perPage * page && i < perPage * (page + 1))
+              .filter((_, i) => i >= pageStart && i < pageEnd)
               .map((item) => (
                 <HomeItem
                   key={item.internal_id + title}
                   menuKey={item.internal_id + title}
                   utm_content={utm_content}
                   item={item}
+                  showMallLeaveDate={showMallLeaveDate}
                 />
               ))}
           </Flex>
         )}
-        {useItemCard && (
+        {!hasBodyRows && useItemCard && (
           <Flex
             flexWrap={'wrap'}
             gap={2}
@@ -114,7 +136,7 @@ export const HomeCard = (props: HomeCardProps) => {
             display={isLoading ? 'none' : 'flex'}
           >
             {items
-              .filter((_, i) => i >= perPage * page && i < perPage * (page + 1))
+              .filter((_, i) => i >= pageStart && i < pageEnd)
               .map((item) => (
                 <ItemCardV2
                   uniqueID={title}
@@ -165,9 +187,9 @@ export const HomeCard = (props: HomeCardProps) => {
   );
 };
 
-const HomeCardLoadingRows = () => (
+const HomeCardLoadingRows = ({ count = 10 }: { count?: number }) => (
   <Flex flexFlow="column">
-    {Array.from({ length: 10 }).map((_, index) => (
+    {Array.from({ length: count }).map((_, index) => (
       <Flex
         key={index}
         h="80px"
@@ -198,11 +220,15 @@ export const HomeItem = ({
   item,
   menuKey,
   utm_content,
+  showMallLeaveDate,
 }: {
   item: ItemV2For<'card'>;
   menuKey: string;
   utm_content?: string;
+  showMallLeaveDate?: boolean;
 }) => {
+  const t = useTranslations();
+  const format = useFormatter();
   const [isMobile] = useMediaQuery(['(hover: none)']);
   const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
   const loadContextMenu = () => {
@@ -214,6 +240,16 @@ export const HomeItem = ({
   const loadContextMenuOnRightClick = (event: MouseEvent) => {
     if (event.button === 2) loadContextMenu();
   };
+
+  const saleEnd = item.price?.type === 'ncMall' ? item.price.saleEnd : null;
+  const leaveDateLabel =
+    showMallLeaveDate && saleEnd
+      ? `${t('ItemPage.until')} ${format.dateTime(new Date(saleEnd), {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })}`
+      : null;
 
   return (
     <>
@@ -230,7 +266,7 @@ export const HomeItem = ({
           onContextMenuCapture: loadContextMenu,
         }}
       >
-        <Link asChild _hover={{ textDecoration: 'none' }} w="100%">
+        <Link asChild _hover={{ textDecoration: 'none' }} w="100%" minW={0} display="block">
           <MainLink
             viaNextLink
             prefetch={false}
@@ -239,13 +275,15 @@ export const HomeItem = ({
             trackEventLabel={item.slug || undefined}
           >
             <Flex
-              h="80px"
+              minH="80px"
               borderBottom={'1px solid rgba(255, 255, 255, 0.16)'}
               p={2}
               _hover={{ bg: 'blackAlpha.300' }}
               alignItems={'center'}
               color="whiteAlpha.900"
               w="100%"
+              minW={0}
+              overflow="hidden"
             >
               <ItemImageV2
                 item={item}
@@ -259,9 +297,34 @@ export const HomeItem = ({
                 alignItems={'start'}
                 justifyContent={'center'}
                 gap={1}
+                minW={0}
+                flex={1}
+                overflow="hidden"
               >
-                <Text fontSize={'sm'}>{item.name}</Text>
-                <ItemCardBadgeV2 item={item} />
+                {showMallLeaveDate ? (
+                  <>
+                    <Flex alignItems="center" gap={2} w="100%" minW={0}>
+                      <Text fontSize={'sm'} lineClamp={2} minW={0} flex="1">
+                        {item.name}
+                      </Text>
+                      <Flex flexShrink={0}>
+                        <ItemCardBadgeV2 item={item} />
+                      </Flex>
+                    </Flex>
+                    {leaveDateLabel && (
+                      <Text fontSize="xs" color="whiteAlpha.700">
+                        {leaveDateLabel}
+                      </Text>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Text fontSize={'sm'} lineClamp={2}>
+                      {item.name}
+                    </Text>
+                    <ItemCardBadgeV2 item={item} />
+                  </>
+                )}
               </Flex>
             </Flex>
           </MainLink>
