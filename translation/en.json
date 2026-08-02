@@ -1387,6 +1387,7 @@
   },
   "OutfitPage": {
     "description": "Find out every exclusive clothes for your {specie} Neopet! Discover rare wearable items to upgrade yourwardrobe and customize your {specie} in style.",
+    "paint-cta": "Want to paint your {species}? See the cheapest paths in the <RainbowPoolLink>Rainbow Pool Tool</RainbowPoolLink>.",
     "exclusive-species-clothes": "Exclusive {species} Clothes",
     "exclusive-clothes-guide": "Exclusive Clothes Guide",
     "show-items": "Show items",

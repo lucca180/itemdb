@@ -1389,6 +1389,7 @@
   "OutfitPage": {
     "exclusive-clothes-guide": "Guia de Roupas Exclusivas",
     "description": "Descubra todas as roupas exclusivas para seu Neopet {specie}! Encontre itens aplicáveis raros para incrementar seu armário e customizar seu {specie} com estilo!",
+    "paint-cta": "Quer pintar seu {species}? Veja os caminhos mais baratos na <RainbowPoolLink>Piscina do Arco-íris</RainbowPoolLink>.",
     "exclusive-species-clothes": "Roupas Exclusivas de {species}",
     "show-items": "Mostrar itens",
     "hide-items": "Ocultar itens"

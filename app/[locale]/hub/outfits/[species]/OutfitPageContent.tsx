@@ -48,6 +48,9 @@ export function OutfitPageContent({ outfits, species, labels }: OutfitPageConten
         <Text maxW="900px" textAlign="center">
           {labels.description}
         </Text>
+        <Text maxW="900px" textAlign="center" color="whiteAlpha.800">
+          {labels.paintCta}
+        </Text>
         <OutfitSpeciesSelect species={species} selectSpeciesLabel={labels.selectSpecies} />
       </Center>
       <Separator my={3} />
@@ -70,6 +73,17 @@ export function OutfitPageContent({ outfits, species, labels }: OutfitPageConten
             />
           ))}
         </SimpleGrid>
+        <Flex gap={3} flexWrap="wrap" fontSize="sm" justifyContent="center">
+          <Link asChild color="teal.200">
+            <MainLink
+              href={labels.rainbowPoolHref}
+              trackEvent="related-link"
+              trackEventLabel="rainbow-pool"
+            >
+              {labels.allColoursOfSpecies}
+            </MainLink>
+          </Link>
+        </Flex>
         <Text fontSize="xs" textAlign="center" color="whiteAlpha.500">
           {labels.previewCredit}
         </Text>
