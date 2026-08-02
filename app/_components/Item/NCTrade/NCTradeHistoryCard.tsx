@@ -5,31 +5,27 @@ import { getFormatter, getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
 import {
   getTradeItemSearchLink,
-  isSameTradeItem,
   isValidTradeDate,
 } from '@app/_components/Item/NCTrade/ncTradeHistoryUtils';
-import type { ItemData, LebronTrade } from '@types';
+import type { LebronTrade } from '@types';
 
 type Props = {
   trade: LebronTrade;
-  item?: ItemData;
+  itemName?: string;
+  colorRgb?: number[];
 };
 
-/** Caches so UTCDate's constructor may use `new Date()` during prerender. */
-async function getCachedTradeDateMs(tradeDate: number) {
-  'use cache';
-  cacheLife('hours');
-  const date = new UTCDate(tradeDate);
-  return isValidTradeDate(date) ? date.getTime() : null;
-}
+const isSameTradeItemName = (tradeStr: string, itemName: string) =>
+  tradeStr.toLowerCase().includes(itemName.toLowerCase());
 
-export async function NCTradeHistoryCard({ trade, item }: Props) {
-  const [t, format, tradeDateMs] = await Promise.all([
-    getTranslations(),
-    getFormatter(),
-    getCachedTradeDateMs(trade.tradeDate),
-  ]);
-  const color: number[] = item?.color.rgb ?? [71, 178, 248];
+export async function NCTradeHistoryCard({ trade, itemName, colorRgb }: Props) {
+  'use cache';
+  cacheLife('itemFast');
+
+  const [t, format] = await Promise.all([getTranslations(), getFormatter()]);
+  const color = colorRgb ?? [71, 178, 248];
+  const date = new UTCDate(Number(trade.tradeDate));
+  const tradeDateMs = isValidTradeDate(date) ? date.getTime() : null;
 
   return (
     <Card.Root bg="blackAlpha.500" textAlign="left" borderRadius="xl">
@@ -52,7 +48,7 @@ export async function NCTradeHistoryCard({ trade, item }: Props) {
             <List.Root as="ul" gap={1} ps={4}>
               {trade.itemsSent.split('+').map((traded, i) => (
                 <List.Item p={1} key={i} fontSize="xs">
-                  {item && isSameTradeItem(traded, item) ? (
+                  {itemName && isSameTradeItemName(traded, itemName) ? (
                     <Text
                       p={1}
                       borderRadius="md"
@@ -78,7 +74,7 @@ export async function NCTradeHistoryCard({ trade, item }: Props) {
             <List.Root as="ul" gap={1} ps={4}>
               {trade.itemsReceived.split('+').map((traded, i) => (
                 <List.Item p={1} key={i} fontSize="xs">
-                  {item && isSameTradeItem(traded, item) ? (
+                  {itemName && isSameTradeItemName(traded, itemName) ? (
                     <Text
                       p={1}
                       borderRadius="md"

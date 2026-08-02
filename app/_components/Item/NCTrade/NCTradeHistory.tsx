@@ -34,7 +34,12 @@ export async function NCTradeHistory({ item, ncTrades, tradeHistory }: Props) {
     <Flex flexFlow="column" maxH={300} overflow="auto" gap={3} w="100%">
       <Flex maxW="500px" flexFlow="column" gap={3}>
         {trades.map((trade, i) => (
-          <NCTradeHistoryCard key={i} trade={trade} item={item} />
+          <NCTradeHistoryCard
+            key={i}
+            trade={trade}
+            itemName={item.name}
+            colorRgb={item.color.rgb}
+          />
         ))}
         <Text fontSize="xs" textAlign="center" mt={2} color="whiteAlpha.600">
           {t.rich('ItemPage.owls-credits', {
