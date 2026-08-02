@@ -28,6 +28,37 @@ export const PET_STYLE_COLOR_ALIASES: Record<string, string> = {
   anniversary: '25th Anniversary',
 };
 
+/**
+ * Colour name variants to search in PetStyle series / item names.
+ * Includes reverse aliases (e.g. `25th Anniversary` → also `Anniversary`).
+ */
+export function colorNameSearchTerms(colorName: string | null | undefined): string[] {
+  const trimmed = colorName?.trim();
+  if (!trimmed) return [];
+
+  const terms = new Set<string>([trimmed]);
+
+  for (const [aliasSlug, canonical] of Object.entries(PET_STYLE_COLOR_ALIASES)) {
+    if (petColorSlug(canonical) !== petColorSlug(trimmed)) continue;
+    terms.add(
+      aliasSlug
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ')
+    );
+  }
+
+  return [...terms];
+}
+
+/** True when `colorName` appears as a whitespace-bounded token in `text`. */
+export function textHasColorToken(text: string, colorName: string): boolean {
+  const needle = colorName.trim();
+  if (!needle || !text) return false;
+  const re = new RegExp(`(?:^|\\s)${escapeRegExp(needle)}(?=\\s|$)`, 'i');
+  return re.test(text.trim());
+}
+
 /** Parse `Prismatic {variant}: {rest}` — variant may be multi-word (e.g. Cookies & Cream). */
 export function parsePrismaticPrefix(value: string): {
   isPrismatic: boolean;

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { parsePetStyleFromName } from '@utils/petStyles';
+import { colorNameSearchTerms, parsePetStyleFromName, textHasColorToken } from '@utils/petStyles';
 import type { PetColorsCatalog } from '@utils/pet-utils';
 
 /** Subset of PetColor ids used by style name parse tests. */
@@ -26,6 +26,29 @@ type StyleDumpRow = {
   image: string;
   species_id?: number;
 };
+
+describe('colorNameSearchTerms / textHasColorToken', () => {
+  test('includes reverse alias for 25th Anniversary', () => {
+    expect(colorNameSearchTerms('25th Anniversary')).toEqual(
+      expect.arrayContaining(['25th Anniversary', 'Anniversary'])
+    );
+  });
+
+  test('matches Baby token inside Baby Chocolate series', () => {
+    expect(textHasColorToken('Baby Chocolate', 'Baby')).toBe(true);
+    expect(textHasColorToken('Baby Chocolate Acara', 'Baby')).toBe(true);
+    expect(textHasColorToken('Delightful Chocolate', 'Baby')).toBe(false);
+  });
+
+  test('matches multi-word colour tokens', () => {
+    expect(textHasColorToken('Celebratory 25th Anniversary', '25th Anniversary')).toBe(true);
+    expect(textHasColorToken('Celebratory Anniversary Acara', 'Anniversary')).toBe(true);
+  });
+
+  test('does not match colour as a substring of another word', () => {
+    expect(textHasColorToken('Superbabies', 'Baby')).toBe(false);
+  });
+});
 
 describe('parsePetStyleFromName', () => {
   test('parses nostalgic royalboy base style', () => {
