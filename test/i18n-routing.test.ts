@@ -79,9 +79,7 @@ describe('i18n routing helpers', () => {
     expect(getPageRouterHref(router, '/search?s=%23143CCC&sortBy=color')).toBe(
       '/pt/search?s=%23143CCC&sortBy=color'
     );
-    expect(getPageRouterHref(router, '/tools/rainbow-pool/acara/')).toBe(
-      '/pt/tools/rainbow-pool/acara/'
-    );
+    expect(getPageRouterHref(router, '/rainbow-pool/acara/')).toBe('/pt/rainbow-pool/acara/');
   });
 
   it('builds breadcrumb JSON-LD URLs with next-intl getPathname', () => {

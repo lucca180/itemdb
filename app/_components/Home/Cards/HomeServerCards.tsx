@@ -7,7 +7,7 @@ import { loadRecentlyReleasedCombos } from '@app/server/rainbowPool';
 import { HomeCard } from '@components/Card/HomeCard';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { FeaturedListsGrid } from '@components/Home/FeaturedListsGrid';
-import { ComboTile } from '@app/[locale]/tools/rainbow-pool/components/ComboTile';
+import { ComboTile } from '@app/[locale]/rainbow-pool/components/ComboTile';
 
 async function getCachedLatestItems() {
   'use cache';
@@ -220,7 +220,7 @@ export function RainbowPoolHomeCard() {
           title="Rainbow Pool"
           color="#83dfff"
           image="https://images.neopets.com/themes/h5/basic/images/fondipdye-icon.png"
-          href="/tools/rainbow-pool"
+          href="/rainbow-pool"
           utm_content="home-rainbow-pool"
           h={50}
           w={50}
@@ -243,7 +243,7 @@ async function RainbowPoolHomeCardContent() {
       color="#83dfff"
       image="https://images.neopets.com/themes/h5/basic/images/fondipdye-icon.png"
       title={t('HomePage.rainbow-pool')}
-      href="/tools/rainbow-pool"
+      href="/rainbow-pool"
       utm_content="home-rainbow-pool"
       h={50}
       w={50}

@@ -75,11 +75,11 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
     },
     {
       label: t('Layout.tools'),
-      href: '/tools/rainbow-pool',
+      href: '/rainbow-pool',
       options: [
         { label: t('Layout.sdb-pricer'), href: '/articles/userscripts' },
         { label: t('Layout.userscripts'), href: '/articles/userscripts' },
-        { label: t('Layout.rainbow-pool-tool'), href: '/tools/rainbow-pool' },
+        { label: t('Layout.rainbow-pool-tool'), href: '/rainbow-pool' },
         { label: t('Layout.item-effects'), href: '/hub/item-effects' },
         { label: t('Layout.restock-dashboard'), href: '/restock/dashboard' },
         { label: t('Calculator.pricing-calculator'), href: '/tools/price-calculator' },

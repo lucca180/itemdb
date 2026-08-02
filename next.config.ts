@@ -152,6 +152,26 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: '/tools/rainbow-pool',
+        destination: '/rainbow-pool',
+        permanent: true,
+      },
+      {
+        source: '/tools/rainbow-pool/:path*',
+        destination: '/rainbow-pool/:path*',
+        permanent: true,
+      },
+      {
+        source: '/pt/tools/rainbow-pool',
+        destination: '/pt/rainbow-pool',
+        permanent: true,
+      },
+      {
+        source: '/pt/tools/rainbow-pool/:path*',
+        destination: '/pt/rainbow-pool/:path*',
+        permanent: true,
+      },
+      {
         source: '/owls/report',
         destination: '/mall/report/',
         permanent: true,

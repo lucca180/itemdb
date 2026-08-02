@@ -295,7 +295,7 @@ export async function listCombosBySpecies(
         speciesName,
         colorName,
         previewUrl: petPreviewUrl(speciesName, colorName),
-        href: `/tools/rainbow-pool/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
+        href: `/rainbow-pool/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
         addedAt: row.addedAt,
       } satisfies RainbowPoolComboTile;
     })
@@ -325,7 +325,7 @@ export async function listCombosByColor(
         speciesName,
         colorName,
         previewUrl: petPreviewUrl(speciesName, colorName),
-        href: `/tools/rainbow-pool/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
+        href: `/rainbow-pool/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
         addedAt: row.addedAt,
       } satisfies RainbowPoolComboTile;
     })
@@ -353,7 +353,7 @@ export async function listRecentlyReleasedCombos(
       speciesName,
       colorName,
       previewUrl: petPreviewUrl(speciesName, colorName),
-      href: `/tools/rainbow-pool/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
+      href: `/rainbow-pool/${petColorSlug(speciesName)}/${petColorSlug(colorName)}`,
       addedAt: row.addedAt,
     });
     if (tiles.length >= limit) break;

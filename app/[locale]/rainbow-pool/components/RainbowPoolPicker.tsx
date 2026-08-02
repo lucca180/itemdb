@@ -5,7 +5,7 @@ import { useRouter } from '@i18n/navigation';
 import { useId, useState, type ChangeEvent } from 'react';
 import { petColorSlug } from '@utils/pet-utils';
 
-const BASE_PATH = '/tools/rainbow-pool';
+const BASE_PATH = '/rainbow-pool';
 
 type RainbowPoolPickerProps = {
   colors: string[];

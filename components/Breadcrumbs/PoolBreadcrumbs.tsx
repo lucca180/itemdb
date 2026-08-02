@@ -2,7 +2,7 @@ import { Box } from '@chakra-ui/react';
 import { BreadcrumbsView } from './BreadcrumbsView';
 import type { BreadcrumbItem } from './types';
 
-const BASE_PATH = '/tools/rainbow-pool';
+const BASE_PATH = '/rainbow-pool';
 
 type PoolBreadcrumbTranslator = {
   (key: 'Layout.home' | 'Layout.rainbow-pool-tool'): string;

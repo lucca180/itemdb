@@ -150,7 +150,7 @@ export const EffectText = (props: EffectTextProps) => {
               <>
                 {colorTarget && (
                   <Link
-                    href={`/tools/rainbow-pool/${petColorSlug(colorTarget)}`}
+                    href={`/rainbow-pool/${petColorSlug(colorTarget)}`}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -162,9 +162,7 @@ export const EffectText = (props: EffectTextProps) => {
             Target2: () => (
               <>
                 {speciesTarget && (
-                  <Link href={`/tools/rainbow-pool/${petColorSlug(speciesTarget)}`}>
-                    {speciesTarget}
-                  </Link>
+                  <Link href={`/rainbow-pool/${petColorSlug(speciesTarget)}`}>{speciesTarget}</Link>
                 )}
               </>
             ),

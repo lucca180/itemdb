@@ -122,7 +122,7 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     }
 
     relatedLinks.push({
-      href: `/tools/rainbow-pool/${petColorSlug(speciesName)}`,
+      href: `/rainbow-pool/${petColorSlug(speciesName)}`,
       imageUrl: img,
       alt: speciesName,
       trackEvent: 'related-link',
@@ -159,7 +159,7 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
   if (colorEffect && colorEffect.length > 0) {
     colorEffect.forEach((effect) => {
       relatedLinks.push({
-        href: `/tools/rainbow-pool/${petColorSlug(effect.colorTarget!)}`,
+        href: `/rainbow-pool/${petColorSlug(effect.colorTarget!)}`,
         imageUrl: `https://images.neopets.com/themes/h5/basic/images/stylingstudio-icon.png`,
         alt: effect.colorTarget!,
         trackEvent: 'related-link',

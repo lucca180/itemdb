@@ -114,13 +114,13 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       Object.values(allNeopetsColors)
         .slice(pageNum, (pageNum + 1) * 100)
         .forEach((color) => {
-          locArr.push(...bilingualSitemapFields(`/tools/rainbow-pool/${petColorSlug(color)}`));
+          locArr.push(...bilingualSitemapFields(`/rainbow-pool/${petColorSlug(color)}`));
         });
 
       Object.values(allSpecies)
         .slice(pageNum, (pageNum + 1) * 100)
         .forEach((species) => {
-          locArr.push(...bilingualSitemapFields(`/tools/rainbow-pool/${petColorSlug(species)}`));
+          locArr.push(...bilingualSitemapFields(`/rainbow-pool/${petColorSlug(species)}`));
         });
     }
 
@@ -130,10 +130,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     const colorSlug = petColorSlug(colorName);
     if (!speciesSlug || !colorSlug) return locArr;
 
-    return [
-      ...locArr,
-      ...bilingualSitemapFields(`/tools/rainbow-pool/${speciesSlug}/${colorSlug}`),
-    ];
+    return [...locArr, ...bilingualSitemapFields(`/rainbow-pool/${speciesSlug}/${colorSlug}`)];
   });
 
   const restockPaths: ISitemapField[] = Object.values(restockShopInfo)

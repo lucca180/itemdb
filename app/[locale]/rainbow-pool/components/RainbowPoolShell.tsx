@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 export const MAIN_COLOR = '#75b6a48c';
 export const THEME_RGB = [117, 182, 164] as const;
-export const BASE_PATH = '/tools/rainbow-pool' as const;
+export const BASE_PATH = '/rainbow-pool' as const;
 
 type RainbowPoolShellProps = {
   children: ReactNode;

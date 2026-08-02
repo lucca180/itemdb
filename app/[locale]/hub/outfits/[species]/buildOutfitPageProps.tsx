@@ -19,7 +19,7 @@ export type OutfitPageLabels = {
 
 export async function buildOutfitPageProps(species: string): Promise<OutfitPageLabels> {
   const t = await getTranslations();
-  const rainbowPoolHref = `/tools/rainbow-pool/${petColorSlug(species)}`;
+  const rainbowPoolHref = `/rainbow-pool/${petColorSlug(species)}`;
 
   return {
     exclusiveClothesGuide: t('OutfitPage.exclusive-clothes-guide'),
