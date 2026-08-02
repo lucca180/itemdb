@@ -19,6 +19,7 @@ export const STATIC_SITEMAP_PATHS = [
   '/restock',
   '/tools/price-calculator',
   '/rainbow-pool',
+  '/rainbow-pool/pet-styles',
 ] as const;
 
 export function enLoc(path: string): string {

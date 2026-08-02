@@ -4,6 +4,7 @@ import { Button, HStack, NativeSelect, VisuallyHidden } from '@chakra-ui/react';
 import { useRouter } from '@i18n/navigation';
 import { useId, useState, type ChangeEvent } from 'react';
 import { petColorSlug } from '@utils/pet-utils';
+import { STYLES_BASE_PATH, stylesBrowseHref, stylesComboHref } from '@utils/petStyles/paths';
 
 const BASE_PATH = '/rainbow-pool';
 
@@ -15,6 +16,8 @@ type RainbowPoolPickerProps = {
   selectColorLabel: string;
   selectSpeciesLabel: string;
   searchLabel: string;
+  /** Destination root for navigation (default paint pool). */
+  basePath?: string;
 };
 
 export function RainbowPoolPicker({
@@ -25,6 +28,7 @@ export function RainbowPoolPicker({
   selectColorLabel,
   selectSpeciesLabel,
   searchLabel,
+  basePath = BASE_PATH,
 }: RainbowPoolPickerProps) {
   const router = useRouter();
   const [color, setColor] = useState(initialColor);
@@ -33,18 +37,34 @@ export function RainbowPoolPicker({
   const speciesSelectId = useId();
 
   const canSearch = Boolean(color || selectedSpecies);
+  const isStylesPicker = basePath === STYLES_BASE_PATH;
 
   const go = () => {
+    if (isStylesPicker) {
+      if (selectedSpecies && color) {
+        router.push(stylesComboHref(selectedSpecies, color));
+        return;
+      }
+      if (selectedSpecies) {
+        router.push(stylesBrowseHref(selectedSpecies));
+        return;
+      }
+      if (color) {
+        router.push(stylesBrowseHref(color));
+      }
+      return;
+    }
+
     if (selectedSpecies && color) {
-      router.push(`${BASE_PATH}/${petColorSlug(selectedSpecies)}/${petColorSlug(color)}`);
+      router.push(`${basePath}/${petColorSlug(selectedSpecies)}/${petColorSlug(color)}`);
       return;
     }
     if (selectedSpecies) {
-      router.push(`${BASE_PATH}/${petColorSlug(selectedSpecies)}`);
+      router.push(`${basePath}/${petColorSlug(selectedSpecies)}`);
       return;
     }
     if (color) {
-      router.push(`${BASE_PATH}/${petColorSlug(color)}`);
+      router.push(`${basePath}/${petColorSlug(color)}`);
     }
   };
 

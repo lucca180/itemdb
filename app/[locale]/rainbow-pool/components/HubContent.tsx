@@ -139,6 +139,11 @@ export async function HubContent({ locale, colors, species, recentlyReleased }: 
           selectSpeciesLabel={labels.selectSpeciesLabel}
           searchLabel={labels.searchLabel}
         />
+        <Link asChild fontSize="sm" color="cyan.200" fontWeight="semibold" mt={1}>
+          <MainLink href="/rainbow-pool/pet-styles">
+            {t('PetColors.pet-styles-browse-cta')}
+          </MainLink>
+        </Link>
       </Center>
 
       <VStack align="stretch" gap={8} maxW="1100px" mx="auto" px={2}>

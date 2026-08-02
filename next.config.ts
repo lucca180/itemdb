@@ -182,6 +182,12 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: '/api/v1/mall/styles-sync',
+        destination: '/api/internal/styles-sync',
+        permanent: true,
+      },
+
+      {
         source: '/owls',
         destination: '/articles/owls',
         permanent: true,

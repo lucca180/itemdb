@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { revalidateTag } from 'next/cache';
 import prisma from '@utils/prisma';
 import { fetchAllNeopetsColors } from '@utils/pet-colors';
+import { PET_COLORS_CACHE_TAG } from '@utils/pet-utils';
 import { syncPetStylesFromTarnumSnapshot, type TarnumStyleData } from '@utils/petStyles/sync';
 import { enqueueAndProcessItems } from '@utils/item/enqueueItemProcess';
 import { processItemProcessQueue } from '@utils/item/processItemQueue';
@@ -9,18 +10,19 @@ import { processItemProcessQueue } from '@utils/item/processItemQueue';
 const TARNUM_KEY = process.env.TARNUM_KEY;
 const TARNUM_SERVER = process.env.TARNUM_SERVER;
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  if (
-    process.env.NODE_ENV !== 'development' &&
-    (!req.headers.authorization || req.headers.authorization !== TARNUM_KEY)
-  )
-    return res.status(401).json({ error: 'Unauthorized' });
+function isAuthorized(request: Request): boolean {
+  if (process.env.NODE_ENV === 'development') return true;
+  const auth = request.headers.get('authorization');
+  return !!auth && auth === TARNUM_KEY;
+}
 
+async function syncPetStyles() {
   const stylesRes = await axios.get(TARNUM_SERVER + '/neopets/styles');
   const stylesData = stylesRes.data as TarnumStyleData[];
 
-  if (!Array.isArray(stylesData) || stylesData.length === 0)
-    return res.status(500).json({ error: 'Failed to fetch data' });
+  if (!Array.isArray(stylesData) || stylesData.length === 0) {
+    return Response.json({ error: 'Failed to fetch data' }, { status: 500 });
+  }
 
   const itemIds = stylesData.map((style) => style.item_id);
 
@@ -82,8 +84,28 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const colors = await fetchAllNeopetsColors();
   const styleSync = await syncPetStylesFromTarnumSnapshot(stylesData, colors);
 
-  res.json({
+  if (styleSync.stylesUpserted > 0 || styleSync.availOpened > 0 || styleSync.availClosed > 0) {
+    revalidateTag(PET_COLORS_CACHE_TAG, { expire: 0 });
+  }
+
+  return Response.json({
     items: itemsResult,
     ...styleSync,
   });
+}
+
+export async function GET(request: Request) {
+  if (!isAuthorized(request)) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  return syncPetStyles();
+}
+
+export async function POST(request: Request) {
+  if (!isAuthorized(request)) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  return syncPetStyles();
 }

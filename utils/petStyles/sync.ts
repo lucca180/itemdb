@@ -11,6 +11,7 @@ export type TarnumStyleData = {
 
 export type PetStyleSyncResult = {
   stylesUpserted: number;
+  stylesSkippedExisting: number;
   stylesSkippedNoItem: number;
   availOpened: number;
   availClosed: number;
@@ -33,6 +34,7 @@ export function mergePetStyleFields(
 ): MergedPetStyleFields {
   const species_id = parsed.species_id;
   const color_id = parsed.color_id ?? existing?.color_id ?? null;
+  const colorRest = color_id != null ? null : parsed.colorRest;
 
   return {
     species_id,
@@ -40,7 +42,8 @@ export function mergePetStyleFields(
     color_id,
     isPrismatic: parsed.isPrismatic,
     prismaticVariant: parsed.prismaticVariant,
-    needsReview: species_id == null || color_id == null,
+    // Species missing, or colour token present but unresolved (after merge).
+    needsReview: species_id == null || (color_id == null && colorRest != null),
   };
 }
 
@@ -65,7 +68,8 @@ export function diffStyleAvailability(
 }
 
 /**
- * Upsert PetStyle rows for Tarnum available-now styles and open/close availability windows by presence.
+ * Sync PetStyle rows for Tarnum available-now styles and open/close availability windows.
+ * Creates missing rows only — never updates an existing PetStyle entry.
  * Skips styles whose Items row is not resolved yet (queued for a later sync).
  */
 export async function syncPetStylesFromTarnumSnapshot(
@@ -87,6 +91,7 @@ export async function syncPetStylesFromTarnumSnapshot(
         item_id: true,
         item_iid: true,
         color_id: true,
+        needsReview: true,
       },
     }),
     prisma.petStyleAvailability.findMany({
@@ -101,17 +106,25 @@ export async function syncPetStylesFromTarnumSnapshot(
   const styleByItemId = new Map(existingStyles.map((style) => [style.item_id, style]));
 
   let stylesUpserted = 0;
+  let stylesSkippedExisting = 0;
   let stylesSkippedNoItem = 0;
   let needsReview = 0;
   const snapshotStyleIds = new Set<number>();
 
   for (const style of stylesData) {
+    const existing = styleByItemId.get(style.item_id) ?? null;
+
+    // Already in DB — leave the row untouched; still count for availability.
+    if (existing) {
+      snapshotStyleIds.add(existing.internal_id);
+      stylesSkippedExisting += 1;
+      if (existing.needsReview) needsReview += 1;
+      continue;
+    }
+
     const dbItem = itemByItemId.get(style.item_id);
     if (!dbItem) {
       stylesSkippedNoItem += 1;
-      // Still count as present so we do not close an existing availability while the item is queued.
-      const existingStyle = styleByItemId.get(style.item_id);
-      if (existingStyle) snapshotStyleIds.add(existingStyle.internal_id);
       continue;
     }
 
@@ -119,26 +132,27 @@ export async function syncPetStylesFromTarnumSnapshot(
       speciesId: style.species_id ?? null,
       colors,
     });
-    const existing = styleByItemId.get(style.item_id) ?? null;
-    const fields = mergePetStyleFields(parsed, existing);
+    const fields = mergePetStyleFields(parsed, null);
 
     if (fields.needsReview) needsReview += 1;
 
-    const upserted = await prisma.petStyle.upsert({
-      where: { item_iid: dbItem.internal_id },
-      create: {
+    const created = await prisma.petStyle.create({
+      data: {
         item_iid: dbItem.internal_id,
-        item_id: style.item_id,
-        ...fields,
-      },
-      update: {
         item_id: style.item_id,
         ...fields,
       },
       select: { internal_id: true },
     });
 
-    snapshotStyleIds.add(upserted.internal_id);
+    snapshotStyleIds.add(created.internal_id);
+    styleByItemId.set(style.item_id, {
+      internal_id: created.internal_id,
+      item_id: style.item_id,
+      item_iid: dbItem.internal_id,
+      color_id: fields.color_id,
+      needsReview: fields.needsReview,
+    });
     stylesUpserted += 1;
   }
 
@@ -174,6 +188,7 @@ export async function syncPetStylesFromTarnumSnapshot(
 
   return {
     stylesUpserted,
+    stylesSkippedExisting,
     stylesSkippedNoItem,
     availOpened: toOpen.length,
     availClosed: toClose.length,

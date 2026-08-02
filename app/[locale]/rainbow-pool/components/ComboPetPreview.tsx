@@ -108,7 +108,7 @@ export function ComboPetPreview({
           pointerEvents="auto"
           color="whiteAlpha.900"
         >
-          Dress To Impress
+          Dress to Impress
         </Link>
       </Text>
     </Box>

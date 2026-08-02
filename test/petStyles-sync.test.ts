@@ -32,11 +32,12 @@ describe('mergePetStyleFields', () => {
     expect(merged.needsReview).toBe(false);
   });
 
-  test('marks Treasured for review', () => {
+  test('Treasured is colour-agnostic when species known', () => {
     const parsed = parsePetStyleFromName('Treasured Roberta', { speciesId: 1, colors: COLORS });
     const merged = mergePetStyleFields(parsed, null);
-    expect(merged.species_id).toBeNull();
-    expect(merged.needsReview).toBe(true);
+    expect(merged.species_id).toBe(1);
+    expect(merged.color_id).toBeNull();
+    expect(merged.needsReview).toBe(false);
   });
 });
 

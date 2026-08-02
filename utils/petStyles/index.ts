@@ -21,6 +21,20 @@ export type ParsePetStyleOptions = {
 const UNKNOWN_SERIES = 'Unknown';
 
 /**
+ * `needsReview` when species is missing, or a colour token was parsed but not resolved.
+ * Null `color_id` with no `colorRest` means colour-agnostic (Unknown Colour) — not an error.
+ */
+function computeNeedsReview(
+  species_id: number | null,
+  color_id: number | null,
+  colorRest: string | null
+): boolean {
+  if (species_id == null) return true;
+  if (color_id == null && colorRest != null) return true;
+  return false;
+}
+
+/**
  * Style item names sometimes use a short colour label that is not the PetColor name.
  * Keys are slugified (`petColorSlug`).
  */
@@ -177,7 +191,8 @@ export function splitSeriesAndColor(
 
 /**
  * Best-effort parse of a Styling Studio style item name into series / color / prismatic fields.
- * Incomplete fields are allowed; `needsReview` is set when species or color is missing.
+ * Incomplete fields are allowed; `needsReview` is set when species is missing or a colour
+ * token could not be resolved. Null colour with no colour token = colour-agnostic.
  *
  * Series may be multi-word when a PetColor catalog is provided: the longest color-name
  * suffix is peeled off (e.g. `Habbo Hotel Yellow Acara` → series Habbo Hotel, color Yellow).
@@ -203,15 +218,16 @@ export function parsePetStyleFromName(
     };
   }
 
+  // Treasured / All-Star Essence: no paint colour in the name (colour-agnostic).
   if (/^Treasured\b/i.test(trimmed)) {
     return {
-      species_id: null,
+      species_id,
       series: 'Treasured',
       color_id: null,
       colorRest: null,
       isPrismatic: false,
       prismaticVariant: null,
-      needsReview: true,
+      needsReview: computeNeedsReview(species_id, null, null),
     };
   }
 
@@ -223,7 +239,7 @@ export function parsePetStyleFromName(
       colorRest: null,
       isPrismatic: false,
       prismaticVariant: null,
-      needsReview: true,
+      needsReview: computeNeedsReview(species_id, null, null),
     };
   }
 
@@ -241,12 +257,12 @@ export function parsePetStyleFromName(
       colorRest: null,
       isPrismatic,
       prismaticVariant,
-      needsReview: true,
+      needsReview: computeNeedsReview(species_id, null, null),
     };
   }
 
   const { series, colorRest, color_id } = splitSeriesAndColor(rest, colors);
-  const needsReview = species_id == null || color_id == null;
+  const needsReview = computeNeedsReview(species_id, color_id, colorRest);
 
   return {
     species_id,

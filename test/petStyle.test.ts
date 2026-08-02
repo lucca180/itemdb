@@ -130,9 +130,24 @@ describe('parsePetStyleFromName', () => {
     });
   });
 
-  test('marks Treasured for review without species/color', () => {
+  test('Treasured is colour-agnostic when species is known', () => {
     const parsed = parsePetStyleFromName('Treasured Roberta', {
       speciesId: 1,
+      colors: SAMPLE_COLORS,
+    });
+
+    expect(parsed).toMatchObject({
+      species_id: 1,
+      series: 'Treasured',
+      color_id: null,
+      colorRest: null,
+      needsReview: false,
+      isPrismatic: false,
+    });
+  });
+
+  test('Treasured needs review without species', () => {
+    const parsed = parsePetStyleFromName('Treasured Roberta', {
       colors: SAMPLE_COLORS,
     });
 
@@ -141,11 +156,10 @@ describe('parsePetStyleFromName', () => {
       series: 'Treasured',
       color_id: null,
       needsReview: true,
-      isPrismatic: false,
     });
   });
 
-  test('marks All-Star Essence for review without color', () => {
+  test('All-Star Essence is colour-agnostic (no needsReview when species known)', () => {
     const parsed = parsePetStyleFromName('All-Star Essence of Tulah', {
       speciesId: 1,
       colors: SAMPLE_COLORS,
@@ -155,7 +169,21 @@ describe('parsePetStyleFromName', () => {
       species_id: 1,
       series: 'All-Star Essence',
       color_id: null,
-      needsReview: true,
+      needsReview: false,
+    });
+  });
+
+  test('Essence series is colour-agnostic when species known', () => {
+    const parsed = parsePetStyleFromName('Essence Acara', {
+      speciesId: 1,
+      colors: SAMPLE_COLORS,
+    });
+
+    expect(parsed).toMatchObject({
+      species_id: 1,
+      series: 'Essence',
+      color_id: null,
+      needsReview: false,
     });
   });
 
