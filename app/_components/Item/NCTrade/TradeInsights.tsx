@@ -8,16 +8,36 @@ import {
   dateMax,
   isBuyable,
   isEventActive,
+  isEventRelease,
+  isMallRelease,
+  isStudioActive,
+  isStudioAvailability,
+  isStudioBeginDisplayable,
   sortTradeInsightReleases,
+  type TradeInsightRelease,
 } from '@app/_components/Item/NCTrade/ncTradeInsightsUtils';
 import { TradeInsightsMore } from '@app/_components/Item/NCTrade/TradeInsightsMore';
 import { getCachedNow } from '@utils/getCachedNow';
-import type { InsightsResponse, ItemData, NCMallData, UserList } from '@types';
+import type {
+  InsightsResponse,
+  ItemData,
+  NCMallData,
+  PetStyleAvailabilityData,
+  UserList,
+} from '@types';
+
+const STYLING_STUDIO_URL = 'https://www.neopets.com/mall/stylingstudio/';
 
 type Props = {
   item: ItemData;
   insights: InsightsResponse;
 };
+
+function getReleaseKey(release: TradeInsightRelease) {
+  if (isStudioAvailability(release)) return `studio-${release.internal_id}`;
+  if (isMallRelease(release)) return `mall-${release.internal_id}`;
+  return `event-${release.internal_id}`;
+}
 
 export async function TradeInsights({ item, insights }: Props) {
   const [t, now] = await Promise.all([getTranslations(), getCachedNow()]);
@@ -34,7 +54,7 @@ export async function TradeInsights({ item, insights }: Props) {
         </HStack>
         {releases.slice(0, 2).map((release) => (
           <ReleaseRow
-            key={release.internal_id}
+            key={getReleaseKey(release)}
             release={release}
             item={item}
             insights={insights}
@@ -50,7 +70,7 @@ export async function TradeInsights({ item, insights }: Props) {
           >
             {releases.slice(2).map((release) => (
               <ReleaseRow
-                key={release.internal_id}
+                key={getReleaseKey(release)}
                 release={release}
                 item={item}
                 insights={insights}
@@ -65,7 +85,7 @@ export async function TradeInsights({ item, insights }: Props) {
 }
 
 type ReleaseRowProps = {
-  release: NCMallData | UserList;
+  release: TradeInsightRelease;
   item: ItemData;
   insights: InsightsResponse;
   now: number;
@@ -83,18 +103,17 @@ function ReleaseRow({ release, item, insights, now }: ReleaseRowProps) {
       alignItems="flex-start"
       gap={1}
     >
-      {(release as NCMallData).saleBegin && (
+      {isMallRelease(release) && (
         <MallReleaseCard
-          release={release as NCMallData}
+          release={release}
           parentData={insights.parentData}
           itemData={insights.itemData}
           item={item}
           now={now}
         />
       )}
-      {(release as UserList).name && (
-        <ListReleaseCard release={release as UserList} item={item} now={now} />
-      )}
+      {isEventRelease(release) && <ListReleaseCard release={release} item={item} now={now} />}
+      {isStudioAvailability(release) && <StudioReleaseCard release={release} now={now} />}
     </Flex>
   );
 }
@@ -254,6 +273,48 @@ async function ListReleaseCard({ release, item, now }: ListReleaseCardProps) {
         {format.dateTime(new Date(seriesStart ?? 0), { dateStyle: 'medium' })}
         {seriesEnd && <> - {format.dateTime(new Date(seriesEnd), { dateStyle: 'medium' })}</>}
       </Text>
+    </>
+  );
+}
+
+type StudioReleaseCardProps = {
+  release: PetStyleAvailabilityData;
+  now: number;
+};
+
+async function StudioReleaseCard({ release, now }: StudioReleaseCardProps) {
+  const t = await getTranslations();
+  const format = await getFormatter();
+  const isActive = isStudioActive(release, now);
+  const showBegin = isStudioBeginDisplayable(release.availableBegin);
+  const hasEnd = !!release.availableEnd;
+  const showDates = showBegin || hasEnd;
+
+  return (
+    <>
+      <HStack>
+        {isActive && <Badge colorPalette="yellow">{t('ItemPage.buyable-now')}</Badge>}
+      </HStack>
+      <Text>
+        <Link
+          href={STYLING_STUDIO_URL}
+          target="_blank"
+          rel="noreferrer"
+          data-umami-event="nc-insights"
+          data-umami-event-label="styling-studio"
+        >
+          {t('ItemPage.styling-studio')}
+        </Link>
+      </Text>
+      {showDates && (
+        <Text fontSize="xs" color="whiteAlpha.700">
+          {showBegin && format.dateTime(new Date(release.availableBegin!), { dateStyle: 'medium' })}
+          {!showBegin && hasEnd && t('ItemPage.unknown-date')}
+          {hasEnd && (
+            <> - {format.dateTime(new Date(release.availableEnd!), { dateStyle: 'medium' })}</>
+          )}
+        </Text>
+      )}
     </>
   );
 }

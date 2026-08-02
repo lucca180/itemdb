@@ -43,7 +43,11 @@ type Props = {
 
 function hasNCTradeInsights(insights: InsightsResponse | null | undefined) {
   if (!insights) return false;
-  return insights.releases.length > 0 || insights.ncEvents.length > 0;
+  return (
+    insights.releases.length > 0 ||
+    insights.ncEvents.length > 0 ||
+    (insights.petStyleAvailability?.length ?? 0) > 0
+  );
 }
 
 const loadSeekingMatches = cache(

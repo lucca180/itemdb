@@ -678,6 +678,7 @@ export type NCValue = {
 export type InsightsResponse = {
   releases: NCMallData[];
   ncEvents: UserList[];
+  petStyleAvailability: PetStyleAvailabilityData[];
   parentData: {
     [parent_iid: number]: {
       isLE: boolean;

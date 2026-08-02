@@ -136,7 +136,34 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
     },
   });
 
-  const [releases, itemData, ncEvents] = await Promise.all([releasesRaw, itemDataRaw, ncEventsRaw]);
+  const petStyleRaw = prisma.petStyle.findFirst({
+    where: {
+      OR: [
+        {
+          item_iid: Number(item_iid),
+        },
+        {
+          item: {
+            canonical_id: Number(item_iid),
+          },
+        },
+      ],
+    },
+    include: {
+      availability: {
+        orderBy: {
+          availableBegin: 'desc',
+        },
+      },
+    },
+  });
+
+  const [releases, itemData, ncEvents, petStyle] = await Promise.all([
+    releasesRaw,
+    itemDataRaw,
+    ncEventsRaw,
+    petStyleRaw,
+  ]);
 
   const newReleases = releases.map((release) => {
     const item = itemData[release.item_iid];
@@ -162,6 +189,14 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
       };
     }),
     ncEvents: lists,
+    petStyleAvailability: (petStyle?.availability ?? []).map((avail) => ({
+      ...avail,
+      availableBegin: avail.availableBegin ? avail.availableBegin.toISOString() : null,
+      availableEnd: avail.availableEnd ? avail.availableEnd.toISOString() : null,
+      active: !!avail.active,
+      addedAt: avail.addedAt.toISOString(),
+      updatedAt: avail.updatedAt.toISOString(),
+    })),
     parentData: parentData,
     itemData: itemData,
   };
