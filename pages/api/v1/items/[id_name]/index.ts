@@ -382,5 +382,10 @@ const logChanges = async (originalItem: Items, updatedItem: Items, uid: string) 
     }
   }
 
-  await LogService.createLog('itemUpdate', changes, updatedItem.internal_id.toString(), uid);
+  await LogService.createLog(
+    'itemUpdate',
+    changes as Prisma.InputJsonValue,
+    updatedItem.internal_id.toString(),
+    uid
+  );
 };
