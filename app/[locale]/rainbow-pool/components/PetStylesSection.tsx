@@ -1,11 +1,20 @@
 'use client';
 
-import { Box, Flex, Heading, Text } from '@chakra-ui/react';
+import { Box, Flex, Heading, Link, Text } from '@chakra-ui/react';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
+import MainLink from '@components/Utils/MainLink';
 import type { ComboPetStyleGroup } from '@app/server/petStyles';
 import type { ItemV2For } from '@types';
 import type { ReactNode } from 'react';
 import { wearablePreviewSources } from '@utils/cdnPreview';
+import {
+  STYLES_BASE_PATH,
+  stylesBrowseHref,
+  stylesComboHref,
+  stylesFilterQuery,
+  withStylesQuery,
+} from '@utils/petStyles/paths';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { warmWearablePreview, WearablePreview } from './WearablePreview';
 
@@ -17,6 +26,8 @@ type PetStylesSectionProps = {
   groups: ComboPetStyleGroup[];
   heading: string;
   hint?: ReactNode;
+  speciesName: string;
+  colorName: string;
 };
 
 function petStylePreviewSources(item: ItemV2For<'card'>) {
@@ -52,8 +63,18 @@ function useNearViewport<T extends Element>(rootMargin = LAZY_ROOT_MARGIN) {
 }
 
 /** Pet Style tokens for this species × colour, grouped by series, with wearable preview. */
-export function PetStylesSection({ groups, heading, hint }: PetStylesSectionProps) {
+export function PetStylesSection({
+  groups,
+  heading,
+  hint,
+  speciesName,
+  colorName,
+}: PetStylesSectionProps) {
+  const t = useTranslations('PetStyles');
+
   if (!groups.length) return null;
+
+  const comboHref = stylesComboHref(speciesName, colorName);
 
   return (
     <Flex
@@ -74,10 +95,47 @@ export function PetStylesSection({ groups, heading, hint }: PetStylesSectionProp
           {hint}
         </Text>
       )}
+      <Link asChild fontSize="sm" color="cyan.200" fontWeight="semibold">
+        <MainLink href={comboHref}>
+          {t('view-combo-styles', { color: colorName, species: speciesName })}
+        </MainLink>
+      </Link>
       <Flex flexFlow="column" gap={4} w="100%">
         {groups.map((group) => (
-          <PetStyleSeriesRow key={group.series} series={group.series} items={group.items} />
+          <PetStyleSeriesRow
+            key={group.series}
+            series={group.series}
+            items={group.items}
+            seriesHref={withStylesQuery(
+              stylesBrowseHref(speciesName),
+              stylesFilterQuery({ series: group.series })
+            )}
+          />
         ))}
+      </Flex>
+      <Flex
+        gap={3}
+        flexWrap="wrap"
+        fontSize="sm"
+        justify={{ base: 'center', md: 'flex-start' }}
+        w="100%"
+        pt={1}
+      >
+        <Link asChild color="teal.200">
+          <MainLink href={stylesBrowseHref(speciesName)}>
+            {t('all-species-styles', { species: speciesName })}
+          </MainLink>
+        </Link>
+        <Text color="whiteAlpha.400">·</Text>
+        <Link asChild color="teal.200">
+          <MainLink href={stylesBrowseHref(colorName)}>
+            {t('all-color-styles', { color: colorName })}
+          </MainLink>
+        </Link>
+        <Text color="whiteAlpha.400">·</Text>
+        <Link asChild color="teal.200">
+          <MainLink href={STYLES_BASE_PATH}>{t('hub-link')}</MainLink>
+        </Link>
       </Flex>
     </Flex>
   );
@@ -86,9 +144,10 @@ export function PetStylesSection({ groups, heading, hint }: PetStylesSectionProp
 type PetStyleSeriesRowProps = {
   series: string;
   items: ItemV2For<'card'>[];
+  seriesHref: string;
 };
 
-function PetStyleSeriesRow({ series, items }: PetStyleSeriesRowProps) {
+function PetStyleSeriesRow({ series, items, seriesHref }: PetStyleSeriesRowProps) {
   const { ref, near } = useNearViewport<HTMLDivElement>();
   const [activeIndex, setActiveIndex] = useState(0);
   const active = items[activeIndex] ?? items[0];
@@ -121,7 +180,9 @@ function PetStyleSeriesRow({ series, items }: PetStyleSeriesRowProps) {
         mb={2}
         textAlign={{ base: 'center', md: 'start' }}
       >
-        {series}
+        <Link asChild color="cyan.100" _hover={{ color: 'cyan.200', textDecoration: 'underline' }}>
+          <MainLink href={seriesHref}>{series}</MainLink>
+        </Link>
       </Text>
       <Flex
         gap={3}

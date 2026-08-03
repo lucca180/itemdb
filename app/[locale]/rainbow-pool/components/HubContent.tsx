@@ -41,6 +41,16 @@ function richLink(href: string) {
   return RichLink;
 }
 
+function richInternalLink(href: string) {
+  const RichInternalLink = (chunks: ReactNode) => (
+    <Link asChild color="teal.200" fontWeight="semibold">
+      <MainLink href={href}>{chunks}</MainLink>
+    </Link>
+  );
+  RichInternalLink.displayName = 'HubRichInternalLink';
+  return RichInternalLink;
+}
+
 const richLinkTags = {
   PoolLink: richLink(OFFICIAL_LINKS.pool),
   FountainLink: richLink(OFFICIAL_LINKS.fountain),
@@ -48,6 +58,7 @@ const richLinkTags = {
   PremiumLink: richLink(OFFICIAL_LINKS.premium),
   FestivalLink: richLink(OFFICIAL_LINKS.festival),
   StudioLink: richLink(OFFICIAL_LINKS.stylingStudio),
+  StylesLink: richInternalLink('/rainbow-pool/pet-styles'),
 };
 
 /** Plain text for FAQPage JSON-LD (strip next-intl rich tags). */

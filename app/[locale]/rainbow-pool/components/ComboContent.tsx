@@ -11,6 +11,7 @@ import { howToGetComboTitle } from '@utils/petColorCopy';
 import { getNpPriceValue } from '@utils/item/v2';
 import { petColorSlug } from '@utils/pet-utils';
 import { outfitPreviewSources, petColorPreviewSourcesFromSlugs } from '@utils/cdnPreview';
+import { stylesComboHref } from '@utils/petStyles/paths';
 import type { SpeciesInfo } from '@utils/petColorTool';
 import type { ItemV2For } from '@types';
 import { buildRainbowPoolLabels } from '../buildRainbowPoolLabels';
@@ -204,11 +205,13 @@ export async function ComboContent({
 
           <PetStylesSection
             groups={petStyleGroups}
+            speciesName={speciesName}
+            colorName={colorName}
             heading={t('PetColors.pet-styles-heading', { 0: colorName, 1: speciesName })}
             hint={t.rich('PetColors.pet-styles-hint', {
               0: colorName,
               1: speciesName,
-              Link: (chunks) => (
+              StudioLink: (chunks) => (
                 <IconLink
                   href="https://www.neopets.com/mall/stylingstudio/"
                   isExternal
@@ -217,6 +220,11 @@ export async function ComboContent({
                 >
                   {chunks}
                 </IconLink>
+              ),
+              StylesLink: (chunks) => (
+                <Link asChild color="cyan.200" fontWeight="semibold">
+                  <MainLink href={stylesComboHref(speciesName, colorName)}>{chunks}</MainLink>
+                </Link>
               ),
             })}
           />

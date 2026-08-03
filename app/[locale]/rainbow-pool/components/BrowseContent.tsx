@@ -1,9 +1,11 @@
-import { Center, Flex, Heading, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { Center, Flex, Heading, Link, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 import { getTranslations } from 'next-intl/server';
 import { createPoolBreadcrumbList, PoolBreadcrumbs } from '@components/Breadcrumbs/PoolBreadcrumbs';
+import MainLink from '@components/Utils/MainLink';
 import { browseColorTitle, browseSpeciesTitle } from '@utils/petColorCopy';
 import { petColorSlug } from '@utils/pet-utils';
 import type { RainbowPoolComboTile } from '@utils/petColorTool';
+import { stylesBrowseHref } from '@utils/petStyles/paths';
 import { buildRainbowPoolLabels } from '../buildRainbowPoolLabels';
 import { BASE_PATH, RainbowPoolShell } from './RainbowPoolShell';
 import { ComboTile } from './ComboTile';
@@ -62,6 +64,13 @@ export async function BrowseContent({
           selectSpeciesLabel={labels.selectSpeciesLabel}
           searchLabel={labels.searchLabel}
         />
+        <Link asChild fontSize="sm" color="cyan.200" fontWeight="semibold" mt={1}>
+          <MainLink href={stylesBrowseHref(name)}>
+            {mode === 'species'
+              ? t('PetStyles.all-species-styles', { species: name })
+              : t('PetStyles.all-color-styles', { color: name })}
+          </MainLink>
+        </Link>
       </Center>
 
       <VStack align="stretch" gap={4} maxW="1100px" mx="auto" px={2}>
