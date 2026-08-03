@@ -160,7 +160,7 @@ export function ItemPriceTabBar({
   );
 
   return (
-    <Flex mx={'auto'} gap={2} alignItems="center" pb={1.5} mb={1.5} overflow="auto">
+    <Flex mx={'auto'} gap={2} alignItems="center" pb={1.5} mb={1.5} overflow="auto" w="100%">
       <ButtonGroup size="sm" attached variant="outline" outlineColor="whiteAlpha.300">
         {tabButton('table', labels.table)}
         {shouldShowLists && tabButton('trading', labels.trading)}
