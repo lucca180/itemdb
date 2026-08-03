@@ -1,19 +1,19 @@
 'use client';
-import { Badge, Box, Icon, Skeleton, Text, Link, Tooltip, useMediaQuery } from '@chakra-ui/react';
-import { differenceInMonths } from 'date-fns';
+import { Box, Skeleton, Text, Link, useMediaQuery } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
-import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
 import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
 
 const ItemCtxMenu = dynamic(() => import('@components/Menus/ItemCtxMenu'), { ssr: false });
 import { getRestockProfit, rarityToCCPoints } from '../../utils/utils';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useFormatter } from 'next-intl';
 import MainLink from '../Utils/MainLink';
-import { MdHelp, MdOutlineHourglassBottom } from 'react-icons/md';
-import { isMallDiscounted } from './NCMallCard';
+import { ItemCardBadge } from '@components/Items/ItemCardBadge';
+
+export type { ItemCardBadgeProps } from '@components/Items/ItemCardBadge';
+export { ItemCardBadge } from '@components/Items/ItemCardBadge';
 
 export type ItemProps = {
   item?: ItemData;
@@ -245,156 +245,6 @@ const ItemCardContent = ({
 const ItemCard = React.memo(ItemCardBase);
 
 export default ItemCard;
-
-type ItemCardBadgeProps = Pick<ItemProps, 'item' | 'capValue' | 'odds' | 'sortType' | 'isLE'> & {
-  profit?: number | null;
-};
-
-export const ItemCardBadge = (props: ItemCardBadgeProps) => {
-  const t = useTranslations();
-  const format = useFormatter();
-  const { item, capValue, odds, profit, isLE, sortType } = props;
-
-  if (!item) return null;
-  const isDiscounted = isMallDiscounted(item.mallData);
-  const priceAgeInMonths = item.price.addedAt
-    ? differenceInMonths(new Date(), new Date(item.price.addedAt))
-    : 0;
-  const hasStalePriceBadge = priceAgeInMonths >= 6;
-
-  return (
-    <>
-      {!hasStalePriceBadge && !!item.price.value && item.price.inflated && (
-        <Tooltip.Root positioning={{ placement: 'top' }}>
-          <Tooltip.Trigger asChild>
-            <Badge colorPalette="red" whiteSpace="normal" cursor="default">
-              <Icon as={AiFillWarning} verticalAlign="middle" /> {format.number(item.price.value)}{' '}
-              NP
-            </Badge>
-          </Tooltip.Trigger>
-          <Tooltip.Positioner>
-            <Tooltip.Content>{t('General.inflation')}</Tooltip.Content>
-          </Tooltip.Positioner>
-        </Tooltip.Root>
-      )}
-
-      {!hasStalePriceBadge && !!item.price.value && !item.price.inflated && (
-        <Badge whiteSpace="normal">{format.number(item.price.value)} NP</Badge>
-      )}
-
-      {hasStalePriceBadge && item.price.value && (
-        <Tooltip.Root positioning={{ placement: 'top' }}>
-          <Tooltip.Trigger asChild>
-            <Badge colorPalette="orange" whiteSpace="normal" cursor="default">
-              <Icon as={MdOutlineHourglassBottom} verticalAlign="middle" />
-              {format.number(item.price.value)} NP
-            </Badge>
-          </Tooltip.Trigger>
-          <Tooltip.Positioner>
-            <Tooltip.Content>
-              {t('ItemPage.last-known-price-x-months-ago', { x: priceAgeInMonths })}
-            </Tooltip.Content>
-          </Tooltip.Positioner>
-        </Tooltip.Root>
-      )}
-
-      {item.type === 'np' && item.status === 'no trade' && <Badge>No Trade</Badge>}
-
-      {item.type === 'pb' && <Badge colorPalette="yellow">PB</Badge>}
-
-      {item.isNC && !capValue && !item.mallData && !item.ncValue && item.status !== 'no trade' && (
-        <Badge colorPalette="purple">NC</Badge>
-      )}
-
-      {item.isNC && !capValue && !item.mallData && !item.ncValue && item.status === 'no trade' && (
-        <Badge colorPalette="purple">NC - No Trade</Badge>
-      )}
-
-      {item.isNC && item.ncValue && !capValue && !item.mallData && (
-        <Badge
-          colorPalette={item.ncValue.source === 'lebron' ? 'yellow' : 'purple'}
-          whiteSpace="normal"
-        >
-          {item.ncValue.range} Caps
-        </Badge>
-      )}
-
-      {item.isNC && item.mallData && (
-        <Badge colorPalette={isDiscounted ? 'orange' : 'purple'} whiteSpace="normal">
-          {item.mallData.price > 0 &&
-            `${format.number(
-              isDiscounted ? (item.mallData.discountPrice ?? -1) : item.mallData.price
-            )} NC`}
-          {item.mallData.price === 0 && t('ItemPage.free')}
-        </Badge>
-      )}
-
-      {item.isNC && Number(capValue) > 0 && (
-        <Tooltip.Root positioning={{ placement: 'top' }}>
-          <Tooltip.Trigger asChild>
-            <Badge colorPalette="purple" whiteSpace="normal" cursor="default">
-              <Icon as={AiFillInfoCircle} verticalAlign="middle" /> NC - {capValue} CAPS
-            </Badge>
-          </Tooltip.Trigger>
-          <Tooltip.Positioner>
-            <Tooltip.Content>User Asking Price in GBCs - Not Official</Tooltip.Content>
-          </Tooltip.Positioner>
-        </Tooltip.Root>
-      )}
-
-      {!!odds && (
-        <Badge colorPalette={isLE ? 'green' : 'white'} whiteSpace="pre-wrap" textAlign={'center'}>
-          {isLE ? 'LE' : ''} {odds.toFixed(2)}%
-        </Badge>
-      )}
-
-      {sortType === 'profit' && !!profit && (
-        <>
-          {profit <= 1000 && (
-            <Tooltip.Root positioning={{ placement: 'top' }}>
-              <Tooltip.Trigger asChild>
-                <Badge
-                  colorPalette="red"
-                  display="flex"
-                  alignItems={'center'}
-                  gap={1}
-                  cursor="default"
-                >
-                  {format.number(profit)} NP <MdHelp size={'0.7rem'} />
-                </Badge>
-              </Tooltip.Trigger>
-              <Tooltip.Positioner>
-                <Tooltip.Content>
-                  {profit > 0
-                    ? t('Restock.estimated-profit-is-less-than')
-                    : t('Restock.estimated-loss')}
-                </Tooltip.Content>
-              </Tooltip.Positioner>
-            </Tooltip.Root>
-          )}
-          {profit > 1000 && (
-            <Tooltip.Root positioning={{ placement: 'top' }}>
-              <Tooltip.Trigger asChild>
-                <Badge
-                  colorPalette="green"
-                  display="flex"
-                  alignItems={'center'}
-                  gap={1}
-                  cursor="default"
-                >
-                  {format.number(profit)} NP <MdHelp size={'0.7rem'} />
-                </Badge>
-              </Tooltip.Trigger>
-              <Tooltip.Positioner>
-                <Tooltip.Content>{t('Restock.estimated-profit')}</Tooltip.Content>
-              </Tooltip.Positioner>
-            </Tooltip.Root>
-          )}
-        </>
-      )}
-    </>
-  );
-};
 
 type ImageProps = React.ComponentProps<typeof Image>;
 

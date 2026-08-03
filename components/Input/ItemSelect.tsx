@@ -10,7 +10,7 @@ import {
 import axios from 'axios';
 import { ItemData, SearchFilters } from '../../types';
 import { Flex, Image } from '@chakra-ui/react';
-import { ItemCardBadge } from '../Items/ItemCard';
+import { ItemCardBadge } from '@components/Items/ItemCardBadge';
 import { useTranslations } from 'next-intl';
 
 type Props = {
