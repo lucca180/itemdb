@@ -20,6 +20,10 @@ import {
   getSpeciesFromString,
   petColorSlug,
 } from '@utils/pet-utils';
+import { stylesBrowseHref } from '@utils/petStyles/paths';
+
+const STYLING_STUDIO_ICON =
+  'https://images.neopets.com/themes/h5/basic/images/stylingstudio-icon.png';
 
 type Props = {
   item: ItemData;
@@ -141,6 +145,15 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
         b: (chunk) => <b>{chunk}</b>,
       }),
     });
+
+    relatedLinks.push({
+      href: stylesBrowseHref(speciesName),
+      imageUrl: STYLING_STUDIO_ICON,
+      alt: speciesName,
+      trackEvent: 'related-link',
+      trackEventLabel: 'pet-styles',
+      children: t('PetStyles.all-species-styles', { species: speciesName }),
+    });
   }
 
   const isUnbuyable = (item.price?.value ?? 0) > 999999;
@@ -158,16 +171,26 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
 
   if (colorEffect && colorEffect.length > 0) {
     colorEffect.forEach((effect) => {
+      const colorTarget = effect.colorTarget!;
       relatedLinks.push({
-        href: `/rainbow-pool/${petColorSlug(effect.colorTarget!)}`,
-        imageUrl: `https://images.neopets.com/themes/h5/basic/images/stylingstudio-icon.png`,
-        alt: effect.colorTarget!,
+        href: `/rainbow-pool/${petColorSlug(colorTarget)}`,
+        imageUrl: STYLING_STUDIO_ICON,
+        alt: colorTarget,
         trackEvent: 'related-link',
         trackEventLabel: 'color-painting',
         children: t.rich('ItemPage.related-painting', {
-          color: effect.colorTarget!,
+          color: colorTarget,
           b: (chunk) => <b>{chunk}</b>,
         }),
+      });
+
+      relatedLinks.push({
+        href: stylesBrowseHref(colorTarget),
+        imageUrl: STYLING_STUDIO_ICON,
+        alt: colorTarget,
+        trackEvent: 'related-link',
+        trackEventLabel: 'pet-styles',
+        children: t('PetStyles.all-color-styles', { color: colorTarget }),
       });
     });
   }
