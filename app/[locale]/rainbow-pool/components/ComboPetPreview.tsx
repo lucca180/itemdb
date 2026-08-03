@@ -1,12 +1,13 @@
 'use client';
 
 import { Box, Button, ButtonGroup, Link, Text } from '@chakra-ui/react';
-import Image from '@components/Utils/Image';
+import { CdnImage } from '@components/Utils/CdnImage';
+import type { PreviewSources } from '@utils/cdnPreview';
 import { useState } from 'react';
 
 type ComboPetPreviewProps = {
-  bareUrl: string;
-  clothedUrl: string | null;
+  bare: PreviewSources;
+  clothed: PreviewSources | null;
   alt: string;
   bareLabel: string;
   clothedLabel: string;
@@ -14,17 +15,17 @@ type ComboPetPreviewProps = {
 };
 
 export function ComboPetPreview({
-  bareUrl,
-  clothedUrl,
+  bare,
+  clothed,
   alt,
   bareLabel,
   clothedLabel,
   poweredByLabel,
 }: ComboPetPreviewProps) {
-  const canToggle = Boolean(clothedUrl);
+  const canToggle = Boolean(clothed);
   const [mode, setMode] = useState<'bare' | 'clothed'>('bare');
   const activeMode = canToggle && mode === 'clothed' ? 'clothed' : 'bare';
-  const src = activeMode === 'clothed' && clothedUrl ? clothedUrl : bareUrl;
+  const sources = activeMode === 'clothed' && clothed ? clothed : bare;
 
   return (
     <Box
@@ -39,9 +40,10 @@ export function ComboPetPreview({
       justifyContent="center"
       alignSelf="center"
     >
-      <Image
-        key={src}
-        src={src}
+      <CdnImage
+        key={sources.cdn}
+        cdnSrc={sources.cdn}
+        apiSrc={sources.api}
         alt={alt}
         width={280}
         height={280}

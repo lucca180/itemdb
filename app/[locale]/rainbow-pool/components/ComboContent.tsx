@@ -10,7 +10,7 @@ import type { ComboPetStyleGroup } from '@app/server/petStyles';
 import { howToGetComboTitle } from '@utils/petColorCopy';
 import { getNpPriceValue } from '@utils/item/v2';
 import { petColorSlug } from '@utils/pet-utils';
-import { buildPbOutfitPreviewUrl } from '@utils/pbOutfits';
+import { outfitPreviewSources, petColorPreviewSourcesFromSlugs } from '@utils/cdnPreview';
 import type { SpeciesInfo } from '@utils/petColorTool';
 import type { ItemV2For } from '@types';
 import { buildRainbowPoolLabels } from '../buildRainbowPoolLabels';
@@ -64,9 +64,9 @@ export async function ComboContent({
     getFormatter(),
   ]);
 
-  const previewUrl = `/api/cache/preview/color/${thumbnail.species}_${thumbnail.color}.png`;
-  const clothedPreviewUrl =
-    pbOutfit.length > 0 ? buildPbOutfitPreviewUrl(pbOutfit, speciesId, colorId) : null;
+  const barePreview = petColorPreviewSourcesFromSlugs(thumbnail.species, thumbnail.color);
+  const clothedPreview =
+    pbOutfit.length > 0 ? outfitPreviewSources(pbOutfit, speciesId, colorId) : null;
   const total = cheapestChange.reduce((acc, item) => acc + (getNpPriceValue(item.price) ?? 0), 0);
   const totalLabel = `${total.toLocaleString('en-US')} NP`;
 
@@ -123,8 +123,8 @@ export async function ComboContent({
           align={{ base: 'center', md: 'stretch' }}
         >
           <ComboPetPreview
-            bareUrl={previewUrl}
-            clothedUrl={clothedPreviewUrl}
+            bare={barePreview}
+            clothed={clothedPreview}
             alt={`${colorName} ${speciesName}`}
             bareLabel={t('PetColors.preview-bare')}
             clothedLabel={t('PetColors.preview-clothed')}

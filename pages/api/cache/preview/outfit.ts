@@ -4,9 +4,9 @@ import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { cdnExists, uploadToS3 } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 import queryString from 'query-string';
-import objectHash from 'object-hash';
 import { Chance } from 'chance';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
+import { outfitPreviewPathHash } from '@utils/outfitPreviewUrl';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -49,15 +49,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       .map((itemId) => itemsById.get(itemId))
       .filter((item) => item !== undefined);
 
-    // Keep version 2 + itemIds-only hash when no pet prefs (existing CDN keys).
-    // When species/color are set, include them so clothed previews don't collide.
-    const pathHash = objectHash({
-      version: 2,
-      itemIds: orderedItems.map((item) => item.internal_id),
-      ...(speciesId != null || parsedColorId != null
-        ? { speciesId: speciesId ?? null, colorId: parsedColorId ?? null }
-        : {}),
-    });
+    const pathHash = outfitPreviewPathHash(
+      orderedItems.map((item) => item.internal_id),
+      speciesId,
+      parsedColorId
+    );
     const path = `preview/${pathHash}.png`;
 
     const forceRefresh = refresh === 'true';

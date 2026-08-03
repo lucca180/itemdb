@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const { speciesName, colorName, thumbnail, speciesId, colorId } = petColorData;
-  const previewUrl = `https://itemdb.com.br/api/cache/preview/color/${thumbnail.species}_${thumbnail.color}.png`;
+  const previewUrl = `https://cdn.itemdb.com.br/colors/${thumbnail.species}_${thumbnail.color}.png`;
   const styleGroups = await loadComboPetStyles(speciesId, colorId, colorName);
   const description = styleGroups.length
     ? t('PetColors.species-color-description-with-styles', { 0: colorName, 1: speciesName })

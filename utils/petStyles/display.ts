@@ -27,8 +27,10 @@ export type StyleToken = {
   trades: StyleNcTrade[];
   /** Wearable / token icon. */
   imageUrl: string;
-  /** Wearable preview (item image preview). */
+  /** Wearable preview (CDN; use with API fallback via wearablePreviewSources). */
   previewUrl: string;
+  /** Item image_id for CDN/API preview sources. */
+  imageId: string | null;
   itemSlug: string;
   releasedAt: string;
 };

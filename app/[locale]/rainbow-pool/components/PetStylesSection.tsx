@@ -5,6 +5,7 @@ import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import type { ComboPetStyleGroup } from '@app/server/petStyles';
 import type { ItemV2For } from '@types';
 import type { ReactNode } from 'react';
+import { wearablePreviewSources } from '@utils/cdnPreview';
 import { useEffect, useRef, useState } from 'react';
 import { warmWearablePreview, WearablePreview } from './WearablePreview';
 
@@ -18,9 +19,8 @@ type PetStylesSectionProps = {
   hint?: ReactNode;
 };
 
-function petStylePreviewUrl(item: ItemV2For<'card'>): string {
-  const hash = item.image.hash ? `?hash=${item.image.hash}` : '';
-  return `/api/cache/preview/${item.image.id}.png${hash}`;
+function petStylePreviewSources(item: ItemV2For<'card'>) {
+  return wearablePreviewSources(item.image.id, item.image.hash);
 }
 
 function useNearViewport<T extends Element>(rootMargin = LAZY_ROOT_MARGIN) {
@@ -98,7 +98,7 @@ function PetStyleSeriesRow({ series, items }: PetStyleSeriesRowProps) {
   useEffect(() => {
     if (!near) return;
     for (const item of items) {
-      warmWearablePreview(petStylePreviewUrl(item));
+      warmWearablePreview(petStylePreviewSources(item).cdn);
     }
   }, [near, items]);
 
@@ -109,6 +109,8 @@ function PetStyleSeriesRow({ series, items }: PetStyleSeriesRowProps) {
     if (!len) return;
     setActiveIndex(((index % len) + len) % len);
   };
+
+  const activePreview = petStylePreviewSources(active);
 
   return (
     <Box ref={ref} w="100%">
@@ -130,7 +132,8 @@ function PetStyleSeriesRow({ series, items }: PetStyleSeriesRowProps) {
       >
         <Flex flexFlow="column" align="center" gap={1} w="100%" maxW={`${PREVIEW_SIZE}px`}>
           <WearablePreview
-            url={petStylePreviewUrl(active)}
+            cdnSrc={activePreview.cdn}
+            apiSrc={activePreview.api}
             alt={`${active.name} preview`}
             size={PREVIEW_SIZE}
             enabled={near}

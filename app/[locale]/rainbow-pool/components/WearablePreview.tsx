@@ -1,14 +1,15 @@
 'use client';
 
 import { Box, IconButton, Skeleton } from '@chakra-ui/react';
-import Image from '@components/Utils/Image';
+import { CdnImage } from '@components/Utils/CdnImage';
 import { useState } from 'react';
 import { LuChevronLeft, LuChevronRight } from 'react-icons/lu';
 
 const DEFAULT_SIZE = 300;
 
 export type WearablePreviewProps = {
-  url: string;
+  cdnSrc: string;
+  apiSrc: string;
   alt: string;
   /** Pixel size for the image intrinsic dimensions and max width. */
   size?: number;
@@ -26,10 +27,11 @@ export type WearablePreviewProps = {
 
 /**
  * Wearable/style preview with skeleton while the active URL loads.
- * Already-shown URLs swap instantly (no skeleton).
+ * Already-shown URLs swap instantly (no skeleton). CDN-first with API fallback.
  */
 export function WearablePreview({
-  url,
+  cdnSrc,
+  apiSrc,
   alt,
   size = DEFAULT_SIZE,
   enabled = true,
@@ -40,7 +42,7 @@ export function WearablePreview({
   nextLabel = 'Next',
 }: WearablePreviewProps) {
   const [loadedUrls, setLoadedUrls] = useState(() => new Set<string>());
-  const isLoaded = loadedUrls.has(url);
+  const isLoaded = loadedUrls.has(cdnSrc);
   const showSkeleton = !enabled || !isLoaded;
 
   const markLoaded = (loadedUrl: string) => {
@@ -66,17 +68,18 @@ export function WearablePreview({
     >
       {showSkeleton && <Skeleton position="absolute" inset={0} borderRadius="md" zIndex={1} />}
       {enabled && (
-        <Image
-          key={url}
-          src={url}
+        <CdnImage
+          key={cdnSrc}
+          cdnSrc={cdnSrc}
+          apiSrc={apiSrc}
           alt={alt}
           width={size}
           height={size}
           unoptimized
           loading="eager"
           fetchPriority="low"
-          onLoad={() => markLoaded(url)}
-          onError={() => markLoaded(url)}
+          onLoad={() => markLoaded(cdnSrc)}
+          onError={() => markLoaded(cdnSrc)}
           style={{
             objectFit: 'contain',
             width: '100%',
@@ -122,7 +125,7 @@ export function WearablePreview({
 }
 
 /** Populate HTTP cache only — does not affect WearablePreview skeleton state. */
-export function warmWearablePreview(url: string): void {
+export function warmWearablePreview(cdnSrc: string): void {
   const img = new window.Image();
-  img.src = url;
+  img.src = cdnSrc;
 }

@@ -1,7 +1,11 @@
+'use client';
+
 import { Box, Flex, Text } from '@chakra-ui/react';
-import Image from '@components/Utils/Image';
+import { CdnImage } from '@components/Utils/CdnImage';
 import MainLink from '@components/Utils/MainLink';
+import { comboTilePreviewSources } from '@utils/cdnPreview';
 import type { RainbowPoolComboTile } from '@utils/petColorTool';
+import { isUnknownColorName } from '@utils/petStyles/paths';
 
 type ComboTileProps = {
   combo: RainbowPoolComboTile;
@@ -26,6 +30,13 @@ export function ComboTile({
       : titleMode === 'species'
         ? combo.speciesName
         : `${combo.colorName} ${combo.speciesName}`;
+
+  const preview = comboTilePreviewSources(
+    combo.speciesName,
+    combo.colorName,
+    combo.previewUrl,
+    isUnknownColorName(combo.colorName)
+  );
 
   if (layout === 'row') {
     return (
@@ -53,8 +64,9 @@ export function ComboTile({
             alignItems="center"
             justifyContent="center"
           >
-            <Image
-              src={combo.previewUrl}
+            <CdnImage
+              cdnSrc={preview.cdn}
+              apiSrc={preview.api}
               alt={title}
               width={60}
               height={60}
@@ -110,8 +122,9 @@ export function ComboTile({
           alignItems="center"
           justifyContent="center"
         >
-          <Image
-            src={combo.previewUrl}
+          <CdnImage
+            cdnSrc={preview.cdn}
+            apiSrc={preview.api}
             alt={title}
             width={size}
             height={size}

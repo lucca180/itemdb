@@ -104,7 +104,7 @@ function colorStringOrFilters(terms: string[]): Prisma.PetStyleWhereInput[] {
 
 function wearablePreviewUrl(imageId: string | null | undefined): string {
   if (!imageId) return '';
-  return `/api/cache/preview/${imageId}.png`;
+  return `https://cdn.itemdb.com.br/preview/${imageId}.png`;
 }
 
 function itemIconUrl(
@@ -198,6 +198,7 @@ function mapTokenRows(
       trades: tradesByIid[row.item_iid] ?? [],
       imageUrl: itemIconUrl(row.item.image_id, row.item.image),
       previewUrl: wearablePreviewUrl(row.item.image_id),
+      imageId: row.item.image_id ?? null,
       itemSlug: row.item.slug || petColorSlug(row.item.name),
       releasedAt: row.item.addedAt.toISOString().slice(0, 10),
     });

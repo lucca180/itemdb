@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { LuChevronDown } from 'react-icons/lu';
 import { WearablePreview } from '@app/[locale]/rainbow-pool/components/WearablePreview';
+import { wearablePreviewSources } from '@utils/cdnPreview';
 import { useFormatLongDate } from './formatLongDate';
 
 const PREVIEW_SIZE = 280;
@@ -32,6 +33,8 @@ export function StyleTokenSeriesBlock({ series, items }: StyleTokenSeriesBlockPr
     setActiveIndex(((index % len) + len) % len);
   };
 
+  const activePreview = active.imageId ? wearablePreviewSources(active.imageId) : null;
+
   return (
     <Box w="100%">
       <Text
@@ -50,16 +53,19 @@ export function StyleTokenSeriesBlock({ series, items }: StyleTokenSeriesBlockPr
         w="100%"
       >
         <Flex flexFlow="column" align="center" gap={2} w="100%" maxW={`${PREVIEW_SIZE}px`}>
-          <WearablePreview
-            url={active.previewUrl}
-            alt={`${active.name} preview`}
-            size={PREVIEW_SIZE}
-            canCycle={canCycle}
-            onPrev={() => goTo(activeIndex - 1)}
-            onNext={() => goTo(activeIndex + 1)}
-            prevLabel={t('prev-style')}
-            nextLabel={t('next-style')}
-          />
+          {activePreview && (
+            <WearablePreview
+              cdnSrc={activePreview.cdn}
+              apiSrc={activePreview.api}
+              alt={`${active.name} preview`}
+              size={PREVIEW_SIZE}
+              canCycle={canCycle}
+              onPrev={() => goTo(activeIndex - 1)}
+              onNext={() => goTo(activeIndex + 1)}
+              prevLabel={t('prev-style')}
+              nextLabel={t('next-style')}
+            />
+          )}
           {canCycle && (
             <Text fontSize="xs" color="whiteAlpha.700">
               {activeIndex + 1}/{items.length}

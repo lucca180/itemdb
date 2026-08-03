@@ -1,8 +1,10 @@
 'use client';
 
 import { Badge, Box, Flex, HStack, Text } from '@chakra-ui/react';
+import { CdnImage } from '@components/Utils/CdnImage';
 import Image from '@components/Utils/Image';
 import MainLink from '@components/Utils/MainLink';
+import { wearablePreviewSources } from '@utils/cdnPreview';
 import type { StyleToken } from '@utils/petStyles/display';
 import { stylesComboHref } from '@utils/petStyles/paths';
 import { useTranslations } from 'next-intl';
@@ -22,6 +24,7 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
     linkTo === 'item'
       ? `/item/${token.itemSlug}`
       : stylesComboHref(token.speciesName, token.colorName);
+  const preview = token.imageId ? wearablePreviewSources(token.imageId) : null;
 
   return (
     <MainLink href={href} style={{ textDecoration: 'none' }}>
@@ -46,14 +49,26 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
           alignItems="center"
           justifyContent="center"
         >
-          <Image
-            src={token.previewUrl || token.imageUrl}
-            alt={token.name}
-            width={120}
-            height={120}
-            unoptimized
-            style={{ objectFit: 'contain' }}
-          />
+          {preview ? (
+            <CdnImage
+              cdnSrc={preview.cdn}
+              apiSrc={preview.api}
+              alt={token.name}
+              width={120}
+              height={120}
+              unoptimized
+              style={{ objectFit: 'contain' }}
+            />
+          ) : (
+            <Image
+              src={token.imageUrl}
+              alt={token.name}
+              width={120}
+              height={120}
+              unoptimized
+              style={{ objectFit: 'contain' }}
+            />
+          )}
         </Box>
         <Text fontWeight="semibold" fontSize="sm" textAlign="center" lineClamp={2}>
           {token.name}

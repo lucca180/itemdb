@@ -49,7 +49,7 @@ export type RainbowPoolComboTile = {
 };
 
 export function petPreviewUrl(speciesName: string, colorName: string) {
-  return `/api/cache/preview/color/${petColorSlug(speciesName)}_${petColorSlug(colorName)}.png`;
+  return `https://cdn.itemdb.com.br/colors/${petColorSlug(speciesName)}_${petColorSlug(colorName)}.png`;
 }
 
 export const checkPetColorExists = async (colorTargetId: number, speciesTargetId: number) => {

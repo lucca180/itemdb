@@ -2,6 +2,7 @@ import { Badge, Box, Flex, Heading, Link, Text, VStack } from '@chakra-ui/react'
 import { createPoolBreadcrumbList, PoolBreadcrumbs } from '@components/Breadcrumbs/PoolBreadcrumbs';
 import MainLink from '@components/Utils/MainLink';
 import { IconLink } from '@components/Utils/IconLink';
+import { wearablePreviewSources } from '@utils/cdnPreview';
 import { groupStyleTokensBySeries } from '@utils/petStyles/display';
 import type { StyleToken } from '@utils/petStyles/display';
 import { STYLES_BASE_PATH, stylesBrowseHref, stylesComboHref } from '@utils/petStyles/paths';
@@ -36,7 +37,12 @@ export async function StylesComboContent({
   const t = await getTranslations();
   const groups = groupStyleTokensBySeries(tokens);
   // Prefer style wearable over OpenNeo pet body — colour combos may not exist as pets.
-  const previewUrl = tokens[0]?.previewUrl || tokens[0]?.imageUrl || '';
+  const heroToken = tokens[0];
+  const heroPreview = heroToken?.imageId
+    ? wearablePreviewSources(heroToken.imageId)
+    : heroToken?.previewUrl
+      ? { cdn: heroToken.previewUrl, api: heroToken.previewUrl }
+      : null;
   const inStudioCount = tokens.filter((token) => token.inStudio).length;
 
   const paintSpeciesHref = `${BASE_PATH}/${petColorSlug(speciesName)}`;
@@ -101,11 +107,11 @@ export async function StylesComboContent({
           w={{ base: '100%', md: '280px' }}
           align={{ base: 'center', md: 'stretch' }}
         >
-          {previewUrl ? (
+          {heroPreview ? (
             <ComboPetPreview
-              bareUrl={previewUrl}
-              clothedUrl={null}
-              alt={tokens[0]?.name ?? `${colorName} ${speciesName}`}
+              bare={heroPreview}
+              clothed={null}
+              alt={heroToken?.name ?? `${colorName} ${speciesName}`}
               bareLabel={t('PetStyles.style-preview')}
               clothedLabel={t('PetStyles.with-style')}
               poweredByLabel={t('ItemPage.powered-by')}
