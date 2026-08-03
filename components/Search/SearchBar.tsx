@@ -1,7 +1,7 @@
 'use client';
 
 import { SearchIcon } from '@utils/theme/chakraIcons';
-import { InputGroup, useDisclosure, Input, Flex, Kbd } from '@chakra-ui/react';
+import { InputGroup, useDisclosure, Button, Flex, Kbd, Text } from '@chakra-ui/react';
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/compat/router';
@@ -22,7 +22,6 @@ export const SearchBar = () => {
   const t = useTranslations();
   const [search, setSearch] = React.useState<string>('');
   const { open: isOpen, onOpen, onClose } = useDisclosure();
-  const inputRef = React.useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const [isMac, setIsMac] = React.useState(false);
@@ -41,11 +40,6 @@ export const SearchBar = () => {
     // compat router is null on App Router — read directly from the browser URL.
     setSearch(getSearchQueryFromUrl());
   }, [router?.isReady, router?.query.s]);
-
-  const handleClose = () => {
-    onClose();
-    inputRef.current?.blur();
-  };
 
   const openSearch = () => {
     onOpen();
@@ -75,51 +69,80 @@ export const SearchBar = () => {
     };
   }, [isMac, isOpen, onClose, onOpen]);
 
+  const label = t('Layout.search-by');
+
   return (
     <>
-      <SearchModal isOpen={isOpen} onClose={handleClose} />
+      <SearchModal isOpen={isOpen} onClose={onClose} />
       <InputGroup
         maxW="700px"
         w="100%"
+        minW={0}
         h="100%"
         maxH="50px"
+        overflow="hidden"
         startElement={<SearchIcon color="gray.300" />}
         startElementProps={{ pointerEvents: 'none', h: '100%' }}
         endElement={
-          <Flex mr={1} h="100%" w="auto" gap={2} alignItems="center">
+          <Flex mr={1} h="100%" w="auto" gap={2} alignItems="center" flexShrink={0}>
             <Flex
               opacity={0.5}
               gap={1}
-              userSelect={'none'}
-              pointerEvents={'none'}
+              userSelect="none"
+              pointerEvents="none"
               aria-hidden="true"
               display={{ base: 'none', md: 'flex' }}
-              alignItems={'center'}
+              alignItems="center"
             >
-              <Kbd fontSize={'xs'}>{isMac ? '⌘' : 'Ctrl'}</Kbd>
-              <Kbd fontSize={'xs'}>K</Kbd>
+              <Kbd fontSize="xs">{isMac ? '⌘' : 'Ctrl'}</Kbd>
+              <Kbd fontSize="xs">K</Kbd>
             </Flex>
             <SearchMenu />
           </Flex>
         }
         endElementProps={{ h: '100%', w: 'auto', display: 'flex', alignItems: 'center', px: 0 }}
       >
-        <Input
+        <Button
           variant="subtle"
-          name="search"
-          autoComplete="off"
           bg="gray.700"
-          type="text"
           fontSize={{ base: 'sm', md: 'md' }}
-          onFocus={openSearch}
-          value={search}
-          ref={inputRef}
-          placeholder={t('Layout.search-by')}
-          _focus={{ bg: 'gray.700' }}
-          readOnly
+          fontWeight="normal"
+          justifyContent="flex-start"
           h="100%"
+          w="100%"
+          maxW="100%"
+          minW={0}
+          minH={0}
+          overflow="hidden"
+          flexShrink={1}
+          borderRadius="l2"
+          css={{ '--input-height': '2.5rem' }}
+          onClick={openSearch}
+          onFocus={openSearch}
+          _hover={{ bg: 'gray.700' }}
+          _expanded={{ bg: 'gray.700' }}
+          _focusVisible={{ bg: 'gray.700', outline: '2px solid', outlineColor: 'blue.400' }}
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
+          aria-label={label}
           data-sentry-label="HeaderSearch"
-        />
+          cursor="text"
+        >
+          <Text
+            as="span"
+            display="block"
+            w="100%"
+            maxW="100%"
+            minW={0}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+            textAlign="left"
+            color={search ? 'inherit' : 'whiteAlpha.400'}
+          >
+            {search || label}
+          </Text>
+        </Button>
       </InputGroup>
     </>
   );
