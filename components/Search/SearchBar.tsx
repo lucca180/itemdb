@@ -54,10 +54,6 @@ export const SearchBar = () => {
       (!isMac && event.ctrlKey && event.key === 'k')
     ) {
       event.preventDefault();
-      if (isOpen) {
-        onClose();
-        return;
-      }
       openSearch();
     }
   };
@@ -67,13 +63,13 @@ export const SearchBar = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isMac, isOpen, onClose, onOpen]);
+  }, [isMac, onOpen]);
 
   const label = t('Layout.search-by');
 
   return (
     <>
-      <SearchModal isOpen={isOpen} onClose={onClose} />
+      <SearchModal isOpen={isOpen} onClose={onClose} initialQuery={search} />
       <InputGroup
         maxW="700px"
         w="100%"
@@ -118,7 +114,6 @@ export const SearchBar = () => {
           borderRadius="l2"
           css={{ '--input-height': '2.5rem' }}
           onClick={openSearch}
-          onFocus={openSearch}
           _hover={{ bg: 'gray.700' }}
           _expanded={{ bg: 'gray.700' }}
           _focusVisible={{ bg: 'gray.700', outline: '2px solid', outlineColor: 'blue.400' }}
@@ -139,6 +134,8 @@ export const SearchBar = () => {
             whiteSpace="nowrap"
             textAlign="left"
             color={search ? 'inherit' : 'whiteAlpha.400'}
+            userSelect="none"
+            pointerEvents="none"
           >
             {search || label}
           </Text>
