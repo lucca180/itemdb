@@ -1,23 +1,13 @@
 'use client';
 
-import {
-  Badge,
-  Box,
-  Collapsible,
-  Flex,
-  Heading,
-  HStack,
-  IconButton,
-  Link,
-  List,
-  Text,
-} from '@chakra-ui/react';
+import { Badge, Box, Collapsible, Flex, Heading, HStack, Link, List, Text } from '@chakra-ui/react';
 import Image from '@components/Utils/Image';
 import MainLink from '@components/Utils/MainLink';
 import type { StyleNcTrade, StyleToken } from '@utils/petStyles/display';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { LuChevronDown, LuChevronLeft, LuChevronRight } from 'react-icons/lu';
+import { LuChevronDown } from 'react-icons/lu';
+import { WearablePreview } from '@app/[locale]/rainbow-pool/components/WearablePreview';
 import { useFormatLongDate } from './formatLongDate';
 
 const PREVIEW_SIZE = 280;
@@ -60,54 +50,16 @@ export function StyleTokenSeriesBlock({ series, items }: StyleTokenSeriesBlockPr
         w="100%"
       >
         <Flex flexFlow="column" align="center" gap={2} w="100%" maxW={`${PREVIEW_SIZE}px`}>
-          <Box
-            w="100%"
-            maxW={`${PREVIEW_SIZE}px`}
-            aspectRatio={1}
-            borderRadius="md"
-            bg="blackAlpha.500"
-            overflow="hidden"
-            position="relative"
-          >
-            <Image
-              src={active.previewUrl}
-              alt={`${active.name} preview`}
-              width={PREVIEW_SIZE}
-              height={PREVIEW_SIZE}
-              unoptimized
-              style={{ objectFit: 'contain', width: '100%', height: '100%' }}
-            />
-            {canCycle && (
-              <>
-                <IconButton
-                  aria-label={t('prev-style')}
-                  size="xs"
-                  variant="subtle"
-                  bg="blackAlpha.700"
-                  position="absolute"
-                  left={1}
-                  top="50%"
-                  transform="translateY(-50%)"
-                  onClick={() => goTo(activeIndex - 1)}
-                >
-                  <LuChevronLeft />
-                </IconButton>
-                <IconButton
-                  aria-label={t('next-style')}
-                  size="xs"
-                  variant="subtle"
-                  bg="blackAlpha.700"
-                  position="absolute"
-                  right={1}
-                  top="50%"
-                  transform="translateY(-50%)"
-                  onClick={() => goTo(activeIndex + 1)}
-                >
-                  <LuChevronRight />
-                </IconButton>
-              </>
-            )}
-          </Box>
+          <WearablePreview
+            url={active.previewUrl}
+            alt={`${active.name} preview`}
+            size={PREVIEW_SIZE}
+            canCycle={canCycle}
+            onPrev={() => goTo(activeIndex - 1)}
+            onNext={() => goTo(activeIndex + 1)}
+            prevLabel={t('prev-style')}
+            nextLabel={t('next-style')}
+          />
           {canCycle && (
             <Text fontSize="xs" color="whiteAlpha.700">
               {activeIndex + 1}/{items.length}

@@ -121,7 +121,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
   } catch (e) {
     console.error(e);
-    const img = await loadImage('./public/oops.jpg');
+    const img = await loadImage('./public/oops.png');
 
     if (!canvas || !ctx) {
       canvas = createCanvas(600, 600);
