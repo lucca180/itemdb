@@ -33,8 +33,9 @@ export async function getTrendingItemsV2(limit: number): Promise<ItemV2For<'card
     startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).getTime(),
     endAt: Date.now(),
     type: env.type,
-    // @ts-expect-error missing type
+    // @ts-expect-error missing types
     search: 'item/',
+    excludeBounce: true,
     limit: limit + 10,
   })) as WebsiteMetrics;
 

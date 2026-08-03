@@ -59,6 +59,7 @@ export const getTrendingItems = async (limit: number) => {
     type: env.type,
     // @ts-expect-error missing type
     search: 'item/',
+    excludeBounce: true,
     limit: limit + 10,
   })) as WebsiteMetrics;
 
@@ -95,6 +96,7 @@ export const getTrendingLists = async (limit: number, excludeCats: string[] = []
     type: env.type,
     // @ts-expect-error missing type
     search: '/lists/official/',
+    excludeBounce: true,
     limit: limit * 10,
   })) as WebsiteMetrics;
 
@@ -163,6 +165,7 @@ export const getTrendingShops = async (limit: number) => {
     type: env.type,
     // @ts-expect-error missing type
     search: 'restock/',
+    excludeBounce: true,
     limit: limit * 2,
   })) as WebsiteMetrics;
 
