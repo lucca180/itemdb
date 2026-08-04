@@ -18,15 +18,16 @@ import Layout from '@components/Layout';
 import { useFormatter } from 'next-intl';
 import { APIKeyData } from '@types';
 import { ReactElement, useState } from 'react';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import { CheckAuth } from '@utils/googleCloud';
 import { loadTranslation } from '@utils/load-translation';
-import { getAPIKeys } from '@pages/api/auth/apikeys';
+import { canCreateApiKeys, getAPIKeys } from '@pages/api/auth/apikeys';
 import IncreaseAPIModal from '@components/Modal/IncreaseAPILimitModal';
 
 type APIKeysPageProps = {
   apiKeys: APIKeyData[];
+  canCreateKeys: boolean;
   messages: Record<string, string>;
   locale: string;
 };
@@ -41,7 +42,7 @@ const APIKeysPage = (props: APIKeysPageProps) => {
 
   const keys = [...props.apiKeys, ...(apiCreateResult ? [apiCreateResult] : [])];
 
-  const isCreateDisabled = keys.length >= 3;
+  const isCreateDisabled = !props.canCreateKeys || keys.length >= 3;
 
   const createKey = async () => {
     const name = (document.getElementById('api-key-name') as HTMLInputElement)?.value;
@@ -66,10 +67,13 @@ const APIKeysPage = (props: APIKeysPageProps) => {
       setApiCreateResult(res.data);
     } catch (e) {
       console.error(e);
+      const errorMessage = isAxiosError(e)
+        ? (e.response?.data?.error as string | undefined)
+        : undefined;
       toast({
         id: 'api-key-create-error',
         title: 'Error creating API Key',
-        description: 'An error occurred while creating the API key.',
+        description: errorMessage || 'An error occurred while creating the API key.',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -219,6 +223,11 @@ const APIKeysPage = (props: APIKeysPageProps) => {
             You can have up to 3 API Keys at a time. Deleting a key still counts towards your limit
             for 24 hours.
           </Text>
+          {!props.canCreateKeys && (
+            <Text fontSize={'sm'} color="orange.300">
+              Your account must be at least 7 days old to create API keys.
+            </Text>
+          )}
           <Field.Root disabled={isCreateDisabled}>
             <Field.Label>Name</Field.Label>
             <Input id="api-key-name" name="name" variant={'subtle'} />
@@ -285,6 +294,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return {
       props: {
         apiKeys,
+        canCreateKeys: canCreateApiKeys(check.user.createdAt),
         messages: await loadTranslation(locale as string, 'tools/api'),
         locale: locale,
       },
