@@ -66,6 +66,10 @@ export function LatestPricesSection({ title }: LatestPricesSectionProps) {
 }
 
 async function LatestPricesSectionContent() {
+  'use cache';
+  cacheTag('home-latest-prices');
+  cacheLife('homeSection');
+
   const [t, formatter, latestPrices] = await Promise.all([
     getTranslations(),
     getFormatter(),
