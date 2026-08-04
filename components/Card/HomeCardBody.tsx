@@ -42,7 +42,7 @@ export function HomeCardBody(props: HomeCardBodyProps) {
   } = props;
   const [page, setPage] = useState(0);
   const t = useTranslations();
-  const [isMobile] = useMediaQuery(['(hover: none)']);
+  const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
   const hasBodyRows = bodyRows != null;
   const pageStart = perPage * page;
   const pageEnd = perPage * (page + 1);
@@ -175,7 +175,7 @@ export function HomeItem(props: HomeItemProps) {
 }
 
 function HomeItemWithMediaQuery(props: Omit<HomeItemProps, 'isMobile'>) {
-  const [isMobile] = useMediaQuery(['(hover: none)']);
+  const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
   return <HomeItemInner {...props} isMobile={isMobile} />;
 }
 
