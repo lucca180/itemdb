@@ -1,4 +1,4 @@
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { HorizontalHomeCard } from './HorizontalHomeCard';
 import { UserList } from '@types';
 import { Flex } from '@chakra-ui/react';
@@ -8,9 +8,9 @@ type EventCardProps = {
   lists?: UserList[];
 };
 
-export const NeggsCard = (props: EventCardProps) => {
+export async function NeggsCard(props: EventCardProps) {
   const { lists } = props;
-  const t = useTranslations();
+  const t = await getTranslations();
 
   return (
     <HorizontalHomeCard
@@ -56,10 +56,11 @@ export const NeggsCard = (props: EventCardProps) => {
       </Flex>
     </HorizontalHomeCard>
   );
-};
+}
 
-export const TVWHomeCard = (props: EventCardProps) => {
+export async function TVWHomeCard(props: EventCardProps) {
   const { lists } = props;
+  const t = await getTranslations();
   return (
     <HorizontalHomeCard
       color="#5436ab"
@@ -70,6 +71,7 @@ export const TVWHomeCard = (props: EventCardProps) => {
       title={'The Void Within'}
       isSmall
       utm_content="tvw-lists"
+      viewAllText={t('General.view-all')}
       css={{
         position: 'relative',
         isolation: 'isolate',
@@ -104,11 +106,11 @@ export const TVWHomeCard = (props: EventCardProps) => {
       </Flex>
     </HorizontalHomeCard>
   );
-};
+}
 
-export const CupCard = (props: EventCardProps) => {
+export async function CupCard(props: EventCardProps) {
   const { lists } = props;
-  // const t = useTranslations();
+  const t = await getTranslations();
 
   return (
     <HorizontalHomeCard
@@ -120,6 +122,7 @@ export const CupCard = (props: EventCardProps) => {
       title={'Altador Cup 2026'}
       isSmall
       utm_content="cup-lists"
+      viewAllText={t('General.view-all')}
       css={{
         position: 'relative',
         isolation: 'isolate',
@@ -155,4 +158,4 @@ export const CupCard = (props: EventCardProps) => {
       </Flex>
     </HorizontalHomeCard>
   );
-};
+}

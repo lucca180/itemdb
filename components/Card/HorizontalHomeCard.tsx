@@ -1,19 +1,17 @@
-'use client';
-
 import { Button, Flex, Heading, type FlexProps } from '@chakra-ui/react';
 import Color from 'color';
 import NextImage from 'next/image';
 import MainLink from '@components/Utils/MainLink';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
+import type { ReactNode } from 'react';
 
 type NestedCssObject = Record<string, unknown>;
 
-type HorizontalHomeCard = {
-  // lists: UserList[];
+type HorizontalHomeCardProps = {
   title?: string;
   image?: string;
   color: string;
-  children?: React.ReactNode;
+  children?: ReactNode;
   viewAllLink?: string;
   w?: number;
   h?: number;
@@ -28,8 +26,7 @@ type HorizontalHomeCard = {
   viewAllText?: string;
 };
 
-export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
-  const t = useTranslations();
+export function HorizontalHomeCard(props: HorizontalHomeCardProps) {
   const {
     children,
     title,
@@ -43,8 +40,11 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
     isPriority,
     viewAllText,
   } = props;
+
   const color = Color(props.color);
-  const rgb = color.rgb().array();
+  const opacity = bgOpacity != null ? Number(bgOpacity) : 0.45;
+  const wash = color.alpha(Number.isFinite(opacity) ? opacity : 0.45).hexa();
+  const borderColor = color.lightness(50).alpha(0.3).hexa();
 
   return (
     <Flex
@@ -53,7 +53,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
       p={2}
       bg="gray.700"
       borderRadius={'md'}
-      bgImage={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},${bgOpacity ?? '0.45'}) 0%)`}
+      bgImage={`linear-gradient(to top, transparent 0, ${wash} 0%)`}
       {...props.style}
       css={props.css ?? props.sx}
     >
@@ -63,7 +63,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
         py={4}
         flexFlow={'column'}
         borderRadius={'lg'}
-        border={`2px solid ${color.lightness(50).alpha(0.3).hexa()}`}
+        border={`2px solid ${borderColor}`}
         {...props.innerStyle}
       >
         {(image || title || viewAllLink) && (
@@ -90,7 +90,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
                     trackEvent={utm_content}
                     trackEventLabel={utm_content ? 'view-all' : undefined}
                   >
-                    {viewAllText ? viewAllText : t('General.view-all')}
+                    {viewAllText}
                   </MainLink>
                 </Button>
               )}
@@ -101,10 +101,10 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
       </Flex>
     </Flex>
   );
-};
+}
 
-export const FFHomeCard = ({ children }: { children: React.ReactNode }) => {
-  const t = useTranslations();
+export async function FFHomeCard({ children }: { children: ReactNode }) {
+  const t = await getTranslations();
   return (
     <HorizontalHomeCard
       color="#5436ab"
@@ -148,21 +148,18 @@ export const FFHomeCard = ({ children }: { children: React.ReactNode }) => {
       {children}
     </HorizontalHomeCard>
   );
-};
+}
 
-export const HalloweenHomeCard = ({ children }: { children: React.ReactNode }) => {
-  // const t = useTranslations();
+export function HalloweenHomeCard({ children }: { children: ReactNode }) {
   return (
     <HorizontalHomeCard
       color="#54ACB4"
       h={50}
       w={50}
       image="https://images.neopets.com/festivaloffears/images/goodiebag-icon.png"
-      // viewAllLink="/hub/faeriefestival"
       title={'Festival of Fears'}
       isSmall
       utm_content="halloween-lists"
-      // viewAllText={t('HomePage.more-guides-and-tools')}
       css={{
         position: 'relative',
         isolation: 'isolate',
@@ -195,10 +192,10 @@ export const HalloweenHomeCard = ({ children }: { children: React.ReactNode }) =
       {children}
     </HorizontalHomeCard>
   );
-};
+}
 
-export const WinterStarlightCard = ({ children }: { children: React.ReactNode }) => {
-  const t = useTranslations();
+export async function WinterStarlightCard({ children }: { children: ReactNode }) {
+  const t = await getTranslations();
   return (
     <HorizontalHomeCard
       color="#54ACB4"
@@ -242,10 +239,10 @@ export const WinterStarlightCard = ({ children }: { children: React.ReactNode })
       {children}
     </HorizontalHomeCard>
   );
-};
+}
 
-export const NeopiesCard = ({ children }: { children: React.ReactNode }) => {
-  const t = useTranslations();
+export async function NeopiesCard({ children }: { children: ReactNode }) {
+  const t = await getTranslations();
   return (
     <HorizontalHomeCard
       color="#b45454"
@@ -286,4 +283,4 @@ export const NeopiesCard = ({ children }: { children: React.ReactNode }) => {
       {children}
     </HorizontalHomeCard>
   );
-};
+}

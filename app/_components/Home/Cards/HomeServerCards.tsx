@@ -109,15 +109,17 @@ async function TrendingItemsHomeCardContent() {
   );
 }
 
-export function FeaturedListsHomeCard() {
+export async function FeaturedListsHomeCard() {
+  const t = await getTranslations();
   return (
     <Suspense
       fallback={
         <HorizontalHomeCard
           color="#4A5568"
           image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
-          title="Featured Lists"
+          title={t('HomePage.featured-lists')}
           viewAllLink="/lists/official"
+          viewAllText={t('General.view-all')}
           utm_content="featured-lists"
         />
       }
@@ -137,6 +139,7 @@ async function FeaturedListsHomeCardContent() {
       image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
       title={t('HomePage.featured-lists')}
       viewAllLink="/lists/official"
+      viewAllText={t('General.view-all')}
       utm_content="featured-lists"
     >
       <FeaturedListsGrid lists={lists} />
