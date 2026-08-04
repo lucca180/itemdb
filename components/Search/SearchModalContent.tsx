@@ -13,7 +13,6 @@ import {
   SkeletonText,
   Skeleton,
   Link as ChakraLink,
-  useMediaQuery,
 } from '@chakra-ui/react';
 import { ItemCardBadge } from '@components/Items/ItemCardBadge';
 import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
@@ -58,6 +57,7 @@ export type SearchModalContentProps = {
   onClose: () => void;
   inputRef: RefObject<HTMLInputElement | null>;
   focusedIndexRef: MutableRefObject<number>;
+  isMobile: boolean;
 };
 
 const SearchModalContent = (props: SearchModalContentProps) => {
@@ -71,6 +71,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
     onClose,
     inputRef,
     focusedIndexRef,
+    isMobile,
   } = props;
   const t = useTranslations();
   const locale = useLocale() as AppLocale;
@@ -340,7 +341,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
         }
       `}</style>
       {search && (
-        <Flex flexFlow="column" gap={4} py={2}>
+        <Flex flexFlow="column" gap={4} py={4}>
           <Flex role="listbox" aria-labelledby="omni-search-label">
             <SearchQuery
               query={search}
@@ -358,7 +359,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
         </Flex>
       )}
       {!loading && searchCards.length === 0 && latestSearches.length > 0 && (
-        <Flex flexFlow="column" gap={4} py={2}>
+        <Flex flexFlow="column" gap={4} py={4}>
           <Heading fontSize={'sm'} color="whiteAlpha.700">
             {t('Search.recent-searches')}
           </Heading>
@@ -373,6 +374,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
                     item={card.data}
                     onSelect={onSelectCard}
                     selectCard={card}
+                    isMobile={isMobile}
                   />
                 );
               }
@@ -493,6 +495,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
                       item={card.data}
                       onSelect={onSelectCard}
                       selectCard={card}
+                      isMobile={isMobile}
                     />
                   ))}
                 </Flex>
@@ -595,15 +598,16 @@ const SearchItem = memo(function SearchItem({
   onSelect,
   selectCard,
   showLabel,
+  isMobile,
 }: {
   item: ItemData;
   index: number;
   onSelect: (card: SearchCard) => void;
   selectCard: Extract<SearchCard, { type: 'item' }>;
   showLabel?: boolean;
+  isMobile: boolean;
 }) {
   const t = useTranslations();
-  const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
   const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
 
   const loadContextMenu = () => {

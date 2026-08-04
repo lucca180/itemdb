@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Dialog,
   Button,
   Input,
   InputGroup,
@@ -10,14 +9,14 @@ import {
   Flex,
   Kbd,
   Icon,
-  Portal,
   Box,
   useMediaQuery,
 } from '@chakra-ui/react';
+import { FastModal } from '@components/ui/fast-modal';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/compat/router';
 import { IoSearchOutline } from 'react-icons/io5';
 import { MdArrowDownward, MdArrowUpward, MdOutlineKeyboardReturn } from 'react-icons/md';
@@ -38,8 +37,6 @@ type SearchResult = {
   userLists: UserList[];
   restockShop: ShopInfo[];
 };
-
-let ABORT_CONTROLLER = new AbortController();
 
 type SearchModalProps = {
   isOpen: boolean;
@@ -67,17 +64,31 @@ const SearchModal = (props: SearchModalProps) => {
   const [loading, setLoading] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const focusedIndexRef = useRef(0);
-  const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [isMobile, isFullscreen] = useMediaQuery(['(hover: none)', '(max-width: 61.99em)'], {
+    fallback: [false, false],
+  });
+  // Defer heavy results UI only on the first open (INP); keep mounted afterward.
+  const [showContent, setShowContent] = useState(false);
 
   // Reset modal state from the header query when it opens.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      abortControllerRef.current?.abort();
+      return;
+    }
 
     setSearch(initialQuery);
     focusedIndexRef.current = 0;
     setSearchCards([]);
     setLoading(false);
   }, [isOpen, initialQuery]);
+
+  useEffect(() => {
+    if (!isOpen || showContent) return;
+    const raf = requestAnimationFrame(() => setShowContent(true));
+    return () => cancelAnimationFrame(raf);
+  }, [isOpen, showContent]);
 
   const buildSearchUrl = useCallback(
     (searchQuery: string) => {
@@ -108,7 +119,11 @@ const SearchModal = (props: SearchModalProps) => {
     [router?.asPath]
   );
 
-  const liveSearchUrl = useMemo(() => buildSearchUrl(search), [buildSearchUrl, search]);
+  const deferredSearch = useDeferredValue(search);
+  const liveSearchUrl = useMemo(
+    () => buildSearchUrl(deferredSearch),
+    [buildSearchUrl, deferredSearch]
+  );
 
   const preSearch = async (newSearch: string) => {
     if (newSearch.trim().length < 3) {
@@ -119,10 +134,11 @@ const SearchModal = (props: SearchModalProps) => {
     setLoading(true);
 
     try {
-      ABORT_CONTROLLER.abort();
-      ABORT_CONTROLLER = new AbortController();
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
       const searchRes = await axios.get('/api/v1/search/omni', {
-        signal: ABORT_CONTROLLER.signal,
+        signal: controller.signal,
         params: {
           s: newSearch.trim(),
           limit: 5,
@@ -153,7 +169,7 @@ const SearchModal = (props: SearchModalProps) => {
     () =>
       debounce((value: string) => {
         void preSearch(value);
-      }, 500),
+      }, 300),
     []
   );
 
@@ -190,131 +206,109 @@ const SearchModal = (props: SearchModalProps) => {
   };
 
   return (
-    <Dialog.Root
+    <FastModal
       open={isOpen}
-      onOpenChange={({ open }) => {
-        if (!open) onClose();
-      }}
-      placement="top"
-      size={{ lgDown: 'full', lg: 'lg' }}
-      motionPreset={isMobile ? 'none' : 'scale'}
-      trapFocus={!isMobile}
-      preventScroll={!isMobile}
-      restoreFocus={false}
-      unmountOnExit={false}
-      skipAnimationOnMount
-      lazyMount={false}
-      initialFocusEl={() => inputRef.current}
-      immediate
+      onClose={onClose}
+      initialFocusRef={inputRef}
+      compensateScrollbar={!isFullscreen}
+      aria-labelledby="omni-search-label"
     >
-      <Portal>
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content borderRadius={{ base: 0, md: 'md' }} p={0} overflow="hidden">
-            <InputGroup
-              outline="none"
-              border="none !important"
-              startElement={
-                <Icon as={IoSearchOutline} color="gray.500" boxSize="24px" aria-hidden />
-              }
-              startElementProps={{ pointerEvents: 'none', h: '100%' }}
-              endElement={
-                <>
-                  <Button size="xs" variant="ghost" onClick={clearSearch}>
-                    {t('General.clear')}
-                  </Button>
-                  <CloseButton onClick={onClose} />
-                </>
-              }
-              endElementProps={{ h: '100%', w: 'auto' }}
-            >
-              <Input
-                ref={inputRef}
-                autoComplete="off"
-                id="omni-search"
-                variant="subtle"
-                placeholder={t('Search.omni-placeholder')}
-                size="lg"
-                bg="blackAlpha.600"
-                borderBottomRadius="none"
-                pl="40px"
-                onChange={handleSearchChange}
-                value={search}
-                fontSize={{ base: 'sm', lg: 'md' }}
-                border="none !important"
-                _hover={{ bg: 'blackAlpha.600' }}
-                _focus={{
-                  bg: 'blackAlpha.600',
-                  outline: 'none',
-                  border: 'none',
-                }}
-              />
-            </InputGroup>
-            <label
-              htmlFor="omni-search"
-              id="omni-search-label"
-              style={{
-                position: 'absolute',
-                width: '1px',
-                height: '1px',
-                padding: 0,
-                margin: '-1px',
-                overflow: 'hidden',
-                clip: 'rect(0, 0, 0, 0)',
-                whiteSpace: 'nowrap',
-                borderWidth: 0,
-              }}
-            >
-              {t('Search.search')}
-            </label>
-            <Dialog.Body px="10px" maxH={{ base: '100%', md: '500px' }} overflowY="auto">
-              {isOpen && (
-                <SearchModalContent
-                  isOpen={isOpen}
-                  search={search}
-                  searchCards={searchCards}
-                  loading={loading}
-                  liveSearchUrl={liveSearchUrl}
-                  buildSearchUrl={buildSearchUrl}
-                  onClose={onClose}
-                  inputRef={inputRef}
-                  focusedIndexRef={focusedIndexRef}
-                />
-              )}
-            </Dialog.Body>
-            <Dialog.Footer
-              display={{ base: 'none', md: 'flex' }}
-              bg="blackAlpha.600"
-              py={3}
-              justifyContent="flex-start"
-              px="10px"
-            >
-              <Flex gap={4} color="whiteAlpha.700">
-                <Flex alignItems="center" gap={1}>
-                  <Kbd>
-                    <MdArrowUpward />
-                  </Kbd>
-                  <Kbd>
-                    <MdArrowDownward />
-                  </Kbd>
-                  <Text fontSize="xs">{t('Search.navigate')}</Text>
-                </Flex>
-                <Flex alignItems="center" gap={1}>
-                  <Kbd>
-                    <MdOutlineKeyboardReturn />
-                  </Kbd>
-                  <Text fontSize="xs">{t('Search.select')}</Text>
-                </Flex>
-                <Flex alignItems="center" gap={1}>
-                  <Kbd>esc</Kbd>
-                  <Text fontSize="xs">{t('General.close')}</Text>
-                </Flex>
-              </Flex>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Positioner>
-      </Portal>
-    </Dialog.Root>
+      <InputGroup
+        outline="none"
+        border="none !important"
+        startElement={<Icon as={IoSearchOutline} color="gray.500" boxSize="24px" aria-hidden />}
+        startElementProps={{ pointerEvents: 'none', h: '100%' }}
+        endElement={
+          <>
+            <Button size="xs" variant="ghost" onClick={clearSearch}>
+              {t('General.clear')}
+            </Button>
+            <CloseButton onClick={onClose} />
+          </>
+        }
+        endElementProps={{ h: '100%', w: 'auto' }}
+      >
+        <Input
+          ref={inputRef}
+          autoComplete="off"
+          id="omni-search"
+          variant="subtle"
+          placeholder={t('Search.omni-placeholder')}
+          size="lg"
+          bg="blackAlpha.600"
+          borderBottomRadius="none"
+          pl="40px"
+          onChange={handleSearchChange}
+          value={search}
+          fontSize={{ base: 'sm', lg: 'md' }}
+          border="none !important"
+          _hover={{ bg: 'blackAlpha.600' }}
+          _focus={{
+            bg: 'blackAlpha.600',
+            outline: 'none',
+            border: 'none',
+          }}
+        />
+      </InputGroup>
+      <label
+        htmlFor="omni-search"
+        id="omni-search-label"
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          borderWidth: 0,
+        }}
+      >
+        {t('Search.search')}
+      </label>
+      <FastModal.Body>
+        {showContent ? (
+          <SearchModalContent
+            isOpen={isOpen}
+            search={search}
+            searchCards={searchCards}
+            loading={loading}
+            liveSearchUrl={liveSearchUrl}
+            buildSearchUrl={buildSearchUrl}
+            onClose={onClose}
+            inputRef={inputRef}
+            focusedIndexRef={focusedIndexRef}
+            isMobile={isMobile}
+          />
+        ) : (
+          isOpen && <SearchModalBodySkeleton />
+        )}
+      </FastModal.Body>
+      <FastModal.Footer>
+        <Flex gap={4} color="whiteAlpha.700">
+          <Flex alignItems="center" gap={1}>
+            <Kbd>
+              <MdArrowUpward />
+            </Kbd>
+            <Kbd>
+              <MdArrowDownward />
+            </Kbd>
+            <Text fontSize="xs">{t('Search.navigate')}</Text>
+          </Flex>
+          <Flex alignItems="center" gap={1}>
+            <Kbd>
+              <MdOutlineKeyboardReturn />
+            </Kbd>
+            <Text fontSize="xs">{t('Search.select')}</Text>
+          </Flex>
+          <Flex alignItems="center" gap={1}>
+            <Kbd>esc</Kbd>
+            <Text fontSize="xs">{t('General.close')}</Text>
+          </Flex>
+        </Flex>
+      </FastModal.Footer>
+    </FastModal>
   );
 };
 
