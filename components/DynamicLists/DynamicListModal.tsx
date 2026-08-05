@@ -67,10 +67,8 @@ const DynamicListModal = (props: DynamicListModalProps) => {
 
   const createNewList = async () => {
     if (!user) throw new Error('User not found');
-    const getRandomName = (await import('../../utils/randomName')).getRandomName;
 
     const res = await axios.post(`/api/v1/lists/${user.username}`, {
-      name: getRandomName(),
       description: '',
       cover_url: '',
       visibility: 'public',

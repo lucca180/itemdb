@@ -78,10 +78,7 @@ const ListSelect = (props: Props) => {
   const createNewList = async () => {
     if (!user) return;
     try {
-      const getRandomName = (await import('@utils/randomName')).getRandomName;
-
       const res = await axios.post(`/api/v1/lists/${user.username}`, {
-        name: getRandomName(),
         description: '',
         cover_url: '',
         visibility: 'public',
