@@ -5,11 +5,10 @@ import axios from 'axios';
 import { useState } from 'react';
 import { FiEdit3, FiRefreshCw } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
-import { useAuth } from '@utils/auth';
 import { itemRootTag } from '@utils/appCacheTags';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 import type { EditItemModalProps } from '@components/Modal/EditItemModal';
-import type { ItemData, ItemEffect, ItemOpenable, ItemPetpetData } from '@types';
+import type { ItemData, ItemEffect, ItemOpenable, ItemPetpetData, User } from '@types';
 
 const EditItemModal = dynamic<EditItemModalProps>(() => import('@components/Modal/EditItemModal'));
 
@@ -20,6 +19,7 @@ type ItemPageEditSectionProps = {
     reportError: string;
     edit: string;
   };
+  user?: User | null;
 };
 
 async function fetchItemOpenable(slug: string): Promise<ItemOpenable | null> {
@@ -37,7 +37,6 @@ function shouldFetchPetpetData(item: ItemData) {
 }
 
 export function ItemPageEditSection(props: ItemPageEditSectionProps) {
-  const { user } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(null);
   const [isItemOpenableLoading, setIsItemOpenableLoading] = useState(false);
@@ -45,7 +44,7 @@ export function ItemPageEditSection(props: ItemPageEditSectionProps) {
   const [petpetData, setPetpetData] = useState<ItemPetpetData | null>(null);
   const [isRefreshingCache, setIsRefreshingCache] = useState(false);
   const [cacheRefreshError, setCacheRefreshError] = useState(false);
-  const { item, itemEffects, labels } = props;
+  const { item, itemEffects, labels, user } = props;
 
   const loadItemOpenableForEdit = (slug: string) => {
     setItemOpenableLoadError(false);
