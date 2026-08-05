@@ -76,6 +76,12 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json({ success: true });
 }
 
+const MIN_ACCOUNT_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+export const canCreateApiKeys = (createdAt: string | Date) => {
+  return Date.now() - new Date(createdAt).getTime() >= MIN_ACCOUNT_AGE_MS;
+};
+
 async function PUT(req: NextApiRequest, res: NextApiResponse) {
   let user;
 
@@ -84,6 +90,12 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
     if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
   } catch (e: any) {
     return res.status(500).json({ error: 'Internal Server Error' });
+  }
+
+  if (!canCreateApiKeys(user.createdAt)) {
+    return res.status(403).json({
+      error: 'Your account must be at least 7 days old to create API keys',
+    });
   }
 
   const { name, description } = req.body as { name: string; description: string };

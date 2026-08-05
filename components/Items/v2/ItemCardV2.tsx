@@ -103,7 +103,7 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
       py={{ base: 2, md: small ? 2 : 4 }}
       px={1}
       bg="gray.700"
-      bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,${colorWash} 35%)`}
+      bgGradient={`linear-gradient(to top, transparent 0, ${colorWash} 35%)`}
       h="100%"
       borderRadius="md"
       display="flex"

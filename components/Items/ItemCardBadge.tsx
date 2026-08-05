@@ -9,7 +9,7 @@ import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
 import { MdHelp, MdOutlineHourglassBottom } from 'react-icons/md';
 import { useFormatter, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { useSyncExternalStore, type ReactElement, type ReactNode } from 'react';
+import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
 import type { ItemData } from '@types';
 import { isMallDiscounted } from '@components/Items/NCMallCard';
 
@@ -17,15 +17,14 @@ import { isMallDiscounted } from '@components/Items/NCMallCard';
 const MS_PER_MONTH = 30 * 24 * 60 * 60 * 1000;
 const STALE_PRICE_MS = 6 * MS_PER_MONTH;
 
-const noopSubscribe = () => () => {};
-
-/** Wall-clock now on the client only — avoids Date.now() during prerender. */
+/** Wall-clock now after mount — avoids Date.now() during prerender/render. */
 function useClientNow() {
-  return useSyncExternalStore(
-    noopSubscribe,
-    () => Date.now(),
-    () => 0
-  );
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNow(Date.now());
+  }, []);
+  return now;
 }
 
 const ItemCardBadgeTooltip = dynamic(() => import('@components/Items/ItemCardBadgeTooltip'), {

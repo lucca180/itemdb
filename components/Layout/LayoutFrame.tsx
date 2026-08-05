@@ -41,8 +41,8 @@ export function LayoutFrame({
         py={5}
       >
         {logo}
-        <Flex flex="1 1 auto" justifyContent="center" alignItems="center">
-          <Box maxW="650px" h="100%" flex="1">
+        <Flex flex="1 1 auto" justifyContent="center" alignItems="center" minW={0}>
+          <Box maxW="650px" h="100%" flex="1" minW={0} w="100%" overflow="hidden">
             {search}
           </Box>
         </Flex>

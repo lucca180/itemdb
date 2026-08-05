@@ -1,0 +1,155 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--chakra-z-index-modal, 1400);
+}
+
+.root[data-state='closed'] {
+  visibility: hidden;
+  pointer-events: none;
+  transition: visibility 0s linear 180ms;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--chakra-colors-black-alpha-700, rgba(0, 0, 0, 0.64));
+}
+
+.positioner {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: auto;
+  pointer-events: none;
+  padding-top: 0;
+}
+
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  contain: layout paint;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+  outline: none;
+  pointer-events: auto;
+  color: var(--chakra-colors-fg, inherit);
+  background: var(--chakra-colors-bg-panel, var(--chakra-colors-bg, #1a202c));
+  box-shadow: var(
+    --chakra-shadows-lg,
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1)
+  );
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 100%;
+  padding-inline: 10px;
+}
+
+.footer {
+  display: none;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  padding: 0.75rem 10px;
+  background: var(--chakra-colors-black-alpha-600, rgba(0, 0, 0, 0.48));
+}
+
+.root[data-state='open'] .backdrop {
+  animation: fast-modal-fade-in 180ms ease both;
+}
+
+.root[data-state='closed'] .backdrop {
+  animation: fast-modal-fade-out 180ms ease both;
+}
+
+.root[data-state='open'] .content {
+  animation: fast-modal-scale-in 180ms ease both;
+}
+
+.root[data-state='closed'] .content {
+  animation: fast-modal-scale-out 180ms ease both;
+}
+
+@media (min-width: 48em) {
+  .positioner {
+    padding-top: 3rem;
+  }
+
+  .body {
+    max-height: 500px;
+  }
+
+  .footer {
+    display: flex;
+  }
+}
+
+@media (min-width: 62em) {
+  .content {
+    max-width: var(--chakra-sizes-2xl, 42rem);
+    min-height: auto;
+    margin: 1rem 0;
+    border-radius: var(--chakra-radii-md, 0.375rem);
+  }
+}
+
+@keyframes fast-modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fast-modal-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fast-modal-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fast-modal-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root[data-state] .backdrop,
+  .root[data-state] .content {
+    animation: none;
+  }
+
+  .root[data-state='closed'] {
+    transition-delay: 0s;
+  }
+}
