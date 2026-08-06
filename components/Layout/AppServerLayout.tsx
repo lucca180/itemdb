@@ -42,7 +42,9 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
       footerActions={
         <>
           <LayoutFeedback size="xs" flex="1" h="25px" borderRadius="md" />
-          <LayoutLocalePages />
+          <Suspense fallback={null}>
+            <LayoutLocalePages />
+          </Suspense>
         </>
       }
       hardNavigation={props.hardNavigation}
