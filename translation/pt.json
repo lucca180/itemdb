@@ -1233,6 +1233,8 @@
     "select-color": "Selecionar Cor",
     "select-species": "Selecionar Espécie",
     "species-change": "Troca de Espécie",
+    "chance-options": "Opções com Chance",
+    "chance-options-hint": "Esses itens podem mudar seu pet, mas o resultado não é garantido.",
     "combination-error": "Combinação não encontrada",
     "combination-error-desc": "{0} {1} não é uma aparência disponível de Neopet. Tente outra cor ou espécie, ou veja as opções relacionadas abaixo.",
     "how-to-get-title": "Jeito mais barato de pintar um pet {0}",

@@ -1232,6 +1232,8 @@
     "hub-h1": "Rainbow Pool Tool",
     "hub-lede": "Want a Faerie Aisha without overpaying? Pick a species and colour to see the cheapest Morphing Potion, Paint Brush, or combined path — with updated itemdb prices.",
     "species-change": "Species Change",
+    "chance-options": "Chance Options",
+    "chance-options-hint": "These items may change your pet, but the result is not guaranteed.",
     "combination-error": "Combination not found",
     "combination-error-desc": "{0} {1} isn't an available Neopet look. Try another colour or species, or browse related options below.",
     "how-to-get-title": "Cheapest ways to paint a {0} Neopet",

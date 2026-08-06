@@ -53,6 +53,7 @@ export async function ComboContent({
     colorChanges,
     speciesChanges,
     cheapestChange,
+    chanceChanges,
     fountainAvailable,
     labAvailable,
   } = petColorData;
@@ -199,6 +200,17 @@ export async function ComboContent({
               colorPalette="purple"
               items={speciesChanges}
               uniqueIdPrefix="species"
+              initialVisible={4}
+            />
+          )}
+
+          {chanceChanges.length > 0 && (
+            <PathSection
+              label={labels.chanceOptionsLabel}
+              colorPalette="orange"
+              items={chanceChanges}
+              uniqueIdPrefix="chance"
+              hint={labels.chanceOptionsHint}
               initialVisible={4}
             />
           )}

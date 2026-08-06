@@ -25,6 +25,8 @@ export type PetColorData = {
   colorChanges: ItemData[];
   speciesChanges: ItemData[];
   cheapestChange: ItemData[];
+  /** Chance-based color/species items — never used for cheapest path. */
+  chanceChanges: ItemData[];
   fountainAvailable: boolean;
   labAvailable: boolean;
 };
@@ -129,7 +131,10 @@ export const getPetColorData = async (
 
   const itemData = await getManyItems({ id: Array.from(allItemsId) });
 
-  const perfectMatch = rawData
+  const guaranteed = rawData.filter((data) => !data.isChance);
+  const chanceRows = rawData.filter((data) => data.isChance);
+
+  const perfectMatch = guaranteed
     .filter((data) => data.colorTarget === colorTargetId && data.speciesTarget === speciesTargetId)
     .sort(
       (a, b) =>
@@ -138,7 +143,7 @@ export const getPetColorData = async (
     )
     .map((x) => x.item_iid);
 
-  const colorChanges = rawData
+  const colorChanges = guaranteed
     .filter((data) => data.colorTarget === colorTargetId && data.speciesTarget !== speciesTargetId)
     .filter((data) => !(data.item_iid === 14488 && speciesTargetId === 7))
     .sort(
@@ -148,7 +153,7 @@ export const getPetColorData = async (
     )
     .map((x) => x.item_iid);
 
-  const speciesChanges = rawData
+  const speciesChanges = guaranteed
     .filter((data) => data.speciesTarget === speciesTargetId)
     .sort(
       (a, b) =>
@@ -156,6 +161,10 @@ export const getPetColorData = async (
         (itemData[b.item_iid].price.value || Infinity)
     )
     .map((x) => x.item_iid);
+
+  const chanceChanges = [...new Set(chanceRows.map((x) => x.item_iid))].sort(
+    (a, b) => (itemData[a].price.value || Infinity) - (itemData[b].price.value || Infinity)
+  );
 
   let cheapestChange: number[] = [];
   let changePrice = 0;
@@ -189,14 +198,14 @@ export const getPetColorData = async (
   };
 
   if (!speciesTargetId) {
-    const cheapestEffect = rawData.find((data) => data.item_iid === cheapestChange[0]);
+    const cheapestEffect = guaranteed.find((data) => data.item_iid === cheapestChange[0]);
     if (cheapestEffect && cheapestEffect.speciesTarget) {
       thumbnail.species = petColorSlug(allSpecies[cheapestEffect.speciesTarget]);
     }
   }
 
   if (!colorTargetId) {
-    const cheapestEffect = rawData.find((data) => data.item_iid === cheapestChange.at(-1));
+    const cheapestEffect = guaranteed.find((data) => data.item_iid === cheapestChange.at(-1));
     if (cheapestEffect && cheapestEffect.colorTarget) {
       thumbnail.color = petColorSlug(
         findPetColorName(cheapestEffect.colorTarget, colorCatalog) ?? ''
@@ -225,6 +234,7 @@ export const getPetColorData = async (
     colorChanges: colorChanges.map((id) => itemData[id]),
     speciesChanges: speciesChanges.map((id) => itemData[id]),
     cheapestChange: cheapestChange.map((id) => itemData[id]),
+    chanceChanges: chanceChanges.map((id) => itemData[id]),
     fountainAvailable,
     labAvailable,
   };

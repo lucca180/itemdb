@@ -19,6 +19,8 @@ export type RainbowPoolLabels = {
   cheapestPathLabel: string;
   colorChangeLabel: string;
   speciesChangeLabel: string;
+  chanceOptionsLabel: string;
+  chanceOptionsHint: string;
   noColor1: string;
   noColor2: string;
 };
@@ -49,6 +51,8 @@ export async function buildRainbowPoolLabels(): Promise<RainbowPoolLabels> {
     cheapestPathLabel: t('PetColors.cheapest-path'),
     colorChangeLabel: t('PetColors.color-change'),
     speciesChangeLabel: t('PetColors.species-change'),
+    chanceOptionsLabel: t('PetColors.chance-options'),
+    chanceOptionsHint: t('PetColors.chance-options-hint'),
     noColor1: t('PetColors.no-color-1'),
     noColor2: t('PetColors.no-color-2'),
   };
