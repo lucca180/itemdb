@@ -1,7 +1,6 @@
 'use client';
 
 import { Alert, Button, Flex, Icon, Tooltip } from '@chakra-ui/react';
-import { ManualCheckDiffView } from '@app/_components/Item/ManualCheck/ManualCheckDiffView';
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import { useRouter } from '@i18n/navigation';
@@ -9,6 +8,13 @@ import type { ItemPrices, ItemProcess } from '@prisma/generated/client';
 import type { ItemData } from '@types';
 import type { ItemProcessDiffEntry } from '@utils/manualCheck/itemProcessDiff';
 import { FaInfoCircle } from 'react-icons/fa';
+import dynamic from 'next/dynamic';
+
+const ManualCheckDiffView = dynamic(() =>
+  import('@app/_components/Item/ManualCheck/ManualCheckDiffView').then(
+    (mod) => mod.ManualCheckDiffView
+  )
+);
 
 type Props = {
   item: ItemData;

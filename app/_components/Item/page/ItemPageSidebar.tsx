@@ -6,7 +6,6 @@ import { Flex, Skeleton } from '@chakra-ui/react';
 import type { ItemData } from '@types';
 
 const AddToListSelect = dynamic(() => import('@components/UserLists/AddToListSelect'), {
-  ssr: false,
   loading: () => <Skeleton h="40px" w="100%" borderRadius="md" />,
 });
 

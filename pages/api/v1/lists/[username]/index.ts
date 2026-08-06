@@ -7,6 +7,7 @@ import prisma from '../../../../../utils/prisma';
 import { slugify } from '../../../../../utils/utils';
 import { ListService } from '@services/ListService';
 import { userListsTag } from '@utils/appCacheTags';
+import { getRandomName } from '@utils/randomName';
 import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -71,13 +72,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (user.username !== username && !user.isAdmin)
       return res.status(403).json({ error: 'Forbidden' });
 
-    if (!name || !purpose || !visibility) return res.status(400).json({ error: 'Bad Request' });
+    if (!purpose || !visibility) return res.status(400).json({ error: 'Bad Request' });
 
     if (!['public', 'private', 'unlisted'].includes(visibility))
       return res.status(400).json({ error: 'Bad Request' });
 
     if (!['none', 'trading', 'seeking'].includes(purpose))
       return res.status(400).json({ error: 'Bad Request' });
+
+    const listName = typeof name === 'string' && name.trim() ? name.trim() : getRandomName();
 
     let colorHexVar = colorHex;
 
@@ -89,15 +92,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       colorHexVar = colors?.vibrant.hex ?? colorHexVar;
     }
 
-    if (/^\d+$/.test(name)) {
+    if (/^\d+$/.test(listName)) {
       return res.status(400).json({ error: 'List name cannot be a number' });
     }
 
-    const slug = await createListSlug(name, user.id, official);
+    const slug = await createListSlug(listName, user.id, official);
 
     const list = await prisma.userList.create({
       data: {
-        name,
+        name: listName,
         description,
         cover_url: coverURL,
         colorHex: colorHexVar,

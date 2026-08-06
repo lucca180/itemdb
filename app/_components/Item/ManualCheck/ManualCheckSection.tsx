@@ -1,7 +1,11 @@
-import { ManualCheckCard } from '@app/_components/Item/ManualCheck/ManualCheckCard';
 import { getItemManualCheck } from '@pages/api/admin/manual/[id]';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import type { ItemData } from '@types';
+import dynamic from 'next/dynamic';
+
+const ManualCheckCard = dynamic(() =>
+  import('@app/_components/Item/ManualCheck/ManualCheckCard').then((mod) => mod.ManualCheckCard)
+);
 
 type Props = {
   item: ItemData;
