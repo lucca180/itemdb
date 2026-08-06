@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { getAllNeopetsColors } from '@app/server/petColors';
@@ -75,7 +75,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default function RainbowPoolComboPage({ params }: PageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={MAIN_COLOR} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <PageContent params={params} />
     </Suspense>
   );
@@ -100,7 +100,8 @@ async function PageContent({ params }: PageProps) {
       const colorName = resolveBrowseName(colorSlug, 'color', colorsCatalog);
 
       return (
-        <AppServerLayout locale={locale} disableNextSeo mainColor={MAIN_COLOR}>
+        <>
+          <SetMainColor color={MAIN_COLOR} />
           <MissingComboContent
             locale={locale}
             colorName={colorName}
@@ -108,7 +109,7 @@ async function PageContent({ params }: PageProps) {
             colors={colors}
             species={species}
           />
-        </AppServerLayout>
+        </>
       );
     }
 
@@ -142,7 +143,8 @@ async function PageContent({ params }: PageProps) {
   ]);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={MAIN_COLOR}>
+    <>
+      <SetMainColor color={MAIN_COLOR} />
       <ComboContent
         locale={locale}
         petColorData={petColorData}
@@ -152,7 +154,7 @@ async function PageContent({ params }: PageProps) {
         colors={colors}
         species={species}
       />
-    </AppServerLayout>
+    </>
   );
 }
 

@@ -8,6 +8,7 @@ import { inter } from '@utils/theme/fonts';
 import { AppScripts } from '@app/AppScripts';
 import { Providers } from '@app/providers';
 import { buildAppMetadataDefaults } from '@app/utils/appPage';
+import AppServerLayout from '@components/Layout/AppServerLayout';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -32,7 +33,9 @@ export default async function LocaleLayout({ children }: LocaleLayoutProps) {
       <body>
         <AppScripts />
         <Providers>
-          <NextIntlClientProvider>{children}</NextIntlClientProvider>
+          <NextIntlClientProvider>
+            <AppServerLayout locale={locale}>{children}</AppServerLayout>
+          </NextIntlClientProvider>
         </Providers>
       </body>
     </html>

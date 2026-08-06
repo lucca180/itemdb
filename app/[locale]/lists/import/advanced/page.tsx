@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Heading, Text, Separator } from '@chakra-ui/react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: AdvancedImportPageProps): Pro
 
 export default function AdvancedImportPage({ params }: AdvancedImportPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <AdvancedImportPageContent params={params} />
     </Suspense>
   );
@@ -55,7 +55,8 @@ async function AdvancedImportPageContent({ params }: AdvancedImportPageProps) {
   const labels = await buildAdvancedImportPageProps(locale);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/caption/sm_caption_831.gif',
@@ -86,7 +87,7 @@ async function AdvancedImportPageContent({ params }: AdvancedImportPageProps) {
         pastePlaceholder={labels.pastePlaceholder}
         importButton={labels.importButton}
       />
-    </AppServerLayout>
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { getAllNeopetsColors } from '@app/server/petColors';
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default function RainbowPoolHubPage({ params }: PageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={MAIN_COLOR} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <PageContent params={params} />
     </Suspense>
   );
@@ -62,14 +62,15 @@ async function PageContent({ params }: PageProps) {
   const species = Object.values(allSpecies).sort((a, b) => a.localeCompare(b));
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={MAIN_COLOR}>
+    <>
+      <SetMainColor color={MAIN_COLOR} />
       <HubContent
         locale={locale}
         colors={colors}
         species={species}
         recentlyReleased={recentlyReleased}
       />
-    </AppServerLayout>
+    </>
   );
 }
 

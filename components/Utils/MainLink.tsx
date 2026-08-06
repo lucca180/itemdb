@@ -2,7 +2,7 @@
 
 import type { HTMLAttributeAnchorTarget } from 'react';
 import React from 'react';
-import { Link, useRouter } from '@i18n/navigation';
+import { Link } from '@i18n/navigation';
 import { useLocale } from 'next-intl';
 import { isLocalizableHref, localizeInternalHref, type AppLocale } from '@utils/locales';
 
@@ -18,9 +18,8 @@ export interface MainLinkProps {
   style?: React.CSSProperties;
   hardNavigation?: boolean;
   /**
-   * Soft-nav via next-intl `Link` (default prefetch false).
-   * Skips legacy `<a>` + `router.push`. With PPR/instant nav the load bar
-   * may not appear — that's acceptable on this path.
+   * Soft-nav via next-intl `Link` (default for internal links).
+   * Kept for call-site compatibility; internal links always use `Link`.
    */
   viaNextLink?: boolean;
 }
@@ -38,11 +37,11 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       isExternal,
       style,
       hardNavigation,
-      viaNextLink,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      viaNextLink: _viaNextLink,
     }: MainLinkProps,
     ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
-    const router = useRouter();
     const locale = useLocale() as AppLocale;
     const internalPath = href || '/';
     const resolvedHref = localizeInternalHref(href, locale, { isExternal });
@@ -53,24 +52,6 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
         window.umami?.track(trackEvent, { label: trackEventLabel });
       }
     };
-
-    const handleClick = React.useCallback(
-      async (e: React.MouseEvent<HTMLElement>) => {
-        if (href && !(e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-
-          handleTracking();
-
-          if (isExternal || target === '_blank') {
-            return window.open(isExternal ? href : resolvedHref, '_blank');
-          }
-
-          await router.push(internalPath);
-          return;
-        }
-      },
-      [router, href, internalPath, isExternal, handleTracking, target, resolvedHref]
-    );
 
     if (isExternal || !isInternal || hardNavigation) {
       return (
@@ -88,35 +69,19 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       );
     }
 
-    if (viaNextLink || prefetch) {
-      return (
-        <Link
-          ref={ref}
-          className={className}
-          target={target}
-          href={internalPath}
-          onClick={handleTracking}
-          style={style}
-          prefetch={prefetch ?? false}
-          data-mainlink-via="next-link"
-        >
-          {children}
-        </Link>
-      );
-    }
-
     return (
-      <a
+      <Link
         ref={ref}
         className={className}
         target={target}
-        href={resolvedHref}
-        onClick={handleClick}
+        href={internalPath}
+        onClick={handleTracking}
         style={style}
-        data-mainlink-via="anchor-push"
+        prefetch={prefetch ?? false}
+        data-mainlink-via="next-link"
       >
         {children}
-      </a>
+      </Link>
     );
   }
 );

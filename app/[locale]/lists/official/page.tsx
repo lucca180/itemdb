@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: OfficialListsPageProps): Prom
 
 export default function OfficialListsPage({ params, searchParams }: OfficialListsPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <OfficialListsPageContent params={params} searchParams={searchParams} />
     </Suspense>
   );
@@ -55,9 +55,10 @@ async function OfficialListsPageContent({ params, searchParams }: OfficialListsP
   const canEdit = user?.isAdmin ?? false;
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <OfficialListsPageBody locale={locale} initialCat={cat} canEdit={canEdit} />
-    </AppServerLayout>
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: PriceCalculatorPageProps): Pr
 
 export default function PriceCalculatorPage({ params }: PriceCalculatorPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <PriceCalculatorPageContent params={params} />
     </Suspense>
   );
@@ -43,9 +43,10 @@ async function PriceCalculatorPageContent({ params }: PriceCalculatorPageProps) 
   const labels = await buildPriceCalculatorPageProps();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <PriceCalculatorPageClient labels={labels} />
-    </AppServerLayout>
+    </>
   );
 }
 

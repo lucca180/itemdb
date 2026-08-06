@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: LoginPageProps): Promise<Meta
 
 export default function LoginPage({ params, searchParams }: LoginPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <LoginPageContent params={params} searchParams={searchParams} />
     </Suspense>
   );
@@ -44,14 +44,15 @@ async function LoginPageContent({ params, searchParams }: LoginPageProps) {
   const labels = await buildLoginPageProps();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <LoginPageClient
         labels={labels}
         redirectTo={query.redirect}
         token={query.token}
         emailFromQuery={query.email}
       />
-    </AppServerLayout>
+    </>
   );
 }
 

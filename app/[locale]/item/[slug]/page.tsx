@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getPathname } from '@i18n/navigation';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
 import { preloadItemPageData } from '@app/_components/Item/preloadItemPage';
 import { buildItemPageMetadata, resolveItemRoute } from '@app/utils/loadItemPage';
@@ -49,8 +49,9 @@ async function ItemPageRoute({ params }: ItemPageProps) {
   setRequestLocale(locale);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={result.item.color.hex + '66'}>
+    <>
+      <SetMainColor color={result.item.color.hex + '66'} />
       <ItemPageView item={result.item} />
-    </AppServerLayout>
+    </>
   );
 }

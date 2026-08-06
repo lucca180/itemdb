@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { cache, Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { ListService } from '@services/ListService';
@@ -66,7 +66,7 @@ export async function generateMetadata({
 
 export default function SearchPage({ params, searchParams }: SearchPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <SearchPageContent params={params} searchParams={searchParams} />
     </Suspense>
   );
@@ -82,9 +82,10 @@ async function SearchPageContent({ params, searchParams }: SearchPageProps) {
   const searchTip = new Date().getMinutes() % 4;
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <SearchPageClient userList={userList} listJWT={listJWT} searchTip={searchTip} />
-    </AppServerLayout>
+    </>
   );
 }
 

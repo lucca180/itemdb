@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Center, Heading, Text } from '@chakra-ui/react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { getStaticAppPageProps } from '@app/utils/appPage';
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: BulkPriceContextPageProps): P
 
 export default function BulkPriceContextPage({ params }: BulkPriceContextPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <BulkPriceContextPageContent params={params} />
     </Suspense>
   );
@@ -43,7 +43,8 @@ async function BulkPriceContextPageContent({ params }: BulkPriceContextPageProps
   const { user } = await getServerCurrentUser();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       {!user?.isAdmin && (
         <Center minH="60vh" flexFlow="column" gap={3} textAlign="center">
           <Heading size="md">You are not authorized to access this page.</Heading>
@@ -69,7 +70,7 @@ async function BulkPriceContextPageContent({ params }: BulkPriceContextPageProps
           <BulkPriceContextClient />
         </>
       )}
-    </AppServerLayout>
+    </>
   );
 }
 

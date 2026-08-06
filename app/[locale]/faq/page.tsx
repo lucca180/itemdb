@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: FaqPageProps): Promise<Metada
 
 export default function FaqPage({ params }: FaqPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <FaqPageContentWrapper params={params} />
     </Suspense>
   );
@@ -38,9 +38,10 @@ async function FaqPageContentWrapper({ params }: FaqPageProps) {
   const content = await buildFaqPageProps();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <FaqPageContent content={content} />
-    </AppServerLayout>
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: MissingInfoPageProps): Promis
 
 export default function MissingInfoPage({ params }: MissingInfoPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <MissingInfoPageContent params={params} />
     </Suspense>
   );
@@ -44,9 +44,10 @@ async function MissingInfoPageContent({ params }: MissingInfoPageProps) {
   const labels = await buildMissingInfoPageProps();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <MissingInfoPageClient labels={labels} />
-    </AppServerLayout>
+    </>
   );
 }
 

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: RestockPageProps): Promise<Me
 
 export default function RestockPage({ params }: RestockPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <RestockPageContentWrapper params={params} />
     </Suspense>
   );
@@ -46,9 +46,10 @@ async function RestockPageContentWrapper({ params }: RestockPageProps) {
   const [labels, trendingShops] = await Promise.all([buildRestockPageProps(), loadTrendingShops()]);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <RestockPageContent locale={locale} labels={labels} trendingShops={trendingShops} />
-    </AppServerLayout>
+    </>
   );
 }
 

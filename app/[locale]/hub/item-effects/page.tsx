@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: ItemEffectsPageProps): Promis
 
 export default function ItemEffectsPage({ params }: ItemEffectsPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <ItemEffectsPageContent params={params} />
     </Suspense>
   );
@@ -43,9 +43,10 @@ async function ItemEffectsPageContent({ params }: ItemEffectsPageProps) {
   const labels = await buildItemEffectsPageProps();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <ItemEffectsPageClient labels={labels} />
-    </AppServerLayout>
+    </>
   );
 }
 

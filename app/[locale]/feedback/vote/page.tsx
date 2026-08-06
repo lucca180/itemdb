@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Heading, Text } from '@chakra-ui/react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: FeedbackVotePageProps): Promi
 
 export default function FeedbackVotePage({ params, searchParams }: FeedbackVotePageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <FeedbackVotePageContent params={params} searchParams={searchParams} />
     </Suspense>
   );
@@ -50,7 +50,8 @@ async function FeedbackVotePageContent({ params, searchParams }: FeedbackVotePag
   const labels = await buildFeedbackVotePageProps(locale);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
@@ -71,7 +72,7 @@ async function FeedbackVotePageContent({ params, searchParams }: FeedbackVotePag
         wishlist={query.wishlist}
         order={query.order}
       />
-    </AppServerLayout>
+    </>
   );
 }
 

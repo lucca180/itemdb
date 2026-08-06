@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { setRequestLocale } from 'next-intl/server';
@@ -84,7 +84,8 @@ async function RestockShopPageContentWrapper({ params }: RestockShopPageProps) {
   const needsFullLoad = pageData.profitableCount > initialItems.length;
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={`${route.shop.color}a6`}>
+    <>
+      <SetMainColor color={`${route.shop.color}a6`} />
       <RestockShopPageContent
         locale={locale}
         routeId={id}
@@ -94,6 +95,6 @@ async function RestockShopPageContentWrapper({ params }: RestockShopPageProps) {
         needsFullLoad={needsFullLoad}
         labels={labels}
       />
-    </AppServerLayout>
+    </>
   );
 }

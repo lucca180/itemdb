@@ -3,7 +3,7 @@ import Color from 'color';
 import { Fragment, Suspense } from 'react';
 import { Flex, Grid, Heading } from '@chakra-ui/react';
 import { HomeHero } from '@components/Home/HomeHero';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@app/utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import {
@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
 
 export default function HomePage({ params }: HomePageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <HomePageContent params={params} />
     </Suspense>
   );
@@ -85,7 +85,8 @@ async function HomePageContent({ params }: HomePageProps) {
   const t = await getTranslations();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <HomeHero
         title={t('HomePage.title')}
         highlightQuery={t('HomePage.open-source')}
@@ -137,7 +138,7 @@ async function HomePageContent({ params }: HomePageProps) {
           <LatestArticlesSection title={t('HomePage.latest-articles')} />
         </Flex>
       </Flex>
-    </AppServerLayout>
+    </>
   );
 }
 

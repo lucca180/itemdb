@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { PrivacyPageClient } from './PrivacyPageClient';
 import { setRequestLocale } from 'next-intl/server';
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PrivacyPageProps): Promise<Me
 
 export default function PrivacyPage({ params }: PrivacyPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor="#7AB92Ac7" />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <PrivacyPageContent params={params} />
     </Suspense>
   );
@@ -39,9 +39,10 @@ async function PrivacyPageContent({ params }: PrivacyPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor="#7AB92Ac7">
+    <>
+      <SetMainColor color="#7AB92Ac7" />
       <PrivacyPageClient />
-    </AppServerLayout>
+    </>
   );
 }
 

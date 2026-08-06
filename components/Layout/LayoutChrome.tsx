@@ -10,8 +10,9 @@ import brasil from '@assets/icons/brasil.png';
 import { DropdownButton, DropdownOption } from '@components/Menus/HeaderDropdown';
 import { SearchBar } from '@components/Search/SearchBar';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
-import { LayoutFrame } from '@components/Layout/LayoutFrame';
+import { LAYOUT_MAIN_COLOR_CSS_VAR, LayoutFrame } from '@components/Layout/LayoutFrame';
 import { LayoutLogoContent } from '@components/Layout/LayoutLogoContent';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import MainLink from '@components/Utils/MainLink';
 import type { LayoutFooterColumn, LayoutNavSection } from '@components/Layout/layoutData';
 import { localizeInternalHref, type AppLocale } from '@utils/locales';
@@ -62,11 +63,9 @@ function LayoutLogo({ hardNavigation }: { hardNavigation?: boolean }) {
 }
 
 function LayoutNavMenu({
-  mainColor,
   sections,
   hardNavigation,
 }: {
-  mainColor?: string;
   sections: LayoutNavSection[];
   hardNavigation?: boolean;
 }) {
@@ -75,7 +74,7 @@ function LayoutNavMenu({
       {sections.map((section) => (
         <DropdownButton
           key={section.href}
-          bg={section.options?.length ? mainColor : undefined}
+          bg={section.options?.length ? `var(${LAYOUT_MAIN_COLOR_CSS_VAR})` : undefined}
           label={section.label}
           href={section.href}
           hardNavigation={hardNavigation}
@@ -230,32 +229,29 @@ export function LayoutChrome({
   );
 
   return (
-    <LayoutFrame
-      siteAlert={siteAlert}
-      logo={<LayoutLogo hardNavigation={hardNavigation} />}
-      search={search}
-      auth={auth}
-      navigation={
-        <LayoutNavMenu
-          mainColor={mainColor}
-          sections={navSections}
-          hardNavigation={hardNavigation}
-        />
-      }
-      footer={
-        <LayoutFooter
-          madeInLabel={madeInLabel}
-          byLabel={byLabel}
-          footerColumns={footerColumns}
-          footerActions={footerActions}
-          hardNavigation={hardNavigation}
-        />
-      }
-      mainColor={mainColor}
-      fullWidth={fullWidth}
-    >
-      {mainContent}
-    </LayoutFrame>
+    <>
+      {/* Pages Router still passes mainColor; App pages render SetMainColor themselves. */}
+      {mainColor ? <SetMainColor color={mainColor} /> : null}
+      <LayoutFrame
+        siteAlert={siteAlert}
+        logo={<LayoutLogo hardNavigation={hardNavigation} />}
+        search={search}
+        auth={auth}
+        navigation={<LayoutNavMenu sections={navSections} hardNavigation={hardNavigation} />}
+        footer={
+          <LayoutFooter
+            madeInLabel={madeInLabel}
+            byLabel={byLabel}
+            footerColumns={footerColumns}
+            footerActions={footerActions}
+            hardNavigation={hardNavigation}
+          />
+        }
+        fullWidth={fullWidth}
+      >
+        {mainContent}
+      </LayoutFrame>
+    </>
   );
 }
 

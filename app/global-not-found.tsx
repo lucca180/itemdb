@@ -5,6 +5,7 @@ import { IntlProvider } from '@app/[locale]/IntlProvider';
 import { AppScripts } from '@app/AppScripts';
 import { Providers } from '@app/providers';
 import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import { NotFoundContent } from '@components/Error/NotFoundContent';
 import { inter } from '@utils/theme/fonts';
 import '@utils/global.css';
@@ -44,7 +45,8 @@ async function GlobalNotFoundContent() {
         <AppScripts />
         <Providers>
           <IntlProvider locale={locale} messages={messages}>
-            <AppServerLayout locale={locale} mainColor="#ff6464c7" hardNavigation>
+            <AppServerLayout locale={locale} hardNavigation>
+              <SetMainColor color="#ff6464c7" />
               <NotFoundContent />
             </AppServerLayout>
           </IntlProvider>

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { getSpeciesOutfits } from '@pages/api/v1/tools/outfits';
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: OutfitPageProps): Promise<Met
 
 export default function OutfitPage({ params }: OutfitPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <OutfitPageContentWrapper params={params} />
     </Suspense>
   );
@@ -61,9 +61,10 @@ async function OutfitPageContentWrapper({ params }: OutfitPageProps) {
   ]);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <OutfitPageContent outfits={outfits} species={species} labels={labels} />
-    </AppServerLayout>
+    </>
   );
 }
 

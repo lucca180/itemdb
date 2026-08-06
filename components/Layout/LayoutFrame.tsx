@@ -2,6 +2,9 @@ import type { ReactNode } from 'react';
 import { Box, Flex } from '@chakra-ui/react';
 
 export const LAYOUT_BASE_COLOR = '#4A5568';
+/** Default nav tint (with alpha), shared by App layout + SetMainColor cleanup. */
+export const LAYOUT_MAIN_COLOR_DEFAULT = '#4A5568c7';
+export const LAYOUT_MAIN_COLOR_CSS_VAR = '--layout-main-color';
 
 type LayoutFrameProps = {
   children?: ReactNode;
@@ -11,7 +14,6 @@ type LayoutFrameProps = {
   auth: ReactNode;
   navigation: ReactNode;
   footer?: ReactNode;
-  mainColor?: string;
   fullWidth?: boolean;
   mainMinH?: string;
 };
@@ -24,7 +26,6 @@ export function LayoutFrame({
   auth,
   navigation,
   footer,
-  mainColor,
   fullWidth,
   mainMinH,
 }: LayoutFrameProps) {
@@ -51,7 +52,7 @@ export function LayoutFrame({
 
       <Flex
         as="nav"
-        bg={mainColor}
+        bg={`var(${LAYOUT_MAIN_COLOR_CSS_VAR})`}
         justifyContent="center"
         alignItems="center"
         py={1}

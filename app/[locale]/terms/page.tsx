@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { TermsPageClient } from './TermsPageClient';
 import { setRequestLocale } from 'next-intl/server';
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: TermsPageProps): Promise<Meta
 
 export default function TermsPage({ params }: TermsPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor="#a5aa9fc7" />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <TermsPageContent params={params} />
     </Suspense>
   );
@@ -39,9 +39,10 @@ async function TermsPageContent({ params }: TermsPageProps) {
   setRequestLocale(locale);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor="#a5aa9fc7">
+    <>
+      <SetMainColor color="#a5aa9fc7" />
       <TermsPageClient />
-    </AppServerLayout>
+    </>
   );
 }
 

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Heading, Text } from '@chakra-ui/react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: ImportPageProps): Promise<Met
 
 export default function ImportPage({ params, searchParams }: ImportPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <ImportPageContent params={params} searchParams={searchParams} />
     </Suspense>
   );
@@ -60,7 +60,8 @@ async function ImportPageContent({ params, searchParams }: ImportPageProps) {
   const labels = await buildImportPageProps(locale, query.importToken);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/caption/sm_caption_831.gif',
@@ -86,7 +87,7 @@ async function ImportPageContent({ params, searchParams }: ImportPageProps) {
           recommended_list={labels.recommended_list}
         />
       )}
-    </AppServerLayout>
+    </>
   );
 }
 

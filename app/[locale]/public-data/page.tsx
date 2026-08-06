@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: PublicDataPageProps): Promise
 
 export default function PublicDataPage({ params }: PublicDataPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <PublicDataPageContentWrapper params={params} />
     </Suspense>
   );
@@ -42,9 +42,10 @@ async function PublicDataPageContentWrapper({ params }: PublicDataPageProps) {
   const dumps = await loadPublicDataExports();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <PublicDataPageContent dumps={dumps} />
-    </AppServerLayout>
+    </>
   );
 }
 

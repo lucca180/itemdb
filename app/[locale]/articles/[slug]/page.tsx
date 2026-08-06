@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { cache, Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { notFound } from 'next/navigation';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { wp_getBySlug } from '@pages/api/wp/posts/[slug]';
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default function ArticlePage({ params }: ArticlePageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor="#05B7E86b" />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <ArticlePageContentWrapper params={params} />
     </Suspense>
   );
@@ -58,14 +58,15 @@ async function ArticlePageContentWrapper({ params }: ArticlePageProps) {
   ]);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={getArticleMainColor(post)}>
+    <>
+      <SetMainColor color={getArticleMainColor(post)} />
       <ArticlePageContent
         locale={locale}
         post={post}
         recommendations={recommendations}
         labels={labels}
       />
-    </AppServerLayout>
+    </>
   );
 }
 

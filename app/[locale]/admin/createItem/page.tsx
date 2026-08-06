@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: CreateItemPageProps): Promise
 
 export default function CreateItemPage({ params }: CreateItemPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <CreateItemPageContent params={params} />
     </Suspense>
   );
@@ -55,9 +55,10 @@ async function CreateItemPageContent({ params }: CreateItemPageProps) {
   }
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <CreateItemPageClient />
-    </AppServerLayout>
+    </>
   );
 }
 

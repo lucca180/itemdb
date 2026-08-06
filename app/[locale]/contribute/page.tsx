@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Heading, Text } from '@chakra-ui/react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: ContributePageProps): Promise
 
 export default function ContributePage({ params }: ContributePageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <ContributePageContent params={params} />
     </Suspense>
   );
@@ -55,7 +55,8 @@ async function ContributePageContent({ params }: ContributePageProps) {
   const labels = await buildContributePageProps();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/games/betterthanyou/contestant435.gif',
@@ -72,7 +73,7 @@ async function ContributePageContent({ params }: ContributePageProps) {
         <Text as="h2">{labels.description}</Text>
       </HeaderCard>
       <ContributePageClient tabLabels={labels.tabLabels} tabContent={labels.tabContent} />
-    </AppServerLayout>
+    </>
   );
 }
 

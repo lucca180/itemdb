@@ -12,10 +12,6 @@ import { SiteAlertBar } from './SiteAlertBar';
 type AppServerLayoutProps = {
   locale: string;
   children?: ReactNode;
-  loading?: boolean;
-  disableNextSeo?: boolean;
-  mainColor?: string;
-  fullWidth?: boolean;
   hardNavigation?: boolean;
 };
 
@@ -27,10 +23,7 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
 
   return (
     <LayoutChrome
-      loading={props.loading}
       loadingLabel={t('Layout.loading')}
-      mainColor={props.mainColor}
-      fullWidth={props.fullWidth}
       navSections={navSections}
       footerColumns={footerColumns}
       madeInLabel={t('Layout.made-in')}

@@ -1,3 +1,7 @@
+:root {
+  --layout-main-color: #4a5568c7;
+}
+
 body {
   background: transparent;
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import {
@@ -74,8 +74,9 @@ async function RestockHistoryPageContentWrapper({ params }: RestockHistoryPagePr
   const labels = await buildRestockHistoryPageProps(route.shop);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={`${route.shop.color}a6`}>
+    <>
+      <SetMainColor color={`${route.shop.color}a6`} />
       <RestockHistoryPageContent locale={locale} shopInfo={route.shop} labels={labels} />
-    </AppServerLayout>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Heading, Text } from '@chakra-ui/react';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { getStaticAppPageProps } from '@app/utils/appPage';
@@ -33,7 +33,7 @@ export async function generateMetadata({
 
 export default function DataCollectingPage({ params }: DataCollectingPageRouteProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <DataCollectingPageContent params={params} />
     </Suspense>
   );
@@ -45,7 +45,8 @@ async function DataCollectingPageContent({ params }: DataCollectingPageRouteProp
   await buildDataCollectingPageProps(locale);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/caption/sm_caption_982.gif',
@@ -62,7 +63,7 @@ async function DataCollectingPageContent({ params }: DataCollectingPageRouteProp
         </Text>
       </HeaderCard>
       <DataCollectingPageClient />
-    </AppServerLayout>
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing, withLocalePrefix, type AppLocale } from '@utils/locales';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -56,9 +56,10 @@ export default async function OfficialListsCatPage({ params }: OfficialListsCatP
   const mainColor = data.catInfo.color + 'c7';
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <OfficialListsCatPageClient lists={data.lists} locale={locale} selectedCategory={category} />
-    </AppServerLayout>
+    </>
   );
 }
 

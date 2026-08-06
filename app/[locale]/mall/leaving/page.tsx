@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: LeavingMallPageProps): Promis
 
 export default function LeavingMallPage({ params }: LeavingMallPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <LeavingMallPageContentWrapper params={params} />
     </Suspense>
   );
@@ -53,14 +53,15 @@ async function LeavingMallPageContentWrapper({ params }: LeavingMallPageProps) {
   const labels = await buildLeavingMallPageProps(mallData, itemData);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <LeavingMallPageContent
         title={labels.title}
         description={labels.description}
         itemsByDate={labels.itemsByDate}
         itemData={labels.itemData}
       />
-    </AppServerLayout>
+    </>
   );
 }
 

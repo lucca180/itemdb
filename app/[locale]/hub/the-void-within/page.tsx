@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
-import AppServerLayout from '@components/Layout/AppServerLayout';
+import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: TheVoidWithinPageProps): Prom
 
 export default function TheVoidWithinPage({ params }: TheVoidWithinPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <TheVoidWithinPageContentWrapper params={params} />
     </Suspense>
   );
@@ -50,9 +50,10 @@ async function TheVoidWithinPageContentWrapper({ params }: TheVoidWithinPageProp
   const lists = await loadTheVoidWithinLists();
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
+    <>
+      <SetMainColor color={mainColor} />
       <TheVoidWithinPageContent lists={lists} />
-    </AppServerLayout>
+    </>
   );
 }
 
