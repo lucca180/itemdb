@@ -18,7 +18,7 @@ export default function AppServerLayoutSkeleton({ children }: AppServerLayoutSke
   }
 
   return (
-    <Box aria-hidden="true" py={6}>
+    <Box aria-hidden="true" py={6} h="100vh">
       <Center>
         <Spinner size="lg" />
       </Center>
