@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      2.0.1
+  // @version      2.0.2
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb
@@ -48,7 +48,7 @@ async function fetchPriceData(IDs) {
     onload: function (res) {
       if (res.status === 200) {
         const itemData = JSON.parse(res.responseText);
-        console.log(itemData);
+        cleanErrors();
         pricePage(itemData);
       }
 
@@ -164,7 +164,7 @@ const pricePage = (itemData) => {
 
 function priceSDB(itemData) {
   const table = $('.sdb-table');
-
+  let total = 0
   table.find('tr').slice(1).each(function() {
     const item_id = $(this).find('.sdb-item-img-wrap input').attr('id')?.match(/\d+/)?.at(0);
 
@@ -172,11 +172,23 @@ function priceSDB(itemData) {
     if(!item) return;
 
     const qty = itemInfo[item_id].amount || 1;
+    
+    if(item.type === 'np')
+      total += (item.price?.value || 0) * qty;
 
     const priceStr = getPriceStr(item, qty);
 
     $(this).find('.sdb-item-info').append(`${priceStr}`);
   })
+
+  const intl = new Intl.NumberFormat();
+
+  if($("#idb-sdb-total").length) {
+    $("#idb-sdb-total").html(`Total: <strong>${intl.format(total)} NP</strong>`);
+    return;
+  }
+
+  $(".sdb-header-totals").append(`<span class="sdb-header-divider" aria-hidden="true"></span><span id="idb-sdb-total">Total: <strong>${intl.format(total)} NP</strong></span>`)
 }
 
 function handleError(res) {
@@ -185,8 +197,15 @@ function handleError(res) {
     fallback: 'Something went wrong. Please try again.',
   });
 
-  const errorBox = $(`<div class="idb-api-error-box" style="font-size: small;text-align: center;color: red;margin: 10px 0;">itemdb SDB Pricer<br/>${msg}</div>`);
+  // clean up any existing error boxes
+  cleanErrors();
+
+  const errorBox = $(`<div id="idb-sdb-error-box" class="idb-api-error-box" style="font-size: small;text-align: center;color: red;margin: 10px 0;">itemdb SDB Pricer<br/>${msg}</div>`);
   $('.sdb-header-bar').before(errorBox);
+}
+
+function cleanErrors() {
+  $('#idb-sdb-error-box').remove();
 }
 
 function setColor(rarity) {
