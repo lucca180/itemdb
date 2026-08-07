@@ -4,9 +4,9 @@ import { Heading, Text } from '@chakra-ui/react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { buildDataCollectingPageProps } from './buildDataCollectingPageProps';
 import { DataCollectingPageClient } from './DataCollectingPageClient';
 
@@ -16,19 +16,15 @@ type DataCollectingPageRouteProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({
-  params,
-}: DataCollectingPageRouteProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
 
-  return getStaticAppPageProps(locale, {
+  return await getStaticAppMetadata({
     title: 'Data Collecting Tool',
     description: t('Feedback.feedback-system-description'),
     pathname: '/tools/data-collecting',
     noindex: true,
-  }).metadata;
+  });
 }
 
 export default function DataCollectingPage({ params }: DataCollectingPageRouteProps) {
@@ -41,7 +37,6 @@ export default function DataCollectingPage({ params }: DataCollectingPageRoutePr
 
 async function DataCollectingPageContent({ params }: DataCollectingPageRouteProps) {
   const { locale } = await params;
-  setRequestLocale(locale);
   await buildDataCollectingPageProps(locale);
 
   return (

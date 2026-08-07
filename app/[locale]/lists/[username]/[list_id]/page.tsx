@@ -3,9 +3,9 @@ import { Suspense } from 'react';
 import Color from 'color';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { stripMarkdown } from '@utils/utils';
 import {
   getListCore,
@@ -23,14 +23,13 @@ type ListDetailPageProps = {
 
 export async function generateMetadata({ params }: ListDetailPageProps): Promise<Metadata> {
   const { locale, username, list_id } = await params;
-  setRequestLocale(locale);
   const t = await getTranslations();
   const { list } = await getListCore(locale, username, list_id);
 
   const listUsername = list.official ? 'official' : (list.owner.username ?? username);
   const pathname = `/lists/${listUsername}/${list.slug ?? list.internal_id}` as `/${string}`;
 
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: `${list.name} - ${
       list.official
         ? t('Lists.neopets-lists')
@@ -43,9 +42,9 @@ export async function generateMetadata({ params }: ListDetailPageProps): Promise
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [
         {
           url: list.coverURL ?? 'https://itemdb.com.br/logo_icon.png',
@@ -121,7 +120,6 @@ async function ListPageBody({
 
 async function ListDetailPageContent({ params }: ListDetailPageProps) {
   const { locale, username, list_id } = await params;
-  setRequestLocale(locale);
 
   const core = await getListCore(locale, username, list_id);
   const color = Color(core.list.colorHex || '#4A5568');

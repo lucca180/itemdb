@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import { cache, Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { ListService } from '@services/ListService';
 import type { UserList } from '@types';
 import { signListJWT } from '@utils/api/api-utils';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { SearchPageClient } from './SearchPageClient';
 
 const mainColor = '#4A5568c7';
@@ -38,12 +38,8 @@ const getSearchList = cache(async (listIdParam: string | undefined): Promise<Use
   );
 });
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: SearchPageProps): Promise<Metadata> {
-  const [{ locale }, queryParams] = await Promise.all([params, searchParams]);
-  setRequestLocale(locale);
+export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
+  const queryParams = await searchParams;
   const [t, userList] = await Promise.all([
     getTranslations(),
     getSearchList(firstSearchParam(queryParams.list_id)),
@@ -55,26 +51,24 @@ export async function generateMetadata({
       ? `${query} - ${t('Search.search')}`
       : t('Search.search');
 
-  return getStaticAppPageProps(locale, {
+  return await getStaticAppMetadata({
     title,
     description: t('Search.search'),
     pathname: '/search',
     noindex: true,
     nofollow: true,
-  }).metadata;
+  });
 }
 
-export default function SearchPage({ params, searchParams }: SearchPageProps) {
+export default function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <SearchPageContent params={params} searchParams={searchParams} />
+      <SearchPageContent searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function SearchPageContent({ params, searchParams }: SearchPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function SearchPageContent({ searchParams }: Pick<SearchPageProps, 'searchParams'>) {
   const { list_id: listIdParam } = await searchParams;
   const userList = await getSearchList(firstSearchParam(listIdParam));
   const listJWT = userList ? signListJWT(userList.internal_id) : null;

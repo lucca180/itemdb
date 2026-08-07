@@ -3,33 +3,28 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { wp_getLatestPosts } from '@pages/api/wp/posts';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import type { WP_Article } from '@types';
 import { ArticlesPageContent } from './ArticlesPageContent';
 import { buildArticlesPageProps } from './buildArticlesPageProps';
+
 const mainColor = '#E4DA0A6b';
 const headerImage = 'https://images.neopets.com/nt/ntimages/94_acara_type.gif';
 
-type ArticlesPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: ArticlesPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: t('Articles.all-articles'),
     pathname: '/articles',
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [
         {
           url: headerImage,
@@ -42,17 +37,15 @@ export async function generateMetadata({ params }: ArticlesPageProps): Promise<M
   };
 }
 
-export default function ArticlesPage({ params }: ArticlesPageProps) {
+export default function ArticlesPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <ArticlesPageContentWrapper params={params} />
+      <ArticlesPageContentWrapper />
     </Suspense>
   );
 }
 
-async function ArticlesPageContentWrapper({ params }: ArticlesPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function ArticlesPageContentWrapper() {
   const [labels, groupedPosts] = await Promise.all([
     buildArticlesPageProps(),
     loadGroupedArticles(),

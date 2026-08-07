@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { NextSeoProps } from 'next-seo';
+import { locale as getRootLocale } from 'next/root-params';
 import { getPathname } from '@i18n/navigation';
 import SEOConfig, { getDefaultSEO } from '@utils/SEO';
 
@@ -62,6 +63,11 @@ export function getStaticAppPageProps(
       nofollow,
     },
   };
+}
+
+/** Convenience for App Router generateMetadata — locale via root params. */
+export async function getStaticAppMetadata(options: StaticAppPageOptions): Promise<Metadata> {
+  return getStaticAppPageProps(await getRootLocale(), options).metadata;
 }
 
 export function normalizeItemDbLocale(locale: string): ItemDbLocale {

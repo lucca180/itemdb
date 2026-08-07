@@ -4,42 +4,32 @@ import { Center, Heading, Text } from '@chakra-ui/react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
-import { setRequestLocale } from 'next-intl/server';
 import { BulkPriceContextClient } from './BulkPriceContextClient';
 
 const mainColor = '#557f8fc7';
 
-type BulkPriceContextPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: BulkPriceContextPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-
-  return getStaticAppPageProps(locale, {
+export async function generateMetadata(): Promise<Metadata> {
+  return await getStaticAppMetadata({
     title: 'Bulk Price Context',
     description: 'Admin tool for adding price context to item prices in bulk.',
     pathname: '/admin/bulk-price-context',
     noindex: true,
     nofollow: true,
-  }).metadata;
+  });
 }
 
-export default function BulkPriceContextPage({ params }: BulkPriceContextPageProps) {
+export default function BulkPriceContextPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <BulkPriceContextPageContent params={params} />
+      <BulkPriceContextPageContent />
     </Suspense>
   );
 }
 
-async function BulkPriceContextPageContent({ params }: BulkPriceContextPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function BulkPriceContextPageContent() {
   const { user } = await getServerCurrentUser();
 
   return (

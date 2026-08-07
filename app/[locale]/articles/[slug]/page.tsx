@@ -4,10 +4,10 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { wp_getBySlug } from '@pages/api/wp/posts/[slug]';
 import { wp_getLatestPosts } from '@pages/api/wp/posts';
-import { setRequestLocale } from 'next-intl/server';
+
 import type { WP_Article } from '@types';
 import { fitCacheTag } from '@utils/appCacheTags';
 import { ArticlePageContent } from './ArticlePageContent';
@@ -18,21 +18,20 @@ type ArticlePageProps = {
 };
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
-  const { locale, slug } = await params;
-  setRequestLocale(locale);
+  const { slug } = await params;
   const post = await loadArticle(slug);
   if (!post) return {};
 
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: post.title,
     description: post.excerpt,
     pathname: `/articles/${slug}`,
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [{ url: post.thumbnail ?? '', width: 150, height: 150, alt: post.title }],
     },
   };
@@ -48,7 +47,6 @@ export default function ArticlePage({ params }: ArticlePageProps) {
 
 async function ArticlePageContentWrapper({ params }: ArticlePageProps) {
   const { locale, slug } = await params;
-  setRequestLocale(locale);
   const post = await loadArticle(slug);
   if (!post) notFound();
 

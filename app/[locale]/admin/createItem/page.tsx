@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import {
   getLocalizedLoginRedirect,
@@ -11,7 +11,7 @@ import {
   withLocalePrefix,
   type AppLocale,
 } from '@utils/locales';
-import { setRequestLocale } from 'next-intl/server';
+
 import { CreateItemPageClient } from './CreateItemPageClient';
 
 const mainColor = '#7AB92Ac7';
@@ -20,16 +20,13 @@ type CreateItemPageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: CreateItemPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-
-  return getStaticAppPageProps(locale, {
+export async function generateMetadata(): Promise<Metadata> {
+  return await getStaticAppMetadata({
     title: 'Create New Item',
     pathname: '/admin/createItem',
     noindex: true,
     nofollow: true,
-  }).metadata;
+  });
 }
 
 export default function CreateItemPage({ params }: CreateItemPageProps) {
@@ -42,7 +39,6 @@ export default function CreateItemPage({ params }: CreateItemPageProps) {
 
 async function CreateItemPageContent({ params }: CreateItemPageProps) {
   const { locale } = await params;
-  setRequestLocale(locale);
 
   const { user } = await getServerCurrentUser();
   if (!user?.isAdmin) {

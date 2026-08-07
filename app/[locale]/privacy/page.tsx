@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { PrivacyPageClient } from './PrivacyPageClient';
-import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@utils/locales';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 
@@ -17,27 +16,19 @@ const pageConfig = {
   nofollow: true,
 } as const;
 
-type PrivacyPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: PrivacyPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  return getStaticAppPageProps(locale, pageConfig).metadata;
+export async function generateMetadata(): Promise<Metadata> {
+  return await getStaticAppMetadata(pageConfig);
 }
 
-export default function PrivacyPage({ params }: PrivacyPageProps) {
+export default function PrivacyPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <PrivacyPageContent params={params} />
+      <PrivacyPageContent />
     </Suspense>
   );
 }
 
-async function PrivacyPageContent({ params }: PrivacyPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function PrivacyPageContent() {
   return (
     <>
       <SetMainColor color="#7AB92Ac7" />

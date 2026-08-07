@@ -4,42 +4,30 @@ import { Heading, Text } from '@chakra-ui/react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { setRequestLocale } from 'next-intl/server';
 import { buildTroubleshootingPageProps } from './buildTroubleshootingPageProps';
 import { TroubleshootingPageClient } from './TroubleshootingPageClient';
 
 const mainColor = '#ad3e8cc7';
 
-type TroubleshootingPageRouteProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({
-  params,
-}: TroubleshootingPageRouteProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-
-  return getStaticAppPageProps(locale, {
+export async function generateMetadata(): Promise<Metadata> {
+  return await getStaticAppMetadata({
     title: 'Troubleshooting Tool',
     pathname: '/tools/troubleshooting',
     noindex: true,
-  }).metadata;
+  });
 }
 
-export default function TroubleshootingPage({ params }: TroubleshootingPageRouteProps) {
+export default function TroubleshootingPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <TroubleshootingPageContent params={params} />
+      <TroubleshootingPageContent />
     </Suspense>
   );
 }
 
-async function TroubleshootingPageContent({ params }: TroubleshootingPageRouteProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function TroubleshootingPageContent() {
   const pageProps = await buildTroubleshootingPageProps();
 
   return (

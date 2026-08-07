@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { getAllNeopetsColors } from '@app/server/petColors';
 import { loadPetStylesComboDetail } from '@app/server/petStyles';
 import { allSpecies, findPetColorId, getSpeciesId, petColorSlug } from '@utils/pet-utils';
@@ -17,7 +17,7 @@ import {
   withUnknownColorOption,
 } from '@utils/petStyles/paths';
 import { withLocalePrefix, type AppLocale, routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { MAIN_COLOR } from '../../../components/RainbowPoolShell';
 import { StylesComboContent } from '../../components/StylesComboContent';
 
@@ -58,24 +58,23 @@ function resolveCombo(
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale, slug, color } = await params;
-  setRequestLocale(locale);
+  const { slug, color } = await params;
   const t = await getTranslations();
 
   const colorsCatalog = await getAllNeopetsColors();
   const combo = resolveCombo(slug, color, colorsCatalog);
   if (!combo) {
-    return getStaticAppPageProps(locale, {
+    return await getStaticAppMetadata({
       title: t('PetStyles.hub-seo-title'),
       description: t('PetStyles.hub-seo-description'),
       pathname: STYLES_BASE_PATH,
       noindex: true,
-    }).metadata;
+    });
   }
 
   const tokens = await loadPetStylesComboDetail(combo.speciesId, combo.colorId, combo.colorName);
 
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: combo.isUnknown
       ? t('PetStyles.combo-seo-title-unknown', { species: combo.speciesName })
       : t('PetStyles.combo-seo-title', {
@@ -91,7 +90,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     pathname: stylesComboHref(combo.speciesName, combo.colorName),
     noindex: tokens.length === 0,
   });
-  return pageProps.metadata;
+  return metadata;
 }
 
 export default function PetStylesComboPage({ params }: PageProps) {
@@ -104,7 +103,6 @@ export default function PetStylesComboPage({ params }: PageProps) {
 
 async function PageContent({ params }: PageProps) {
   const { locale, slug, color } = await params;
-  setRequestLocale(locale);
 
   const colorsCatalog = await getAllNeopetsColors();
   const combo = resolveCombo(slug, color, colorsCatalog);

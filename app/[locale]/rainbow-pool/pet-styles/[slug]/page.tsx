@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { getAllNeopetsColors } from '@app/server/petColors';
 import { resolveSlugKind } from '@app/server/rainbowPool';
 import {
@@ -24,7 +24,7 @@ import {
   withUnknownColorOption,
 } from '@utils/petStyles/paths';
 import { withLocalePrefix, type AppLocale, routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { MAIN_COLOR } from '../../components/RainbowPoolShell';
 import { PetStylesBrowseContent } from '../components/PetStylesBrowseContent';
 
@@ -77,18 +77,17 @@ async function resolveBrowseSlug(slug: string): Promise<{
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale, slug } = await params;
-  setRequestLocale(locale);
+  const { slug } = await params;
   const t = await getTranslations();
 
   const resolved = await resolveBrowseSlug(slug);
   if (!resolved) {
-    return getStaticAppPageProps(locale, {
+    return await getStaticAppMetadata({
       title: t('PetStyles.hub-seo-title'),
       description: t('PetStyles.hub-seo-description'),
       pathname: STYLES_BASE_PATH,
       noindex: true,
-    }).metadata;
+    });
   }
 
   const browse =
@@ -98,7 +97,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const tokenCount = browse?.tokens.length ?? 0;
   const isUnknown = resolved.name === UNKNOWN_COLOR_NAME;
 
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: isUnknown
       ? t('PetStyles.browse-seo-title-unknown')
       : t('PetStyles.browse-seo-title', { name: resolved.name }),
@@ -108,7 +107,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     pathname: stylesBrowseHref(resolved.name),
     noindex: tokenCount === 0,
   });
-  return pageProps.metadata;
+  return metadata;
 }
 
 export default function PetStylesBrowsePage({ params, searchParams }: PageProps) {
@@ -122,7 +121,6 @@ export default function PetStylesBrowsePage({ params, searchParams }: PageProps)
 async function PageContent({ params, searchParams }: PageProps) {
   const { locale, slug } = await params;
   const query = await searchParams;
-  setRequestLocale(locale);
 
   const resolved = await resolveBrowseSlug(slug);
   if (!resolved) notFound();

@@ -3,42 +3,33 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getFolderMeta } from '@utils/googleCloud';
-import { setRequestLocale } from 'next-intl/server';
 import { PublicDataPageContent } from './PublicDataPageContent';
 import { mapS3ObjectToExport, staticPublicDataExports } from './publicData';
 
 const mainColor = '#6c8ab3c7';
 
-type PublicDataPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: PublicDataPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const pageProps = getStaticAppPageProps(locale, {
+export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getStaticAppMetadata({
     title: 'itemdb Public Data',
     pathname: '/public-data',
     noindex: true,
   });
 
-  return pageProps.metadata;
+  return metadata;
 }
 
-export default function PublicDataPage({ params }: PublicDataPageProps) {
+export default function PublicDataPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <PublicDataPageContentWrapper params={params} />
+      <PublicDataPageContentWrapper />
     </Suspense>
   );
 }
 
-async function PublicDataPageContentWrapper({ params }: PublicDataPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function PublicDataPageContentWrapper() {
   const dumps = await loadPublicDataExports();
 
   return (

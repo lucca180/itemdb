@@ -3,9 +3,9 @@ import { Suspense } from 'react';
 import Color from 'color';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { getProfileCore } from './loadUserProfile';
 import { UserListsPageBody } from './UserListsPage';
 
@@ -14,15 +14,14 @@ type UserListsPageProps = {
 };
 
 export async function generateMetadata({ params }: UserListsPageProps): Promise<Metadata> {
-  const { locale, username } = await params;
-  setRequestLocale(locale);
+  const { username } = await params;
   const t = await getTranslations();
 
-  return getStaticAppPageProps(locale, {
+  return await getStaticAppMetadata({
     title: t('Lists.owner-username-s-lists', { username }),
     pathname: `/lists/${username}`,
     noindex: true,
-  }).metadata;
+  });
 }
 
 export default function UserListsPage({ params }: UserListsPageProps) {
@@ -34,8 +33,7 @@ export default function UserListsPage({ params }: UserListsPageProps) {
 }
 
 async function UserListsPageContent({ params }: UserListsPageProps) {
-  const { locale, username } = await params;
-  setRequestLocale(locale);
+  const { username } = await params;
 
   const core = await getProfileCore(username);
   const color = Color(core.owner.profileColor || '#4A5568');

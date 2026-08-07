@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { getAllNeopetsColors } from '@app/server/petColors';
 import {
   loadCombosByColorSlug,
@@ -12,7 +12,7 @@ import {
 } from '@app/server/rainbowPool';
 import { allSpecies, petColorSlug } from '@utils/pet-utils';
 import { withLocalePrefix, type AppLocale } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { BrowseContent } from '../components/BrowseContent';
 import { browseColorTitle, browseSpeciesTitle, resolveBrowseName } from '@utils/petColorCopy';
 import { BASE_PATH, MAIN_COLOR } from '../components/RainbowPoolShell';
@@ -22,15 +22,14 @@ type PageProps = {
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale, slug } = await params;
-  setRequestLocale(locale);
+  const { slug } = await params;
   const t = await getTranslations();
 
-  const fallback = getStaticAppPageProps(locale, {
+  const fallback = await getStaticAppMetadata({
     title: t('PetColors.pet-color-tool'),
     description: t('PetColors.cta'),
     pathname: BASE_PATH,
-  }).metadata;
+  });
 
   const kind = await resolveSlugKind(slug);
   if (!kind) return fallback;
@@ -43,11 +42,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? t('PetColors.species-description', { 0: name })
       : t('PetColors.paint-description', { 0: name });
 
-  return getStaticAppPageProps(locale, {
+  return await getStaticAppMetadata({
     title,
     description,
     pathname: `${BASE_PATH}/${petColorSlug(name)}`,
-  }).metadata;
+  });
 }
 
 export default function RainbowPoolBrowsePage({ params }: PageProps) {
@@ -60,7 +59,6 @@ export default function RainbowPoolBrowsePage({ params }: PageProps) {
 
 async function PageContent({ params }: PageProps) {
   const { locale, slug } = await params;
-  setRequestLocale(locale);
 
   const kind = await resolveSlugKind(slug);
   if (!kind) notFound();

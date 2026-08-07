@@ -5,9 +5,9 @@ import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { buildContributePageProps } from './buildContributePageProps';
 import { ContributePageClient } from './ContributePageClient';
 
@@ -22,20 +22,18 @@ type ContributePageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: ContributePageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: t('Layout.how-to-contribute'),
     description: t('Feedback.contribute-description'),
     pathname: '/contribute',
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [ogImage],
     },
   };
@@ -51,7 +49,6 @@ export default function ContributePage({ params }: ContributePageProps) {
 
 async function ContributePageContent({ params }: ContributePageProps) {
   const { locale } = await params;
-  setRequestLocale(locale);
   const labels = await buildContributePageProps();
 
   return (

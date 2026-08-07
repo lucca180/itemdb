@@ -2,44 +2,36 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { buildItemEffectsPageProps } from './buildItemEffectsPageProps';
 import { ItemEffectsPageClient } from './ItemEffectsPageClient';
 
 const mainColor = 'rgba(248, 109, 186, 0.4)';
 
-type ItemEffectsPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: ItemEffectsPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: t('ItemEffects.item-effect-hub'),
     description: t('ItemEffects.cta'),
     pathname: '/hub/item-effects',
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
   };
 }
 
-export default function ItemEffectsPage({ params }: ItemEffectsPageProps) {
+export default function ItemEffectsPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <ItemEffectsPageContent params={params} />
+      <ItemEffectsPageContent />
     </Suspense>
   );
 }
 
-async function ItemEffectsPageContent({ params }: ItemEffectsPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function ItemEffectsPageContent() {
   const labels = await buildItemEffectsPageProps();
 
   return (

@@ -4,42 +4,32 @@ import { Center, Heading, Text } from '@chakra-ui/react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
-import { setRequestLocale } from 'next-intl/server';
 import { PriceMarkersClient } from './PriceMarkersClient';
 
 const mainColor = '#8f5573c7';
 
-type PriceMarkersPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: PriceMarkersPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-
-  return getStaticAppPageProps(locale, {
+export async function generateMetadata(): Promise<Metadata> {
+  return await getStaticAppMetadata({
     title: 'Manual Price Markers',
     description: 'Admin tool for adding manual price markers to item price history.',
     pathname: '/admin/price-markers',
     noindex: true,
     nofollow: true,
-  }).metadata;
+  });
 }
 
-export default function PriceMarkersPage({ params }: PriceMarkersPageProps) {
+export default function PriceMarkersPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <PriceMarkersPageContent params={params} />
+      <PriceMarkersPageContent />
     </Suspense>
   );
 }
 
-async function PriceMarkersPageContent({ params }: PriceMarkersPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function PriceMarkersPageContent() {
   const { user } = await getServerCurrentUser();
 
   return (

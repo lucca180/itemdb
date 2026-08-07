@@ -3,10 +3,9 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getTrendingShops } from '@pages/api/v1/beta/trending';
-import { setRequestLocale } from 'next-intl/server';
 import type { ShopInfo } from '@types';
 import { buildRestockPageMetadata, buildRestockPageProps } from './buildRestockPageProps';
 import { RestockPageContent } from './RestockPageContent';
@@ -17,18 +16,16 @@ type RestockPageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: RestockPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const { title, description } = await buildRestockPageMetadata();
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title,
     description,
     pathname: '/restock',
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
   };
 }
 
@@ -42,7 +39,6 @@ export default function RestockPage({ params }: RestockPageProps) {
 
 async function RestockPageContentWrapper({ params }: RestockPageProps) {
   const { locale } = await params;
-  setRequestLocale(locale);
   const [labels, trendingShops] = await Promise.all([buildRestockPageProps(), loadTrendingShops()]);
 
   return (

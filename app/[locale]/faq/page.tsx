@@ -2,39 +2,31 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { buildFaqPageProps } from './buildFaqPageProps';
 import { FaqPageContent } from './FaqPageContent';
 
 const mainColor = '#4bbde0c7';
 
-type FaqPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: FaqPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
-  return getStaticAppPageProps(locale, {
+  return await getStaticAppMetadata({
     title: t('FAQ.frequent-asked-questions'),
     pathname: '/faq',
-  }).metadata;
+  });
 }
 
-export default function FaqPage({ params }: FaqPageProps) {
+export default function FaqPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <FaqPageContentWrapper params={params} />
+      <FaqPageContentWrapper />
     </Suspense>
   );
 }
 
-async function FaqPageContentWrapper({ params }: FaqPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function FaqPageContentWrapper() {
   const content = await buildFaqPageProps();
 
   return (

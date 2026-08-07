@@ -6,7 +6,7 @@ import { SetMainColor } from '@components/Layout/SetMainColor';
 import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
 import { preloadItemPageData } from '@app/_components/Item/preloadItemPage';
 import { buildItemPageMetadata, resolveItemRoute } from '@app/utils/loadItemPage';
-import { setRequestLocale } from 'next-intl/server';
+
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 
 type ItemPageProps = {
@@ -15,7 +15,6 @@ type ItemPageProps = {
 
 export async function generateMetadata({ params }: ItemPageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  setRequestLocale(locale);
   const result = await resolveItemRoute(slug);
 
   if (result.type === 'notFound') {
@@ -46,7 +45,6 @@ async function ItemPageRoute({ params }: ItemPageProps) {
   }
 
   preloadItemPageData(result.item);
-  setRequestLocale(locale);
 
   return (
     <>

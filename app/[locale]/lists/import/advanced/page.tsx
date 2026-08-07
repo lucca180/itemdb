@@ -5,9 +5,9 @@ import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { buildAdvancedImportPageProps } from './buildAdvancedImportPageProps';
 import { AdvancedImportForm } from './AdvancedImportPageClient';
 
@@ -22,20 +22,18 @@ type AdvancedImportPageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: AdvancedImportPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: t('Lists.checklists-and-importing-items'),
     description: t('Lists.import-page-description'),
     pathname: '/lists/import/advanced',
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [ogImage],
     },
   };
@@ -51,7 +49,6 @@ export default function AdvancedImportPage({ params }: AdvancedImportPageProps) 
 
 async function AdvancedImportPageContent({ params }: AdvancedImportPageProps) {
   const { locale } = await params;
-  setRequestLocale(locale);
   const labels = await buildAdvancedImportPageProps(locale);
 
   return (

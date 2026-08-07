@@ -5,9 +5,9 @@ import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { buildFeedbackTradesPageProps } from './buildFeedbackTradesPageProps';
 import { FeedbackTradesPageClient } from './FeedbackTradesPageClient';
 
@@ -20,17 +20,15 @@ type FeedbackTradesPageProps = {
   }>;
 };
 
-export async function generateMetadata({ params }: FeedbackTradesPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
 
-  return getStaticAppPageProps(locale, {
+  return await getStaticAppMetadata({
     title: t('Feedback.trade-pricing-feedback'),
     description: t('Feedback.feedback-system-description'),
     pathname: '/feedback/trades',
     noindex: true,
-  }).metadata;
+  });
 }
 
 export default function FeedbackTradesPage({ params, searchParams }: FeedbackTradesPageProps) {
@@ -44,7 +42,6 @@ export default function FeedbackTradesPage({ params, searchParams }: FeedbackTra
 async function FeedbackTradesPageContent({ params, searchParams }: FeedbackTradesPageProps) {
   const { locale } = await params;
   const query = await searchParams;
-  setRequestLocale(locale);
   const labels = await buildFeedbackTradesPageProps(locale);
 
   return (

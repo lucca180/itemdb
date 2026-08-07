@@ -3,9 +3,9 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { getSpeciesOutfits } from '@pages/api/v1/tools/outfits';
-import { setRequestLocale } from 'next-intl/server';
+
 import type { ItemData } from '@types';
 import { fitCacheTag } from '@utils/appCacheTags';
 import { OutfitPageContent } from './OutfitPageContent';
@@ -23,21 +23,20 @@ type OutfitPageProps = {
 };
 
 export async function generateMetadata({ params }: OutfitPageProps): Promise<Metadata> {
-  const { locale, species: speciesSlug } = await params;
-  setRequestLocale(locale);
+  const { species: speciesSlug } = await params;
   const species = capitalizeSpecies(speciesSlug);
   const labels = await buildOutfitPageProps(species);
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: labels.exclusiveSpeciesClothes,
     description: labels.description,
     pathname: getOutfitPagePathname(speciesSlug),
   });
 
   return {
-    ...pageProps.metadata,
-    twitter: { ...pageProps.metadata.twitter, card: 'summary_large_image' },
+    ...metadata,
+    twitter: { ...metadata.twitter, card: 'summary_large_image' },
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [{ url: headerImage, width: 600, height: 200, alt: labels.exclusiveClothesGuide }],
     },
   };
@@ -52,8 +51,7 @@ export default function OutfitPage({ params }: OutfitPageProps) {
 }
 
 async function OutfitPageContentWrapper({ params }: OutfitPageProps) {
-  const { locale, species: speciesSlug } = await params;
-  setRequestLocale(locale);
+  const { species: speciesSlug } = await params;
   const species = capitalizeSpecies(speciesSlug);
   const [labels, outfits] = await Promise.all([
     buildOutfitPageProps(species),

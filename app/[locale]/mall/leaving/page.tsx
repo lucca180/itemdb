@@ -3,22 +3,17 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getNCMallData, getNCMallItemsData } from '@pages/api/v1/mall';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import type { ItemData, NCMallData } from '@types';
 import { buildLeavingMallPageProps } from './buildLeavingMallPageProps';
 import { LeavingMallPageContent } from './LeavingMallPageContent';
+
 const mainColor = 'rgba(205, 193, 255, 0.58)';
 
-type LeavingMallPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: LeavingMallPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
   const metaDescription =
     t
@@ -27,28 +22,26 @@ export async function generateMetadata({ params }: LeavingMallPageProps): Promis
       })
       ?.toString() ?? '';
 
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: `${t('NcMall.leaving-soon-tm')} | Neopets NC Mall`,
     description: metaDescription,
     pathname: '/mall/leaving',
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
   };
 }
 
-export default function LeavingMallPage({ params }: LeavingMallPageProps) {
+export default function LeavingMallPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <LeavingMallPageContentWrapper params={params} />
+      <LeavingMallPageContentWrapper />
     </Suspense>
   );
 }
 
-async function LeavingMallPageContentWrapper({ params }: LeavingMallPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function LeavingMallPageContentWrapper() {
   const { mallData, itemData } = await loadLeavingMallItems();
   const labels = await buildLeavingMallPageProps(mallData, itemData);
 

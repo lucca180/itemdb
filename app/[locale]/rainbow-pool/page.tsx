@@ -2,12 +2,12 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { getAllNeopetsColors } from '@app/server/petColors';
 import { loadRecentlyReleasedCombos } from '@app/server/rainbowPool';
 import { allSpecies } from '@utils/pet-utils';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { HubContent } from './components/HubContent';
 import { BASE_PATH, MAIN_COLOR } from './components/RainbowPoolShell';
 
@@ -21,21 +21,19 @@ type PageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: t('PetColors.hub-seo-title'),
     description: t('PetColors.hub-seo-description'),
     pathname: BASE_PATH,
   });
 
   return {
-    ...pageProps.metadata,
-    twitter: { ...pageProps.metadata.twitter, card: 'summary_large_image' },
+    ...metadata,
+    twitter: { ...metadata.twitter, card: 'summary_large_image' },
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [{ ...ogImage, alt: t('PetColors.hub-h1') }],
     },
   };
@@ -51,7 +49,6 @@ export default function RainbowPoolHubPage({ params }: PageProps) {
 
 async function PageContent({ params }: PageProps) {
   const { locale } = await params;
-  setRequestLocale(locale);
 
   const [colorsCatalog, recentlyReleased] = await Promise.all([
     getAllNeopetsColors(),

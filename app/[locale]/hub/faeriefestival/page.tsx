@@ -3,10 +3,10 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getTrendingCatLists } from '@pages/api/v1/beta/trending';
-import { setRequestLocale } from 'next-intl/server';
+
 import type { UserList } from '@types';
 import { FaerieFestivalPageContent } from './FaerieFestivalPageContent';
 
@@ -14,39 +14,31 @@ const EVENT_YEAR = 2025;
 const mainColor = '#9b65c0c7';
 const ogImage = 'https://images.neopets.com/homepage/marquee/icons/faeriefestival_event_icon.png';
 
-type FaerieFestivalPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: FaerieFestivalPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const pageProps = getStaticAppPageProps(locale, {
+export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getStaticAppMetadata({
     title: 'Faerie Festival Guide',
     description: 'Find the best items to recycle for the Faerie Festival event!',
     pathname: '/hub/faeriefestival',
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [{ url: ogImage, width: 300, height: 300, alt: 'Faeries Festival' }],
     },
   };
 }
 
-export default function FaerieFestivalPage({ params }: FaerieFestivalPageProps) {
+export default function FaerieFestivalPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <FaerieFestivalPageContentWrapper params={params} />
+      <FaerieFestivalPageContentWrapper />
     </Suspense>
   );
 }
 
-async function FaerieFestivalPageContentWrapper({ params }: FaerieFestivalPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function FaerieFestivalPageContentWrapper() {
   const lists = await loadFaerieFestivalLists();
 
   return (

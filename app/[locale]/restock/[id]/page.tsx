@@ -3,8 +3,8 @@ import { Suspense } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
-import { setRequestLocale } from 'next-intl/server';
+import { getStaticAppMetadata } from '@app/utils/appPage';
+
 import { buildRestockShopPageProps } from './buildRestockShopPageProps';
 import { RestockShopPageContent } from './RestockShopPageContent';
 import { getRestockShopData, RESTOCK_PRELOAD_LIMIT } from './loadRestockShop';
@@ -19,8 +19,7 @@ type RestockShopPageProps = {
 };
 
 export async function generateMetadata({ params }: RestockShopPageProps): Promise<Metadata> {
-  const { locale, id } = await params;
-  setRequestLocale(locale);
+  const { id } = await params;
   const shopInfo = resolveRestockShopForMetadata(id);
   if (!shopInfo) return {};
 
@@ -30,17 +29,17 @@ export async function generateMetadata({ params }: RestockShopPageProps): Promis
     profitMean: 0,
   });
 
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: `${shopInfo.name} | Neopets Shops`,
     description: labels.metaDescription,
     pathname: getRestockShopPathname(shopInfo),
   });
 
   return {
-    ...pageProps.metadata,
-    twitter: { ...pageProps.metadata.twitter, card: 'summary_large_image' },
+    ...metadata,
+    twitter: { ...metadata.twitter, card: 'summary_large_image' },
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [
         {
           url: `https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`,
@@ -63,7 +62,6 @@ export default function RestockShopPage({ params }: RestockShopPageProps) {
 
 async function RestockShopPageContentWrapper({ params }: RestockShopPageProps) {
   const { locale, id } = await params;
-  setRequestLocale(locale);
   const route = resolveRestockShopRoute(id, locale);
 
   if (route.type === 'redirect') {

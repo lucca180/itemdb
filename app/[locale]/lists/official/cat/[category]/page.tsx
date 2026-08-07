@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing, withLocalePrefix, type AppLocale } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { listCategoriesData } from '@utils/lists/listCategoriesData';
 import { loadOfficialListsCatData } from '../../loadOfficialLists';
 import { OfficialListsCatPageClient } from './OfficialListsCatPageClient';
@@ -19,22 +19,21 @@ type OfficialListsCatPageProps = {
 };
 
 export async function generateMetadata({ params }: OfficialListsCatPageProps): Promise<Metadata> {
-  const { locale, category } = await params;
-  setRequestLocale(locale);
+  const { category } = await params;
   const catInfo = listCategoriesData[category];
   if (!catInfo) return {};
 
   const t = await getTranslations();
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: `${catInfo.name} - ${t('General.official-lists')}`,
     description: t('Lists.officialList-description'),
     pathname: `/lists/official/cat/${category}`,
   });
 
   return {
-    ...pageProps.metadata,
+    ...metadata,
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [ogImage],
     },
   };
@@ -42,7 +41,6 @@ export async function generateMetadata({ params }: OfficialListsCatPageProps): P
 
 export default async function OfficialListsCatPage({ params }: OfficialListsCatPageProps) {
   const { locale, category } = await params;
-  setRequestLocale(locale);
 
   if (!listCategoriesData[category]) {
     redirect(withLocalePrefix('/lists/official?cat=' + category, locale as AppLocale));

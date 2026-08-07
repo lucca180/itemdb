@@ -2,9 +2,8 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { setRequestLocale } from 'next-intl/server';
 import { buildLoginPageProps } from './buildLoginPageProps';
 import { LoginPageClient } from './LoginPageClient';
 
@@ -19,28 +18,24 @@ type LoginPageProps = {
   }>;
 };
 
-export async function generateMetadata({ params }: LoginPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  return getStaticAppPageProps(locale, {
+export async function generateMetadata(): Promise<Metadata> {
+  return await getStaticAppMetadata({
     title: 'Login',
     pathname: '/login',
     noindex: true,
-  }).metadata;
+  });
 }
 
-export default function LoginPage({ params, searchParams }: LoginPageProps) {
+export default function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <LoginPageContent params={params} searchParams={searchParams} />
+      <LoginPageContent searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function LoginPageContent({ params, searchParams }: LoginPageProps) {
-  const { locale } = await params;
+async function LoginPageContent({ searchParams }: Pick<LoginPageProps, 'searchParams'>) {
   const query = await searchParams;
-  setRequestLocale(locale);
   const labels = await buildLoginPageProps();
 
   return (

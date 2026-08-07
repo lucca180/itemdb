@@ -18,7 +18,7 @@ import { NewItemsCountSection } from '@app/_components/Home/Cards/NewItemsCountS
 import { LatestArticlesSection } from '@app/_components/Home/Sections/LatestArticlesSection';
 import { LatestPricesSection } from '@app/_components/Home/Sections/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from '@app/_components/Home/Cards/StatsCard';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { routing } from '@i18n/routing';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 // import { CupHomeCard } from '@app/_components/Home/Cards/EventCard';
@@ -31,7 +31,6 @@ type HomePageProps = {
 
 export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
   const { locale } = await params;
-  setRequestLocale(locale);
   const t = await getTranslations();
   const normalizedLocale = normalizeItemDbLocale(locale);
   const canonical = getItemDbCanonical('/', normalizedLocale);
@@ -71,17 +70,15 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
   };
 }
 
-export default function HomePage({ params }: HomePageProps) {
+export default function HomePage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <HomePageContent params={params} />
+      <HomePageContent />
     </Suspense>
   );
 }
 
-async function HomePageContent({ params }: HomePageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+async function HomePageContent() {
   const t = await getTranslations();
 
   return (

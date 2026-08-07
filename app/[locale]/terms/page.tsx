@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { TermsPageClient } from './TermsPageClient';
-import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@utils/locales';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 
@@ -16,28 +15,19 @@ const pageConfig = {
   nofollow: true,
 } as const;
 
-type TermsPageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: TermsPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  return getStaticAppPageProps(locale, pageConfig).metadata;
+export async function generateMetadata(): Promise<Metadata> {
+  return await getStaticAppMetadata(pageConfig);
 }
 
-export default function TermsPage({ params }: TermsPageProps) {
+export default function TermsPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <TermsPageContent params={params} />
+      <TermsPageContent />
     </Suspense>
   );
 }
 
-async function TermsPageContent({ params }: TermsPageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-
+async function TermsPageContent() {
   return (
     <>
       <SetMainColor color="#a5aa9fc7" />

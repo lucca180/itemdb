@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { getAllNeopetsColors } from '@app/server/petColors';
 import {
   loadPetStyleSeriesCatalog,
@@ -15,7 +15,7 @@ import {
 import { allSpecies } from '@utils/pet-utils';
 import { STYLES_BASE_PATH, parseStylesPage, withUnknownColorOption } from '@utils/petStyles/paths';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { MAIN_COLOR } from '../components/RainbowPoolShell';
 import { PetStylesHubContent } from './components/PetStylesHubContent';
 
@@ -29,17 +29,15 @@ type PageProps = {
   }>;
 };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
   // Canonical stays clean even when filter / page query params are present.
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title: t('PetStyles.hub-seo-title'),
     description: t('PetStyles.hub-seo-description'),
     pathname: STYLES_BASE_PATH,
   });
-  return pageProps.metadata;
+  return metadata;
 }
 
 export default function PetStylesHubPage({ params, searchParams }: PageProps) {
@@ -53,7 +51,6 @@ export default function PetStylesHubPage({ params, searchParams }: PageProps) {
 async function PageContent({ params, searchParams }: PageProps) {
   const { locale } = await params;
   const query = await searchParams;
-  setRequestLocale(locale);
 
   const prismatic = query.prismatic === '1';
   const availableNow = query.available === '1';

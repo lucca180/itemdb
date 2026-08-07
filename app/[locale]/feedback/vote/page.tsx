@@ -5,9 +5,9 @@ import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { buildFeedbackVotePageProps } from './buildFeedbackVotePageProps';
 import { FeedbackVotePageClient } from './FeedbackVotePageClient';
 
@@ -22,17 +22,15 @@ type FeedbackVotePageProps = {
   }>;
 };
 
-export async function generateMetadata({ params }: FeedbackVotePageProps): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
 
-  return getStaticAppPageProps(locale, {
+  return await getStaticAppMetadata({
     title: t('Feedback.voting-feedback'),
     description: t('Feedback.feedback-system-description'),
     pathname: '/feedback/vote',
     noindex: true,
-  }).metadata;
+  });
 }
 
 export default function FeedbackVotePage({ params, searchParams }: FeedbackVotePageProps) {
@@ -46,7 +44,6 @@ export default function FeedbackVotePage({ params, searchParams }: FeedbackVoteP
 async function FeedbackVotePageContent({ params, searchParams }: FeedbackVotePageProps) {
   const { locale } = await params;
   const query = await searchParams;
-  setRequestLocale(locale);
   const labels = await buildFeedbackVotePageProps(locale);
 
   return (

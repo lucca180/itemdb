@@ -3,13 +3,13 @@ import { Suspense } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@app/utils/appPage';
+import { getStaticAppMetadata } from '@app/utils/appPage';
 import {
   getRestockShopPathname,
   resolveRestockShopForMetadata,
   resolveRestockShopRoute,
 } from '@app/utils/resolveRestockShopRoute';
-import { setRequestLocale } from 'next-intl/server';
+
 import {
   buildRestockHistoryPageMetadata,
   buildRestockHistoryPageProps,
@@ -21,24 +21,23 @@ type RestockHistoryPageProps = {
 };
 
 export async function generateMetadata({ params }: RestockHistoryPageProps): Promise<Metadata> {
-  const { locale, id } = await params;
-  setRequestLocale(locale);
+  const { id } = await params;
   const shopInfo = resolveRestockShopForMetadata(id);
   if (!shopInfo) return {};
 
   const { title, description } = await buildRestockHistoryPageMetadata(shopInfo);
 
-  const pageProps = getStaticAppPageProps(locale, {
+  const metadata = await getStaticAppMetadata({
     title,
     description,
     pathname: getRestockShopPathname(shopInfo, true),
   });
 
   return {
-    ...pageProps.metadata,
-    twitter: { ...pageProps.metadata.twitter, card: 'summary_large_image' },
+    ...metadata,
+    twitter: { ...metadata.twitter, card: 'summary_large_image' },
     openGraph: {
-      ...pageProps.metadata.openGraph,
+      ...metadata.openGraph,
       images: [
         {
           url: `https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`,
@@ -61,7 +60,6 @@ export default function RestockHistoryPage({ params }: RestockHistoryPageProps) 
 
 async function RestockHistoryPageContentWrapper({ params }: RestockHistoryPageProps) {
   const { locale, id } = await params;
-  setRequestLocale(locale);
   const route = resolveRestockShopRoute(id, locale, { history: true });
 
   if (route.type === 'redirect') {
