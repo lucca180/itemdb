@@ -187,9 +187,6 @@ export async function ComboContent({
             emptyMessage={
               <Text fontSize="xs" maxW="200px" textAlign="center">
                 {labels.noColor1}
-                <br />
-                <br />
-                {labels.noColor2}
               </Text>
             }
           />

@@ -6,9 +6,11 @@ import { browseColorTitle, browseSpeciesTitle } from '@utils/petColorCopy';
 import { petColorSlug } from '@utils/pet-utils';
 import type { RainbowPoolComboTile } from '@utils/petColorTool';
 import { stylesBrowseHref } from '@utils/petStyles/paths';
+import type { ItemV2For } from '@types';
 import { buildRainbowPoolLabels } from '../buildRainbowPoolLabels';
 import { BASE_PATH, RainbowPoolShell } from './RainbowPoolShell';
 import { ComboTile } from './ComboTile';
+import { PathSection } from './PathSection';
 import { RainbowPoolPicker } from './RainbowPoolPicker';
 
 type BrowseContentProps = {
@@ -16,6 +18,8 @@ type BrowseContentProps = {
   mode: 'species' | 'color';
   name: string;
   combos: RainbowPoolComboTile[];
+  pathItems: ItemV2For<'card'>[];
+  chanceItems: ItemV2For<'card'>[];
   colors: string[];
   species: string[];
 };
@@ -25,6 +29,8 @@ export async function BrowseContent({
   mode,
   name,
   combos,
+  pathItems,
+  chanceItems,
   colors,
   species,
 }: BrowseContentProps) {
@@ -74,6 +80,31 @@ export async function BrowseContent({
       </Center>
 
       <VStack align="stretch" gap={4} maxW="1100px" mx="auto" px={2}>
+        {(pathItems.length > 0 || chanceItems.length > 0) && (
+          <VStack align="stretch" gap={3}>
+            {pathItems.length > 0 && (
+              <PathSection
+                label={mode === 'species' ? labels.speciesChangeLabel : labels.colorChangeLabel}
+                colorPalette={mode === 'species' ? 'purple' : 'blue'}
+                items={pathItems}
+                uniqueIdPrefix={mode === 'species' ? 'species' : 'color'}
+                labelAsHeading
+              />
+            )}
+            {chanceItems.length > 0 && (
+              <PathSection
+                label={labels.chanceOptionsLabel}
+                colorPalette="orange"
+                items={chanceItems}
+                uniqueIdPrefix="chance"
+                hint={labels.chanceOptionsHint}
+                initialVisible={4}
+                labelAsHeading
+              />
+            )}
+          </VStack>
+        )}
+
         <Flex justify="space-between" align="baseline" gap={2} flexWrap="wrap">
           <Heading as="h2" size="md">
             {gridTitle}

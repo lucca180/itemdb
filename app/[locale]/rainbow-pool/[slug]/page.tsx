@@ -8,6 +8,7 @@ import { getAllNeopetsColors } from '@app/server/petColors';
 import {
   loadCombosByColorSlug,
   loadCombosBySpeciesSlug,
+  loadRainbowPoolCombo,
   resolveSlugKind,
 } from '@app/server/rainbowPool';
 import { allSpecies, petColorSlug } from '@utils/pet-utils';
@@ -71,10 +72,14 @@ async function PageContent({ params }: PageProps) {
     redirect(withLocalePrefix(`${BASE_PATH}/${canonicalSlug}`, locale as AppLocale));
   }
 
-  const combos =
+  const [combos, pathData] = await Promise.all([
     kind === 'species'
-      ? await loadCombosBySpeciesSlug(canonicalSlug)
-      : await loadCombosByColorSlug(canonicalSlug);
+      ? loadCombosBySpeciesSlug(canonicalSlug)
+      : loadCombosByColorSlug(canonicalSlug),
+    kind === 'species'
+      ? loadRainbowPoolCombo(undefined, canonicalSlug)
+      : loadRainbowPoolCombo(canonicalSlug, undefined),
+  ]);
 
   if (!combos) notFound();
 
@@ -89,6 +94,10 @@ async function PageContent({ params }: PageProps) {
         mode={kind}
         name={name}
         combos={combos}
+        pathItems={
+          kind === 'species' ? (pathData?.speciesChanges ?? []) : (pathData?.colorChanges ?? [])
+        }
+        chanceItems={pathData?.chanceChanges ?? []}
         colors={colors}
         species={species}
       />

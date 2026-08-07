@@ -22,7 +22,6 @@ export type RainbowPoolLabels = {
   chanceOptionsLabel: string;
   chanceOptionsHint: string;
   noColor1: string;
-  noColor2: string;
 };
 
 export async function buildRainbowPoolLabels(): Promise<RainbowPoolLabels> {
@@ -54,6 +53,5 @@ export async function buildRainbowPoolLabels(): Promise<RainbowPoolLabels> {
     chanceOptionsLabel: t('PetColors.chance-options'),
     chanceOptionsHint: t('PetColors.chance-options-hint'),
     noColor1: t('PetColors.no-color-1'),
-    noColor2: t('PetColors.no-color-2'),
   };
 }
