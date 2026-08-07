@@ -41,6 +41,7 @@ function LatestPricesItemsGrid({ items }: { items: ItemV2For<'card'>[] }) {
             item={item}
             key={item.internal_id}
             utm_content="latest-prices"
+            disablePrefetch={false}
           />
         ))}
       {items.length === 0 &&

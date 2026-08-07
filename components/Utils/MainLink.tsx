@@ -11,7 +11,8 @@ export interface MainLinkProps {
   target?: HTMLAttributeAnchorTarget | undefined;
   className?: string;
   children: React.ReactNode;
-  prefetch?: boolean;
+  /** Defaults to `false`. Pass `true` (full) or `'auto'` (partial App Shell) to opt in. */
+  prefetch?: boolean | 'auto';
   trackEvent?: string;
   trackEventLabel?: string;
   isExternal?: boolean;
@@ -22,6 +23,7 @@ export interface MainLinkProps {
    * Kept for call-site compatibility; internal links always use `Link`.
    */
   viaNextLink?: boolean;
+  'data-testid'?: string;
 }
 
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
@@ -39,6 +41,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       hardNavigation,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       viaNextLink: _viaNextLink,
+      'data-testid': dataTestId,
     }: MainLinkProps,
     ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
@@ -63,6 +66,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
           onClick={trackEvent ? handleTracking : undefined}
           style={style}
           rel={isExternal ? 'noopener noreferrer' : undefined}
+          data-testid={dataTestId}
         >
           {children}
         </a>
@@ -79,6 +83,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
         style={style}
         prefetch={prefetch ?? false}
         data-mainlink-via="next-link"
+        data-testid={dataTestId}
       >
         {children}
       </Link>

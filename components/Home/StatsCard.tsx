@@ -44,7 +44,7 @@ type StatsCardContentProps = {
 
 export function StatsCardContent({ data, labels }: StatsCardContentProps) {
   return (
-    <StatsCardShell>
+    <StatsCardShell data-testid="home-page-content">
       <StatCard icon={CiShoppingBasket} value={data.itemsTotal}>
         {labels.itemsInDbLabel}
       </StatCard>
@@ -86,9 +86,15 @@ export function StatsCardLoading(props: StatsCardLoadingProps) {
   );
 }
 
-function StatsCardShell({ children }: { children: ReactNode }) {
+function StatsCardShell({
+  children,
+  'data-testid': dataTestId,
+}: {
+  children: ReactNode;
+  'data-testid'?: string;
+}) {
   return (
-    <Flex h="100%" w="100%" alignItems="center" justifyContent="center">
+    <Flex h="100%" w="100%" alignItems="center" justifyContent="center" data-testid={dataTestId}>
       <Flex direction="column" gap={5} w="100%" maxW="400px">
         {children}
       </Flex>

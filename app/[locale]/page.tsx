@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Color from 'color';
 import { Fragment, Suspense } from 'react';
-import { Flex, Grid, Heading } from '@chakra-ui/react';
+import { Flex, Grid, Heading, Skeleton } from '@chakra-ui/react';
 import { HomeHero } from '@components/Home/HomeHero';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@app/utils/appPage';
@@ -18,10 +18,9 @@ import { NewItemsCountSection } from '@app/_components/Home/Cards/NewItemsCountS
 import { LatestArticlesSection } from '@app/_components/Home/Sections/LatestArticlesSection';
 import { LatestPricesSection } from '@app/_components/Home/Sections/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from '@app/_components/Home/Cards/StatsCard';
+import { HomePageShell } from '@app/_components/Home/HomePageShell';
 import { getTranslations } from 'next-intl/server';
 import { routing } from '@i18n/routing';
-import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-// import { CupHomeCard } from '@app/_components/Home/Cards/EventCard';
 
 const mainColor = Color('#4A5568').alpha(0.9).hexa();
 
@@ -72,70 +71,110 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <HomePageContent />
-    </Suspense>
+    <>
+      <SetMainColor color={mainColor} />
+      <HomePageShell>
+        <Suspense
+          fallback={
+            <Skeleton
+              mt={4}
+              h="1rem"
+              w={{ base: '80%', md: '420px' }}
+              maxW="500px"
+              borderRadius="md"
+            />
+          }
+        >
+          <HomeHeroTitles />
+        </Suspense>
+      </HomePageShell>
+      <Suspense fallback={<HomeSectionsFallback />}>
+        <HomePageSections />
+      </Suspense>
+    </>
   );
 }
 
-async function HomePageContent() {
+async function HomeHeroTitles() {
   const t = await getTranslations();
 
   return (
-    <>
-      <SetMainColor color={mainColor} />
-      <HomeHero
-        title={t('HomePage.title')}
-        highlightQuery={t('HomePage.open-source')}
-        safetyLinkLabel={t('HomePage.is-it-safe')}
-      />
-      <Flex mt={8} gap={8} flexDirection="column">
-        <LatestPricesSection title={t('HomePage.latest-prices')} />
-        {/* <CupHomeCard /> */}
-        <NewItemsCountSection />
-        <Grid
-          templateColumns={{ base: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}
-          gap={{ base: 4, xl: 8 }}
-          justifyItems="center"
-        >
-          <Fragment key="latest-items-card">
-            <LatestItemsHomeCard />
-          </Fragment>
-          <Fragment key="trending-items-card">
-            <TrendingItemsHomeCard />
-          </Fragment>
-          <Fragment key="latest-nc-mall-card">
-            <LatestNcMallHomeCard />
-          </Fragment>
-        </Grid>
-        <FeaturedListsHomeCard />
-        <Flex direction={{ base: 'column', lg: 'row' }} gap={{ base: 4, xl: 8 }}>
-          <LeavingNcMallHomeCard />
-          <RainbowPoolHomeCard />
-        </Flex>
-        <Flex direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
-          <Flex direction="column" flex={1} alignItems="center">
-            <Heading as="h2" size="md" lineHeight="1.2" mb={{ base: 5, lg: 0 }}>
-              {t('HomePage.stats')}
-            </Heading>
-            <Suspense
-              fallback={
-                <StatsCardLoading
-                  itemsInDbLabel={t('BetaStats.items-in-db')}
-                  completeItemsLabel={t('BetaStats.complete-items')}
-                  processQueueLabel={t('BetaStats.process-queue')}
-                  tradePricingQueueLabel={t('BetaStats.trade-pricing-queue')}
-                  feedbackVotingQueueLabel={t('BetaStats.feedback-voting-queue')}
-                />
-              }
-            >
-              <StatsCard />
-            </Suspense>
-          </Flex>
-          <LatestArticlesSection title={t('HomePage.latest-articles')} />
-        </Flex>
+    <HomeHero
+      title={t('HomePage.title')}
+      highlightQuery={t('HomePage.open-source')}
+      safetyLinkLabel={t('HomePage.is-it-safe')}
+      omitLogo
+    />
+  );
+}
+
+async function HomePageSections() {
+  const t = await getTranslations();
+
+  return (
+    <Flex mt={8} gap={8} flexDirection="column">
+      <LatestPricesSection title={t('HomePage.latest-prices')} />
+      <NewItemsCountSection />
+      <Grid
+        templateColumns={{ base: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}
+        gap={{ base: 4, xl: 8 }}
+        justifyItems="center"
+      >
+        <Fragment key="latest-items-card">
+          <LatestItemsHomeCard />
+        </Fragment>
+        <Fragment key="trending-items-card">
+          <TrendingItemsHomeCard />
+        </Fragment>
+        <Fragment key="latest-nc-mall-card">
+          <LatestNcMallHomeCard />
+        </Fragment>
+      </Grid>
+      <FeaturedListsHomeCard />
+      <Flex direction={{ base: 'column', lg: 'row' }} gap={{ base: 4, xl: 8 }}>
+        <LeavingNcMallHomeCard />
+        <RainbowPoolHomeCard />
       </Flex>
-    </>
+      <Flex direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
+        <Flex direction="column" flex={1} alignItems="center">
+          <Heading as="h2" size="md" lineHeight="1.2" mb={{ base: 5, lg: 0 }}>
+            {t('HomePage.stats')}
+          </Heading>
+          <Suspense
+            fallback={
+              <StatsCardLoading
+                itemsInDbLabel={t('BetaStats.items-in-db')}
+                completeItemsLabel={t('BetaStats.complete-items')}
+                processQueueLabel={t('BetaStats.process-queue')}
+                tradePricingQueueLabel={t('BetaStats.trade-pricing-queue')}
+                feedbackVotingQueueLabel={t('BetaStats.feedback-voting-queue')}
+              />
+            }
+          >
+            <StatsCard />
+          </Suspense>
+        </Flex>
+        <LatestArticlesSection title={t('HomePage.latest-articles')} />
+      </Flex>
+    </Flex>
+  );
+}
+
+function HomeSectionsFallback() {
+  return (
+    <Flex mt={8} gap={8} flexDirection="column" aria-hidden="true">
+      <LatestPricesSection title="" />
+      <NewItemsCountSection />
+      <Grid
+        templateColumns={{ base: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}
+        gap={{ base: 4, xl: 8 }}
+        justifyItems="center"
+      >
+        <LatestItemsHomeCard />
+        <TrendingItemsHomeCard />
+        <LatestNcMallHomeCard />
+      </Grid>
+    </Flex>
   );
 }
 

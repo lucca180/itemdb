@@ -4,10 +4,9 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { getPathname } from '@i18n/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
+import { ItemPageSkeleton } from '@app/_components/Item/page/ItemPageSkeleton';
 import { preloadItemPageData } from '@app/_components/Item/preloadItemPage';
 import { buildItemPageMetadata, resolveItemRoute } from '@app/utils/loadItemPage';
-
-import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 
 type ItemPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -26,7 +25,7 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
 
 export default function ItemPage({ params }: ItemPageProps) {
   return (
-    <Suspense fallback={<AppServerLayoutSkeleton />}>
+    <Suspense fallback={<ItemPageSkeleton />}>
       <ItemPageRoute params={params} />
     </Suspense>
   );
@@ -47,9 +46,9 @@ async function ItemPageRoute({ params }: ItemPageProps) {
   preloadItemPageData(result.item);
 
   return (
-    <>
+    <div data-testid="item-page-content">
       <SetMainColor color={result.item.color.hex + '66'} />
       <ItemPageView item={result.item} />
-    </>
+    </div>
   );
 }

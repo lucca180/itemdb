@@ -8,6 +8,8 @@ type HomeHeroProps = {
   title: string;
   highlightQuery: string;
   safetyLinkLabel: string;
+  /** When true, skip logo + backdrop (parent shell already owns them). */
+  omitLogo?: boolean;
 };
 
 function renderHighlightedText(title: string, highlightQuery: string): ReactNode {
@@ -35,7 +37,22 @@ function renderHighlightedText(title: string, highlightQuery: string): ReactNode
   ]);
 }
 
-export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroProps) {
+export function HomeHero({ title, highlightQuery, safetyLinkLabel, omitLogo }: HomeHeroProps) {
+  const heading = (
+    <Heading as="h1" unstyled mt={4} fontSize="1rem" fontWeight="bold" lineHeight={1.5}>
+      {renderHighlightedText(title, highlightQuery)}{' '}
+      <ChakraLink asChild color="gray.400" _hover={{ textDecoration: 'underline' }}>
+        <MainLink viaNextLink href="/faq" prefetch={false}>
+          {safetyLinkLabel}
+        </MainLink>
+      </ChakraLink>
+    </Heading>
+  );
+
+  if (omitLogo) {
+    return heading;
+  }
+
   return (
     <Flex textAlign="center" direction="column" alignItems="center" mt="50px">
       <Box
@@ -55,14 +72,7 @@ export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroPro
         priority
         fetchPriority="high"
       />
-      <Heading as="h1" unstyled mt={4} fontSize="1rem" fontWeight="bold" lineHeight={1.5}>
-        {renderHighlightedText(title, highlightQuery)}{' '}
-        <ChakraLink asChild color="gray.400" _hover={{ textDecoration: 'underline' }}>
-          <MainLink viaNextLink href="/faq" prefetch={false}>
-            {safetyLinkLabel}
-          </MainLink>
-        </ChakraLink>
-      </Heading>
+      {heading}
     </Flex>
   );
 }

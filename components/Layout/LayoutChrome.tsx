@@ -56,7 +56,7 @@ function LayoutLogo({ hardNavigation }: { hardNavigation?: boolean }) {
   }
 
   return (
-    <Link href="/" style={{ flex: '0 0 auto' }}>
+    <Link href="/" style={{ flex: '0 0 auto' }} data-testid="layout-home-link">
       <LayoutLogoContent />
     </Link>
   );

@@ -86,6 +86,7 @@ export function HomeCardBody(props: HomeCardBodyProps) {
                 key={item.internal_id + title}
                 item={item}
                 utm_content={utm_content}
+                disablePrefetch={false}
               />
             ))}
         </Flex>
@@ -227,10 +228,11 @@ function HomeItemInner({
         <Link asChild _hover={{ textDecoration: 'none' }} w="100%" minW={0} display="block">
           <MainLink
             viaNextLink
-            prefetch={false}
+            prefetch="auto"
             href={'/item/' + (item.slug ?? item.internal_id)}
             trackEvent={utm_content || undefined}
             trackEventLabel={item.slug || undefined}
+            data-testid="home-item-link"
           >
             <Flex
               minH="80px"

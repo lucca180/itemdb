@@ -53,7 +53,7 @@ const ItemRowV2 = ({ item, uniqueID, disablePrefetch, utm_content }: ItemRowV2Pr
         <Link asChild _hover={{ textDecoration: 'none' }} outline="none" w="100%">
           <MainLink
             viaNextLink
-            prefetch={disablePrefetch !== false ? false : undefined}
+            prefetch={disablePrefetch !== false ? false : 'auto'}
             trackEvent={utm_content || undefined}
             trackEventLabel={item.slug || undefined}
             href={'/item/' + (item.slug ?? item.internal_id)}
