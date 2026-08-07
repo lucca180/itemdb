@@ -13,7 +13,7 @@ import {
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import { useState } from 'react';
-import { ItemData, UserList, ListItemInfo, ObligatoryUserList } from '../../types';
+import { ItemData, UserListLite, ListItemInfo } from '../../types';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 
@@ -22,7 +22,7 @@ export type DuplicatedItemModalProps = {
   onClose: () => void;
   onChange?: () => void;
   item: Pick<ItemData, 'internal_id' | 'name'>;
-  list?: UserList | ObligatoryUserList;
+  list?: Pick<UserListLite, 'internal_id' | 'name'>;
   itemInfo: ListItemInfo;
 };
 

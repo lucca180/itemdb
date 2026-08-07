@@ -1,9 +1,15 @@
 import { startOfDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
-import type { ListItemInfo, User, UserList } from '@types';
+import type { ListItemInfo, User, UserList, UserListLite } from '@types';
 import type { ListItems, UserList as RawList, User as RawUser } from '@prisma/generated/client';
 
 export type ListOwnerRef = RawUser | User | RequiredUserFields;
+
+/** Minimal row shape for picker/cache payloads (useLists). */
+export type ListLiteRaw = Pick<
+  RawList,
+  'internal_id' | 'name' | 'purpose' | 'official' | 'dynamicType' | 'linkedListId' | 'updatedAt'
+>;
 
 type RequiredUserFields = {
   id: string;
@@ -69,6 +75,16 @@ export const rawToList = (
     itemInfo: !includeItems ? [] : rawToListItems(listRaw.items ?? []),
   };
 };
+
+export const rawToListLite = (listRaw: ListLiteRaw): UserListLite => ({
+  internal_id: listRaw.internal_id,
+  name: listRaw.name,
+  purpose: listRaw.purpose,
+  official: !!listRaw.official,
+  dynamicType: listRaw.dynamicType,
+  linkedListId: listRaw.linkedListId ?? null,
+  updatedAt: listRaw.updatedAt.toJSON(),
+});
 
 export const rawToListItems = (items: ListItems[]): ListItemInfo[] => {
   return items.map((item) => ({

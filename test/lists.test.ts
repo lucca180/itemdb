@@ -34,6 +34,40 @@ describe.concurrent('List Service tests', () => {
       expect(lists.length).toBeGreaterThan(0);
       expect(hasHidden).toBe(true);
     });
+
+    test("Get user's lists lite as guest", async () => {
+      const listService = ListService.init();
+      const lists = await listService.getUserListsLite({ username: 'lucca' });
+
+      expect(lists.length).toBeGreaterThan(0);
+      for (const list of lists) {
+        expect(Object.keys(list).sort()).toEqual(
+          [
+            'dynamicType',
+            'internal_id',
+            'linkedListId',
+            'name',
+            'official',
+            'purpose',
+            'updatedAt',
+          ].sort()
+        );
+      }
+    });
+
+    test("Get user's lists lite as owner includes private", async () => {
+      const listService = ListService.initUser({
+        id: 'Ty0G4IOIm4dr3IYJpMx8bIFMs433',
+        username: 'lucca',
+      } as any);
+      const fullLists = await listService.getUserLists({ username: 'lucca' });
+      const liteLists = await listService.getUserListsLite({ username: 'lucca' });
+
+      expect(liteLists.length).toBe(fullLists.length);
+      expect(liteLists.length).toBeGreaterThan(
+        (await ListService.init().getUserListsLite({ username: 'lucca' })).length
+      );
+    });
   });
 
   describe.concurrent('Valid List as Guest tests', () => {

@@ -1,4 +1,12 @@
-import { ItemData, ItemIntent, ItemV2For, SearchFilters, User, UserList } from '@types';
+import {
+  ItemData,
+  ItemIntent,
+  ItemV2For,
+  SearchFilters,
+  User,
+  UserList,
+  UserListLite,
+} from '@types';
 import { CheckAuth } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 import { NextApiRequest } from 'next';
@@ -24,7 +32,12 @@ import {
   type PutListItemInput,
 } from '@services/list/listItemsWrite';
 import { rawToList, rawToListItems } from '@services/list/listMappers';
-import { queryUserLists, type GetUserListsOptions } from '@services/list/userListsQuery';
+import {
+  queryUserLists,
+  queryUserListsLite,
+  type GetUserListsLiteOptions,
+  type GetUserListsOptions,
+} from '@services/list/userListsQuery';
 import { fetchListItemsV2, type FetchListItemsV2Result } from '@services/list/listItemsV2';
 
 export { rawToList, rawToListItems } from '@services/list/listMappers';
@@ -135,6 +148,13 @@ export class ListService {
       ...params,
       viewerId: this.user?.id ?? null,
       fillItemCounts: fillCounts,
+    });
+  }
+
+  async getUserListsLite(params: GetUserListsLiteParams): Promise<UserListLite[]> {
+    return queryUserListsLite({
+      ...params,
+      viewerId: this.user?.id ?? null,
     });
   }
 
@@ -370,6 +390,7 @@ type GetListParams = {
 };
 
 type GetUserListsParams = Omit<GetUserListsOptions, 'viewerId'>;
+type GetUserListsLiteParams = Omit<GetUserListsLiteOptions, 'viewerId'>;
 
 const toListIdAndSlug = (list_id_or_slug: string | number) => {
   if (typeof list_id_or_slug === 'number' || /^\d+$/.test(list_id_or_slug)) {

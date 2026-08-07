@@ -26,7 +26,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 // gets all lists of a user
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { username, officialTag } = req.query;
+  const { username, officialTag, lite } = req.query;
   if (!username || typeof username !== 'string')
     return res.status(400).json({ error: 'Bad Request' });
 
@@ -38,6 +38,11 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
+    if (lite === 'true') {
+      const lists = await listService.getUserListsLite({ username });
+      return res.status(200).json(lists);
+    }
+
     const lists = await listService.getUserLists({ username });
 
     return res.status(200).json(lists);

@@ -2,7 +2,7 @@ import { Menu, Button, Badge, Tooltip, Portal, useDisclosure } from '@chakra-ui/
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
-import { ItemData, ListItemInfo, UserList } from '../../types';
+import { ItemData, ListItemInfo, UserListLite } from '../../types';
 import { useAuth } from '../../utils/auth';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
@@ -23,7 +23,7 @@ const AddToListSelect = (props: Props) => {
   const { user, authLoading } = useAuth();
   const { lists, isLoading, revalidate } = useLists();
   const { open, onOpen, onClose } = useDisclosure();
-  const [selectedList, setSelectedList] = useState<UserList | undefined>();
+  const [selectedList, setSelectedList] = useState<UserListLite | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
   const toast = useToast();
 
@@ -213,7 +213,7 @@ const AddToListSelect = (props: Props) => {
 
 export default AddToListSelect;
 
-function SortListByChange(a: UserList, b: UserList) {
+function SortListByChange(a: UserListLite, b: UserListLite) {
   const dateA = new Date(a.updatedAt);
   const dateB = new Date(b.updatedAt);
 

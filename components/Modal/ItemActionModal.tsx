@@ -11,7 +11,7 @@ import {
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import { useRef, useState } from 'react';
-import { ListItemInfo, ObligatoryUserList, UserList } from '@types';
+import { ListItemInfo, ObligatoryUserList, UserList, UserListLite } from '@types';
 import ListSelect from '@components/UserLists/ListSelect';
 import { useTranslations } from 'next-intl';
 
@@ -30,7 +30,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
   const { isOpen, onClose, action, selectedItems, list, refresh } = props;
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
-  const [dest, setDest] = useState<UserList>();
+  const [dest, setDest] = useState<UserListLite>();
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   const saveChanges = async () => {

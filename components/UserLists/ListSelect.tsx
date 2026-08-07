@@ -3,7 +3,7 @@ import { Menu, Button, Badge, Tooltip, Portal, Text, Input, Box } from '@chakra-
 import axios from 'axios';
 import type { RefObject } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { UserList } from '@types';
+import { UserListLite } from '@types';
 import { useAuth } from '@utils/auth';
 import DynamicIcon from '@assets/icons/dynamic.png';
 import NextImage from 'next/image';
@@ -12,9 +12,9 @@ import { useTranslations } from 'next-intl';
 import { ViewportList } from 'react-viewport-list';
 
 type Props = {
-  onChange?: (list: UserList) => void;
+  onChange?: (list: UserListLite) => void;
   defaultText?: string;
-  defaultValue?: UserList;
+  defaultValue?: UserListLite;
   createNew?: boolean;
   recommended_id?: number;
   size?: 'sm' | 'md' | 'lg';
@@ -27,7 +27,7 @@ const LIST_SEARCH_THRESHOLD = 8;
 const ListSelect = (props: Props) => {
   const t = useTranslations();
   const { user, authLoading } = useAuth();
-  const [forceSelected, setSelected] = useState<UserList | undefined>(props.defaultValue);
+  const [forceSelected, setSelected] = useState<UserListLite | undefined>(props.defaultValue);
   const [listSearch, setListSearch] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { lists, isLoading, revalidate } = useLists();
@@ -70,7 +70,7 @@ const ListSelect = (props: Props) => {
     return () => window.clearTimeout(timeout);
   }, [isMenuOpen, showSearch]);
 
-  const handleSelect = (list: UserList) => {
+  const handleSelect = (list: UserListLite) => {
     setSelected(list);
     if (props.onChange) props.onChange(list);
   };
@@ -296,7 +296,7 @@ const ListSelect = (props: Props) => {
 
 export default ListSelect;
 
-function SortListByChange(a: UserList, b: UserList) {
+function SortListByChange(a: UserListLite, b: UserListLite) {
   const dateA = new Date(a.updatedAt);
   const dateB = new Date(b.updatedAt);
 

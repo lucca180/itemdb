@@ -16,7 +16,7 @@ import {
 import { useToast } from '@utils/theme/toast';
 import ListSelect from '@components/UserLists/ListSelect';
 import { useEffect, useState } from 'react';
-import type { UserList } from '@types';
+import type { UserList, UserListLite } from '@types';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import { CreateLinkedListButton } from '@components/DynamicLists/CreateLinkedList';
 import { useRouter } from '@i18n/navigation';
@@ -38,7 +38,7 @@ type ImportItemsExperienceProps = {
 };
 
 const DefaultImportInfo = {
-  list: undefined as UserList | undefined,
+  list: undefined as UserListLite | undefined,
   ignore: [] as ('np' | 'nc' | 'quantity')[],
   action: 'add' as 'add' | 'remove' | 'hide',
 };
@@ -198,7 +198,7 @@ export function ImportItems({
     }
   };
 
-  const handleListChange = (list: UserList) => {
+  const handleListChange = (list: UserListLite) => {
     let action = importInfo.action;
 
     if (list.dynamicType === 'fullSync' && ['remove', 'add'].includes(importInfo.action)) {

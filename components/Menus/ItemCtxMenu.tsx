@@ -13,7 +13,7 @@ import { useToast } from '@utils/theme/toast';
 import { ContextMenu, ContextMenuItem, Submenu } from 'rctx-contextmenu';
 
 export { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
-import { ItemData, ListItemInfo, UserList } from '../../types';
+import { ItemData, ListItemInfo, UserListLite } from '../../types';
 import { useAuth } from '../../utils/auth';
 import axios from 'axios';
 import { useMemo, useRef, useState } from 'react';
@@ -96,7 +96,7 @@ const ItemCtxMenu = (props: Props) => {
   const { user } = useAuth();
   const { lists, isLoading } = useLists();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedList, setSelectedList] = useState<UserList | undefined>();
+  const [selectedList, setSelectedList] = useState<UserListLite | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
   const listSubmenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -332,7 +332,7 @@ const ItemCtxMenu = (props: Props) => {
 
 export default ItemCtxMenu;
 
-function SortListByChange(a: UserList, b: UserList) {
+function SortListByChange(a: UserListLite, b: UserListLite) {
   const dateA = new Date(a.updatedAt);
   const dateB = new Date(b.updatedAt);
 

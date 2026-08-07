@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import { ContextMenu, ContextMenuItem, Submenu } from 'rctx-contextmenu';
-import type { ItemFindAt, ItemV2For, ListItemInfo, UserList } from '@types';
+import type { ItemFindAt, ItemV2For, ListItemInfo, UserListLite } from '@types';
 import { useAuth } from '@utils/auth';
 import axios from 'axios';
 import { useMemo, useRef, useState } from 'react';
@@ -96,7 +96,7 @@ const ItemCtxMenuV2 = (props: Props) => {
   const { user } = useAuth();
   const { lists, isLoading } = useLists();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedList, setSelectedList] = useState<UserList | undefined>();
+  const [selectedList, setSelectedList] = useState<UserListLite | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
   const listSubmenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -333,7 +333,7 @@ const ItemCtxMenuV2 = (props: Props) => {
 
 export default ItemCtxMenuV2;
 
-function SortListByChange(a: UserList, b: UserList) {
+function SortListByChange(a: UserListLite, b: UserListLite) {
   const dateA = new Date(a.updatedAt);
   const dateB = new Date(b.updatedAt);
 

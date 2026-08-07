@@ -303,6 +303,11 @@ export type UserList = {
   highlightText: string | null;
 };
 
+export type UserListLite = Pick<
+  UserList,
+  'internal_id' | 'name' | 'purpose' | 'official' | 'dynamicType' | 'linkedListId' | 'updatedAt'
+>;
+
 export type DynamicListTypes = 'addOnly' | 'removeOnly' | 'fullSync' | 'search';
 
 export type ObligatoryUserList = Required<Pick<UserList, 'itemInfo'>> & UserList;

@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import useSWR from 'swr';
 import { useAuth } from './auth';
-import { UserList } from '../types';
+import { UserListLite } from '../types';
 
 function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
   return axios.get(url, config).then((res) => res.data);
@@ -10,7 +10,7 @@ function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
 export const useLists = () => {
   const { user } = useAuth();
   const { data, error, isLoading, mutate } = useSWR(
-    !user ? null : `/api/v1/lists/${user.username}`,
+    !user ? null : `/api/v1/lists/${user.username}?lite=true`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -36,7 +36,7 @@ export const useLists = () => {
   };
 
   return {
-    lists: (data ?? []) as UserList[],
+    lists: (data ?? []) as UserListLite[],
     error,
     isLoading,
     addItemToList,

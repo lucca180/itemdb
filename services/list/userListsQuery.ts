@@ -8,8 +8,8 @@
  * Item counts come from UserList.visibleItemCount unless includeItems is true.
  */
 import { getUser } from '@pages/api/v1/users/[username]';
-import { rawToList } from '@services/list/listMappers';
-import type { User, UserList } from '@types';
+import { rawToList, rawToListLite } from '@services/list/listMappers';
+import type { User, UserList, UserListLite } from '@types';
 import prisma from '@utils/prisma';
 import type { ListItems, UserList as RawList, User as RawUser } from '@prisma/generated/client';
 
@@ -26,6 +26,26 @@ export type GetUserListsOptions = {
   viewerId?: string | null;
   fillItemCounts?: (lists: RawList[]) => Promise<void>;
 };
+
+export type GetUserListsLiteOptions = {
+  username: string;
+  /** Skip getUser when the caller already resolved the profile owner. */
+  owner?: User;
+  /** Logged-in viewer id; when it matches owner.id, private/unlisted lists are included. */
+  viewerId?: string | null;
+};
+
+/** Columns needed for UserListLite + server-side order sort (order not returned). */
+const LIST_LITE_SELECT = {
+  internal_id: true,
+  name: true,
+  purpose: true,
+  official: true,
+  dynamicType: true,
+  linkedListId: true,
+  updatedAt: true,
+  order: true,
+} as const;
 
 type ListRow = RawList & { items?: ListItems[] };
 type OwnerRef = RawUser | User | ListOwnerStub;
@@ -55,6 +75,35 @@ export async function queryUserLists(options: GetUserListsOptions): Promise<User
   }
 
   return queryUsernameLists(options);
+}
+
+/**
+ * Slim list collection for pickers (useLists). Username path only — no official, no counts/owner payload.
+ */
+export async function queryUserListsLite(
+  options: GetUserListsLiteOptions
+): Promise<UserListLite[]> {
+  const { username, owner: knownOwner, viewerId } = options;
+
+  const owner = knownOwner ?? (await getUser(username));
+  if (!owner) return [];
+
+  const isOwnerView = viewerId === owner.id;
+
+  const listsRaw = await prisma.userList.findMany({
+    where: {
+      user_id: owner.id,
+      visibility: isOwnerView ? undefined : 'public',
+    },
+    select: LIST_LITE_SELECT,
+  });
+
+  return listsRaw
+    .sort(
+      (a, b) =>
+        (a.order ?? 0) - (b.order ?? 0) || (new Date(b.updatedAt) < new Date(a.updatedAt) ? -1 : 1)
+    )
+    .map(rawToListLite);
 }
 
 /**
