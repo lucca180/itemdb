@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     // Typecheck runs separately via `yarn typecheck:fast` (TS 7) during deploy.
     ignoreBuildErrors: true,
   },
+  supportsImmutableAssets: true,
   serverExternalPackages: ['@napi-rs/canvas'],
   cacheComponents: true,
   partialPrefetching: true,
