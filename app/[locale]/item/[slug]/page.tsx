@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { getPathname } from '@i18n/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
+import { ItemHreflangLinks } from '@app/_components/Item/page/ItemHreflangLinks';
 import { ItemPageSkeleton } from '@app/_components/Item/page/ItemPageSkeleton';
 import { preloadItemPageData } from '@app/_components/Item/preloadItemPage';
 import { buildItemPageMetadata, resolveItemRoute } from '@app/utils/loadItemPage';
@@ -45,8 +46,11 @@ async function ItemPageRoute({ params }: ItemPageProps) {
 
   preloadItemPageData(result.item);
 
+  const hreflangSlug = result.item.slug ?? String(result.item.internal_id);
+
   return (
     <div data-testid="item-page-content">
+      <ItemHreflangLinks slug={hreflangSlug} />
       <SetMainColor color={result.item.color.hex + '66'} />
       <ItemPageView item={result.item} />
     </div>

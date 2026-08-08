@@ -2,11 +2,7 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 import { getCachedItem } from '@app/_components/Item/loadUtils';
 import { ItemData } from '@types';
-import {
-  buildItemDbHreflangAlternates,
-  getItemDbCanonical,
-  normalizeItemDbLocale,
-} from '@app/utils/appPage';
+import { getItemDbCanonical, normalizeItemDbLocale } from '@app/utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { cacheLife } from 'next/cache';
 
@@ -29,18 +25,18 @@ export function buildItemPageMetadata(item: ItemData, locale: string): Metadata 
   const normalizedLocale = normalizeItemDbLocale(locale);
   const pathname = `/item/${item.slug}` as const;
   const canonical = getItemDbCanonical(pathname, normalizedLocale);
-  const hreflang = buildItemDbHreflangAlternates(pathname);
   const description = getMetaDescription(item);
   const defaultSeo = getDefaultSEO(locale);
 
   return {
     title: item.name,
     description,
+    // Keep only canonical in Metadata. `languages` becomes HTTP `Link: rel=alternate`
+    // headers; with `partialPrefetching` + home `prefetch="auto"`, Next accumulates
+    // hreflang Links from many prefetched items (~40KB+) and Nginx returns 502
+    // ("upstream sent too big header"). HTML hreflang is rendered by ItemHreflangLinks.
     alternates: {
       canonical,
-      languages: {
-        ...hreflang.languages,
-      },
     },
     openGraph: {
       type: 'website',
