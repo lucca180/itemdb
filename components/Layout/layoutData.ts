@@ -32,13 +32,16 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
       href: '/articles',
       options: [
         { label: t('Layout.userscripts'), href: '/articles/userscripts' },
-        { label: 'The Void Within', href: '/hub/the-void-within' },
         { label: t('Layout.patch-notes'), href: '/articles' },
         { label: t('Layout.how-to-contribute'), href: '/contribute' },
         { label: t('Layout.sort-galleries-by-color'), href: '/articles/sort-gallery' },
         {
           label: t('Layout.advanced-search-queries'),
           href: '/articles/advanced-search-queries',
+        },
+        {
+          label: t('Articles.all-articles'),
+          href: '/articles',
         },
       ],
     },
@@ -49,10 +52,6 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
         { label: t('Layout.restock-dashboard'), href: '/restock/dashboard' },
         { label: 'Neopian Fresh Foods', href: '/restock/neopian-fresh-foods' },
         { label: "Cog's Tog", href: '/restock/cogs-togs' },
-        {
-          label: t('Restock.restock-history'),
-          href: '/restock/neopian-fresh-foods/history',
-        },
         { label: t('Layout.view-all-shops'), href: '/restock/' },
       ],
     },
@@ -64,8 +63,7 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
         { label: t('Layout.dailies-and-freebies'), href: '/lists/official/cat/dailies' },
         {
           label: t('Layout.exclusive-clothes'),
-          href: '/hub/outfits/aisha',
-          newUntil: 1748735999000,
+          href: '/hub/outfits/acara',
         },
         { label: t('General.dynamic-lists'), href: '/articles/checklists-and-dynamic-lists' },
         { label: t('HomePage.leaving-nc-mall'), href: '/mall/leaving' },
@@ -78,11 +76,10 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
       href: '/rainbow-pool',
       options: [
         { label: t('Layout.sdb-pricer'), href: '/articles/userscripts' },
-        { label: t('Layout.userscripts'), href: '/articles/userscripts' },
         { label: t('Layout.rainbow-pool-tool'), href: '/rainbow-pool' },
+        { label: 'Pet Styles Tokens', href: '/rainbow-pool/pet-styles', newUntil: 1786849199000 },
         { label: t('Layout.item-effects'), href: '/hub/item-effects' },
         { label: t('Layout.restock-dashboard'), href: '/restock/dashboard' },
-        { label: t('Calculator.pricing-calculator'), href: '/tools/price-calculator' },
       ],
     },
     {
