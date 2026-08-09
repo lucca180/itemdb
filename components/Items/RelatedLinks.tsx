@@ -9,6 +9,8 @@ import {
   getOfficialItemLists,
   loadItemEffects,
   loadPetpetData,
+  loadPetStyleForItem,
+  type PetStyleLinkData,
 } from '@app/_components/Item/loadUtils';
 import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
@@ -20,7 +22,13 @@ import {
   getSpeciesFromString,
   petColorSlug,
 } from '@utils/pet-utils';
-import { stylesBrowseHref } from '@utils/petStyles/paths';
+import {
+  STYLES_BASE_PATH,
+  stylesBrowseHref,
+  stylesComboHref,
+  stylesUnknownHref,
+} from '@utils/petStyles/paths';
+import { isStudioEssentialItemName } from '@utils/petStyles/studioEssentials';
 
 const STYLING_STUDIO_ICON =
   'https://images.neopets.com/themes/h5/basic/images/stylingstudio-icon.png';
@@ -38,16 +46,18 @@ export default function RelatedLinksCard(props: Props) {
 }
 
 async function RelatedLinksCardContent({ item }: Props) {
-  const [t, itemEffects, lists, petpetData] = await Promise.all([
+  const [t, itemEffects, lists, petpetData, petStyle] = await Promise.all([
     getTranslations(),
     loadItemEffects(item.internal_id),
     getOfficialItemLists(item.internal_id, shouldShowTradeLists(item, await getCachedNow())),
     loadPetpetData(item.internal_id),
+    loadPetStyleForItem(item.internal_id),
   ]);
   const relatedLinks = buildRelatedLinks(item, t, {
     itemEffects,
     lists,
     petpetData: petpetData || undefined,
+    petStyle,
   });
   const color = item.color.rgb;
 
@@ -103,13 +113,49 @@ type RelatedOthers = {
   itemEffects?: ItemEffect[];
   lists?: UserList[];
   petpetData?: ItemPetpetData;
+  petStyle?: PetStyleLinkData | null;
 };
 
 type Translate = Awaited<ReturnType<typeof getTranslations>>;
 
 function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
-  const { itemEffects, lists, petpetData } = rest;
+  const { itemEffects, lists, petpetData, petStyle } = rest;
   const relatedLinks: RelatedLinkProps[] = [];
+
+  if (petStyle) {
+    const href = petStyle.colorName
+      ? stylesComboHref(petStyle.speciesName, petStyle.colorName)
+      : stylesUnknownHref(petStyle.speciesName);
+    relatedLinks.push({
+      href,
+      imageUrl: STYLING_STUDIO_ICON,
+      alt: petStyle.speciesName,
+      trackEvent: 'related-link',
+      trackEventLabel: 'pet-styles-combo',
+      children: petStyle.colorName
+        ? t.rich('PetStyles.related-combo-styles', {
+            combo: `${petStyle.colorName} ${petStyle.speciesName}`,
+            b: (chunk) => <b>{chunk}</b>,
+          })
+        : t.rich('PetStyles.related-unknown-combo-styles', {
+            species: petStyle.speciesName,
+            b: (chunk) => <b>{chunk}</b>,
+          }),
+    });
+  }
+
+  if (isStudioEssentialItemName(item.name)) {
+    relatedLinks.push({
+      href: STYLES_BASE_PATH,
+      imageUrl: STYLING_STUDIO_ICON,
+      alt: t('PetStyles.hub-h1'),
+      trackEvent: 'related-link',
+      trackEventLabel: 'pet-styles-hub',
+      children: t.rich('PetStyles.related-supplies-hub', {
+        b: (chunk) => <b>{chunk}</b>,
+      }),
+    });
+  }
 
   const speciesName = getSpeciesFromString(item.name);
   const colorEffect = itemEffects?.filter(

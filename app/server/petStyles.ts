@@ -731,14 +731,10 @@ export async function loadPetStylesComboDetail(
   });
 }
 
+import { STUDIO_ESSENTIAL_ITEM_NAMES } from '@utils/petStyles/studioEssentials';
+
 /** Official Studio consumables linked from the Pet Styles hub (omit if missing in DB). */
-export const STUDIO_ESSENTIAL_ITEM_NAMES = [
-  'Styling Studio Supplies',
-  'Deluxe Styling Studio Supplies',
-  'Styling Studio Prismatic Brush',
-  'Styling Studio Deluxe Prismatic Brush',
-  'Styling Studio Restyle Paint',
-] as const;
+export { STUDIO_ESSENTIAL_ITEM_NAMES };
 
 export type StudioEssentialItem = {
   name: string;

@@ -36,6 +36,9 @@ import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 import { itemRootTag } from '@utils/appCacheTags';
+import prisma from '@utils/prisma';
+import { getAllNeopetsColors } from '@app/server/petColors';
+import { allSpecies, findPetColorName } from '@utils/pet-utils';
 
 export const getCachedItem = cache(async (id_name: number | string, flags = false) => {
   'use cache';
@@ -260,5 +263,49 @@ export const loadAvyData = cache(
     cacheLife('itemMedium');
     const officialLists = await getAllOfficialItemLists(internalId, includeTrade);
     return getAvyData(internalId, officialLists);
+  }
+);
+
+/** Displayable PetStyle row for item → Pet Styles Related Links. */
+export type PetStyleLinkData = {
+  speciesName: string;
+  /** Null when colour-agnostic (`/{species}/unknown`). */
+  colorName: string | null;
+  series: string;
+};
+
+export const loadPetStyleForItem = cache(
+  async (internalId: number): Promise<PetStyleLinkData | null> => {
+    'use cache';
+    applyItemSectionCacheTags(internalId, 'pet-style');
+    cacheLife('itemSection');
+
+    const row = await prisma.petStyle.findFirst({
+      where: {
+        needsReview: false,
+        species_id: { not: null },
+        OR: [{ item_iid: internalId }, { item: { canonical_id: internalId } }],
+      },
+      select: {
+        species_id: true,
+        color_id: true,
+        series: true,
+      },
+    });
+
+    if (row?.species_id == null) return null;
+
+    const speciesName = allSpecies[String(row.species_id)];
+    if (!speciesName) return null;
+
+    if (row.color_id == null) {
+      return { speciesName, colorName: null, series: row.series };
+    }
+
+    const colors = await getAllNeopetsColors();
+    const colorName = findPetColorName(row.color_id, colors);
+    if (!colorName) return null;
+
+    return { speciesName, colorName, series: row.series };
   }
 );

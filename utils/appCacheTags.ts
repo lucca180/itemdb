@@ -47,6 +47,7 @@ export const ITEM_PAGE_CACHE_SCOPES = [
   'markers',
   'np-prices',
   'trade-lists',
+  'pet-style',
 ] as const;
 
 export type ItemPageCacheScope = (typeof ITEM_PAGE_CACHE_SCOPES)[number];

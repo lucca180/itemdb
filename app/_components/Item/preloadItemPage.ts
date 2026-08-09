@@ -36,6 +36,7 @@ import {
   loadNCTradeInsights,
   loadNPPrices,
   loadPetpetData,
+  loadPetStyleForItem,
   loadTradeLists,
 } from '@app/_components/Item/loadUtils';
 import { loadSimilarItemData } from '@app/_components/Item/SimilarItems/loadSimilarItems';
@@ -71,6 +72,7 @@ export async function preloadItemPageData(item: ItemData): Promise<void> {
 
   if (needsNCTrade(item)) {
     preload(() => loadNCTradeInsights(item.internal_id));
+    preload(() => loadPetStyleForItem(item.internal_id));
     if (includeTrade) preload(() => loadTradeLists(item.internal_id));
     if (needsLebronTradeHistory(item)) {
       preload(() => loadLebronTradeHistory(item.internal_id, item.name));
