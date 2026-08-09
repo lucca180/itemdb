@@ -5,6 +5,9 @@ export const routing = defineRouting({
   defaultLocale: 'en',
   localePrefix: 'as-needed',
   localeDetection: true,
+  // Disable next-intl Link hreflang: with cacheComponents + next/font they
+  // accumulate across revalidations (vercel/next.js#94945). Use Metadata alternates instead.
+  alternateLinks: false,
   localeCookie: {
     name: 'NEXT_LOCALE',
     maxAge: 60 * 60 * 24 * 365 * 5,
