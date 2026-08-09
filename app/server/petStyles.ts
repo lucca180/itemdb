@@ -7,15 +7,17 @@ import { PET_COLORS_CACHE_TAG, allSpecies, findPetColorName, petColorSlug } from
 import { petPreviewUrl } from '@utils/petColorTool';
 import { colorNameSearchTerms, textHasColorToken } from '@utils/petStyles';
 import prisma from '@utils/prisma';
-import type { ItemV2For } from '@types';
+import type { ItemV2For, LebronTrade, NCValue } from '@types';
 import { Prisma } from '@prisma/generated/client';
-import type { StyleComboTile, StyleNcTrade, StyleToken } from '@utils/petStyles/display';
+import type { StyleComboTile, StyleToken } from '@utils/petStyles/display';
 import {
   PET_STYLES_PAGE_SIZE,
   UNKNOWN_COLOR_NAME,
   isUnknownColorName,
   stylesComboHref,
 } from '@utils/petStyles/paths';
+import { loadLebronTradeHistory } from '@app/_components/Item/loadUtils';
+import { prepareNCTradeHistory } from '@app/_components/Item/NCTrade/ncTradeHistoryUtils';
 
 /** Displayable styles: known species, resolved parse. Colour may be null (colour-agnostic). */
 const DISPLAYABLE_STYLE: Prisma.PetStyleWhereInput = {
@@ -95,6 +97,11 @@ type TradeCounts = {
   ncTradeCount: number;
 };
 
+type LebronTradeBundle = {
+  samples: LebronTrade[];
+  count: number;
+};
+
 function colorStringOrFilters(terms: string[]): Prisma.PetStyleWhereInput[] {
   return terms.flatMap((term) => [
     { series: { contains: term } },
@@ -168,7 +175,8 @@ function mapTokenRows(
   rows: TokenSourceRow[],
   colorNames: Record<number, string>,
   countsByIid: Record<number, TradeCounts> = {},
-  tradesByIid: Record<number, StyleNcTrade[]> = {}
+  tradesByIid: Record<number, LebronTradeBundle> = {},
+  ncValueByIid: Record<number, NCValue> = {}
 ): StyleToken[] {
   const tokens: StyleToken[] = [];
 
@@ -183,6 +191,7 @@ function mapTokenRows(
     if (row.color_id != null && !colorName) continue;
 
     const counts = countsByIid[row.item_iid] ?? emptyCounts();
+    const tradeBundle = tradesByIid[row.item_iid];
     tokens.push({
       id: row.item_iid,
       name: row.item.name,
@@ -194,8 +203,9 @@ function mapTokenRows(
       inStudio: row.inStudio,
       seekingCount: counts.seekingCount,
       tradingCount: counts.tradingCount,
-      ncTradeCount: counts.ncTradeCount,
-      trades: tradesByIid[row.item_iid] ?? [],
+      ncTradeCount: tradeBundle?.count ?? counts.ncTradeCount,
+      trades: tradeBundle?.samples ?? [],
+      ncValue: ncValueByIid[row.item_iid] ?? null,
       imageUrl: itemIconUrl(row.item.image_id, row.item.image),
       previewUrl: wearablePreviewUrl(row.item.image_id),
       imageId: row.item.image_id ?? null,
@@ -205,6 +215,24 @@ function mapTokenRows(
   }
 
   return tokens;
+}
+
+/** Batch Lebron / itemdb NC values via card intent (respects `NC_VALUES_TYPE`). */
+async function loadNcValuesByItemIids(iids: number[]): Promise<Record<number, NCValue>> {
+  if (!iids.length) return {};
+
+  const unique = [...new Set(iids)];
+  const items = await ItemService.getManyItems(
+    { type: 'id', data: unique },
+    { intent: 'card', limit: unique.length }
+  );
+
+  const out: Record<number, NCValue> = {};
+  for (const iid of unique) {
+    const value = items[String(iid)]?.ncValue;
+    if (value) out[iid] = value;
+  }
+  return out;
 }
 
 const tokenSelect = {
@@ -238,8 +266,9 @@ function withInStudio<T extends { availability: { active: boolean | null }[] }>(
 }
 
 /**
- * Batch seeking / trading / NC trade counts for item pages.
+ * Batch seeking / trading counts for item pages.
  * Matches NCTrade tab filters: public, non-official, purpose seeking|trading, owner active 180d.
+ * Trade-report counts come from Lebron (see {@link loadLebronTradeSamplesByItems}).
  */
 async function loadTradeCountsByItemIids(iids: number[]): Promise<Record<number, TradeCounts>> {
   if (!iids.length) return {};
@@ -250,27 +279,21 @@ async function loadTradeCountsByItemIids(iids: number[]): Promise<Record<number,
 
   const cutoff = new Date(Date.now() - TRADE_LIST_ACTIVE_MS);
 
-  const [listRows, tradeRows] = await Promise.all([
-    prisma.$queryRaw<Array<{ item_iid: number; purpose: string; cnt: bigint }>>`
-      SELECT li.item_iid AS item_iid, ul.purpose AS purpose, COUNT(*) AS cnt
-      FROM ListItems li
-      INNER JOIN UserList ul ON ul.internal_id = li.list_id
-      INNER JOIN User u ON u.id = ul.user_id
-      WHERE li.item_iid IN (${Prisma.join(unique)})
-        AND li.isHidden = 0
-        AND ul.official = 0
-        AND ul.visibility = 'public'
-        AND ul.purpose IN ('seeking', 'trading')
-        AND u.last_login > ${cutoff}
-      GROUP BY li.item_iid, ul.purpose
-    `,
-    prisma.$queryRaw<Array<{ item_iid: number; cnt: bigint }>>`
-      SELECT item_iid AS item_iid, COUNT(DISTINCT trade_id) AS cnt
-      FROM NCTradeItems
-      WHERE item_iid IN (${Prisma.join(unique)})
-      GROUP BY item_iid
-    `,
-  ]);
+  const listRows = await prisma.$queryRaw<
+    Array<{ item_iid: number; purpose: string; cnt: bigint }>
+  >`
+    SELECT li.item_iid AS item_iid, ul.purpose AS purpose, COUNT(*) AS cnt
+    FROM ListItems li
+    INNER JOIN UserList ul ON ul.internal_id = li.list_id
+    INNER JOIN User u ON u.id = ul.user_id
+    WHERE li.item_iid IN (${Prisma.join(unique)})
+      AND li.isHidden = 0
+      AND ul.official = 0
+      AND ul.visibility = 'public'
+      AND ul.purpose IN ('seeking', 'trading')
+      AND u.last_login > ${cutoff}
+    GROUP BY li.item_iid, ul.purpose
+  `;
 
   for (const row of listRows) {
     const bucket = result[row.item_iid] ?? emptyCounts();
@@ -280,86 +303,39 @@ async function loadTradeCountsByItemIids(iids: number[]): Promise<Record<number,
     result[row.item_iid] = bucket;
   }
 
-  for (const row of tradeRows) {
-    const bucket = result[row.item_iid] ?? emptyCounts();
-    bucket.ncTradeCount = Number(row.cnt);
-    result[row.item_iid] = bucket;
-  }
-
   return result;
 }
 
-function formatTradeLine(name: string, quantity: number): string {
-  return quantity > 1 ? `${quantity}× ${name}` : name;
-}
-
-/** Recent NC trade samples per item (expand UI). Cap samples per iid. */
-async function loadNcTradeSamplesByItemIids(
-  iids: number[],
+/**
+ * Lebron NC trade samples — same source/prep as the item page NC Trade history tab
+ * (`loadLebronTradeHistory` + `prepareNCTradeHistory`).
+ */
+async function loadLebronTradeSamplesByItems(
+  items: Array<{ iid: number; name: string }>,
   perItemLimit = COMBO_TRADE_SAMPLE_LIMIT
-): Promise<Record<number, StyleNcTrade[]>> {
-  if (!iids.length) return {};
+): Promise<Record<number, LebronTradeBundle>> {
+  if (!items.length) return {};
 
-  const unique = [...new Set(iids)];
-  const ranked = await prisma.$queryRaw<
-    Array<{ item_iid: number; trade_id: number; tradeDate: Date; rn: bigint }>
-  >`
-    SELECT item_iid, trade_id, tradeDate, rn FROM (
-      SELECT
-        nti.item_iid AS item_iid,
-        nti.trade_id AS trade_id,
-        nt.tradeDate AS tradeDate,
-        ROW_NUMBER() OVER (
-          PARTITION BY nti.item_iid
-          ORDER BY nt.tradeDate DESC
-        ) AS rn
-      FROM NCTradeItems nti
-      INNER JOIN NCTrade nt ON nt.trade_id = nti.trade_id
-      WHERE nti.item_iid IN (${Prisma.join(unique)})
-    ) ranked
-    WHERE rn <= ${perItemLimit}
-  `;
-
-  if (!ranked.length) return {};
-
-  const tradeIds = [...new Set(ranked.map((row) => row.trade_id))];
-  const trades = await prisma.ncTrade.findMany({
-    where: { trade_id: { in: tradeIds } },
-    include: {
-      NCTradeItems: {
-        include: { item: { select: { name: true } } },
-      },
-    },
-  });
-  const tradeById = new Map(trades.map((trade) => [trade.trade_id, trade]));
-
-  const out: Record<number, StyleNcTrade[]> = {};
-  for (const iid of unique) out[iid] = [];
-
-  const ordered = [...ranked].sort((a, b) => b.tradeDate.getTime() - a.tradeDate.getTime());
-  for (const row of ordered) {
-    const trade = tradeById.get(row.trade_id);
-    if (!trade) continue;
-    const sample: StyleNcTrade = {
-      date: trade.tradeDate.toISOString(),
-      offered: trade.NCTradeItems.filter((item) => item.type === 'offered').map((item) =>
-        formatTradeLine((item.item?.name ?? item.item_name) as string, item.quantity)
-      ),
-      received: trade.NCTradeItems.filter((item) => item.type === 'received').map((item) =>
-        formatTradeLine((item.item?.name ?? item.item_name) as string, item.quantity)
-      ),
-      notes: trade.notes?.trim() ? trade.notes : null,
-    };
-    const list = out[row.item_iid] ?? [];
-    if (list.length >= perItemLimit) continue;
-    if (list.some((t) => t.date === sample.date && t.offered.join() === sample.offered.join())) {
-      continue;
-    }
-    list.push(sample);
-    out[row.item_iid] = list;
+  const unique = new Map<number, string>();
+  for (const item of items) {
+    if (!unique.has(item.iid)) unique.set(item.iid, item.name);
   }
 
-  return out;
+  const entries = await Promise.all(
+    [...unique.entries()].map(async ([iid, name]) => {
+      const reports = await loadLebronTradeHistory(iid, name);
+      const prepared = prepareNCTradeHistory(reports, []);
+      return [
+        iid,
+        {
+          count: prepared.length,
+          samples: prepared.slice(0, perItemLimit),
+        } satisfies LebronTradeBundle,
+      ] as const;
+    })
+  );
+
+  return Object.fromEntries(entries);
 }
 
 function matchesColorToken(
@@ -480,10 +456,15 @@ export async function resolvePetStyleSeriesSlug(slug: string | undefined): Promi
 }
 
 /** Recent tokens by item discovery date (`Items.addedAt`). No seeking/trading batch. */
-export async function loadRecentlyReleasedPetStyles(limit = 24): Promise<StyleToken[]> {
+export async function loadRecentlyReleasedPetStyles(
+  limit = 24,
+  opts: { ncValues?: boolean } = {}
+): Promise<StyleToken[]> {
   'use cache';
   cacheTag(PET_COLORS_CACHE_TAG);
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
+
+  const includeNcValues = opts.ncValues !== false;
 
   const rows = await prisma.petStyle.findMany({
     where: DISPLAYABLE_STYLE,
@@ -494,7 +475,10 @@ export async function loadRecentlyReleasedPetStyles(limit = 24): Promise<StyleTo
 
   const mapped = rows.map(withInStudio);
   const colorNames = await resolveColorNames(mapped.map((row) => row.color_id));
-  return mapTokenRows(mapped, colorNames);
+  const ncValues = includeNcValues
+    ? await loadNcValuesByItemIids(mapped.map((row) => row.item_iid))
+    : {};
+  return mapTokenRows(mapped, colorNames, {}, {}, ncValues);
 }
 
 function applyListFilters(
@@ -539,9 +523,13 @@ async function loadTokenPage(
         });
 
   const mapped = rows.map(withInStudio);
-  const colorNames = await resolveColorNames(mapped.map((row) => row.color_id));
+  const iids = mapped.map((row) => row.item_iid);
+  const [colorNames, ncValues] = await Promise.all([
+    resolveColorNames(mapped.map((row) => row.color_id)),
+    loadNcValuesByItemIids(iids),
+  ]);
   return {
-    tokens: mapTokenRows(mapped, colorNames),
+    tokens: mapTokenRows(mapped, colorNames, {}, {}, ncValues),
     total,
     page,
     pageSize,
@@ -648,15 +636,21 @@ export async function loadPetStylesBrowseByColor(
   });
   const matched = rows.filter((row) => matchesColorToken(colorId, terms, row)).map(withInStudio);
   const colorNames = await resolveColorNames(matched.map((row) => row.color_id));
+  // Map without NC values first so we can page, then enrich only the visible slice.
   const allTokens = mapTokenRows(matched, colorNames);
 
   const pageSize = listPageSize(filters);
   const total = allTokens.length;
   const page = clampListPage(filters.page, total, pageSize);
   const start = (page - 1) * pageSize;
+  const pageTokens = allTokens.slice(start, start + pageSize);
+  const ncValues = await loadNcValuesByItemIids(pageTokens.map((token) => token.id));
 
   return {
-    tokens: allTokens.slice(start, start + pageSize),
+    tokens: pageTokens.map((token) => ({
+      ...token,
+      ncValue: ncValues[token.id] ?? null,
+    })),
     combos: comboTilesFromTokens(allTokens),
     total,
     page,
@@ -670,7 +664,9 @@ export async function loadRecentPetStyleCombos(limit = 8): Promise<StyleComboTil
   cacheTag(PET_COLORS_CACHE_TAG);
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
 
-  const recent = await loadRecentlyReleasedPetStyles(Math.max(limit * 6, 48));
+  const recent = await loadRecentlyReleasedPetStyles(Math.max(limit * 6, 48), {
+    ncValues: false,
+  });
   return comboTilesFromTokens(recent)
     .filter((combo) => !isUnknownColorName(combo.colorName))
     .slice(0, limit);
@@ -718,13 +714,16 @@ export async function loadPetStylesComboDetail(
   if (!matched.length) return [];
 
   const iids = matched.map((row) => row.item_iid);
-  const [colorNames, counts, trades] = await Promise.all([
+  const [colorNames, counts, trades, ncValues] = await Promise.all([
     resolveColorNames(matched.map((row) => row.color_id)),
     loadTradeCountsByItemIids(iids),
-    loadNcTradeSamplesByItemIids(iids),
+    loadLebronTradeSamplesByItems(
+      matched.map((row) => ({ iid: row.item_iid, name: row.item.name }))
+    ),
+    loadNcValuesByItemIids(iids),
   ]);
 
-  return mapTokenRows(matched, colorNames, counts, trades).sort((a, b) => {
+  return mapTokenRows(matched, colorNames, counts, trades, ncValues).sort((a, b) => {
     const seriesCmp = a.series.localeCompare(b.series);
     if (seriesCmp !== 0) return seriesCmp;
     if (a.isPrismatic !== b.isPrismatic) return a.isPrismatic ? 1 : -1;

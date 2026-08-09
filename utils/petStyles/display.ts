@@ -1,11 +1,6 @@
 /** Shared Pet Styles UI types (safe for client components). */
 
-export type StyleNcTrade = {
-  date: string;
-  offered: string[];
-  received: string[];
-  notes: string | null;
-};
+import type { LebronTrade, NCValue } from '@types';
 
 export type StyleToken = {
   id: number;
@@ -23,8 +18,10 @@ export type StyleToken = {
   seekingCount: number;
   tradingCount: number;
   ncTradeCount: number;
-  /** Sample NC trade reports for expand/collapse (combo page). */
-  trades: StyleNcTrade[];
+  /** Sample Lebron NC trade reports for expand/collapse (combo page; same source as item page). */
+  trades: LebronTrade[];
+  /** Lebron / itemdb NC trade value in caps (when known). */
+  ncValue: NCValue | null;
   /** Wearable / token icon. */
   imageUrl: string;
   /** Wearable preview (CDN; use with API fallback via wearablePreviewSources). */

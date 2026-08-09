@@ -8,7 +8,7 @@ import { wearablePreviewSources } from '@utils/cdnPreview';
 import type { StyleToken } from '@utils/petStyles/display';
 import { stylesComboHref } from '@utils/petStyles/paths';
 import { useTranslations } from 'next-intl';
-import { AvailableNowBadge } from './StyleTokenSeriesBlock';
+import { AvailableNowBadge, LebronValueBadge } from './StyleTokenSeriesBlock';
 import { useFormatLongDate } from './formatLongDate';
 
 type StyleTokenTileProps = {
@@ -25,6 +25,7 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
       ? `/item/${token.itemSlug}`
       : stylesComboHref(token.speciesName, token.colorName);
   const preview = token.imageId ? wearablePreviewSources(token.imageId) : null;
+  const hasBadges = token.isPrismatic || token.inStudio || !!token.ncValue;
 
   return (
     <MainLink href={href} style={{ textDecoration: 'none' }}>
@@ -73,13 +74,23 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
         <Text fontWeight="semibold" fontSize="sm" textAlign="center" lineClamp={2}>
           {token.name}
         </Text>
-        {(token.isPrismatic || token.inStudio) && (
+        {hasBadges && (
           <HStack gap={1} flexWrap="wrap" justify="center">
             {token.isPrismatic && (
-              <Badge colorPalette="purple" size="sm">
+              <Badge
+                colorPalette="purple"
+                size="xs"
+                alignSelf="flex-start"
+                w="fit-content"
+                fontSize="2xs"
+                px={1.5}
+                py={0}
+                whiteSpace="normal"
+              >
                 {t('prismatic')}
               </Badge>
             )}
+            {token.ncValue && <LebronValueBadge ncValue={token.ncValue} />}
             {token.inStudio && <AvailableNowBadge />}
           </HStack>
         )}

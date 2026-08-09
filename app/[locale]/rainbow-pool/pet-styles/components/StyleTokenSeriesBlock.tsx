@@ -3,13 +3,16 @@
 import { Badge, Box, Collapsible, Flex, Heading, HStack, Link, List, Text } from '@chakra-ui/react';
 import Image from '@components/Utils/Image';
 import MainLink from '@components/Utils/MainLink';
-import type { StyleNcTrade, StyleToken } from '@utils/petStyles/display';
+import type { StyleToken } from '@utils/petStyles/display';
+import type { LebronTrade } from '@types';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { LuChevronDown } from 'react-icons/lu';
 import { WearablePreview } from '@app/[locale]/rainbow-pool/components/WearablePreview';
 import { wearablePreviewSources } from '@utils/cdnPreview';
 import { useFormatLongDate } from './formatLongDate';
+import { UTCDate } from '@date-fns/utc';
+import { isValidTradeDate } from '@app/_components/Item/NCTrade/ncTradeHistoryUtils';
 
 const PREVIEW_SIZE = 280;
 
@@ -137,7 +140,10 @@ function StyleTokenListRow({
           >
             <MainLink href={`/item/${token.itemSlug}`}>{token.name}</MainLink>
           </Link>
-          {token.inStudio && <AvailableNowBadge />}
+          <HStack gap={1} flexWrap="wrap">
+            {token.ncValue && <LebronValueBadge ncValue={token.ncValue} />}
+            {token.inStudio && <AvailableNowBadge />}
+          </HStack>
         </Flex>
 
         <HStack
@@ -164,6 +170,7 @@ function StyleTokenListRow({
         <TradeHistoryCollapse
           trades={token.trades}
           tradeCount={token.ncTradeCount}
+          itemName={token.name}
           itemHref={`/item/${token.itemSlug}`}
         />
       </Box>
@@ -190,6 +197,23 @@ function AvailableNowBadge() {
   );
 }
 
+function LebronValueBadge({ ncValue }: { ncValue: { range: string; source: string } }) {
+  return (
+    <Badge
+      colorPalette={ncValue.source === 'lebron' ? 'yellow' : 'purple'}
+      size="xs"
+      alignSelf="flex-start"
+      w="fit-content"
+      fontSize="2xs"
+      px={1.5}
+      py={0}
+      whiteSpace="normal"
+    >
+      {ncValue.range} Caps
+    </Badge>
+  );
+}
+
 function StatLink({ href, label, count }: { href: string; label: string; count: number }) {
   return (
     <Link asChild color="teal.200" _hover={{ color: 'teal.100' }}>
@@ -208,10 +232,12 @@ function StatLink({ href, label, count }: { href: string; label: string; count: 
 function TradeHistoryCollapse({
   trades,
   tradeCount,
+  itemName,
   itemHref,
 }: {
-  trades: StyleNcTrade[];
+  trades: LebronTrade[];
   tradeCount: number;
+  itemName: string;
   itemHref: string;
 }) {
   const t = useTranslations('PetStyles');
@@ -248,7 +274,11 @@ function TradeHistoryCollapse({
       <Collapsible.Content>
         <Flex flexFlow="column" gap={2} pt={2} ps={1}>
           {trades.map((trade) => (
-            <TradeCard key={`${trade.date}-${trade.offered.join()}`} trade={trade} />
+            <TradeCard
+              key={`${trade.tradeDate}-${trade.itemsSent}-${trade.itemsReceived}`}
+              trade={trade}
+              itemName={itemName}
+            />
           ))}
           {tradeCount > trades.length && (
             <Link asChild fontSize="xs" color="teal.200">
@@ -261,14 +291,49 @@ function TradeHistoryCollapse({
   );
 }
 
-function TradeCard({ trade }: { trade: StyleNcTrade }) {
+function splitTradeItems(value: string): string[] {
+  return value
+    .split('+')
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+const isSameTradeItemName = (tradeStr: string, itemName: string) =>
+  tradeStr.toLowerCase().includes(itemName.toLowerCase());
+
+/** Default highlight colour — same fallback as item-page `NCTradeHistoryCard`. */
+const TRADE_HIGHLIGHT_RGB = [71, 178, 248] as const;
+
+function TradeLine({ text, itemName }: { text: string; itemName: string }) {
+  const highlighted = isSameTradeItemName(text, itemName);
+  return (
+    <List.Item
+      px={1}
+      py={0.5}
+      borderRadius="md"
+      bg={
+        highlighted
+          ? `rgba(${TRADE_HIGHLIGHT_RGB[0]},${TRADE_HIGHLIGHT_RGB[1]}, ${TRADE_HIGHLIGHT_RGB[2]},.4)`
+          : undefined
+      }
+    >
+      {text}
+    </List.Item>
+  );
+}
+
+function TradeCard({ trade, itemName }: { trade: LebronTrade; itemName: string }) {
   const t = useTranslations();
   const formatLongDate = useFormatLongDate();
+  const date = new UTCDate(Number(trade.tradeDate));
+  const dateLabel = isValidTradeDate(date)
+    ? formatLongDate(date.toISOString())
+    : t('General.unknown-date');
 
   return (
     <Box bg="blackAlpha.500" borderRadius="md" p={2} fontSize="xs" textAlign="start">
       <Text color="whiteAlpha.600" mb={2}>
-        {formatLongDate(trade.date)}
+        {dateLabel}
       </Text>
       <Flex gap={3} direction={{ base: 'column', md: 'row' }}>
         <Box flex="1">
@@ -276,8 +341,8 @@ function TradeCard({ trade }: { trade: StyleNcTrade }) {
             {t('ItemPage.traded')}
           </Heading>
           <List.Root as="ul" gap={0.5} ps={4}>
-            {trade.offered.map((item) => (
-              <List.Item key={item}>{item}</List.Item>
+            {splitTradeItems(trade.itemsSent).map((item) => (
+              <TradeLine key={item} text={item} itemName={itemName} />
             ))}
           </List.Root>
         </Box>
@@ -286,8 +351,8 @@ function TradeCard({ trade }: { trade: StyleNcTrade }) {
             {t('ItemPage.traded-for')}
           </Heading>
           <List.Root as="ul" gap={0.5} ps={4}>
-            {trade.received.map((item) => (
-              <List.Item key={item}>{item}</List.Item>
+            {splitTradeItems(trade.itemsReceived).map((item) => (
+              <TradeLine key={item} text={item} itemName={itemName} />
             ))}
           </List.Root>
         </Box>
@@ -343,4 +408,4 @@ export function StyleTokensSection({ groups, heading, hint }: StyleTokensSection
   );
 }
 
-export { AvailableNowBadge };
+export { AvailableNowBadge, LebronValueBadge };
