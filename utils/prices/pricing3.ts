@@ -84,12 +84,14 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   const EVENT_MODE = forceMode || process.env.EVENT_MODE === 'true';
 
   const daysThreshold: { [days: number]: number } = {
-    0: EVENT_MODE ? 10 : 18,
-    3: EVENT_MODE ? 5 : 15,
-    7: EVENT_MODE ? 5 : 10,
-    15: 5,
-    30: 3,
-    120: 1,
+    0: EVENT_MODE ? 10 : 18, // 0 days
+    3: EVENT_MODE ? 5 : 15, // 0-3 days
+    7: EVENT_MODE ? 5 : 10, // 3-7 days
+    15: 7, // 7-15 days
+    30: 5, // 15-30 days
+    45: 3, // 30-45 days
+    90: 2, // 45-90 days
+    120: 1, // 90-120 days
   };
 
   let filtered: PriceProcess2[] = [];

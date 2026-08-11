@@ -86,8 +86,10 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
     0: EVENT_MODE ? 10 : 18,
     3: EVENT_MODE ? 5 : 15,
     7: EVENT_MODE ? 5 : 10,
-    15: 5,
-    30: 3,
+    15: 7,
+    30: 5,
+    45: 3,
+    90: 2,
     120: 1,
   };
 
