@@ -1,8 +1,12 @@
 import { PriceProcess2 } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
-import { median, quantileSorted, mad, sum, mean } from 'simple-statistics';
+import { median, quantileSorted, mad, sum, mean, ckmeans, numericSort } from 'simple-statistics';
 
 const MAX_VALID_STOCK = 3; // max stock to consider for price calculation
+const MAD_LOWER_MULTIPLIER = 3.25;
+const MAD_UPPER_MULTIPLIER = 2;
+/** 10× in price; smaller gaps (restock vs TP) are not treated as two regimes. */
+const MIN_BIMODAL_LOG10_GAP = 1;
 
 const sourceWeight: { [key: string]: number } = {
   ssw: 1,
@@ -219,7 +223,7 @@ function uniqueByOwner(items: PriceProcess2[]) {
 export function removeOutliersCombined(data: number[]) {
   if (data.length < 4) return data;
 
-  const sorted = [...data].sort((a, b) => a - b);
+  const sorted = numericSort(data);
 
   const q1 = quantileSorted(sorted, 0.25);
   const q3 = quantileSorted(sorted, 0.75);
@@ -228,23 +232,59 @@ export function removeOutliersCombined(data: number[]) {
   const iqrFiltered = sorted.filter((x) => x >= q1 - 1.5 * iqr && x <= q3 + 1.5 * iqr);
 
   if (iqrFiltered.length < 2) return iqrFiltered;
-  const medianVal = median(iqrFiltered);
-  const madVal = mad(iqrFiltered) * 1.4826; // Scale MAD to be consistent with standard deviation
 
-  if (madVal === 0) return iqrFiltered;
+  const positive = iqrFiltered.filter((x) => x > 0);
+  if (positive.length < 2) return iqrFiltered;
 
-  // less punitive for lower values, more punitive for higher values
-  const lowerMultiplier = 3.25;
-  const upperMultiplier = 2;
+  const logs = positive.map((x) => log10(x));
+  const medianLog = median(logs);
+  const madLog = mad(logs) * 1.4826;
 
-  const madFiltered = iqrFiltered.filter((x) => {
-    if (x < medianVal) {
-      return medianVal - x <= lowerMultiplier * madVal;
-    }
-    return x - medianVal <= upperMultiplier * madVal;
-  });
+  let madFiltered = positive;
+  if (madLog > 0) {
+    // same asymmetry as the old linear MAD: more lenient below the median
+    madFiltered = positive.filter((x) => {
+      const lx = log10(x);
+      if (lx < medianLog) {
+        return medianLog - lx <= MAD_LOWER_MULTIPLIER * madLog;
+      }
+      return lx - medianLog <= MAD_UPPER_MULTIPLIER * madLog;
+    });
+  }
+
+  // If log-MAD could not separate anything, two equal-sized log clusters
+  // mean a 50/50 regime: keep the cheaper blob (cheap = better signal).
+  if (madFiltered.length === positive.length) {
+    const clustered = keepCheaperBimodalCluster(madFiltered);
+    if (clustered) return clustered;
+  }
 
   return madFiltered;
+}
+
+function keepCheaperBimodalCluster(data: number[]): number[] | null {
+  if (data.length < 4) return null;
+
+  const sorted = numericSort(data.filter((x) => x > 0));
+  if (sorted.length < 4) return null;
+
+  const logClusters = ckmeans(
+    sorted.map((x) => log10(x)),
+    2
+  );
+  if (logClusters.length < 2) return null;
+
+  const [lowLogs, highLogs] = logClusters;
+  const gap = highLogs[0] - lowLogs[lowLogs.length - 1];
+  if (gap < MIN_BIMODAL_LOG10_GAP) return null;
+
+  const low = sorted.slice(0, lowLogs.length);
+  const high = sorted.slice(lowLogs.length);
+  if (!low.length || !high.length) return null;
+
+  // Strict majority on the expensive side (e.g. 2 junk vs 4 real) keeps high;
+  // tie or cheap majority keeps low.
+  return high.length > low.length ? high : low;
 }
 
 function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1, kUpper = 1) {
