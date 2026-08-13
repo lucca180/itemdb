@@ -1,13 +1,14 @@
-import { Box, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
+import { Box, Flex, IconButton, Link, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
 import { useMemo, useState } from 'react';
-import Image from 'next/image';
+import { CdnImage } from '@components/Utils/CdnImage';
 import { ItemData } from '@types';
 import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
 import { getSpeciesId } from '@utils/pet-utils';
+import { outfitPreviewSources, previewSourcesForceApi } from '@utils/cdnPreview';
 
 type Props = {
   item: ItemData;
@@ -16,7 +17,6 @@ type Props = {
 
 const ItemOutfit = (props: Props) => {
   const t = useTranslations();
-  const [loadedPreviewUrl, setLoadedPreviewUrl] = useState('');
   const [refresh, setRefresh] = useState(0);
   const { user } = useAuth();
   const { outfitList, item } = props;
@@ -24,23 +24,21 @@ const ItemOutfit = (props: Props) => {
 
   const refreshPreview = () => {
     setRefresh((prev) => prev + 1);
-    setLoadedPreviewUrl('');
   };
 
-  const previewUrl = useMemo(() => {
-    const cacheHash = item.cacheHash ? 'hash=' + item.cacheHash : '';
-    const isRefresh = refresh ? 'refresh=' + true + '&refresh_id=' + refresh : '';
-    let url = '/api/cache/preview/outfit?parent_iid=' + item.internal_id + '&';
-
+  const previewSources = useMemo(() => {
     const speciesName = item.name.replace(/Day Y\d+ Mini Mystery Capsule/i, '').trim();
-    const speciesID = getSpeciesId(speciesName);
-    if (speciesID) url += `petId=${speciesID}&`;
-
-    outfitList.forEach((iid) => {
-      url += `iid[]=${iid}&`;
-    });
-
-    return url + (isRefresh || cacheHash);
+    const speciesId = getSpeciesId(speciesName);
+    const base = outfitPreviewSources(
+      outfitList.map((iid) => ({ internal_id: iid })),
+      speciesId
+    );
+    const api = `${base.api}parent_iid=${item.internal_id}`;
+    const hashed = {
+      cdn: item.cacheHash ? `${base.cdn}?hash=${item.cacheHash}` : base.cdn,
+      api: item.cacheHash ? `${api}&hash=${item.cacheHash}` : api,
+    };
+    return refresh ? previewSourcesForceApi(hashed.api, refresh) : hashed;
   }, [item, outfitList, refresh]);
 
   return (
@@ -59,7 +57,7 @@ const ItemOutfit = (props: Props) => {
         justifyContent="center"
         alignItems="center"
         _hover={
-          user && !user?.banned && !!loadedPreviewUrl
+          user && !user?.banned
             ? {
                 '& .refresh-button': {
                   display: 'flex',
@@ -90,21 +88,21 @@ const ItemOutfit = (props: Props) => {
         >
           <FaRotateRight />
         </IconButton>
-        <Skeleton minW={300} w="100%" aspectRatio={1} loading={loadedPreviewUrl !== previewUrl}>
-          <Box aspectRatio={1} position="relative" w="100%">
-            <Image
-              key={previewUrl}
-              src={previewUrl}
-              alt="Item Preview"
-              unoptimized
-              fill
-              sizes="300px"
-              loading="eager"
-              onLoad={() => setLoadedPreviewUrl(previewUrl)}
-              style={{ objectFit: 'contain' }}
-            />
-          </Box>
-        </Skeleton>
+        <Box aspectRatio={1} position="relative" w="100%" minW={300}>
+          <CdnImage
+            key={previewSources.cdn}
+            cdnSrc={previewSources.cdn}
+            apiSrc={previewSources.api}
+            alt="Item Preview"
+            unoptimized
+            fill
+            sizes="300px"
+            priority
+            loading="eager"
+            fetchPriority="high"
+            style={{ objectFit: 'contain' }}
+          />
+        </Box>
       </Flex>
 
       <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>

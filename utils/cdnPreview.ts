@@ -49,6 +49,24 @@ export function petColorPreviewSourcesFromSlugs(
   };
 }
 
+/**
+ * Extra CDN object for partial color previews (`null_baby` → also store that key).
+ * Full combos return null — they already match the resolved file.
+ */
+export function colorPreviewAliasPath(requestedId: string, resolvedId: string): string | null {
+  const requested = requestedId.replace(/\.png$/i, '');
+  const resolved = resolvedId.replace(/\.png$/i, '');
+  if (!requested || requested === resolved) return null;
+  return `colors/${requested}.png`;
+}
+
+/** Skip CDN and hit the API cache route (user-triggered refresh). */
+export function previewSourcesForceApi(apiSrc: string, refreshId: number): PreviewSources {
+  const sep = apiSrc.includes('?') ? '&' : '?';
+  const api = `${apiSrc}${sep}refresh=true&refresh_id=${refreshId}`;
+  return { cdn: api, api };
+}
+
 /** Clothed / multi-item outfit preview (hash must match outfit API). */
 export function outfitPreviewSources(
   items: { internal_id: number }[],

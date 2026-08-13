@@ -1,9 +1,7 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import ItemPreview from '@components/Items/ItemPreview';
 import type { ItemData, ItemEffect, WearableData } from '@types';
-
-const ItemPreview = dynamic(() => import('@components/Items/ItemPreview'));
 
 type Props = {
   item: ItemData;

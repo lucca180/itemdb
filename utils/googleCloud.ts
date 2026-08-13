@@ -7,6 +7,7 @@ import { getCachedUser, setCachedUser } from './auth/userCache';
 import {
   S3Client,
   PutObjectCommand,
+  CopyObjectCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
 } from '@aws-sdk/client-s3';
@@ -118,6 +119,16 @@ export const uploadToS3 = async (path: string, buffer: Buffer, contentType: stri
   });
 
   await S3.send(command);
+};
+
+export const copyS3Object = async (fromPath: string, toPath: string) => {
+  await S3.send(
+    new CopyObjectCommand({
+      Bucket: 'itemdb',
+      CopySource: `itemdb/${fromPath}`,
+      Key: toPath,
+    })
+  );
 };
 
 export const deleteFromS3 = async (path: string) => {

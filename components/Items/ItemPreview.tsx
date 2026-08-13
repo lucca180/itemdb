@@ -1,13 +1,18 @@
 import { AspectRatio, Box, Button, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
 import React, { useMemo, useState, memo, useCallback } from 'react';
-import Image from 'next/image';
-import { ItemData, ItemEffect, WearableData } from '../../types';
+import { CdnImage } from '@components/Utils/CdnImage';
+import { ItemData, ItemEffect, WearableData } from '@types';
 import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
 import { petColorSlug } from '@utils/pet-utils';
+import {
+  petColorPreviewSourcesFromSlugs,
+  previewSourcesForceApi,
+  wearablePreviewSources,
+} from '@utils/cdnPreview';
 
 type Props = {
   item: ItemData;
@@ -17,7 +22,6 @@ type Props = {
 
 const ItemPreview = (props: Props) => {
   const t = useTranslations();
-  const [loadedPreviewUrl, setLoadedPreviewUrl] = useState('');
   const [loadedIframeImageId, setLoadedIframeImageId] = useState('');
   const [refresh, setRefresh] = useState(0);
   const { user } = useAuth();
@@ -28,26 +32,25 @@ const ItemPreview = (props: Props) => {
 
   const refreshPreview = () => {
     setRefresh((prev) => prev + 1);
-    setLoadedPreviewUrl('');
   };
 
-  const previewUrl = useMemo(() => {
-    const cacheHash = item.cacheHash ? '?hash=' + item.cacheHash : '';
-    const isRefresh = refresh ? '?refresh=' + true + '&refresh_id=' + refresh : '';
+  const previewSources = useMemo(() => {
+    let sources = null;
 
-    if (item.isWearable)
-      return '/api/cache/preview/' + item.image_id + '.png' + (isRefresh || cacheHash);
+    if (item.isWearable) {
+      sources = wearablePreviewSources(item.image_id, item.cacheHash);
+    } else if (colorSpeciesEffect) {
+      const { colorTarget, speciesTarget } = colorSpeciesEffect;
+      if (colorTarget || speciesTarget) {
+        // Preview API accepts partial slugs (e.g. null_<color>) and fills the missing side.
+        const speciesPart = speciesTarget ? petColorSlug(speciesTarget) : 'null';
+        const colorPart = colorTarget ? petColorSlug(colorTarget) : 'null';
+        sources = petColorPreviewSourcesFromSlugs(speciesPart, colorPart, item.cacheHash);
+      }
+    }
 
-    if (!colorSpeciesEffect) return '';
-
-    const { colorTarget, speciesTarget } = colorSpeciesEffect;
-    if (!colorTarget && !speciesTarget) return '';
-
-    // Preview API accepts partial slugs (e.g. null_<color>) and fills the missing side.
-    const speciesPart = speciesTarget ? petColorSlug(speciesTarget) : 'null';
-    const colorPart = colorTarget ? petColorSlug(colorTarget) : 'null';
-
-    return `/api/cache/preview/color/${speciesPart}_${colorPart}.png` + (isRefresh || cacheHash);
+    if (!sources) return null;
+    return refresh ? previewSourcesForceApi(sources.api, refresh) : sources;
   }, [item, colorSpeciesEffect, refresh]);
 
   const handleVarChange = (newVariation: string) => {
@@ -122,7 +125,7 @@ const ItemPreview = (props: Props) => {
           justifyContent="center"
           alignItems="center"
           _hover={
-            user && !user?.banned && !!loadedPreviewUrl
+            user && !user?.banned
               ? {
                   '& .refresh-button': {
                     display: 'flex',
@@ -153,21 +156,23 @@ const ItemPreview = (props: Props) => {
           >
             <FaRotateRight />
           </IconButton>
-          <Skeleton minW={300} w="100%" aspectRatio={1} loading={loadedPreviewUrl !== previewUrl}>
-            <Box aspectRatio={1} position="relative" w="100%">
-              <Image
-                key={previewUrl}
-                src={previewUrl}
+          {previewSources && (
+            <Box aspectRatio={1} position="relative" w="100%" minW={300}>
+              <CdnImage
+                key={previewSources.cdn}
+                cdnSrc={previewSources.cdn}
+                apiSrc={previewSources.api}
                 alt="Item Preview"
                 unoptimized
                 fill
                 sizes="300px"
+                priority
                 loading="eager"
-                onLoad={() => setLoadedPreviewUrl(previewUrl)}
+                fetchPriority="high"
                 style={{ objectFit: 'contain' }}
               />
             </Box>
-          </Skeleton>
+          )}
         </Flex>
       )}
       {(variation === 'animated' || !!loadedIframeImageId) && (

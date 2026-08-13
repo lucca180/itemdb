@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { dti } from '../../../../../utils/item/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { cdnExists, uploadToS3 } from '../../../../../utils/googleCloud';
+import { cdnExists, copyS3Object, uploadToS3 } from '../../../../../utils/googleCloud';
 import {
   allSpecies,
   findPetColorId,
@@ -9,6 +9,7 @@ import {
   getSpeciesId,
 } from '../../../../../utils/pet-utils';
 import { fetchAllNeopetsColors } from '@utils/pet-colors';
+import { colorPreviewAliasPath } from '@utils/cdnPreview';
 import { checkPetColorExists } from '../../../v1/tools/petcolors';
 import prisma from '../../../../../utils/prisma';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
@@ -31,7 +32,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   try {
     if (!id) return res.status(400).send('No image id provided');
 
-    let img_id = (id as string).split('.')[0];
+    const requestedId = (id as string).split('.')[0];
+    let img_id = requestedId;
 
     const species = img_id.split('_')[0];
     const color = img_id.split('_')[1];
@@ -60,11 +62,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     const path = `colors/${img_id}.png`;
+    const aliasPath = colorPreviewAliasPath(requestedId, img_id);
     const exists = await cdnExists(path);
 
     const forceRefresh = refresh === 'true';
 
     if (exists && !forceRefresh) {
+      if (aliasPath && !(await cdnExists(aliasPath))) {
+        try {
+          await copyS3Object(path, aliasPath);
+        } catch (error) {
+          console.error('Failed to backfill color preview alias', error);
+        }
+      }
+
       res.setHeader('Cache-Control', forceRefresh ? 'no-cache' : 'public, max-age=2592000');
 
       const urlPath = `https://cdn.itemdb.com.br/${path}`;
@@ -92,6 +103,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       const buffer = await canvas.encode('webp', 100);
 
       await uploadToS3(path, buffer, 'image/webp');
+      if (aliasPath) await uploadToS3(aliasPath, buffer, 'image/webp');
 
       res.writeHead(200, {
         'Content-Type': 'image/webp',
