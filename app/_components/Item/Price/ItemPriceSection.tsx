@@ -1,47 +1,36 @@
 /**
  * NP Price — server orchestrator (item page).
  *
- * NP prices loaded via `loadNPPrices` in this section.
- * Card shell + price history render from fetched prices.
- * Price status, official list markers, admin controls, seeking/trading, and last seen stream via Suspense.
+ * Initial table uses a short price summary. Chart, full history, and trade lists
+ * load via Server Actions after hover/click.
  * Client shell: ItemPriceCard.tsx
  */
 import { Suspense, type ReactNode } from 'react';
-import { Box, Center, Flex, Text } from '@chakra-ui/react';
+import { Center, Flex, Text } from '@chakra-ui/react';
 import { MdMoneyOff } from 'react-icons/md';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import CardBase from '@components/Card/CardBase';
-import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
 import {
   loadLastSeen,
   loadItemPriceMarkers,
-  loadNPPrices,
+  loadNPPricesSummary,
   loadPriceStatus,
-  loadTradeLists,
 } from '@app/_components/Item/loadUtils';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
-import type { ItemData, PriceData, PriceMarker } from '@types';
+import type { ItemData, PriceData } from '@types';
 import {
   buildLastSeenCards,
   buildLastSeenStaticCards,
-  filterNPSeekingLists,
-  filterNPTradingLists,
   getHelpNeededData,
   getLatestPrice,
   getPriceDiff,
 } from '@app/_components/Item/Price/itemPriceUtils';
-import { PriceTableView } from '@app/_components/Item/Price/PriceTable';
-import {
-  getCachedPriceTableData,
-  sortPriceTableCacheArgs,
-} from '@app/_components/Item/Price/loadPriceTableData';
 import {
   HelpNeeded,
   ItemPriceModalProvider,
   ItemPricePanel,
-  ItemPricePanelSkeleton,
   ItemPriceTabBar,
   ItemPriceTabProvider,
   LastSeenCards,
@@ -50,36 +39,26 @@ import {
   PriceEmptyPanel,
   PriceStatActions,
 } from '@app/_components/Item/Price/ItemPriceCard';
+import {
+  ItemPriceListsPanel,
+  PriceHistoryTable,
+} from '@app/_components/Item/Price/ItemPriceLazyPanels';
 
 type ItemProps = { item: ItemData };
 
 type ItemPriceShellProps = ItemProps & {
   prices: PriceData[];
+  hasMore: boolean;
 };
 
 type ItemPriceLoadedProps = ItemProps;
 
-type ItemPriceLabels = {
-  t: Awaited<ReturnType<typeof getTranslations>>;
-  format: Awaited<ReturnType<typeof getFormatter>>;
-};
-
-function priceTableMarkerLabels(t: ItemPriceLabels['t']) {
-  return {
-    unavailableAt: t('ItemPage.unavailable-at'),
-    availableAt: t('ItemPage.available-at'),
-    addedTo: t('ItemPage.added-to'),
-  } as const;
-}
-
-// --- Price table (shared via PriceTable.tsx) ---
-
 function PriceTablePanel({
   item,
   prices,
+  hasMore,
   t,
-  format,
-}: ItemProps & ItemPriceShellProps & ItemPriceLabels) {
+}: ItemPriceShellProps & { t: Awaited<ReturnType<typeof getTranslations>> }) {
   if (!prices.length) {
     return (
       <PriceEmptyPanel
@@ -92,62 +71,15 @@ function PriceTablePanel({
   }
 
   return (
-    <Box bg="blackAlpha.300" borderRadius="md" overflow="hidden">
-      <Suspense
-        fallback={
-          <PriceTableViewCached itemColor={item.color.hex} data={prices} t={t} format={format} />
-        }
-      >
-        <PriceTableTabFull item={item} prices={prices} t={t} format={format} />
-      </Suspense>
-    </Box>
+    <Suspense
+      fallback={<PriceHistoryTable item={item} prices={prices} markers={[]} hasMore={hasMore} />}
+    >
+      <PriceTableWithMarkers item={item} prices={prices} hasMore={hasMore} />
+    </Suspense>
   );
 }
 
-async function PriceTableViewCached({
-  data,
-  markers = [],
-  isAdmin,
-  itemColor,
-  t,
-  format,
-}: {
-  data: PriceData[];
-  markers?: PriceMarker[];
-  isAdmin?: boolean;
-  itemColor: string;
-  t: ItemPriceLabels['t'];
-  format: ItemPriceLabels['format'];
-}) {
-  const labels = priceTableMarkerLabels(t);
-  const { data: sortedPrices, markers: sortedMarkers } = sortPriceTableCacheArgs(data, markers);
-  const sortedData = await getCachedPriceTableData(
-    sortedPrices,
-    sortedMarkers,
-    labels.unavailableAt,
-    labels.availableAt,
-    labels.addedTo
-  );
-
-  return (
-    <PriceTableView
-      itemColor={itemColor}
-      data={data}
-      markers={markers}
-      sortedData={sortedData}
-      isAdmin={isAdmin}
-      t={t}
-      format={format}
-    />
-  );
-}
-
-async function PriceTableTabFull({
-  item,
-  prices,
-  t,
-  format,
-}: ItemProps & ItemPriceShellProps & ItemPriceLabels) {
+async function PriceTableWithMarkers({ item, prices, hasMore }: ItemPriceShellProps) {
   const [{ user }, markers] = await Promise.all([
     getServerCurrentUser(),
     loadItemPriceMarkers(
@@ -158,25 +90,14 @@ async function PriceTableTabFull({
   ]);
 
   return (
-    <PriceTableViewCached
-      itemColor={item.color.hex}
-      data={prices}
+    <PriceHistoryTable
+      item={item}
+      prices={prices}
       markers={markers}
+      hasMore={hasMore}
       isAdmin={!!user?.isAdmin}
-      t={t}
-      format={format}
     />
   );
-}
-
-async function PriceChartTabFull({ item, prices }: ItemProps & ItemPriceShellProps) {
-  const markers = await loadItemPriceMarkers(
-    item.internal_id,
-    item.firstSeen,
-    shouldShowTradeLists(item, await getCachedNow())
-  );
-
-  return <PriceChartPanel item={item} prices={prices} markers={markers} />;
 }
 
 async function PriceHelpBannerAsync({
@@ -205,24 +126,6 @@ async function PriceHelpBannerAsync({
   );
 }
 
-async function NPSeekingTab({ item }: ItemProps) {
-  const tradeLists = await loadTradeLists(item.internal_id);
-  return (
-    <Box bg="blackAlpha.300" borderRadius="md" overflow="hidden">
-      <MatchTable data={filterNPSeekingLists(tradeLists)} matches={null} type="seeking" />
-    </Box>
-  );
-}
-
-async function NPTradingTab({ item }: ItemProps) {
-  const tradeLists = await loadTradeLists(item.internal_id);
-  return (
-    <Box bg="blackAlpha.300" borderRadius="md" overflow="hidden">
-      <MatchTable data={filterNPTradingLists(tradeLists)} matches={null} type="trading" />
-    </Box>
-  );
-}
-
 async function LastSeenStats({ item }: ItemProps) {
   const [lastSeen, t, format, now] = await Promise.all([
     loadLastSeen(item.internal_id),
@@ -239,7 +142,7 @@ function ItemPriceModalShell({ item, children }: ItemProps & { children: ReactNo
   return <ItemPriceModalProvider item={item}>{children}</ItemPriceModalProvider>;
 }
 
-async function ItemPriceTradeableCard({ item, prices }: ItemPriceShellProps) {
+async function ItemPriceTradeableCard({ item, prices, hasMore }: ItemPriceShellProps) {
   const [t, format, now] = await Promise.all([getTranslations(), getFormatter(), getCachedNow()]);
   const shouldShowLists = shouldShowTradeLists(item, now);
   const price = getLatestPrice(prices);
@@ -255,6 +158,7 @@ async function ItemPriceTradeableCard({ item, prices }: ItemPriceShellProps) {
 
           <ItemPriceTabProvider defaultTab="table">
             <ItemPriceTabBar
+              itemId={item.internal_id}
               shouldShowLists={shouldShowLists}
               labels={{
                 table: t('ItemPage.price-history'),
@@ -296,25 +200,19 @@ async function ItemPriceTradeableCard({ item, prices }: ItemPriceShellProps) {
 
               <Flex flexFlow="column" width="100%" maxW="580px">
                 <ItemPricePanel tab="table">
-                  <PriceTablePanel item={item} prices={prices} t={t} format={format} />
+                  <PriceTablePanel item={item} prices={prices} hasMore={hasMore} t={t} />
                 </ItemPricePanel>
                 <ItemPricePanel tab="chart">
-                  <Suspense fallback={<PriceChartPanel item={item} prices={prices} />}>
-                    <PriceChartTabFull item={item} prices={prices} />
-                  </Suspense>
+                  <PriceChartPanel item={item} />
                 </ItemPricePanel>
                 {shouldShowLists && (
                   <ItemPricePanel tab="trading">
-                    <Suspense fallback={<ItemPricePanelSkeleton />}>
-                      <NPTradingTab item={item} />
-                    </Suspense>
+                    <ItemPriceListsPanel itemId={item.internal_id} type="trading" />
                   </ItemPricePanel>
                 )}
                 {shouldShowLists && (
                   <ItemPricePanel tab="seeking">
-                    <Suspense fallback={<ItemPricePanelSkeleton />}>
-                      <NPSeekingTab item={item} />
-                    </Suspense>
+                    <ItemPriceListsPanel itemId={item.internal_id} type="seeking" />
                   </ItemPricePanel>
                 )}
               </Flex>
@@ -345,8 +243,8 @@ export async function ItemPriceSection({ item }: ItemPriceLoadedProps) {
     );
   }
 
-  const prices = await loadNPPrices(item.internal_id);
-  return <ItemPriceTradeableCard item={item} prices={prices} />;
+  const { prices, hasMore } = await loadNPPricesSummary(item.internal_id);
+  return <ItemPriceTradeableCard item={item} prices={prices} hasMore={hasMore} />;
 }
 
 export default ItemPriceSection;

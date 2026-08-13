@@ -39,6 +39,10 @@ import { itemRootTag } from '@utils/appCacheTags';
 import prisma from '@utils/prisma';
 import { getAllNeopetsColors } from '@app/server/petColors';
 import { allSpecies, findPetColorName } from '@utils/pet-utils';
+import {
+  PRICE_TABLE_INITIAL_LIMIT,
+  toPriceSummary,
+} from '@app/_components/Item/Price/itemPriceUtils';
 
 export const getCachedItem = cache(async (id_name: number | string, flags = false) => {
   'use cache';
@@ -126,6 +130,18 @@ export const loadNPPrices = cache(async (internalId: number) => {
   applyItemSectionCacheTags(internalId, 'np-prices');
   cacheLife('itemFast');
   return getItemPrices({ iid: internalId, includeUnconfirmed: true, limit: -1 });
+});
+
+export const loadNPPricesSummary = cache(async (internalId: number) => {
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'np-prices');
+  cacheLife('itemFast');
+  const prices = await getItemPrices({
+    iid: internalId,
+    includeUnconfirmed: true,
+    limit: PRICE_TABLE_INITIAL_LIMIT + 1,
+  });
+  return toPriceSummary(prices, PRICE_TABLE_INITIAL_LIMIT);
 });
 
 export const loadLastSeen = cache(async (internalId: number) => {

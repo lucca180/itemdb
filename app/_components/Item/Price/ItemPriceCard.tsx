@@ -20,7 +20,11 @@ import {
   Text,
   Badge,
 } from '@chakra-ui/react';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  prefetchItemPriceHistory,
+  prefetchItemTradeLists,
+} from '@app/_components/Item/Price/itemPricePrefetch';
 import Image from 'next/image';
 import axios from 'axios';
 import { MdHelp, MdOutlineAdd } from 'react-icons/md';
@@ -39,7 +43,7 @@ import type { WrongPriceModalProps } from '@components/Modal/WrongPriceModal';
 import type { SaleStatusModalProps } from '@components/Modal/SaleStatusModal';
 import type { CreatePriceModalModalProps } from '@components/Modal/CreatePriceModal';
 import type { SeenHistoryModalProps } from '@components/SeenHistory/SeenHistoryModal';
-import type { ItemData, PriceData, PriceMarker, PricingInfo } from '@types';
+import type { ItemData, PriceData, PricingInfo } from '@types';
 import type {
   ItemPriceEmptyLabels,
   ItemPriceHelpLabels,
@@ -137,20 +141,36 @@ const TAB_STYLES: Record<ItemPriceTab, { palette: string; border: string }> = {
   chart: { palette: 'yellow', border: 'yellow.500' },
 };
 
+const PREFETCH_DELAY_MS = 80;
+
 export function ItemPriceTabBar({
+  itemId,
   shouldShowLists,
   labels,
 }: {
+  itemId: number;
   shouldShowLists: boolean;
   labels: { table: string; chart: string; trading: string; seeking: string };
 }) {
   const { activeTab, setActiveTab } = useItemPriceTab();
+  const prefetchTimer = useRef<number>(0);
+
+  const prefetchTab = (tab: ItemPriceTab) => {
+    if (tab === 'chart') prefetchItemPriceHistory(itemId);
+    if (tab === 'seeking' || tab === 'trading') prefetchItemTradeLists(itemId);
+  };
 
   const tabButton = (tab: ItemPriceTab, label: string) => (
     <Button
       colorPalette={activeTab === tab ? TAB_STYLES[tab].palette : ''}
       borderColor={activeTab === tab ? TAB_STYLES[tab].border : 'whiteAlpha.500'}
       data-active={activeTab === tab ? true : undefined}
+      onPointerEnter={() => {
+        window.clearTimeout(prefetchTimer.current);
+        prefetchTimer.current = window.setTimeout(() => prefetchTab(tab), PREFETCH_DELAY_MS);
+      }}
+      onPointerLeave={() => window.clearTimeout(prefetchTimer.current)}
+      onFocus={() => prefetchTab(tab)}
       onClick={() => setActiveTab(tab)}
       data-umami-event="price-card-buttons"
       data-umami-event-label={tab}
@@ -173,11 +193,17 @@ export function ItemPriceTabBar({
 
 export function ItemPricePanel({ tab, children }: { tab: ItemPriceTab; children: ReactNode }) {
   const { activeTab } = useItemPriceTab();
-  const hidden = activeTab !== tab;
+  const [visited, setVisited] = useState(tab === 'table');
+
+  if (activeTab === tab && !visited) {
+    setVisited(true);
+  }
+
+  if (!visited) return null;
 
   return (
     <Flex
-      display={hidden ? 'none' : 'flex'}
+      display={activeTab === tab ? 'flex' : 'none'}
       flexFlow="column"
       width="100%"
       maxW="580px"
@@ -561,28 +587,28 @@ export function PriceEmptyPanel({ labels }: { labels: ItemPriceEmptyLabels }) {
 
 // --- Chart panel ---
 
-export function PriceChartPanel({
-  item,
-  prices,
-  markers,
-}: {
-  item: ItemData;
-  prices: PriceData[];
-  markers?: PriceMarker[];
-}) {
-  const { activeTab } = useItemPriceTab();
-  const [mounted, setMounted] = useState(false);
+export function PriceChartPanel({ item }: { item: ItemData }) {
+  const [history, setHistory] = useState<Awaited<
+    ReturnType<typeof prefetchItemPriceHistory>
+  > | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (activeTab === 'chart') setMounted(true);
-  }, [activeTab]);
+    prefetchItemPriceHistory(item.internal_id).then(setHistory);
+  }, [item.internal_id]);
 
-  if (!mounted || !prices.length) return null;
+  if (!history) {
+    return (
+      <Flex minH="200px" w="100%" alignItems="center" justifyContent="center">
+        <Skeleton height="200px" width="100%" borderRadius="sm" />
+      </Flex>
+    );
+  }
+
+  if (!history.prices.length) return null;
 
   return (
     <Box minH="200px" w="100%">
-      <ChartComponent markers={markers} color={item.color} data={prices} />
+      <ChartComponent markers={history.markers} color={item.color} data={history.prices} />
     </Box>
   );
 }

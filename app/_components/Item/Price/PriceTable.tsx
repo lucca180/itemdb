@@ -1,4 +1,5 @@
 import { Box, Flex, Table, Text, Badge } from '@chakra-ui/react';
+import type { ReactNode } from 'react';
 import Color from 'color';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 import { LuMinus } from 'react-icons/lu';
@@ -30,6 +31,7 @@ type PriceTableViewProps = {
   format: PriceTableFormat;
   minH?: Record<string, number | string> | number | string;
   maxH?: Record<string, number | string> | number | string;
+  footer?: ReactNode;
 };
 
 function PriceTableRow({
@@ -233,6 +235,7 @@ export function PriceTableView({
   format,
   minH = { base: 100 },
   maxH = { base: 200, md: 300 },
+  footer,
 }: PriceTableViewProps) {
   const sortedData = sortedDataProp ?? buildPriceTableData(data, markers, t);
   const linkColor = Color(itemColor).alpha(0.8).lightness(70).hexa();
@@ -258,6 +261,7 @@ export function PriceTableView({
               format={format}
             />
           ))}
+          {footer}
         </Table.Body>
       </Table.Root>
     </Table.ScrollArea>

@@ -1,24 +1,19 @@
 import { Badge, Link, Table, Text } from '@chakra-ui/react';
-import { isSameDay } from 'date-fns';
-import { tz } from '@date-fns/tz';
 import { cacheLife } from 'next/cache';
-import { getFormatter, getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
-import { getCachedNow } from '@utils/getCachedNow';
+import {
+  labelMatchTableLastSeen,
+  toMatchTableRows,
+  type MatchTableRow,
+} from '@app/_components/Item/NCTrade/matchTableView';
 import type { UserList } from '@types';
-
-type MatchTableRow = {
-  internal_id: number;
-  name: string;
-  slug: string | null;
-  ownerUsername: string | null;
-  ownerLastSeen: string;
-};
 
 type CachedProps = {
   data: MatchTableRow[];
   matchCounts: { [username: string]: number } | null;
   type: 'seeking' | 'trading';
+  locale: string;
 };
 
 type Props = {
@@ -29,13 +24,8 @@ type Props = {
 
 /** Strip volatile UserList fields before the cache key is formed. */
 export async function MatchTable({ data, matches, type }: Props) {
-  const rows: MatchTableRow[] = data.map((list) => ({
-    internal_id: list.internal_id,
-    name: list.name,
-    slug: list.slug,
-    ownerUsername: list.owner.username,
-    ownerLastSeen: list.owner.lastSeen,
-  }));
+  const locale = await getLocale();
+  const rows = toMatchTableRows(data);
 
   const matchCounts = matches
     ? Object.fromEntries(
@@ -45,21 +35,17 @@ export async function MatchTable({ data, matches, type }: Props) {
       )
     : null;
 
-  return <MatchTableCached data={rows} matchCounts={matchCounts} type={type} />;
+  return <MatchTableCached data={rows} matchCounts={matchCounts} type={type} locale={locale} />;
 }
 
-async function MatchTableCached({ data, matchCounts, type }: CachedProps) {
+async function MatchTableCached({ data, matchCounts, type, locale }: CachedProps) {
   'use cache';
   cacheLife('itemFast');
 
-  const [t, format, now] = await Promise.all([getTranslations(), getFormatter(), getCachedNow()]);
-  const sortedData = [...data].sort((a, b) => {
-    const bySeen = new Date(b.ownerLastSeen).getTime() - new Date(a.ownerLastSeen).getTime();
-    return bySeen !== 0 ? bySeen : a.internal_id - b.internal_id;
-  });
-  const lastSeenToday = sortedData.map((list) =>
-    isSameDay(new Date(list.ownerLastSeen), now, { in: tz('America/Los_Angeles') })
-  );
+  const [t, sortedData] = await Promise.all([
+    getTranslations(),
+    labelMatchTableLastSeen(data, locale),
+  ]);
 
   return (
     <Table.ScrollArea
@@ -102,7 +88,7 @@ async function MatchTableCached({ data, matchCounts, type }: CachedProps) {
               </Table.Cell>
             </Table.Row>
           )}
-          {sortedData.map((list, index) => (
+          {sortedData.map((list) => (
             <Table.Row key={list.internal_id}>
               <Table.Cell maxW="200px" overflow="hidden" textOverflow="ellipsis">
                 <I18nLink
@@ -137,11 +123,7 @@ async function MatchTableCached({ data, matchCounts, type }: CachedProps) {
                   )}
                 </Table.Cell>
               )}
-              <Table.Cell>
-                {lastSeenToday[index]
-                  ? t('General.today')
-                  : format.relativeTime(new Date(list.ownerLastSeen), now)}
-              </Table.Cell>
+              <Table.Cell>{list.lastSeenLabel}</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>

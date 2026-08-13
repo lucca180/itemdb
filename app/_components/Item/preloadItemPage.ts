@@ -34,7 +34,7 @@ import {
   loadMMEData,
   loadNCMallData,
   loadNCTradeInsights,
-  loadNPPrices,
+  loadNPPricesSummary,
   loadPetpetData,
   loadPetStyleForItem,
   loadTradeLists,
@@ -59,7 +59,7 @@ export async function preloadItemPageData(item: ItemData): Promise<void> {
   preload(() => loadItemColors(item.internal_id));
 
   if (needsNPPrices(item)) {
-    preload(() => loadNPPrices(item.internal_id));
+    preload(() => loadNPPricesSummary(item.internal_id));
   }
 
   if (needsNCMall(item)) {

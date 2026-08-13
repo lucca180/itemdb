@@ -125,6 +125,15 @@ export function filterNPTradingLists(lists?: UserList[]) {
   return lists?.filter((list) => list.purpose === 'trading') ?? [];
 }
 
+export const PRICE_TABLE_INITIAL_LIMIT = 20;
+
+export function toPriceSummary(prices: PriceData[], limit = PRICE_TABLE_INITIAL_LIMIT) {
+  return {
+    prices: prices.slice(0, limit),
+    hasMore: prices.length > limit,
+  };
+}
+
 export function getLatestPrice(prices: PriceData[]) {
   return prices.find((p) => p.isLatest);
 }
