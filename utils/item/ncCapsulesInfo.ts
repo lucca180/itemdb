@@ -215,6 +215,18 @@ export const capsulesInfo: CapsuleInfo = {
       text: 'Essential Aura',
     },
   },
+  75586: {
+    name: 'Retired GBMC 2026 Mystery Capsule',
+    cat1: {
+      text: '2008-2014',
+    },
+    cat2: {
+      text: '2015-2019',
+    },
+    cat3: {
+      text: '2020-2025',
+    },
+  },
 };
 
 export const capInfoIds = Object.keys(capsulesInfo).map((id) => parseInt(id, 10));
