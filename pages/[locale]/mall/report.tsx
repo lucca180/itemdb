@@ -193,6 +193,8 @@ type NCTradeReportProps = {
   user: User | null;
 };
 
+const NC_TRADE_NOTES_MAX_LENGTH = 180;
+
 const NCTradeReportCard = (props: NCTradeReportProps) => {
   const { user } = props;
   const t = useTranslations();
@@ -530,14 +532,23 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
                       {t('Owls.notes-and-comments-optional')}
                     </Field.Label>
                     <Textarea
-                      maxLength={200}
+                      maxLength={NC_TRADE_NOTES_MAX_LENGTH}
                       variant="subtle"
                       size="xs"
                       value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
+                      onChange={(e) => setNotes(e.target.value.slice(0, NC_TRADE_NOTES_MAX_LENGTH))}
                     />
-                    <Field.HelperText textAlign="left" fontSize="xs">
-                      {t('Owls.please-send-your-notes-and-comments-in-english')}
+                    <Field.HelperText
+                      textAlign="left"
+                      fontSize="xs"
+                      display="flex"
+                      justifyContent="space-between"
+                      gap={2}
+                    >
+                      <span>{t('Owls.please-send-your-notes-and-comments-in-english')}</span>
+                      <span>
+                        {notes.length}/{NC_TRADE_NOTES_MAX_LENGTH}
+                      </span>
                     </Field.HelperText>
                   </Field.Root>
                 </>
