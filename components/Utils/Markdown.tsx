@@ -5,6 +5,7 @@ type MarkdownProps = {
   // components?: any
   children: string;
   skipParagraph?: boolean;
+  allowedElements?: string[];
 };
 
 export default function Markdown(props: MarkdownProps) {
@@ -12,7 +13,18 @@ export default function Markdown(props: MarkdownProps) {
   return (
     <MarkdownLib
       urlTransform={(url) => decodeURI(url)}
-      allowedElements={['a', 'b', 'i', 'p', 'span', 's', 'br', 'strong', 'em']}
+      allowedElements={[
+        'a',
+        'b',
+        'i',
+        'p',
+        'span',
+        's',
+        'br',
+        'strong',
+        'em',
+        ...(props.allowedElements || []),
+      ]}
       components={{
         p: (props) => {
           return !skipParagraph ? <p>{props.children}</p> : <>{props.children}</>;
