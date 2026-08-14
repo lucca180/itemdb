@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
+// import { Suspense } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getPathname } from '@i18n/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
-import { ItemPageSkeleton } from '@app/_components/Item/page/ItemPageSkeleton';
+// import { ItemPageSkeleton } from '@app/_components/Item/page/ItemPageSkeleton';
 import { preloadItemPageData } from '@app/_components/Item/preloadItemPage';
 import { buildItemPageMetadata, resolveItemRoute } from '@app/utils/loadItemPage';
 
+export const instant = false;
 type ItemPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
@@ -23,15 +24,7 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
   return buildItemPageMetadata(result.item, locale);
 }
 
-export default function ItemPage({ params }: ItemPageProps) {
-  return (
-    <Suspense fallback={<ItemPageSkeleton />}>
-      <ItemPageRoute params={params} />
-    </Suspense>
-  );
-}
-
-async function ItemPageRoute({ params }: ItemPageProps) {
+export default async function ItemPage({ params }: ItemPageProps) {
   const { slug, locale } = await params;
   const result = await resolveItemRoute(slug);
 
