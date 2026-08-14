@@ -113,7 +113,7 @@ const AddToListSelect = (props: Props) => {
       )}
       <Menu.Root lazyMount>
         <Menu.Trigger asChild>
-          <Button colorPalette="whiteAlpha" variant="subtle">
+          <Button colorPalette="whiteAlpha" variant="subtle" w="100%">
             {t('Lists.add-to-list')}
           </Button>
         </Menu.Trigger>

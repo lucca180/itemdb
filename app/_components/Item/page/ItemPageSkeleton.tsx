@@ -1,4 +1,4 @@
-import { Box, Flex, Skeleton } from '@chakra-ui/react';
+import { Box, Flex, Grid, Skeleton } from '@chakra-ui/react';
 
 /** Content-area shell for `/item/[slug]` soft/hard nav — matches ItemPage layout. */
 export function ItemPageSkeleton() {
@@ -27,30 +27,47 @@ export function ItemPageSkeleton() {
           <Skeleton h="16px" w="70%" maxW="360px" />
         </Box>
       </Flex>
-      <Flex
+      <Grid
         minH="500px"
         gap={6}
         mt={5}
-        flexFlow={{ base: 'column-reverse', lg: 'row' }}
-        alignItems={{ base: 'center', lg: 'inherit' }}
+        w="100%"
+        justifyItems={{ base: 'center', lg: 'stretch' }}
+        alignItems={{ base: 'center', lg: 'start' }}
+        templateColumns={{ base: '1fr', lg: 'minmax(0, 275px) minmax(0, 1fr)' }}
+        templateRows={{ lg: 'auto 1fr' }}
+        templateAreas={{
+          base: `"addtolist" "main" "side"`,
+          lg: `"addtolist main" "side main"`,
+        }}
       >
+        <Skeleton
+          gridArea="addtolist"
+          h="40px"
+          w="100%"
+          maxW={{ base: '800px', lg: 'none' }}
+          borderRadius="md"
+        />
         <Flex
-          flex="1"
-          maxW={{ base: '100vh', lg: '275px' }}
-          w={{ base: '100%', lg: 'auto' }}
-          minW="250px"
+          gridArea="side"
+          maxW={{ base: '800px', lg: 'none' }}
+          w="100%"
+          minW={0}
           flexFlow="column"
+          alignItems={{ base: 'center', lg: 'stretch' }}
           gap={5}
         >
           <Skeleton h="180px" w="100%" borderRadius="md" />
           <Skeleton h="220px" w="100%" borderRadius="md" />
         </Flex>
         <Flex
-          flex="3"
+          gridArea="main"
           gap={{ base: 4, md: 6 }}
           flexFlow={{ base: 'column', xl: 'row' }}
-          maxW={{ base: '100vh', md: 'none' }}
-          w={{ base: '100%', md: 'auto' }}
+          maxW={{ base: '800px', lg: 'none' }}
+          w="100%"
+          minW={0}
+          alignItems={{ base: 'center', lg: 'stretch' }}
         >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }} maxW="800px" w="100%">
             <Skeleton h="280px" w="100%" borderRadius="md" />
@@ -61,7 +78,7 @@ export function ItemPageSkeleton() {
             <Skeleton h="140px" w="100%" borderRadius="md" />
           </Flex>
         </Flex>
-      </Flex>
+      </Grid>
     </Box>
   );
 }

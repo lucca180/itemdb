@@ -9,31 +9,25 @@ const AddToListSelect = dynamic(() => import('@components/UserLists/AddToListSel
   loading: () => <Skeleton h="40px" w="100%" borderRadius="md" />,
 });
 
-export function ItemPageSidebarDesktop({
-  item,
-  children,
-}: {
-  item: ItemData;
-  children?: ReactNode;
-}) {
+export function ItemPageAddToList({ item }: { item: ItemData }) {
+  return (
+    <Flex flexFlow="column" w="100%" minW={0}>
+      <AddToListSelect item={item} />
+    </Flex>
+  );
+}
+
+export function ItemPageSidebarDesktop({ children }: { children?: ReactNode }) {
   return (
     <Flex flexFlow="column" display={{ base: 'none', lg: 'flex' }} gap={5}>
-      <AddToListSelect item={item} />
       {children}
     </Flex>
   );
 }
 
-export function ItemPageSidebarMobile({
-  item,
-  children,
-}: {
-  item: ItemData;
-  children?: ReactNode;
-}) {
+export function ItemPageSidebarMobile({ children }: { children?: ReactNode }) {
   return (
     <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', lg: 'none' }}>
-      <AddToListSelect item={item} />
       {children}
     </Flex>
   );

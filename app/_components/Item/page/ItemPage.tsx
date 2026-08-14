@@ -1,11 +1,12 @@
 import { Suspense } from 'react';
-import { Flex } from '@chakra-ui/react';
+import { Flex, Grid, GridItem } from '@chakra-ui/react';
 import type { ItemData } from '@types';
 import { ItemHeader } from '@app/_components/Item/page/ItemHeader';
 import { ItemPageEditSectionLoader } from '@app/_components/Item/page/ItemPageEditSectionLoader';
 import { ItemPageOutfitSectionLoader } from '@app/_components/Item/page/ItemPageOutfitSectionLoader';
 import { ItemPageWearablePreview } from '@app/_components/Item/page/ItemPageWearablePreview';
 import {
+  ItemPageAddToList,
   ItemPageSidebarDesktop,
   ItemPageSidebarMobile,
 } from '@app/_components/Item/page/ItemPageSidebar';
@@ -54,22 +55,33 @@ export async function ItemPage({ item }: ItemPageProps) {
   return (
     <>
       <ItemHeader item={item} />
-      <Flex
+      <Grid
         minH="500px"
         gap={6}
         mt={5}
-        flexFlow={{ base: 'column-reverse', lg: 'row' }}
-        alignItems={{ base: 'center', lg: 'inherit' }}
+        w="100%"
+        justifyItems={{ base: 'center', lg: 'stretch' }}
+        alignItems={{ base: 'center', lg: 'start' }}
+        templateColumns={{ base: '1fr', lg: 'minmax(0, 275px) minmax(0, 1fr)' }}
+        templateRows={{ lg: 'auto 1fr' }}
+        templateAreas={{
+          base: `"addtolist" "main" "side"`,
+          lg: `"addtolist main" "side main"`,
+        }}
       >
+        <GridItem area="addtolist" w="100%" minW={0} maxW={{ base: '800px', lg: 'none' }}>
+          <ItemPageAddToList item={item} />
+        </GridItem>
         <Flex
-          flex="1"
-          maxW={{ base: '100vh', lg: '275px' }}
-          w={{ base: '100%', lg: 'auto' }}
-          minW="250px"
+          gridArea="side"
+          maxW={{ base: '800px', lg: 'none' }}
+          w="100%"
+          minW={0}
           flexFlow="column"
+          alignItems={{ base: 'center', lg: 'stretch' }}
           gap={5}
         >
-          <ItemPageSidebarDesktop item={item}>
+          <ItemPageSidebarDesktop>
             <FindAtCard item={item} />
           </ItemPageSidebarDesktop>
           <ItemInfoCard item={item} />
@@ -79,18 +91,20 @@ export async function ItemPage({ item }: ItemPageProps) {
           </Suspense>
         </Flex>
         <Flex
-          flex="3"
+          gridArea="main"
           gap={{ base: 4, md: 6 }}
           flexFlow={{ base: 'column', xl: 'row' }}
-          maxW={{ base: '100vh', md: 'none' }}
-          w={{ base: '100%', md: 'auto' }}
+          maxW={{ base: '800px', lg: 'none' }}
+          w="100%"
+          minW={0}
+          alignItems={{ base: 'center', lg: 'stretch' }}
         >
-          <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }} maxW="800px">
+          <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }} maxW="800px" w="100%">
             <Suspense fallback={null}>
               <ManualCheckSection item={item} />
             </Suspense>
             {item.isMissingInfo && <MissingInfoCard key={getKey('missing-info')} />}
-            <ItemPageSidebarMobile item={item}>
+            <ItemPageSidebarMobile>
               <FindAtCard item={item} />
             </ItemPageSidebarMobile>
             {!item.isNC && (
@@ -145,7 +159,7 @@ export async function ItemPage({ item }: ItemPageProps) {
             <RelatedLinksCard key={getKey('related-links')} item={item} />
           </Flex>
         </Flex>
-      </Flex>
+      </Grid>
     </>
   );
 }

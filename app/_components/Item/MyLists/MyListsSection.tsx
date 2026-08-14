@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { MyListsCard } from '@app/_components/Item/MyLists/MyListsCard';
 import { getItemMyLists } from '@pages/api/v1/items/[id_name]/mylists';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { DeferredItemSection } from '@app/_components/Item/page/DeferredItemSection';
 import type { ItemData } from '@types';
 
 type Props = {
@@ -34,5 +35,9 @@ export async function MyListsSection({ item }: Props) {
     deleteFromList: t('ItemPage.delete-from-list'),
   };
 
-  return <MyListsCard item={item} labels={labels} lists={lists} />;
+  return (
+    <DeferredItemSection>
+      <MyListsCard item={item} labels={labels} lists={lists} />
+    </DeferredItemSection>
+  );
 }

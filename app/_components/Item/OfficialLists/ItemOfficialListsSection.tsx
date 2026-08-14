@@ -3,6 +3,7 @@ import ItemOfficialLists from '@components/Items/ItemOfficialList';
 import { getOfficialItemLists } from '@app/_components/Item/loadUtils';
 import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
+import { DeferredItemSection } from '@app/_components/Item/page/DeferredItemSection';
 import type { ItemData } from '@types';
 
 type Props = {
@@ -23,5 +24,9 @@ async function ItemOfficialListsSectionContent({ item }: Props) {
     shouldShowTradeLists(item, await getCachedNow())
   );
   if (!lists.length) return null;
-  return <ItemOfficialLists item={item} lists={lists} />;
+  return (
+    <DeferredItemSection>
+      <ItemOfficialLists item={item} lists={lists} />
+    </DeferredItemSection>
+  );
 }

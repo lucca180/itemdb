@@ -20,7 +20,17 @@ const TradeCard = ({ trades, item, isLoading }: Props) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
   return (
-    <Flex maxH="500px" borderTopRadius="md" overflow="hidden" flexFlow="column" boxShadow="sm">
+    <Flex
+      maxH="500px"
+      borderTopRadius="md"
+      overflow="hidden"
+      flexFlow="column"
+      boxShadow="sm"
+      css={{
+        contentVisibility: 'auto',
+        containIntrinsicSize: 'auto 500px',
+      }}
+    >
       <Box p={2} textAlign="center" fontWeight="bold" bg={colorString}>
         {t('ItemPage.trade-history')}{' '}
         <Badge>
