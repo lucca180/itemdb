@@ -8,8 +8,12 @@ import { wearablePreviewSources } from '@utils/cdnPreview';
 import type { StyleToken } from '@utils/petStyles/display';
 import { stylesComboHref } from '@utils/petStyles/paths';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { AvailableNowBadge, LebronValueBadge } from './StyleTokenSeriesBlock';
 import { useFormatLongDate } from './formatLongDate';
+
+const PREVIEW_SIZE = 120;
+const ITEM_ICON_SIZE = 80;
 
 type StyleTokenTileProps = {
   token: StyleToken;
@@ -24,7 +28,16 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
     linkTo === 'item'
       ? `/item/${token.itemSlug}`
       : stylesComboHref(token.speciesName, token.colorName);
-  const preview = token.imageId ? wearablePreviewSources(token.imageId) : null;
+  const sources = token.imageId ? wearablePreviewSources(token.imageId) : null;
+  const preview = sources ? { ...sources, api: `${sources.api}?noPlaceholder=1` } : null;
+  const [useItemIcon, setUseItemIcon] = useState(!preview);
+  const [trackedImageId, setTrackedImageId] = useState(token.imageId);
+
+  if (token.imageId !== trackedImageId) {
+    setTrackedImageId(token.imageId);
+    setUseItemIcon(!token.imageId);
+  }
+
   const hasBadges = token.isPrismatic || token.inStudio || !!token.ncValue;
 
   return (
@@ -41,8 +54,8 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
         _hover={{ bg: 'blackAlpha.600', transform: 'translateY(-2px)' }}
       >
         <Box
-          w="120px"
-          h="120px"
+          w={`${PREVIEW_SIZE}px`}
+          h={`${PREVIEW_SIZE}px`}
           borderRadius="md"
           bg="blackAlpha.500"
           overflow="hidden"
@@ -50,22 +63,23 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
           alignItems="center"
           justifyContent="center"
         >
-          {preview ? (
+          {preview && !useItemIcon ? (
             <CdnImage
               cdnSrc={preview.cdn}
               apiSrc={preview.api}
               alt={token.name}
-              width={120}
-              height={120}
+              width={PREVIEW_SIZE}
+              height={PREVIEW_SIZE}
               unoptimized
               style={{ objectFit: 'contain' }}
+              onError={() => setUseItemIcon(true)}
             />
           ) : (
             <Image
               src={token.imageUrl}
               alt={token.name}
-              width={120}
-              height={120}
+              width={ITEM_ICON_SIZE}
+              height={ITEM_ICON_SIZE}
               unoptimized
               style={{ objectFit: 'contain' }}
             />

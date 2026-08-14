@@ -18,7 +18,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const { id, refresh, hash } = req.query;
+  const { id, refresh, hash, noPlaceholder } = req.query;
+  const skipPlaceholder = noPlaceholder === '1' || noPlaceholder === 'true';
 
   let canvas;
   let ctx;
@@ -128,6 +129,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       return;
     }
   } catch (e) {
+    if (skipPlaceholder) {
+      res.writeHead(404, {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Expires: 0,
+      });
+      res.end();
+      return;
+    }
+
     const img = await loadImage('./public/oops.png');
 
     if (!canvas || !ctx) {
