@@ -36,6 +36,41 @@ describe('buildItemProcessRows', () => {
     expect(rows[0].hash).toBeTruthy();
   });
 
+  test('normalizes ncmall NC payload', () => {
+    const rows = buildItemProcessRows(
+      [
+        {
+          item_id: 12345,
+          name: 'Some NC Mall Item',
+          img: 'https://images.neopets.com/items/some_nc_mall_item.gif',
+          rarity: 500,
+          category: 'Special',
+          type: 'nc',
+          description: 'A fancy NC mall item.',
+          status: 'no trade',
+        },
+      ],
+      {
+        language: 'en',
+        meta: { dataSource: 'ncmall-sync', itemdbVersion: 'ncmall-sync' },
+      }
+    );
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      item_id: 12345,
+      name: 'Some NC Mall Item',
+      image_id: 'some_nc_mall_item',
+      description: 'A fancy NC mall item.',
+      isNC: true,
+      rarity: 500,
+      status: 'no trade',
+      type: 'nc',
+      language: 'en',
+    });
+    expect(rows[0].hash).toBeTruthy();
+  });
+
   test('skips invalid images and empty names', () => {
     const rows = buildItemProcessRows([
       {

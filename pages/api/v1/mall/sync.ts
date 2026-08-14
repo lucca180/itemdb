@@ -3,6 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@utils/prisma';
 import { NcMallData as dbMallData, Prisma } from '@prisma/generated/client';
 import { revalidateAppCache, HomeRevalidateTags } from '@utils/item/revalidateItem';
+import { enqueueAndProcessItems } from '@utils/item/enqueueItemProcess';
+import { processItemProcessQueue } from '@utils/item/processItemQueue';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 const TARNUM_SERVER = process.env.TARNUM_SERVER;
@@ -37,6 +39,72 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (!ncMallData || Object.values(ncMallData).length === 0)
     return res.status(500).json({ error: 'Failed to fetch data' });
 
+  const mallItemIds = Object.keys(ncMallData).map((id) => parseInt(id));
+
+  const itemSelect = {
+    item_id: true,
+    name: true,
+    description: true,
+    internal_id: true,
+  } as const;
+
+  let allItems = await prisma.items.findMany({
+    where: {
+      item_id: {
+        in: mallItemIds,
+      },
+    },
+    select: itemSelect,
+  });
+
+  const existingById = new Map(allItems.map((item) => [item.item_id, item]));
+
+  const itemData = Object.values(ncMallData)
+    .filter((item) => {
+      const dbItem = existingById.get(item.id);
+      if (!dbItem) return true;
+      return item.name !== dbItem.name || item.description.trim() !== dbItem.description?.trim();
+    })
+    .map((item) => ({
+      item_id: item.id,
+      name: item.name,
+      img: item.img,
+      rarity: 500,
+      category: 'Special',
+      type: 'nc',
+      description: item.description,
+      status: item.isBundle ? 'no trade' : undefined,
+    }));
+
+  let itemsResult:
+    | Awaited<ReturnType<typeof enqueueAndProcessItems>>
+    | { enqueued: number; process: Awaited<ReturnType<typeof processItemProcessQueue>> };
+
+  if (itemData.length > 0) {
+    itemsResult = await enqueueAndProcessItems(itemData, {
+      language: 'en',
+      meta: {
+        itemdbVersion: 'ncmall-sync',
+        dataSource: 'ncmall-sync',
+      },
+      limit: Math.min(1000, Math.max(300, itemData.length + 100)),
+    });
+  } else {
+    const process = await processItemProcessQueue({ limit: 300 });
+    itemsResult = { enqueued: 0, process };
+  }
+
+  if (itemsResult.process.created > 0) {
+    allItems = await prisma.items.findMany({
+      where: {
+        item_id: {
+          in: mallItemIds,
+        },
+      },
+      select: itemSelect,
+    });
+  }
+
   const allCurrentData = await prisma.ncMallData.findMany({
     where: {
       active: true,
@@ -48,23 +116,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const create: Prisma.NcMallDataCreateManyInput[] = [];
   const update = [];
-
-  const allItems = await prisma.items.findMany({
-    where: {
-      item_id: {
-        in: Object.keys(ncMallData).map((id) => parseInt(id)),
-      },
-    },
-    select: {
-      item_id: true,
-      name: true,
-      description: true,
-      internal_id: true,
-    },
-  });
-
-  const inexistentIds = [];
-
   const bundles = [];
 
   for (const id in ncMallData) {
@@ -72,14 +123,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const dbItem = allItems.find((i) => item.id === i.item_id);
 
     if (!allIds.has(item.id)) {
-      if (!dbItem) {
-        inexistentIds.push(item.id);
-        continue;
-      }
-
-      // send item data to process queue
-      if (item.name !== dbItem.name || item.description.trim() !== dbItem.description?.trim())
-        inexistentIds.push(item.id);
+      if (!dbItem) continue;
 
       if (!item.isAvailable || !item.isBuyable) continue;
 
@@ -97,12 +141,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         active: true,
       });
     } else {
-      if (dbItem) {
-        // send item data to process queue
-        if (item.name !== dbItem.name || item.description.trim() !== dbItem.description?.trim())
-          inexistentIds.push(item.id);
-      }
-
       if (!item.isAvailable || !item.isBuyable) continue;
       if (item.isBundle) bundles.push({ item, dbItem });
 
@@ -145,37 +183,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     })
   );
 
-  const itemData = inexistentIds.map((id) => {
-    const item = ncMallData[id];
-    return {
-      item_id: item.id,
-      name: item.name,
-      img: item.img,
-      rarity: 500,
-      category: 'Special',
-      type: 'nc',
-      description: item.description,
-      status: item.isBundle ? 'no trade' : undefined,
-    };
-  });
-
-  const createItemRes = await fetch('https://itemdb.com.br/api/v1/items', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      tarnumkey: process.env.TARNUM_KEY ?? '',
-    },
-    body: JSON.stringify({
-      lang: 'en',
-      items: itemData,
-      hash: null,
-    }),
-  });
-
-  if (createItemRes.status !== 200) {
-    console.error('Failed to create items');
-  }
-
   const response = await prisma.$transaction([
     prisma.ncMallData.createMany({ data: create, skipDuplicates: true }),
     ...update,
@@ -195,7 +202,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     await revalidateAppCache([HomeRevalidateTags.latestNcMall, HomeRevalidateTags.latestItems]);
   }
 
-  res.json(response);
+  res.json({
+    items: itemsResult,
+    mall: response,
+  });
 }
 
 const checkDataChanged = (currentData: dbMallData, newData: NCMallData) => {
