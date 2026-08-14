@@ -21,17 +21,17 @@ export async function ItemCommentsCard({ item }: Props) {
         gap={3}
         flexFlow="column"
         fontSize="sm"
-        textAlign="center"
         css={{
           '& a': {
             color: color.lightness(70).hex(),
           },
           '& ul': {
-            padding: 'revert',
+            paddingLeft: '1rem',
+            listStyle: 'disc',
           },
         }}
       >
-        <Markdown>{item.comment}</Markdown>
+        <Markdown allowedElements={['ul', 'li']}>{item.comment}</Markdown>
       </Flex>
     </CardBase>
   );
