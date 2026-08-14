@@ -1,14 +1,10 @@
 /**
  * NC Trade — server orchestrator (item page).
  *
- * Server shell (CardBase, badge, panels). Client islands: tab bar + panel visibility.
- *
- * Loading strategy:
- * - Insights loaded via `loadNCTradeInsights` in this section
- * - Seeking panel content blocks (Suspense)
- * - Trading, owls history, and owls tab label stream in parallel
+ * Insights (and seeking, when it is the default tab) render on the server.
+ * Trading, owls, and non-default seeking mount once on hover/click via Server Actions.
+ * Tab labels include counts from SSR.
  */
-import { cache } from 'react';
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import { Badge, Center, Flex, Link, Stat, Text } from '@chakra-ui/react';
@@ -17,12 +13,16 @@ import { getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
 import CardBase from '@components/Card/CardBase';
 import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
-import NCTradeHistory from '@app/_components/Item/NCTrade/NCTradeHistory';
 import TradeInsights from '@app/_components/Item/NCTrade/TradeInsights';
 import {
   filterSeekingLists,
   filterTradingLists,
 } from '@app/_components/Item/NCTrade/ncTradeListFilters';
+import {
+  NCTradeListsPanel,
+  NCTradeOwlsPanel,
+} from '@app/_components/Item/NCTrade/NCTradeLazyPanels';
+import { loadListMatches } from '@app/_components/Item/NCTrade/ncTradeMatches';
 import { NCTradePanel } from '@app/_components/Item/NCTrade/NCTradePanel';
 import { NCTradePanelSkeleton } from '@app/_components/Item/NCTrade/NCTradePanelSkeleton';
 import { NCTradeTabBar } from '@app/_components/Item/NCTrade/NCTradeTabBar';
@@ -33,8 +33,6 @@ import {
   loadNCTradeInsights,
   loadTradeLists,
 } from '@app/_components/Item/loadUtils';
-import { getListMatchesMany } from '@pages/api/v1/lists/match/many';
-import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import type { InsightsResponse, ItemData, UserList } from '@types';
 
 type Props = {
@@ -50,67 +48,12 @@ function hasNCTradeInsights(insights: InsightsResponse | null | undefined) {
   );
 }
 
-const loadSeekingMatches = cache(
-  async (tradeLists: UserList[] | undefined, sessionCookie?: string) => {
-    const { user } = await getServerCurrentUser();
-    if (!user?.username) return null;
-
-    const usernames = filterSeekingLists(tradeLists)
-      .map((list) => list.owner?.username)
-      .filter((username): username is string => !!username);
-
-    if (!usernames.length) return {};
-    return getListMatchesMany(user.username, usernames, 'seeker', sessionCookie);
-  }
-);
-
-const loadTradingMatches = cache(
-  async (tradeLists: UserList[] | undefined, sessionCookie?: string) => {
-    const { user } = await getServerCurrentUser();
-    if (!user?.username) return null;
-
-    const usernames = filterTradingLists(tradeLists)
-      .map((list) => list.owner?.username)
-      .filter((username): username is string => !!username);
-
-    if (!usernames.length) return {};
-    return getListMatchesMany(user.username, usernames, 'offerer', sessionCookie);
-  }
-);
-
 async function NCTradeSeekingTab({ tradeLists }: { tradeLists: UserList[] }) {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('session')?.value;
   const seeking = filterSeekingLists(tradeLists);
-  const matches = await loadSeekingMatches(tradeLists, sessionCookie);
+  const matches = await loadListMatches(tradeLists, 'seeker', sessionCookie);
   return <MatchTable data={seeking} matches={matches} type="seeking" />;
-}
-
-async function NCTradeTradingTab({ tradeLists }: { tradeLists: UserList[] }) {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('session')?.value;
-  const trading = filterTradingLists(tradeLists);
-  const matches = await loadTradingMatches(tradeLists, sessionCookie);
-  return <MatchTable data={trading} matches={matches} type="trading" />;
-}
-
-async function NCTradeHistoryTab({ item }: Pick<Props, 'item'>) {
-  const lebronTradeHistory = await loadLebronTradeHistory(item.internal_id, item.name);
-  return <NCTradeHistory item={item} ncTrades={lebronTradeHistory} tradeHistory={[]} />;
-}
-
-async function NCTradeOwlsTabLabel({ item }: Pick<Props, 'item'>) {
-  const [lebronTradeHistory, t] = await Promise.all([
-    loadLebronTradeHistory(item.internal_id, item.name),
-    getTranslations(),
-  ]);
-  const tradeCount = Math.min(lebronTradeHistory.length, 20).toString();
-
-  return (
-    <span>
-      {tradeCount} {t('ItemPage.owls-trades')}
-    </span>
-  );
 }
 
 async function NCTradeOwlsCta() {
@@ -173,7 +116,10 @@ async function NCTradeTradeableCard({
   insights: InsightsResponse | null;
   hasInsights: boolean;
 }) {
-  const t = await getTranslations();
+  const [t, lebronTrades] = await Promise.all([
+    getTranslations(),
+    loadLebronTradeHistory(item.internal_id, item.name),
+  ]);
   const seeking = filterSeekingLists(tradeLists);
   const trading = filterTradingLists(tradeLists);
   const defaultTab = hasInsights ? 'insights' : 'seeking';
@@ -183,20 +129,16 @@ async function NCTradeTradeableCard({
       <CardBase title={t('ItemPage.nc-trade')} color={item.color.rgb}>
         <Flex flexFlow="column" minH="200px">
           <NCTradeTabBar
+            itemId={item.internal_id}
+            itemName={item.name}
             hasInsights={hasInsights}
-            seekingCount={seeking.length}
-            tradingCount={trading.length}
+            ssrTabs={defaultTab === 'seeking' ? ['seeking'] : undefined}
             labels={{
               insights: t('ItemPage.insights'),
-              seeking: t('ItemPage.seeking'),
-              trading: t('ItemPage.trading'),
-              owlsFallback: t('ItemPage.owls-trades'),
+              seeking: `${seeking.length} ${t('ItemPage.seeking')}`,
+              trading: `${trading.length} ${t('ItemPage.trading')}`,
+              owls: `${Math.min(lebronTrades.length, 20)} ${t('ItemPage.owls-trades')}`,
             }}
-            owlsTabLabel={
-              <Suspense fallback={<span>…</span>}>
-                <NCTradeOwlsTabLabel item={item} />
-              </Suspense>
-            }
           />
           <Flex flex={1} flexFlow={{ base: 'column', md: 'row' }} gap={3}>
             <NCTradeValueBadge item={item} />
@@ -207,19 +149,19 @@ async function NCTradeTradeableCard({
                 </NCTradePanel>
               )}
               <NCTradePanel tab="seeking">
-                <Suspense fallback={<NCTradePanelSkeleton />}>
-                  <NCTradeSeekingTab tradeLists={tradeLists} />
-                </Suspense>
+                {defaultTab === 'seeking' ? (
+                  <Suspense fallback={<NCTradePanelSkeleton />}>
+                    <NCTradeSeekingTab tradeLists={tradeLists} />
+                  </Suspense>
+                ) : (
+                  <NCTradeListsPanel itemId={item.internal_id} type="seeking" />
+                )}
               </NCTradePanel>
               <NCTradePanel tab="trading">
-                <Suspense fallback={<NCTradePanelSkeleton />}>
-                  <NCTradeTradingTab tradeLists={tradeLists} />
-                </Suspense>
+                <NCTradeListsPanel itemId={item.internal_id} type="trading" />
               </NCTradePanel>
               <NCTradePanel tab="ncTrading">
-                <Suspense fallback={<NCTradePanelSkeleton />}>
-                  <NCTradeHistoryTab item={item} />
-                </Suspense>
+                <NCTradeOwlsPanel item={item} />
               </NCTradePanel>
             </Flex>
           </Flex>

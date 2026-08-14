@@ -17,7 +17,6 @@ import {
 } from '@app/_components/Item/Price/itemPriceUtils';
 import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
-import { getLocale } from 'next-intl/server';
 import type { PriceData, PriceMarker } from '@types';
 
 export type ItemPriceHistory = {
@@ -46,8 +45,11 @@ export type ItemTradeListTables = {
   trading: MatchTableLabeledRow[];
 };
 
-export async function loadItemTradeLists(internalId: number): Promise<ItemTradeListTables> {
-  const [lists, locale] = await Promise.all([loadTradeLists(internalId), getLocale()]);
+export async function loadItemTradeLists(
+  internalId: number,
+  locale: string
+): Promise<ItemTradeListTables> {
+  const lists = await loadTradeLists(internalId);
   const [seeking, trading] = await Promise.all([
     labelMatchTableLastSeen(toMatchTableRows(filterNPSeekingLists(lists)), locale),
     labelMatchTableLastSeen(toMatchTableRows(filterNPTradingLists(lists)), locale),

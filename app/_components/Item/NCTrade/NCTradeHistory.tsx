@@ -1,5 +1,7 @@
+'use client';
+
 import { Button, Center, Flex, Link, Text } from '@chakra-ui/react';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 import { Link as I18nLink } from '@i18n/navigation';
 import { NCTradeHistoryCard } from '@app/_components/Item/NCTrade/NCTradeHistoryCard';
 import { prepareNCTradeHistory } from '@app/_components/Item/NCTrade/ncTradeHistoryUtils';
@@ -8,11 +10,11 @@ import type { ItemData, LebronTrade, NCTradeReport } from '@types';
 type Props = {
   item: ItemData;
   ncTrades: LebronTrade[] | null;
-  tradeHistory: NCTradeReport[] | null;
+  tradeHistory?: NCTradeReport[] | null;
 };
 
-export async function NCTradeHistory({ item, ncTrades, tradeHistory }: Props) {
-  const t = await getTranslations();
+export function NCTradeHistory({ item, ncTrades, tradeHistory = [] }: Props) {
+  const t = useTranslations();
   const trades = prepareNCTradeHistory(ncTrades, tradeHistory);
 
   if (!trades.length) {

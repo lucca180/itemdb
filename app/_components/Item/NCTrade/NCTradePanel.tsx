@@ -1,7 +1,7 @@
 'use client';
 
 import { Flex } from '@chakra-ui/react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNCTradeTab, type NCTradeTab } from '@app/_components/Item/NCTrade/NCTradeTabContext';
 
 type NCTradePanelProps = {
@@ -11,6 +11,14 @@ type NCTradePanelProps = {
 
 export function NCTradePanel({ tab, children }: NCTradePanelProps) {
   const { activeTab } = useNCTradeTab();
+  const [visited, setVisited] = useState(activeTab === tab);
+
+  if (activeTab === tab && !visited) {
+    setVisited(true);
+  }
+
+  if (!visited) return null;
+
   const hidden = activeTab !== tab;
 
   if (tab === 'insights') {

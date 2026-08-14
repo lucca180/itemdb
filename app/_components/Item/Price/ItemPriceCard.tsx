@@ -23,7 +23,7 @@ import {
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   prefetchItemPriceHistory,
-  prefetchItemTradeLists,
+  usePrefetchItemTradeLists,
 } from '@app/_components/Item/Price/itemPricePrefetch';
 import Image from 'next/image';
 import axios from 'axios';
@@ -153,11 +153,12 @@ export function ItemPriceTabBar({
   labels: { table: string; chart: string; trading: string; seeking: string };
 }) {
   const { activeTab, setActiveTab } = useItemPriceTab();
+  const prefetchTradeLists = usePrefetchItemTradeLists();
   const prefetchTimer = useRef<number>(0);
 
   const prefetchTab = (tab: ItemPriceTab) => {
     if (tab === 'chart') prefetchItemPriceHistory(itemId);
-    if (tab === 'seeking' || tab === 'trading') prefetchItemTradeLists(itemId);
+    if (tab === 'seeking' || tab === 'trading') prefetchTradeLists(itemId);
   };
 
   const tabButton = (tab: ItemPriceTab, label: string) => (

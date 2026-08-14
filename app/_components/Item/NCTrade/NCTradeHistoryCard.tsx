@@ -1,7 +1,8 @@
+'use client';
+
 import { Box, Card, Heading, Link, List, Stack, StackSeparator, Text } from '@chakra-ui/react';
 import { UTCDate } from '@date-fns/utc';
-import { cacheLife } from 'next/cache';
-import { getFormatter, getTranslations } from 'next-intl/server';
+import { useFormatter, useTranslations } from 'next-intl';
 import { Link as I18nLink } from '@i18n/navigation';
 import {
   getTradeItemSearchLink,
@@ -18,11 +19,9 @@ type Props = {
 const isSameTradeItemName = (tradeStr: string, itemName: string) =>
   tradeStr.toLowerCase().includes(itemName.toLowerCase());
 
-export async function NCTradeHistoryCard({ trade, itemName, colorRgb }: Props) {
-  'use cache';
-  cacheLife('itemFast');
-
-  const [t, format] = await Promise.all([getTranslations(), getFormatter()]);
+export function NCTradeHistoryCard({ trade, itemName, colorRgb }: Props) {
+  const t = useTranslations();
+  const format = useFormatter();
   const color = colorRgb ?? [71, 178, 248];
   const date = new UTCDate(Number(trade.tradeDate));
   const tradeDateMs = isValidTradeDate(date) ? date.getTime() : null;

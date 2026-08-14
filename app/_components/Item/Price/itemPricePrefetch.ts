@@ -1,3 +1,8 @@
+'use client';
+
+import { useCallback } from 'react';
+import { useLocale } from 'next-intl';
+import { getOrCreatePrefetch } from '@app/_components/Item/prefetchCache';
 import {
   loadItemPriceHistory,
   loadItemTradeLists,
@@ -6,22 +11,19 @@ import {
 } from '@app/_components/Item/Price/actions';
 
 const historyCache = new Map<number, Promise<ItemPriceHistory>>();
-const listsCache = new Map<number, Promise<ItemTradeListTables>>();
+const listsCache = new Map<string, Promise<ItemTradeListTables>>();
 
 export function prefetchItemPriceHistory(internalId: number) {
-  let pending = historyCache.get(internalId);
-  if (!pending) {
-    pending = loadItemPriceHistory(internalId);
-    historyCache.set(internalId, pending);
-  }
-  return pending;
+  return getOrCreatePrefetch(historyCache, internalId, () => loadItemPriceHistory(internalId));
 }
 
-export function prefetchItemTradeLists(internalId: number) {
-  let pending = listsCache.get(internalId);
-  if (!pending) {
-    pending = loadItemTradeLists(internalId);
-    listsCache.set(internalId, pending);
-  }
-  return pending;
+function prefetchItemTradeLists(internalId: number, locale: string) {
+  return getOrCreatePrefetch(listsCache, `${internalId}:${locale}`, () =>
+    loadItemTradeLists(internalId, locale)
+  );
+}
+
+export function usePrefetchItemTradeLists() {
+  const locale = useLocale();
+  return useCallback((internalId: number) => prefetchItemTradeLists(internalId, locale), [locale]);
 }
