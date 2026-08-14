@@ -14,7 +14,7 @@ export const ItemImageV2 = (
 
   const src = error
     ? `/api/cache/items/${item.image.id}.gif`
-    : item.image.url || `https://cdn.itemdb.com.br/items/${item.image.id}.gif`;
+    : `https://cdn.itemdb.com.br/items/${item.image.id}.gif`;
 
   return (
     <Image
@@ -22,7 +22,6 @@ export const ItemImageV2 = (
       width={80}
       height={80}
       unoptimized
-      loading="lazy"
       alt=""
       title={item.description}
       onError={() => setError(true)}
