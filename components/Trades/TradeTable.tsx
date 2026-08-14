@@ -1,23 +1,65 @@
-import { Box, Text, Separator, Flex, Link, Badge, Tooltip, IconButton } from '@chakra-ui/react';
+'use client';
+
+import { Fragment, useState } from 'react';
+import {
+  Box,
+  Button,
+  Text,
+  Separator,
+  Flex,
+  Link,
+  Badge,
+  Tooltip,
+  IconButton,
+} from '@chakra-ui/react';
 import { ItemData, TradeData } from '@types';
 import Image from 'next/image';
-import { genItemKey, slugify } from '@utils/utils';
+import { slugify } from '@utils/utils';
 import MainLink from '@components/Utils/MainLink';
 import { useFormatter, useTranslations } from 'next-intl';
 import { FaFlag } from 'react-icons/fa';
 import { TradeRelisting } from '@components/Trades/TradeRelisting';
+import {
+  TRADE_LOT_VISIBLE_LIMIT,
+  isFeaturedTradeItem,
+  visibleTradeItems,
+} from '@components/Trades/visibleTradeItems';
 
 type Props = {
   data: TradeData;
   featuredItem?: ItemData;
+  collapseItems?: boolean;
   isAuto?: boolean;
   onReport?: () => void;
 };
+
+function HiddenItemsGap({ count }: { count: number }) {
+  return (
+    <Flex alignItems="center" gap={2} px={3} py={1.5} color="whiteAlpha.700">
+      <Separator flex="1" borderColor="whiteAlpha.400" />
+      <Text fontSize="lg" lineHeight="1">
+        …
+      </Text>
+      <Badge size="xs" variant="surface" colorPalette="gray">
+        +{count}
+      </Badge>
+      <Separator flex="1" borderColor="whiteAlpha.400" />
+    </Flex>
+  );
+}
 
 const TradeTable = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
   const { data, featuredItem } = props;
+  const [expanded, setExpanded] = useState(false);
+  const canCollapse = !!props.collapseItems && data.items.length > TRADE_LOT_VISIBLE_LIMIT;
+  const items = expanded || !canCollapse ? data.items : visibleTradeItems(data.items, featuredItem);
+  const indexedItems = items.map((item) => ({
+    item,
+    sourceIndex: data.items.indexOf(item),
+  }));
+  const hiddenCount = data.items.length - items.length;
 
   return (
     <Flex flexFlow="column" w="100%" flex={1} mb={3}>
@@ -69,75 +111,115 @@ const TradeTable = (props: Props) => {
             </IconButton>
           )}
         </Flex>
-        {data.items.map((item) => (
-          <Flex
-            px={3}
-            py={2}
-            gap={2}
-            key={item.order}
-            bg={
-              featuredItem && genItemKey(featuredItem, true) === genItemKey(item, true)
-                ? 'gray.700'
-                : ''
-            }
-          >
-            <Flex w={50} flexShrink="0" justifyContent="center" alignItems="center">
-              <Link asChild>
-                <MainLink href={`/item/${slugify(item.name)}`} prefetch={false}>
-                  <Image src={item.image} unoptimized width={50} height={50} alt="" />
-                </MainLink>
-              </Link>
-            </Flex>
-            <Flex flexFlow="column" justifyContent="center">
-              <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
-                {item.amount > 1 && (
-                  <Badge mr={1} colorPalette="yellow" textTransform={'none'}>
-                    {item.amount}x
+        {indexedItems.map(({ item, sourceIndex }, displayIndex) => {
+          const previousSourceIndex =
+            displayIndex === 0 ? -1 : indexedItems[displayIndex - 1].sourceIndex;
+          const omittedBefore = sourceIndex - previousSourceIndex - 1;
+
+          return (
+            <Fragment key={item.order}>
+              {!expanded && omittedBefore > 0 && <HiddenItemsGap count={omittedBefore} />}
+              <Flex
+                px={3}
+                py={2}
+                gap={2}
+                bg={isFeaturedTradeItem(item, featuredItem) ? 'gray.700' : ''}
+              >
+                {props.collapseItems && (
+                  <Badge
+                    size="xs"
+                    minW={4}
+                    h={4}
+                    px={1}
+                    fontSize="2xs"
+                    alignSelf="center"
+                    justifyContent="center"
+                    borderRadius="full"
+                    variant="surface"
+                    colorPalette="gray"
+                  >
+                    {sourceIndex + 1}
                   </Badge>
                 )}
-                <Link asChild>
-                  <MainLink href={`/item/${slugify(item.name)}`} prefetch={false}>
-                    {item.name}
-                  </MainLink>
-                </Link>
-              </Text>
-              {item.price && (
-                <Text fontSize="xs" opacity="0.8">
-                  {format.number(item.price)} NP
-                </Text>
-              )}
-              {data.priced && !item.price && (
-                <Text fontSize="xs" opacity="0.8" fontStyle="italic">
-                  {t('ItemPage.unspecified-price')}
-                </Text>
-              )}
-              {item.relisting && (
-                <TradeRelisting
-                  disclaimer={t('ItemPage.relisting-disclaimer')}
-                  history={item.relisting.history.map((entry) => ({
-                    date: format.dateTime(new Date(entry.date), {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    }),
-                    price:
-                      entry.price === null
-                        ? t('ItemPage.unspecified-price')
-                        : `${format.number(entry.price)} NP`,
-                  }))}
-                  label={t('ItemPage.relisting-history', {
-                    count: item.relisting.history.length,
-                    date: format.dateTime(new Date(item.relisting.since), {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    }),
-                  })}
-                />
-              )}
-            </Flex>
-          </Flex>
-        ))}
+                <Flex w={50} flexShrink="0" justifyContent="center" alignItems="center">
+                  <Link asChild>
+                    <MainLink href={`/item/${slugify(item.name)}`} prefetch={false}>
+                      <Image src={item.image} unoptimized width={50} height={50} alt="" />
+                    </MainLink>
+                  </Link>
+                </Flex>
+                <Flex flexFlow="column" justifyContent="center">
+                  <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
+                    {item.amount > 1 && (
+                      <Badge mr={1} colorPalette="yellow" textTransform={'none'}>
+                        {item.amount}x
+                      </Badge>
+                    )}
+                    <Link asChild>
+                      <MainLink href={`/item/${slugify(item.name)}`} prefetch={false}>
+                        {item.name}
+                      </MainLink>
+                    </Link>
+                  </Text>
+                  {item.price && (
+                    <Text fontSize="xs" opacity="0.8">
+                      {format.number(item.price)} NP
+                    </Text>
+                  )}
+                  {data.priced && !item.price && (
+                    <Text fontSize="xs" opacity="0.8" fontStyle="italic">
+                      {t('ItemPage.unspecified-price')}
+                    </Text>
+                  )}
+                  {item.relisting && (
+                    <TradeRelisting
+                      disclaimer={t('ItemPage.relisting-disclaimer')}
+                      history={item.relisting.history.map((entry) => ({
+                        date: format.dateTime(new Date(entry.date), {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        }),
+                        price:
+                          entry.price === null
+                            ? t('ItemPage.unspecified-price')
+                            : `${format.number(entry.price)} NP`,
+                      }))}
+                      label={t('ItemPage.relisting-history', {
+                        count: item.relisting.history.length,
+                        date: format.dateTime(new Date(item.relisting.since), {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        }),
+                      })}
+                    />
+                  )}
+                </Flex>
+              </Flex>
+            </Fragment>
+          );
+        })}
+        {!expanded &&
+          indexedItems.length > 0 &&
+          indexedItems[indexedItems.length - 1].sourceIndex < data.items.length - 1 && (
+            <HiddenItemsGap
+              count={data.items.length - indexedItems[indexedItems.length - 1].sourceIndex - 1}
+            />
+          )}
+        {canCollapse && (
+          <Button
+            size="xs"
+            variant="subtle"
+            mx={3}
+            mt={1}
+            mb={2}
+            aria-expanded={expanded}
+            onClick={() => setExpanded((open) => !open)}
+          >
+            {expanded ? t('ItemPage.show-less') : `${t('ItemPage.show-more')} (${hiddenCount})`}
+          </Button>
+        )}
         <Flex
           textAlign="center"
           fontSize="xs"
