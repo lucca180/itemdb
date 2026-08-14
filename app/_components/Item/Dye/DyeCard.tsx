@@ -1,11 +1,17 @@
 import { Suspense } from 'react';
-import { Flex, Text } from '@chakra-ui/react';
+import { Button, Flex, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
 import ItemCard from '@components/Items/ItemCard';
+import MainLink from '@components/Utils/MainLink';
 import { needsDye } from '@app/_components/Item/itemPageGates';
-import { loadDyeData } from '@app/_components/Item/loadUtils';
+import {
+  loadDyeData,
+  loadPetStyleForItem,
+  type PetStyleLinkData,
+} from '@app/_components/Item/loadUtils';
 import type { DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
 import { getTranslations } from 'next-intl/server';
+import { stylesComboHref, stylesUnknownHref } from '@utils/petStyles/paths';
 import type { ItemData } from '@types';
 import type { ReactNode } from 'react';
 
@@ -25,6 +31,25 @@ function getDyeCardType(dyeData: DyeworksData): DyeCardType {
   return 'none';
 }
 
+function petStylesComboHref(petStyle: PetStyleLinkData): string {
+  if (!petStyle.colorName) return stylesUnknownHref(petStyle.speciesName);
+  return stylesComboHref(petStyle.speciesName, petStyle.colorName);
+}
+
+async function loadPrismaticPetStyle(
+  itemId: number,
+  originalItemId: number
+): Promise<PetStyleLinkData | null> {
+  if (itemId === originalItemId) return loadPetStyleForItem(itemId);
+
+  const [current, original] = await Promise.all([
+    loadPetStyleForItem(itemId),
+    loadPetStyleForItem(originalItemId),
+  ]);
+
+  return current ?? original;
+}
+
 export async function DyeCard({ item }: Props) {
   if (!needsDye(item)) return null;
 
@@ -41,6 +66,11 @@ async function DyeCardContent({ item }: Props) {
 
   const type = getDyeCardType(dyeData);
   const isOriginal = item.internal_id === dyeData.originalItem.internal_id;
+  const petStyle =
+    type === 'prismatic'
+      ? await loadPrismaticPetStyle(item.internal_id, dyeData.originalItem.internal_id)
+      : null;
+  const comboHref = petStyle ? petStylesComboHref(petStyle) : null;
 
   return (
     <CardBase
@@ -67,6 +97,7 @@ async function DyeCardContent({ item }: Props) {
               b: (c: ReactNode) => <b>{c}</b>,
             })}
         </Text>
+
         <Flex wrap="wrap" gap={2} justifyContent={'center'}>
           <Flex
             direction="column"
@@ -102,6 +133,18 @@ async function DyeCardContent({ item }: Props) {
             </Flex>
           </Flex>
         </Flex>
+        {comboHref && petStyle && (
+          <Button asChild size="sm" fontWeight="semibold">
+            <MainLink href={comboHref} trackEvent="dye-card" trackEventLabel="pet-styles-combo">
+              {petStyle.colorName
+                ? t('DyeCard.all-combo-styles', {
+                    color: petStyle.colorName,
+                    species: petStyle.speciesName,
+                  })
+                : t('DyeCard.all-species-styles', { species: petStyle.speciesName })}
+            </MainLink>
+          </Button>
+        )}
       </Flex>
     </CardBase>
   );

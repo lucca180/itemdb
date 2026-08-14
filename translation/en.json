@@ -1413,7 +1413,9 @@
     "dyeworks-all-variants": "All Variants",
     "dyeworks-original-item": "Original Item",
     "prismatic-x-variations": "This item have <b>{x} Prismatic</b> variations",
-    "prismatic-is-variation": "This item is a <b>Prismatic variation</b>"
+    "prismatic-is-variation": "This item is a <b>Prismatic variation</b>",
+    "all-combo-styles": "All {color} {species} styles",
+    "all-species-styles": "All {species} styles"
   },
   "SortTypes": {
     "name": "Name",

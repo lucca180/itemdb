@@ -1414,7 +1414,9 @@
     "dyeworks-x-variations": "Este item tem <b>{x} variações Dyeworks</b>",
     "dyeworks-original-item": "Item Original",
     "prismatic-is-variation": "Esse item é uma <b>Variante Prismática</b>",
-    "prismatic-x-variations": "Esse item tem <b>{x} Variantes Prismáticas</b>"
+    "prismatic-x-variations": "Esse item tem <b>{x} Variantes Prismáticas</b>",
+    "all-combo-styles": "Todos os styles de {color} {species}",
+    "all-species-styles": "Todos os styles de {species}"
   },
   "SortTypes": {
     "name": "Nome",
