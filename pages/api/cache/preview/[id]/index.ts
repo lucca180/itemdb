@@ -8,6 +8,7 @@ import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../../types';
 import { Items, Prisma } from '@prisma/generated/client';
 import { Chance } from 'chance';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
+import { ITEMDB_ALT_STYLES_URL } from '../alt-styles';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -194,7 +195,7 @@ const handleAltStyle = async (
   itemName: string,
   item_id: number | null
 ): Promise<string[]> => {
-  const dtiRes = await axios.get(`https://impress.openneo.net/species/0/alt-styles.json`, {
+  const dtiRes = await axios.get(ITEMDB_ALT_STYLES_URL, {
     headers: {
       'User-Agent': 'itemdb (https://itemdb.com.br/;)',
     },

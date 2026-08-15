@@ -32,6 +32,7 @@ const API_SKIPS = {
     /^\/api\/v1\/tools\/album-helper\/redirect$/,
     /^\/api\/health$/,
     /^\/api\/health\/db$/,
+    /^\/api\/cache.*$/,
   ],
   POST: [
     /^\/api\/auth.*$/,

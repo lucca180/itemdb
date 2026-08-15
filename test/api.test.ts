@@ -135,6 +135,16 @@ describe.concurrent('API Access tests', () => {
     expect(response.status).toBe(200);
   });
 
+  test('cache routes skip API auth', async () => {
+    const request = new NextRequest('http://localhost/api/cache/preview/alt-styles', {
+      method: 'GET',
+    });
+
+    const response = await apiMiddleware(request);
+    expect(response.headers.get('x-itemdb-skip')).toBe('true');
+    expect(response.status).toBe(200);
+  });
+
   test('Access API without proof, key or session', async () => {
     const request = new NextRequest('http://localhost/api/v1/items', {
       method: 'GET',
