@@ -13,6 +13,7 @@ import { getTranslations } from 'next-intl/server';
 import { ComboContent } from '../../components/ComboContent';
 import { MissingComboContent } from '../../components/MissingComboContent';
 import { howToGetComboSeoTitle, resolveBrowseName } from '@utils/petColorCopy';
+import { petPreviewUrl } from '@utils/petColorTool';
 import { BASE_PATH, MAIN_COLOR } from '../../components/RainbowPoolShell';
 
 type PageProps = {
@@ -50,7 +51,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const { speciesName, colorName, thumbnail, speciesId, colorId } = petColorData;
-  const previewUrl = `https://cdn.itemdb.com.br/colors/${thumbnail.species}_${thumbnail.color}.png`;
+  const previewUrl =
+    thumbnail.species && thumbnail.color ? petPreviewUrl(speciesName, colorName) : null;
   const styleGroups = await loadComboPetStyles(speciesId, colorId, colorName);
   const description = styleGroups.length
     ? t('PetColors.species-color-description-with-styles', { 0: colorName, 1: speciesName })
@@ -67,7 +69,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     twitter: { ...metadata.twitter, card: 'summary_large_image' },
     openGraph: {
       ...metadata.openGraph,
-      images: [{ url: previewUrl, width: 150, height: 150, alt: `${colorName} ${speciesName}` }],
+      ...(previewUrl
+        ? {
+            images: [
+              { url: previewUrl, width: 150, height: 150, alt: `${colorName} ${speciesName}` },
+            ],
+          }
+        : {}),
     },
   };
 }

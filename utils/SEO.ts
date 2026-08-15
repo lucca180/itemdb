@@ -1,5 +1,12 @@
 import { DefaultSeoProps } from 'next-seo';
 
+export const DEFAULT_OG_IMAGE = {
+  url: 'https://itemdb.com.br/logo_icon.png',
+  width: 128,
+  height: 128,
+  alt: 'itemdb logo',
+} as const;
+
 const SEOConfig: DefaultSeoProps = {
   defaultTitle: 'itemdb - Neopets Item Database',
   titleTemplate: '%s | itemdb - Neopets Item Database',
@@ -7,9 +14,7 @@ const SEOConfig: DefaultSeoProps = {
     'Neopets Item Database: discover updated prices, wearable previews, restock history, color search, capsule drop rates, and create your own item lists.',
   openGraph: {
     type: 'website',
-    images: [
-      { url: 'https://itemdb.com.br/logo_icon.png', width: 128, height: 128, alt: 'itemdb logo' },
-    ],
+    images: [DEFAULT_OG_IMAGE],
     url: 'https://itemdb.com.br/',
     siteName: 'itemdb - Neopets Item Database',
   },

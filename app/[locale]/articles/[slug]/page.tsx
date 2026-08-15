@@ -32,7 +32,9 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     ...metadata,
     openGraph: {
       ...metadata.openGraph,
-      images: [{ url: post.thumbnail ?? '', width: 150, height: 150, alt: post.title }],
+      ...(post.thumbnail
+        ? { images: [{ url: post.thumbnail, width: 150, height: 150, alt: post.title }] }
+        : {}),
     },
   };
 }

@@ -97,17 +97,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const tokenCount = browse?.tokens.length ?? 0;
   const isUnknown = resolved.name === UNKNOWN_COLOR_NAME;
 
+  const title = isUnknown
+    ? t('PetStyles.browse-seo-title-unknown')
+    : t('PetStyles.browse-seo-title', { name: resolved.name });
   const metadata = await getStaticAppMetadata({
-    title: isUnknown
-      ? t('PetStyles.browse-seo-title-unknown')
-      : t('PetStyles.browse-seo-title', { name: resolved.name }),
+    title,
     description: isUnknown
       ? t('PetStyles.browse-seo-description-unknown')
       : t('PetStyles.browse-seo-description', { name: resolved.name }),
     pathname: stylesBrowseHref(resolved.name),
     noindex: tokenCount === 0,
   });
-  return metadata;
+
+  const previewUrl = browse?.combos[0]?.previewUrl ?? browse?.tokens[0]?.previewUrl;
+  if (!previewUrl) return metadata;
+
+  return {
+    ...metadata,
+    openGraph: {
+      ...metadata.openGraph,
+      images: [{ url: previewUrl, width: 150, height: 150, alt: title }],
+    },
+  };
 }
 
 export default function PetStylesBrowsePage({ params, searchParams }: PageProps) {

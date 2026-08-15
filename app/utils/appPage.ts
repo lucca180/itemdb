@@ -2,9 +2,20 @@ import type { Metadata } from 'next';
 import type { NextSeoProps } from 'next-seo';
 import { locale as getRootLocale } from 'next/root-params';
 import { getPathname } from '@i18n/navigation';
-import SEOConfig, { getDefaultSEO } from '@utils/SEO';
+import SEOConfig, { DEFAULT_OG_IMAGE, getDefaultSEO } from '@utils/SEO';
 
 export type ItemDbLocale = 'en' | 'pt';
+
+export function getDefaultOpenGraphImages() {
+  return [
+    {
+      url: DEFAULT_OG_IMAGE.url,
+      width: DEFAULT_OG_IMAGE.width,
+      height: DEFAULT_OG_IMAGE.height,
+      alt: DEFAULT_OG_IMAGE.alt,
+    },
+  ];
+}
 
 type StaticAppPageOptions = {
   title: string;
@@ -48,6 +59,7 @@ export function getStaticAppPageProps(
         url: canonical,
         title: options.title,
         description: options.description,
+        images: getDefaultOpenGraphImages(),
       },
       twitter: {
         card: 'summary',
@@ -88,16 +100,17 @@ export function buildAppMetadataDefaults(locale?: string): Metadata {
       template: defaultSeo.titleTemplate ?? '%s | itemdb - Neopets Item Database',
     },
     description: defaultSeo.description,
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/favicon.svg', type: 'image/svg+xml' },
+      ],
+    },
     openGraph: {
       type: 'website',
       siteName: defaultSeo.openGraph?.siteName,
       locale: defaultSeo.openGraph?.locale,
-      images: defaultSeo.openGraph?.images?.map((image) => ({
-        url: image.url,
-        width: image.width ?? undefined,
-        height: image.height ?? undefined,
-        alt: image.alt ?? undefined,
-      })),
+      images: getDefaultOpenGraphImages(),
     },
     twitter: {
       card: 'summary',
