@@ -19,6 +19,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
+  let start = Date.now();
   const { id, refresh, hash, noPlaceholder } = req.query;
   const skipPlaceholder = noPlaceholder === '1' || noPlaceholder === 'true';
 
@@ -29,19 +30,26 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (!id) return res.status(400).send('No image id provided');
 
     const img_id = (id as string).split('.')[0];
+    const path = `preview/${img_id}.png`;
 
-    const item = await prisma.items.findFirst({
+    const itemProm = prisma.items.findFirst({
       where: {
         image_id: img_id as string,
       },
+      include: {
+        petStyle: { select: { internal_id: true } },
+      },
     });
+
+    const [item, lastModified] = await Promise.all([itemProm, cdnExists(path, true)]);
+
+    start = updateServerTime('item-lookup', start, res);
 
     if (!item) return res.status(404).send('Item not found');
 
-    const path = `preview/${img_id}.png`;
+    const isPetStyle = !!item.petStyle;
 
-    const lastModified = await cdnExists(path, true);
-
+    start = updateServerTime('cdn-check', start, res);
     const forceRefresh = refresh === 'true';
 
     let processPromise;
@@ -52,13 +60,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         (Date.now() - lastModifiedDate.getTime()) / (1000 * 60 * 60 * 24)
       );
 
-      if (daysSinceLastUpdate >= 30) {
+      if (daysSinceLastUpdate >= 30 && !isPetStyle) {
         try {
           const [, rawData] = await handleRegularStyle(item.name);
           processPromise = processDTIData(item, rawData);
         } catch (e) {
           processPromise = null;
         }
+        start = updateServerTime('dti-regular', start, res);
       }
     }
 
@@ -82,14 +91,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         | (DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] })
         | undefined = undefined;
 
-      try {
-        const styleData = await handleRegularStyle(item.name);
-        imagesURLs = styleData[0];
-        rawData = styleData[1];
-        if (imagesURLs.length === 0) throw new Error('No layers found');
-      } catch (e) {
+      if (isPetStyle) {
         imagesURLs = await handleAltStyle(item.image_id!, item.name, item.item_id);
-        if (imagesURLs.length === 0) throw e;
+        start = updateServerTime('alt-styles', start, res);
+        if (imagesURLs.length === 0) throw new Error('No layers found');
+      } else {
+        try {
+          const styleData = await handleRegularStyle(item.name);
+          start = updateServerTime('dti-regular', start, res);
+          imagesURLs = styleData[0];
+          rawData = styleData[1];
+          if (imagesURLs.length === 0) throw new Error('No layers found');
+        } catch (e) {
+          if (!rawData) start = updateServerTime('dti-regular', start, res);
+          imagesURLs = await handleAltStyle(item.image_id!, item.name, item.item_id);
+          start = updateServerTime('alt-styles', start, res);
+          if (imagesURLs.length === 0) throw e;
+        }
       }
 
       const imagesPromises = [];
@@ -99,12 +117,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       }
 
       const images = await Promise.all(imagesPromises);
+      start = updateServerTime('load-images', start, res);
 
       for (const img of images) ctx.drawImage(img, 0, 0, 600, 600);
 
       const buffer = await canvas.encode('webp', 100);
+      start = updateServerTime('encode-image', start, res);
 
       await uploadToS3(path, buffer, 'image/webp');
+      start = updateServerTime('upload-image', start, res);
 
       res.writeHead(200, {
         'Content-Type': 'image/webp',
@@ -140,6 +161,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     const img = await loadImage('./public/oops.png');
+    start = updateServerTime('oops-image', start, res);
 
     if (!canvas || !ctx) {
       canvas = createCanvas(600, 600);
@@ -149,6 +171,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     ctx.drawImage(img, 0, 0);
 
     const buffer = await canvas.encode('webp', 50);
+    updateServerTime('oops-encode', start, res);
 
     res.writeHead(400, {
       'Content-Type': 'image/webp',
@@ -248,4 +271,16 @@ const processDTIData = async (
     data: dataArr,
     skipDuplicates: true,
   });
+};
+
+const updateServerTime = (label: string, startTime: number, response: NextApiResponse) => {
+  const endTime = Date.now();
+  const value = endTime - startTime;
+  const serverTime = response.getHeader('Server-Timing') || '';
+  const newServerTime = serverTime
+    ? `${serverTime}, ${label};dur=${value}`
+    : `${label};dur=${value}`;
+
+  response.setHeader('Server-Timing', newServerTime);
+  return endTime;
 };
