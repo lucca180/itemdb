@@ -6,19 +6,26 @@ import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
 import { categoryToShopID, restockShopInfo, slugify } from '../../utils/utils';
 import { resolvePageLocale } from '../../utils/locales';
+import { STYLES_BASE_PATH } from '@utils/petStyles/paths';
 import { ProductJsonLd, ProductJsonLdProps } from 'next-seo';
 import type { BreadcrumbItem } from './types';
 
 type ItemBreadcrumbProps = {
   item: ItemData;
   officialLists?: UserList[];
+  /** Combo / hub href when this item is a Pet Style token. */
+  petStyleHref?: string;
   useAppDir?: boolean;
   /** When false, skip Product/Breadcrumb JSON-LD (e.g. Suspense fallback). Default true. */
   includeJsonLd?: boolean;
 };
 
+function isLikelyPetStyleToken(item: ItemData) {
+  return (item.category ?? '').toLowerCase() === 'special' && /\btoken$/i.test(item.name.trim());
+}
+
 export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
-  const { item, officialLists, useAppDir = false, includeJsonLd = true } = props;
+  const { item, officialLists, petStyleHref, useAppDir = false, includeJsonLd = true } = props;
   const t = useTranslations();
   const locale = useLocale();
   const category = (item.category ?? 'unknown').toLowerCase();
@@ -49,7 +56,15 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
       },
     ];
 
-    if (item.findAt.restockShop && item.category && item.rarity && item.rarity < 100) {
+    const petStylesHref = petStyleHref ?? (isLikelyPetStyleToken(item) ? STYLES_BASE_PATH : null);
+
+    if (petStylesHref) {
+      breadList[2] = {
+        position: 3,
+        name: t('PetStyles.breadcrumb'),
+        item: petStylesHref,
+      };
+    } else if (item.findAt.restockShop && item.category && item.rarity && item.rarity < 100) {
       const shopInfo = restockShopInfo[categoryToShopID[item.category.toLowerCase()]];
 
       if (!shopInfo || !shopInfo.name) return breadList;
@@ -69,7 +84,7 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
     }
 
     return breadList;
-  }, [item, locale, category, t, officialLists]);
+  }, [item, locale, category, t, officialLists, petStyleHref]);
 
   const productJson = includeJsonLd ? getItemJSONLD(item) : null;
   return (
