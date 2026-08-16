@@ -13,6 +13,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   try {
     user = (await CheckAuth(req)).user;
+    if (user?.banned) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
   } catch (e) {}
 
   const { session, expires } = createSession(!!user);
