@@ -15,6 +15,7 @@ export function register() {
         // Adjust this value in production, or use tracesSampler for greater control
         tracesSampleRate: 0.12,
         profilesSampleRate: 0.12,
+        ignoreErrors: ['MaxListenersExceededWarning'],
         integrations: [
           Sentry.prismaIntegration(),
           Sentry.captureConsoleIntegration({
@@ -32,6 +33,7 @@ export function register() {
         // Adjust this value in production, or use tracesSampler for greater control
         tracesSampleRate: 0.12,
         profilesSampleRate: 0.12,
+        ignoreErrors: ['MaxListenersExceededWarning'],
         integrations: [
           Sentry.captureConsoleIntegration({
             // array of methods that should be captured
