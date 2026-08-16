@@ -158,3 +158,4 @@ jobs:
             pm2 stop ecosystem.config.js --only "$PREVIOUS_NAME" || true
 
             pm2 reset "$TARGET_NAME"
+            pm2 save
