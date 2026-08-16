@@ -45,13 +45,7 @@ export async function generateMetadata({ params }: ListDetailPageProps): Promise
     ...metadata,
     openGraph: {
       ...metadata.openGraph,
-      images: [
-        {
-          url: list.coverURL ?? 'https://itemdb.com.br/logo_icon.png',
-          width: 150,
-          height: 150,
-        },
-      ],
+      ...(list.coverURL ? { images: [{ url: list.coverURL, width: 150, height: 150 }] } : {}),
     },
   };
 }

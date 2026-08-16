@@ -74,13 +74,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const tokens = await loadPetStylesComboDetail(combo.speciesId, combo.colorId, combo.colorName);
 
+  const title = combo.isUnknown
+    ? t('PetStyles.combo-seo-title-unknown', { species: combo.speciesName })
+    : t('PetStyles.combo-seo-title', {
+        color: combo.colorName,
+        species: combo.speciesName,
+      });
   const metadata = await getStaticAppMetadata({
-    title: combo.isUnknown
-      ? t('PetStyles.combo-seo-title-unknown', { species: combo.speciesName })
-      : t('PetStyles.combo-seo-title', {
-          color: combo.colorName,
-          species: combo.speciesName,
-        }),
+    title,
     description: combo.isUnknown
       ? t('PetStyles.combo-seo-description-unknown', { species: combo.speciesName })
       : t('PetStyles.combo-seo-description', {
@@ -90,7 +91,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     pathname: stylesComboHref(combo.speciesName, combo.colorName),
     noindex: tokens.length === 0,
   });
-  return metadata;
+
+  const previewUrl = tokens[0]?.previewUrl;
+  if (!previewUrl) return metadata;
+
+  return {
+    ...metadata,
+    openGraph: {
+      ...metadata.openGraph,
+      images: [{ url: previewUrl, width: 150, height: 150, alt: title }],
+    },
+  };
 }
 
 export default function PetStylesComboPage({ params }: PageProps) {

@@ -4,8 +4,13 @@ import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@i18n/navigation';
 import { ItemBreadcrumb } from '@components/Breadcrumbs/ItemBreadcrumb';
-import { getOfficialItemLists } from '@app/_components/Item/loadUtils';
+import {
+  getOfficialItemLists,
+  loadPetStyleForItem,
+  type PetStyleLinkData,
+} from '@app/_components/Item/loadUtils';
 import { getCachedNow } from '@utils/getCachedNow';
+import { stylesComboHref, stylesUnknownHref } from '@utils/petStyles/paths';
 import { shouldShowTradeLists } from '@utils/utils';
 import type { ItemData } from '@types';
 
@@ -13,12 +18,27 @@ type ItemHeaderProps = {
   item: ItemData;
 };
 
+function petStyleBreadcrumbHref(petStyle: PetStyleLinkData): string {
+  if (!petStyle.colorName) return stylesUnknownHref(petStyle.speciesName);
+  return stylesComboHref(petStyle.speciesName, petStyle.colorName);
+}
+
 async function ItemHeaderBreadcrumb({ item }: ItemHeaderProps) {
-  const lists = await getOfficialItemLists(
-    item.internal_id,
-    shouldShowTradeLists(item, await getCachedNow())
+  const includeTrade = shouldShowTradeLists(item, await getCachedNow());
+  const isSpecial = (item.category ?? '').toLowerCase() === 'special';
+  const [lists, petStyle] = await Promise.all([
+    getOfficialItemLists(item.internal_id, includeTrade),
+    isSpecial ? loadPetStyleForItem(item.internal_id) : null,
+  ]);
+
+  return (
+    <ItemBreadcrumb
+      item={item}
+      officialLists={lists}
+      petStyleHref={petStyle ? petStyleBreadcrumbHref(petStyle) : undefined}
+      useAppDir
+    />
   );
-  return <ItemBreadcrumb item={item} officialLists={lists} useAppDir />;
 }
 
 export async function ItemHeader({ item }: ItemHeaderProps) {

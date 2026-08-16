@@ -43,11 +43,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? t('PetColors.species-description', { 0: name })
       : t('PetColors.paint-description', { 0: name });
 
-  return await getStaticAppMetadata({
+  const metadata = await getStaticAppMetadata({
     title,
     description,
     pathname: `${BASE_PATH}/${petColorSlug(name)}`,
   });
+
+  const combos =
+    kind === 'species'
+      ? await loadCombosBySpeciesSlug(petColorSlug(name))
+      : await loadCombosByColorSlug(petColorSlug(name));
+  const previewUrl = combos?.[0]?.previewUrl;
+  if (!previewUrl) return metadata;
+
+  return {
+    ...metadata,
+    openGraph: {
+      ...metadata.openGraph,
+      images: [{ url: previewUrl, width: 150, height: 150, alt: title }],
+    },
+  };
 }
 
 export default function RainbowPoolBrowsePage({ params }: PageProps) {
