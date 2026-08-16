@@ -843,6 +843,8 @@
     "price-calculator": "Price Calculator",
     "trade-lot-pricing": "Trade Lot Pricing",
     "trade-lot-pricing-txt": "Fill in the value of each item in the trade lot according to the wishlist",
+    "trade-pricing-new-account-title": "Your account is a bit too new",
+    "trade-pricing-new-account-txt": "Trade pricing unlocks after 7 days — this helps keep prices accurate. You can still help right away by <Link>voting on suggestions</Link>.",
     "contact-us": "Contact Us",
     "contact-us-text": "Have a question, cool idea, suggestion, or found an error? Contact us!",
     "suggestion-voting": "Suggestion Voting",

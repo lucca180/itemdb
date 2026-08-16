@@ -24,7 +24,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const user_id = user.id;
   const isAdmin = user.role === 'ADMIN';
-  let voteMultiplier = isAdmin ? FEEDBACK_VOTE_TARGET * 2 : getVoteMultiplier(user.xp);
+  const isNewAccount =
+    !isAdmin && Date.now() - new Date(user.createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
+  let voteMultiplier = isAdmin
+    ? FEEDBACK_VOTE_TARGET * 2
+    : isNewAccount
+      ? 1
+      : getVoteMultiplier(user.xp);
 
   try {
     const feedbackRaw = await prisma.feedbacks.findUniqueOrThrow({
@@ -48,7 +54,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         increment: 1 * voteMultiplier,
       };
     else if (action === 'downvote') {
-      voteMultiplier = isAdmin ? voteMultiplier : Math.min(voteMultiplier * 2, MAX_VOTE_MULTIPLIER);
+      voteMultiplier =
+        isAdmin || isNewAccount
+          ? voteMultiplier
+          : Math.min(voteMultiplier * 2, MAX_VOTE_MULTIPLIER);
 
       votesIncrementDecrement = {
         decrement: 1 * voteMultiplier,

@@ -54,6 +54,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       if (user.xp <= -300 && type !== 'feedback') {
         return res.status(403).send('Forbidden');
       }
+
+      if (
+        type === 'tradePrice' &&
+        user.role !== 'ADMIN' &&
+        Date.now() - user.createdAt.getTime() < 7 * 24 * 60 * 60 * 1000
+      ) {
+        return res.status(403).json({ success: false, message: 'Account too new' });
+      }
     }
   }
 

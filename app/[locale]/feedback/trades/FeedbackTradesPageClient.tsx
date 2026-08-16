@@ -1,7 +1,7 @@
 'use client';
 
 import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
-import { Box, Button, Center, Flex, Kbd, Spinner, Text } from '@chakra-ui/react';
+import { Alert, Box, Button, Center, Flex, Kbd, Spinner, Text } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import CardBase from '@components/Card/CardBase';
@@ -15,11 +15,13 @@ import { NewPolicyReminder } from '@components/Feedback/NewPolicyReminder';
 
 type FeedbackTradesPageClientProps = {
   shouldShowReminder: boolean;
+  isNewAccount: boolean;
   target?: string;
 };
 
 export function FeedbackTradesPageClient({
   shouldShowReminder,
+  isNewAccount,
   target,
 }: FeedbackTradesPageClientProps) {
   const t = useTranslations();
@@ -27,7 +29,7 @@ export function FeedbackTradesPageClient({
   const [trades, setTrades] = useState<TradeData[]>([]);
   const [prevTrades, setPrev] = useState<TradeData[]>([]);
   const [currentTrade, setCurrentTrade] = useState<TradeData>();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isNewAccount);
   const [error, setError] = useState<string>('');
   const popularItem = useRef<string | undefined>(undefined);
   const skippedTrades = useRef<string[]>([]);
@@ -51,10 +53,10 @@ export function FeedbackTradesPageClient({
   };
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && !isNewAccount) {
       void init();
     }
-  }, [authLoading, user]);
+  }, [authLoading, user, isNewAccount]);
 
   const handleSubmitAdmin = async (trade: TradeData) => {
     setIsLoading(true);
@@ -150,7 +152,20 @@ export function FeedbackTradesPageClient({
       </CardBase>
       <Flex flex="2" flexFlow={{ base: 'column-reverse', md: 'column' }} h="100%" w="100%" gap={4}>
         {shouldShowReminder && <NewPolicyReminder />}
-        {!isLoading && currentTrade && (
+        {isNewAccount && (
+          <Alert.Root status="info" variant="subtle" borderRadius="md">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>{t('Feedback.trade-pricing-new-account-title')}</Alert.Title>
+              <Alert.Description>
+                {t.rich('Feedback.trade-pricing-new-account-txt', {
+                  Link: (chunk) => <MainLink href="/feedback/vote">{chunk}</MainLink>,
+                })}
+              </Alert.Description>
+            </Alert.Content>
+          </Alert.Root>
+        )}
+        {!isNewAccount && !isLoading && currentTrade && (
           <>
             <FeedbackTrade
               hasUndo={prevTrades.length > 0}
@@ -171,12 +186,12 @@ export function FeedbackTradesPageClient({
             </Text>
           </>
         )}
-        {isLoading && (
+        {!isNewAccount && isLoading && (
           <Center>
             <Spinner size="lg" />
           </Center>
         )}
-        {!isLoading && !currentTrade && (
+        {!isNewAccount && !isLoading && !currentTrade && (
           <Center flexFlow="column" gap={4}>
             <Text>{t('Feedback.thanks-for-helping-out-want-more-trades')}</Text>
             <Button onClick={init}>{t('Feedback.yes-i-need-it')}</Button>

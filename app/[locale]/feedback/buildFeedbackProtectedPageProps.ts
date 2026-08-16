@@ -20,5 +20,5 @@ export async function buildFeedbackProtectedPageProps(locale: string, pathname: 
   const cookieStore = await cookies();
   const shouldShowReminder = cookieStore.get('bbpb_new_policy_reminder')?.value !== 'true';
 
-  return { shouldShowReminder };
+  return { shouldShowReminder, user };
 }
