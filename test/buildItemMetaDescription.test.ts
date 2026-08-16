@@ -355,27 +355,29 @@ describe('buildItemMetaDescription', () => {
     expect(dBlock(notWearable)).not.toContain('item preview');
   });
 
-  it('mentions odds and drops only when the drops card is actually shown', () => {
+  it('mentions drop odds only when the drops card is actually shown', () => {
     const capsule = item({
       name: 'Mystery Capsule',
       useTypes: { canEat: 'false', canRead: 'false', canOpen: 'true', canPlay: 'false' },
     });
 
     const withDrops = buildItemMetaDescription(capsule, 'en', { hasDropsCard: true });
+    const withDropsPt = buildItemMetaDescription(capsule, 'pt', { hasDropsCard: true });
     const openableWithoutDrops = buildItemMetaDescription(capsule, 'en');
 
     expectSlotOrder(dBlock(withDrops), [
       'updated prices',
       'auction history',
       'trades',
-      'odds and drops',
+      'drop odds',
     ]);
-    expect(dBlock(openableWithoutDrops)).not.toContain('odds and drops');
+    expect(dBlock(withDropsPt, 'pt')).toContain('chances de drop');
+    expect(dBlock(openableWithoutDrops)).not.toContain('drop odds');
   });
 
-  it('omits odds and drops when the item is not openable', () => {
+  it('omits drop odds when the item is not openable', () => {
     const meta = buildItemMetaDescription(item({ name: 'Green Apple' }), 'en');
-    expect(dBlock(meta)).not.toContain('odds and drops');
+    expect(dBlock(meta)).not.toContain('drop odds');
   });
 
   it('closes a cut flavor with an ellipsis so it does not run into D', () => {

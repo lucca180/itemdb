@@ -99,7 +99,7 @@ const COPY: Record<ItemDbLocale, MetaCopy> = {
     ncTradeHistory: 'NC trade history',
     trades: 'trades',
     restockInfo: 'restock info',
-    dropsAndOdds: 'odds and drops',
+    dropsAndOdds: 'drop odds',
     itemPreview: 'item preview',
   },
   pt: {
@@ -114,7 +114,7 @@ const COPY: Record<ItemDbLocale, MetaCopy> = {
     ncTradeHistory: 'histórico de trocas NC',
     trades: 'trocas',
     restockInfo: 'restock info',
-    dropsAndOdds: 'chances e drops',
+    dropsAndOdds: 'chances de drop',
     itemPreview: 'item preview',
   },
 };
@@ -204,7 +204,7 @@ function closeFlavor(flavor: string, wasCut: boolean) {
  * 2. auction history (any active NP) | NC trade history
  * 3. trades (NP; can sit next to auction)
  * 4. restock info
- * 5. odds and drops (drops card actually rendered)
+ * 5. drop odds (drops card actually rendered)
  * 6. item preview
  */
 function collectSlots(

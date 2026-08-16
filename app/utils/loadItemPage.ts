@@ -10,6 +10,7 @@ import {
 import { getDefaultSEO } from '@utils/SEO';
 import { cacheLife } from 'next/cache';
 import { hasDisplayedDrops } from '@app/_components/Item/Drops/loadItemDrops';
+import { needsDrops } from '@app/_components/Item/itemPageGates';
 import {
   buildItemMetaDescription,
   truncateItemOgDescription,
@@ -25,7 +26,9 @@ export async function buildItemPageMetadata(item: ItemData, locale: string): Pro
   const pathname = `/item/${item.slug}` as const;
   const canonical = getItemDbCanonical(pathname, normalizedLocale);
   const hreflang = buildItemDbHreflangAlternates(pathname);
-  const hasDropsCard = await hasDisplayedDrops(item.internal_id, item.useTypes.canOpen);
+  const hasDropsCard = needsDrops(item)
+    ? await hasDisplayedDrops(item.internal_id, item.useTypes.canOpen)
+    : false;
   const description = buildItemMetaDescription(item, normalizedLocale, { hasDropsCard });
   const ogDescription = truncateItemOgDescription(item.description) || description;
   const defaultSeo = getDefaultSEO(locale);
