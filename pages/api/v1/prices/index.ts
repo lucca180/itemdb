@@ -493,6 +493,7 @@ const upsertFilteredAuctionPrices = async (filteredAuctions: RestockAuction[]) =
       () =>
         prisma.priceProcess2.update({
           where: {
+            // depends on PriceProcess2 @@unique([type, neo_id]) — do not drop it
             type_neo_id: {
               type: 'auction',
               neo_id: auction.neo_id!,

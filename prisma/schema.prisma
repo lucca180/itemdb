@@ -1011,7 +1011,9 @@ model PriceProcess2 {
   addedAt    DateTime @default(now())
   ip_address String?
 
-  hash      String? @unique
+  hash String? @unique
+  // trades: TradeItems.internal_id (never trade_id — unique below would collapse the lot to 1 row)
+  // auction: auction neo_id (upsert uses type_neo_id; do not drop this unique)
   neo_id    Int?
   processed Boolean @default(false)
 

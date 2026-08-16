@@ -85,7 +85,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   if (lang !== 'en') return res.status(400).json('Language must be english');
 
   const pendingCreates: Prisma.TradesCreateInput[] = [];
-  const toPriceProcess = [] as Prisma.PriceProcess2UncheckedCreateInput[];
   let itemDataRaw: { [key: string]: ItemData } = {};
 
   for (const lot of tradeLots) {
@@ -228,12 +227,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     // its not possible to use createMany with multiple related records
     // so we have to try to create the trade and then create the items
-    toPriceProcess.push(
-      ...tradeItemToProcessItem(
-        tradeData.items!.create as Prisma.TradeItemsCreateManyInput[],
-        tradeData
-      )
-    );
     pendingCreates.push(tradeData);
   }
 
@@ -263,7 +256,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   })[];
 
   await updateLastSeenTrades(tradesFulfilled);
-  await newCreatePriceProcessFlow(toPriceProcess, true);
+  await newCreatePriceProcessFlow(tradesFulfilled.flatMap(tradeItemToProcessItem), true);
   await autoPriceTrades2(tradesFulfilled.filter((x) => !x.processed));
 
   const publicResult = result.map((entry) => {
@@ -395,25 +388,50 @@ export const processTradePrice = async (
     },
   });
 
+  // PriceProcess2 @@unique([type, neo_id]). Trades now use neo_id = TradeItems.internal_id
+  // so each priced item gets its own queue row. Older rows used neo_id = trade_id;
+  // delete both so re-price does not leave a collapsed leftover.
   if (isUpdate) {
-    const ids = originalTrade.tradesUpdated?.split(',').map((x) => Number(x)) ?? [];
-    await prisma.priceProcess2.deleteMany({
-      where: {
-        neo_id: { in: ids },
-        type: 'trade',
-      },
-    });
+    const relatedTradeIds = [
+      ...new Set(
+        [
+          trade.trade_id,
+          ...(originalTrade.tradesUpdated?.split(',').map((x) => Number(x)) ?? []),
+          ...itemUpdate.map((x) => x.trade_id),
+        ].filter((id) => Number.isFinite(id) && id > 0)
+      ),
+    ];
+
+    const relatedItems = relatedTradeIds.length
+      ? await prisma.tradeItems.findMany({
+          where: { trade_id: { in: relatedTradeIds } },
+          select: { internal_id: true },
+        })
+      : [];
+
+    const neoIds = [...new Set([...relatedTradeIds, ...relatedItems.map((x) => x.internal_id)])];
+
+    if (neoIds.length) {
+      await prisma.priceProcess2.deleteMany({
+        where: {
+          neo_id: { in: neoIds },
+          type: 'trade',
+        },
+      });
+    }
   }
 
   const addPriceProcess: Prisma.PriceProcess2UncheckedCreateInput[] = [];
 
   for (const item of itemUpdate.filter((x) => x.price)) {
     if (!item.item_iid) throw 'processTradePrice: Missing item_iid';
+    if (!item.internal_id) throw 'processTradePrice: Missing internal_id';
 
     addPriceProcess.push({
       item_iid: item.item_iid,
       price: item.price!.toNumber(),
-      neo_id: item.trade_id,
+      // not trade_id: unique(type, neo_id) + skipDuplicates would keep only 1 item per lot
+      neo_id: item.internal_id,
       type: 'trade',
       owner: item.trade.owner,
       ownerHash: item.trade.ownerHash,
@@ -555,15 +573,15 @@ const getTradeItems = async (trade_id: number, hash: string | null) => {
 };
 
 const tradeItemToProcessItem = (
-  tradeItems: Prisma.TradeItemsCreateManyInput[],
-  trade: Prisma.TradesCreateInput
+  trade: Trades & { items: TradeItems[] }
 ): Prisma.PriceProcess2CreateManyInput[] => {
-  return tradeItems
-    .filter((x) => !!x.price)
+  return trade.items
+    .filter((x) => !!x.price && x.item_iid && x.internal_id)
     .map((item) => ({
       item_iid: item.item_iid!,
-      price: item.price as number,
-      neo_id: item.trade_id,
+      price: item.price!.toNumber(),
+      // not trade_id: unique(type, neo_id) + skipDuplicates would keep only 1 item per lot
+      neo_id: item.internal_id,
       stock: item.amount || 1,
       type: 'trade',
       addedAt: item.addedAt,
