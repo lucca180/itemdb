@@ -10134,6 +10134,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fakeout@npm:^1.0.74":
+  version: 1.0.74
+  resolution: "fakeout@npm:1.0.74"
+  checksum: 10c0/b7e94b53f51acc8488951a278506acefb14b5fb2c3b2abdcae072c138dc7dd1535214895e1962d8acfe151282a8898a1c691e561837d67d810df8909efc52f7c
+  languageName: node
+  linkType: hard
+
 "fancy-canvas@npm:2.1.0":
   version: 2.1.0
   resolution: "fancy-canvas@npm:2.1.0"
@@ -11843,6 +11850,7 @@ __metadata:
     eslint: "npm:^9.39.1"
     eslint-config-next: "npm:16.3.0"
     eslint-config-prettier: "npm:^10.1.8"
+    fakeout: "npm:^1.0.74"
     fuse.js: "npm:^7.5.0"
     he: "npm:^1.2.0"
     html-react-parser: "npm:5.2.17"

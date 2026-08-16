@@ -347,6 +347,8 @@ model User {
   xp     Int @default(0)
   old_xp Int @default(0)
 
+  flags String?
+
   feedbacks      Feedbacks[]
   itemLists      UserList[]
   votes          FeedbackVotes[]

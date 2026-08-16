@@ -49,6 +49,7 @@
     "color": "^5.0.3",
     "cookies-next": "^6.1.1",
     "date-fns": "^4.4.0",
+    "fakeout": "^1.0.74",
     "fuse.js": "^7.5.0",
     "he": "^1.2.0",
     "html-react-parser": "5.2.17",

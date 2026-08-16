@@ -7,6 +7,7 @@ import { User as PrismaUser } from '@prisma/generated/client';
 import { consumeMagicToken } from '@utils/auth/magicLink';
 import { SESSION_DURATION_SECONDS, SESSION_VERSION, signSession } from '@utils/auth/jwt';
 import { invalidateCachedUser } from '@utils/auth/userCache';
+import { isDisposableEmail } from 'fakeout';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -20,18 +21,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     await consumeMagicToken(token, email);
 
     const ip = requestIp.getClientIp(req) || '';
+    const normalizedEmail = email.toLowerCase();
 
     const dbUser = await prisma.user.upsert({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
       update: {
         last_ip: ip,
         last_login: new Date(),
       },
       create: {
         id: crypto.randomUUID(),
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         last_ip: ip,
         last_login: new Date(),
+        flags: isDisposableEmail(normalizedEmail) ? 'temp_mail' : null,
       },
     });
 
@@ -94,6 +97,6 @@ export const rawToUser = (rawUser: PrismaUser, removeMail = false): User => {
     createdAt: rawUser.createdAt.toJSON(),
     xp: rawUser.xp,
     profileMode: (rawUser.profile_mode as 'default' | 'groups') ?? 'default',
-    banned: rawUser.xp < -1000,
+    banned: rawUser.xp < -1000 || !!rawUser.flags?.includes('temp_mail'),
   };
 };
