@@ -68,5 +68,5 @@ export function needsOutfitSection(item: ItemData) {
 }
 
 export function needsLebronTradeHistory(item: ItemData) {
-  return item.isNC && item.status !== 'no trade';
+  return item.isNC && item.status?.toLowerCase() !== 'no trade';
 }

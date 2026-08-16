@@ -46,6 +46,20 @@ export const loadDropItemCardData = cache(
   }
 );
 
+/**
+ * True when the item page actually renders the drops card (accepted drops exist).
+ * Cached hard — this boolean rarely flips. Drops-section tags still bust it on openings.
+ */
+export const hasDisplayedDrops = cache(
+  async (internalId: number, canOpen: string): Promise<boolean> => {
+    'use cache';
+    applyItemSectionCacheTags(internalId, 'drops');
+    cacheLife('days');
+    const itemOpenable = await loadItemOpenableMeta(internalId, canOpen);
+    return Boolean(itemOpenable && Object.keys(itemOpenable.drops).length > 0);
+  }
+);
+
 export async function loadItemDropsCardData(item: ItemData): Promise<ItemDropsCardData | null> {
   const itemOpenable = await loadItemOpenableMeta(item.internal_id, item.useTypes.canOpen);
   if (!itemOpenable) return null;

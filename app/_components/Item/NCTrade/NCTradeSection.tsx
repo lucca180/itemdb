@@ -181,7 +181,7 @@ export async function NCTradeSection({ item }: Props) {
   ]);
   const hasInsights = hasNCTradeInsights(insights);
 
-  if (item.status === 'no trade') {
+  if (item.status?.toLowerCase() === 'no trade') {
     if (!hasInsights || !insights) {
       return <NCTradeNoTradeCard item={item} />;
     }

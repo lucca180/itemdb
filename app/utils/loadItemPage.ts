@@ -9,32 +9,29 @@ import {
 } from '@app/utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { cacheLife } from 'next/cache';
+import { hasDisplayedDrops } from '@app/_components/Item/Drops/loadItemDrops';
+import {
+  buildItemMetaDescription,
+  truncateItemOgDescription,
+} from '@app/_components/Item/seo/buildItemMetaDescription';
 
 export type ItemPageRouteMetadataResult =
   | { type: 'notFound' }
   | { type: 'redirect'; href: `/item/${string}`; item: ItemData }
   | { type: 'ok'; item: ItemData };
 
-function truncateString(str: string, num: number) {
-  if (!str) return str;
-  if (str.length <= num) return str;
-  return str.slice(0, num) + '...';
-}
-
-function getMetaDescription(item: ItemData) {
-  return truncateString(item.description, 130);
-}
-
-export function buildItemPageMetadata(item: ItemData, locale: string): Metadata {
+export async function buildItemPageMetadata(item: ItemData, locale: string): Promise<Metadata> {
   const normalizedLocale = normalizeItemDbLocale(locale);
   const pathname = `/item/${item.slug}` as const;
   const canonical = getItemDbCanonical(pathname, normalizedLocale);
   const hreflang = buildItemDbHreflangAlternates(pathname);
-  const description = getMetaDescription(item);
+  const hasDropsCard = await hasDisplayedDrops(item.internal_id, item.useTypes.canOpen);
+  const description = buildItemMetaDescription(item, normalizedLocale, { hasDropsCard });
+  const ogDescription = truncateItemOgDescription(item.description) || description;
   const defaultSeo = getDefaultSEO(locale);
 
   return {
-    title: item.name,
+    title: { absolute: `${item.name} | Neopets Item Database` },
     description,
     alternates: {
       canonical,
@@ -46,7 +43,7 @@ export function buildItemPageMetadata(item: ItemData, locale: string): Metadata 
       type: 'website',
       url: canonical,
       title: item.name,
-      description,
+      description: ogDescription,
       siteName: defaultSeo.openGraph?.siteName,
       locale: defaultSeo.openGraph?.locale,
       images: [{ url: item.image, width: 80, height: 80, alt: item.name }],
@@ -55,7 +52,7 @@ export function buildItemPageMetadata(item: ItemData, locale: string): Metadata 
       card: 'summary',
       site: defaultSeo.twitter?.site,
       title: item.name,
-      description,
+      description: ogDescription,
     },
     other: {
       'theme-color': item.color.hex,
