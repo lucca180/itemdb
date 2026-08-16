@@ -405,17 +405,26 @@ export const processTradePrice = async (
     const relatedItems = relatedTradeIds.length
       ? await prisma.tradeItems.findMany({
           where: { trade_id: { in: relatedTradeIds } },
-          select: { internal_id: true },
+          select: { internal_id: true, item_iid: true },
         })
       : [];
 
-    const neoIds = [...new Set([...relatedTradeIds, ...relatedItems.map((x) => x.internal_id)])];
+    const itemInternalIds = [...new Set(relatedItems.map((x) => x.internal_id))];
+    const itemIids = [
+      ...new Set(relatedItems.map((x) => x.item_iid).filter((iid): iid is number => !!iid)),
+    ];
+    const pp2Or = [
+      ...(itemInternalIds.length ? [{ neo_id: { in: itemInternalIds } }] : []),
+      ...(relatedTradeIds.length && itemIids.length
+        ? [{ neo_id: { in: relatedTradeIds }, item_iid: { in: itemIids } }]
+        : []),
+    ];
 
-    if (neoIds.length) {
+    if (pp2Or.length) {
       await prisma.priceProcess2.deleteMany({
         where: {
-          neo_id: { in: neoIds },
           type: 'trade',
+          OR: pp2Or,
         },
       });
     }

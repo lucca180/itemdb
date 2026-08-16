@@ -17,6 +17,7 @@ type FeedbackTradesPageProps = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{
     target?: string;
+    admin_edit_id?: string;
   }>;
 };
 
@@ -65,6 +66,7 @@ async function FeedbackTradesPageContent({ params, searchParams }: FeedbackTrade
         shouldShowReminder={labels.shouldShowReminder}
         isNewAccount={labels.isNewAccount}
         target={query.target}
+        adminEditId={query.admin_edit_id}
       />
     </>
   );

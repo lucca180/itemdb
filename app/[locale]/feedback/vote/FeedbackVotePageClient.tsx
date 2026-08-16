@@ -108,10 +108,11 @@ export function FeedbackVotePageClient({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [votedCount, setVotedCount] = useState(0);
+  const [lastVotedTradeId, setLastVotedTradeId] = useState<number>();
   const skippedFeedbacks = useRef<number[]>([]);
   const {
     open: isCanonicalOpen,
-    onOpen: onCanonicalOpen,
+    // onOpen: onCanonicalOpen,
     onClose: onCanonicalClose,
   } = useDisclosure();
 
@@ -186,6 +187,10 @@ export function FeedbackVotePageClient({
         });
 
         if (res.data.success) {
+          if (currentFeedback.type === 'tradePrice') {
+            const trade = currentFeedback.parsed?.content.trade as TradeData | undefined;
+            if (trade?.trade_id) setLastVotedTradeId(trade.trade_id);
+          }
           setVotedCount((count) => count + 1);
           const newFeedbacks = feedbacks.filter(
             (f) => f.feedback_id !== currentFeedback?.feedback_id
@@ -413,6 +418,16 @@ export function FeedbackVotePageClient({
                         D
                       </Kbd>
                     </Button>
+                    {isAdmin && lastVotedTradeId && (
+                      <Button asChild variant="outline">
+                        <MainLink
+                          href={`/feedback/trades?admin_edit_id=${lastVotedTradeId}`}
+                          target="_blank"
+                        >
+                          Edit last
+                        </MainLink>
+                      </Button>
+                    )}
                     <Button asChild variant="outline">
                       <MainLink href="/feedback/trades">
                         {t('Feedback.you-can-also-price-some-trades')}{' '}
@@ -444,9 +459,24 @@ export function FeedbackVotePageClient({
                     </Badge>
                   )}
                 </HStack>
-                <Badge colorPalette="gray" variant="outline">
-                  {t('Feedback.vote-queue-voted', { count: votedCount })}
-                </Badge>
+                <HStack gap={1} justifyItems="flex-end" flexWrap="wrap">
+                  <Badge colorPalette="gray" variant="outline">
+                    {t('Feedback.vote-queue-voted', { count: votedCount })}
+                  </Badge>
+                  {isAdmin && (
+                    <Button
+                      size="2xs"
+                      variant="outline"
+                      colorPalette="red"
+                      disabled={!lastVotedTradeId}
+                      onClick={() =>
+                        window.open(`/feedback/trades?admin_edit_id=${lastVotedTradeId}`, '_blank')
+                      }
+                    >
+                      Edit last
+                    </Button>
+                  )}
+                </HStack>
               </HStack>
 
               <CardBase
@@ -511,11 +541,11 @@ export function FeedbackVotePageClient({
                       S
                     </Kbd>
                   </Button>
-                  {isAdmin && (
+                  {/* {isAdmin && (
                     <Button onClick={onCanonicalOpen} size="lg" variant="subtle">
                       🏷️
                     </Button>
-                  )}
+                  )} */}
                   <Button
                     colorPalette="green"
                     variant="solid"

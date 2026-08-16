@@ -17,7 +17,8 @@ import Image from 'next/image';
 import { slugify } from '@utils/utils';
 import MainLink from '@components/Utils/MainLink';
 import { useFormatter, useTranslations } from 'next-intl';
-import { FaFlag } from 'react-icons/fa';
+import { useAuth } from '@utils/auth';
+import { FaFlag, FaPen } from 'react-icons/fa';
 import { TradeRelisting } from '@components/Trades/TradeRelisting';
 import {
   TRADE_LOT_VISIBLE_LIMIT,
@@ -31,6 +32,7 @@ type Props = {
   collapseItems?: boolean;
   isAuto?: boolean;
   onReport?: () => void;
+  showAdminEdit?: boolean;
 };
 
 function HiddenItemsGap({ count }: { count: number }) {
@@ -51,6 +53,7 @@ function HiddenItemsGap({ count }: { count: number }) {
 const TradeTable = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
+  const { user } = useAuth();
   const { data, featuredItem } = props;
   const [expanded, setExpanded] = useState(false);
   const canCollapse = !!props.collapseItems && data.items.length > TRADE_LOT_VISIBLE_LIMIT;
@@ -99,17 +102,34 @@ const TradeTable = (props: Props) => {
               })}
             </Text>
           </Box>
-          {!!props.onReport && !props.isAuto && (
-            <IconButton
-              aria-label="Report Trade"
-              onClick={props.onReport}
-              size={'xs'}
-              colorPalette="red"
-              variant={'ghost'}
-            >
-              <FaFlag />
-            </IconButton>
-          )}
+          {(!!props.onReport && !props.isAuto) || (props.showAdminEdit && user?.isAdmin) ? (
+            <Flex gap={1} pr={2}>
+              {props.showAdminEdit && user?.isAdmin && (
+                <IconButton
+                  aria-label="Edit trade prices"
+                  size="2xs"
+                  variant="ghost"
+                  onClick={() => {
+                    window.open(`/feedback/trades?admin_edit_id=${data.trade_id}`, '_blank');
+                  }}
+                  p={0}
+                >
+                  <FaPen />
+                </IconButton>
+              )}
+              {!!props.onReport && !props.isAuto && (
+                <IconButton
+                  aria-label="Report Trade"
+                  onClick={props.onReport}
+                  size={'xs'}
+                  colorPalette="red"
+                  variant={'ghost'}
+                >
+                  <FaFlag />
+                </IconButton>
+              )}
+            </Flex>
+          ) : null}
         </Flex>
         {indexedItems.map(({ item, sourceIndex }, displayIndex) => {
           const previousSourceIndex =

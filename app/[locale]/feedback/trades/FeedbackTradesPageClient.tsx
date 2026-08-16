@@ -17,12 +17,14 @@ type FeedbackTradesPageClientProps = {
   shouldShowReminder: boolean;
   isNewAccount: boolean;
   target?: string;
+  adminEditId?: string;
 };
 
 export function FeedbackTradesPageClient({
   shouldShowReminder,
   isNewAccount,
   target,
+  adminEditId,
 }: FeedbackTradesPageClientProps) {
   const t = useTranslations();
   const { user, authLoading } = useAuth();
@@ -31,11 +33,15 @@ export function FeedbackTradesPageClient({
   const [currentTrade, setCurrentTrade] = useState<TradeData>();
   const [isLoading, setIsLoading] = useState(!isNewAccount);
   const [error, setError] = useState<string>('');
+  const [adminEditActive, setAdminEditActive] = useState(!!adminEditId);
   const popularItem = useRef<string | undefined>(undefined);
   const skippedTrades = useRef<string[]>([]);
 
+  const isAdminEdit = adminEditActive && !!adminEditId && user?.isAdmin;
+
   const init = async () => {
     setIsLoading(true);
+    setError('');
     const res = await axios.get('/api/v1/trades/pricefy', {
       params: {
         itemName: popularItem.current ?? target,
@@ -52,11 +58,57 @@ export function FeedbackTradesPageClient({
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    if (!authLoading && user && !isNewAccount) {
-      void init();
+  const loadAdminTrade = async () => {
+    if (!adminEditId) return;
+
+    setIsLoading(true);
+    setError('');
+    try {
+      const res = await axios.get(`/api/admin/trades/${adminEditId}`);
+      setTrades([]);
+      setCurrentTrade(res.data.trade as TradeData);
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message);
+      setCurrentTrade(undefined);
     }
-  }, [authLoading, user, isNewAccount]);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+
+    if (adminEditActive && adminEditId && user.isAdmin) {
+      void loadAdminTrade();
+      return;
+    }
+
+    if (adminEditId && !adminEditActive) return;
+
+    if (!isNewAccount) void init();
+  }, [authLoading, user, isNewAccount, adminEditId, adminEditActive]);
+
+  const handleSubmitAdminEdit = async (trade: TradeData) => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const res = await axios.patch(`/api/admin/trades/${trade.trade_id}`, {
+        items: trade.items,
+      });
+
+      if (!res.data.success) throw res.data;
+
+      setAdminEditActive(false);
+      setCurrentTrade(undefined);
+      setTrades([]);
+      setIsLoading(false);
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message);
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmitAdmin = async (trade: TradeData) => {
     setIsLoading(true);
@@ -78,9 +130,11 @@ export function FeedbackTradesPageClient({
   };
 
   const handleSubmit = async (trade: TradeData) => {
-    setIsLoading(true);
-
     if (!trade || !user) return;
+
+    if (isAdminEdit) return handleSubmitAdminEdit(trade);
+
+    setIsLoading(true);
 
     if (user.role === 'ADMIN') return handleSubmitAdmin(trade);
 
@@ -168,11 +222,12 @@ export function FeedbackTradesPageClient({
         {!isNewAccount && !isLoading && currentTrade && (
           <>
             <FeedbackTrade
-              hasUndo={prevTrades.length > 0}
-              handleUndo={handleUndo}
+              hideQueueActions={!!isAdminEdit}
+              hasUndo={!isAdminEdit && prevTrades.length > 0}
+              handleUndo={isAdminEdit ? undefined : handleUndo}
               trade={currentTrade}
               handleSubmit={handleSubmit}
-              handleSkip={handleSkip}
+              handleSkip={isAdminEdit ? undefined : handleSkip}
             />
             <Text
               fontSize={'xs'}
@@ -191,7 +246,7 @@ export function FeedbackTradesPageClient({
             <Spinner size="lg" />
           </Center>
         )}
-        {!isNewAccount && !isLoading && !currentTrade && (
+        {!isNewAccount && !isLoading && !currentTrade && !error && (
           <Center flexFlow="column" gap={4}>
             <Text>{t('Feedback.thanks-for-helping-out-want-more-trades')}</Text>
             <Button onClick={init}>{t('Feedback.yes-i-need-it')}</Button>
@@ -211,7 +266,7 @@ export function FeedbackTradesPageClient({
         {error && (
           <Center flexFlow="column" gap={4}>
             <Text>{t('General.something-went-wrong')} :(</Text>
-            <Button onClick={init}>{t('General.try-again')}</Button>
+            <Button onClick={isAdminEdit ? loadAdminTrade : init}>{t('General.try-again')}</Button>
           </Center>
         )}
       </Flex>

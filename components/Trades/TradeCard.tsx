@@ -43,7 +43,13 @@ const TradeCard = ({ trades, item, isLoading }: Props) => {
           <>
             <ViewportList viewportRef={ref} items={trades} overscan={2} initialPrerender={3}>
               {(trade) => (
-                <TradeTable collapseItems featuredItem={item} key={trade.trade_id} data={trade} />
+                <TradeTable
+                  collapseItems
+                  featuredItem={item}
+                  key={trade.trade_id}
+                  data={trade}
+                  showAdminEdit
+                />
               )}
             </ViewportList>
           </>

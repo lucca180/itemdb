@@ -111,7 +111,7 @@ export const TradeHistory = (props: TradeHistoryProps) => {
             {!loading && !recentError && (
               <Box maxH="500px" overflow="auto">
                 {data?.recent.map((trade) => (
-                  <TradeTable featuredItem={item} key={trade.trade_id} data={trade} />
+                  <TradeTable featuredItem={item} key={trade.trade_id} data={trade} showAdminEdit />
                 ))}
               </Box>
             )}
@@ -136,7 +136,7 @@ export const TradeHistory = (props: TradeHistoryProps) => {
             {!wall && !pricedError && soldData && (
               <Box maxH="500px" overflow="auto">
                 {soldData.recent.map((trade) => (
-                  <TradeTable featuredItem={item} key={trade.trade_id} data={trade} />
+                  <TradeTable featuredItem={item} key={trade.trade_id} data={trade} showAdminEdit />
                 ))}
               </Box>
             )}

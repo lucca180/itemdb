@@ -43,8 +43,9 @@ type Props = {
   onChange?: (newValue: TradeData) => void;
   handleSkip?: () => void;
   hasUndo?: boolean;
-  handleUndo: () => void;
+  handleUndo?: () => void;
   handleSubmit?: (trade: TradeData) => void;
+  hideQueueActions?: boolean;
 };
 
 type TradeItems = TradeData['items'][0];
@@ -54,7 +55,7 @@ const FeedbackTrade = (props: Props) => {
   const { userPref } = useAuth();
   const t = useTranslations();
   const format = useFormatter();
-  const { handleSkip, handleSubmit, handleUndo, hasUndo } = props;
+  const { handleSkip, handleSubmit, handleUndo, hasUndo, hideQueueActions } = props;
   const [forceTrade, setTrade] = useState<TradeData | undefined>(props.trade);
   const [isSticky, setIsSticky] = useState(false);
 
@@ -111,19 +112,23 @@ const FeedbackTrade = (props: Props) => {
       <Flex flexFlow={{ base: 'column-reverse', md: 'column' }} gap={4}>
         <Flex alignItems="center">
           <HStack gap={4} flex="1" justifyContent="center">
-            <Button
-              colorPalette="whiteAlpha"
-              variant="subtle"
-              disabled={!hasUndo}
-              onClick={handleUndo}
-            >
-              <Icon as={BsArrowLeft} mr={2} />
-              {t('General.back')}
-            </Button>
-            <Button colorPalette="gray" variant="subtle" onClick={() => handleSkip?.()}>
-              <Icon as={BsArrowLeftRight} mr={2} />
-              {t('General.skip')}
-            </Button>
+            {!hideQueueActions && (
+              <>
+                <Button
+                  colorPalette="whiteAlpha"
+                  variant="subtle"
+                  disabled={!hasUndo}
+                  onClick={handleUndo}
+                >
+                  <Icon as={BsArrowLeft} mr={2} />
+                  {t('General.back')}
+                </Button>
+                <Button colorPalette="gray" variant="subtle" onClick={() => handleSkip?.()}>
+                  <Icon as={BsArrowLeftRight} mr={2} />
+                  {t('General.skip')}
+                </Button>
+              </>
+            )}
             <Button colorPalette="green" variant="solid" mr={2} onClick={doSubmit}>
               <Icon as={BsCheck2} mr={2} />
               {t('General.submit')}
