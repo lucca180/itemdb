@@ -432,6 +432,7 @@ export const processTradePrice = async (
       price: item.price!.toNumber(),
       // not trade_id: unique(type, neo_id) + skipDuplicates would keep only 1 item per lot
       neo_id: item.internal_id,
+      stock: item.amount || 1,
       type: 'trade',
       owner: item.trade.owner,
       ownerHash: item.trade.ownerHash,
@@ -556,6 +557,7 @@ const getTradeItems = async (trade_id: number, hash: string | null) => {
     trade_id: x.trade_id,
     order: x.order,
     price: x.price,
+    amount: x.amount,
     addedAt: x.addedAt,
     item_iid: x.item_iid,
     trade: {
