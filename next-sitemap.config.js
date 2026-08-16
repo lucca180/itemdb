@@ -16,7 +16,7 @@ module.exports = {
     policies: [
       {
         userAgent: '*',
-        disallow: ['*/admin/*', '*/api/*', '*/search/*'],
+        disallow: ['*/admin/*', '*/api/*', '/search', '/pt/search'],
       },
     ],
     // Do not use additionalSitemaps — next-sitemap would nest that index inside
@@ -27,7 +27,8 @@ module.exports = {
         'User-agent: *',
         'Disallow: */admin/*',
         'Disallow: */api/*',
-        'Disallow: */search/*',
+        'Disallow: /search',
+        'Disallow: /pt/search',
         '',
         '# Host',
         'Host: https://itemdb.com.br',

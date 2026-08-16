@@ -2,7 +2,8 @@
 User-agent: *
 Disallow: */admin/*
 Disallow: */api/*
-Disallow: */search/*
+Disallow: /search
+Disallow: /pt/search
 
 # Host
 Host: https://itemdb.com.br
