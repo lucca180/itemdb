@@ -12,11 +12,14 @@ import {
   IconButton,
   useDisclosure,
   Image as ChakraImage,
+  SimpleGrid,
+  Grid,
+  HStack,
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import { ColorInstance } from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
-import { MdWarning } from 'react-icons/md';
+import { MdDateRange } from 'react-icons/md';
 import MainLink from '@components/Utils/MainLink';
 import type { ItemV2For, ListItemInfo, UserList } from '@types';
 import { useMemo } from 'react';
@@ -53,6 +56,88 @@ type ListHeaderProps = {
   setOpenCreateModal?: (value: boolean) => void;
 };
 
+function HeaderActionButtons({
+  list,
+  isOwner,
+  onOpenDynamic,
+  onCopyLink,
+  onOpenExport,
+}: {
+  list: UserList;
+  isOwner: boolean;
+  onOpenDynamic: () => void;
+  onCopyLink: () => void;
+  onOpenExport: () => void;
+}) {
+  const t = useTranslations();
+
+  return (
+    <Flex gap={2} flexWrap="wrap" alignItems="center" justifyContent="center" flex="0 0 auto">
+      {!!list.dynamicType && (
+        <Tooltip.Root positioning={{ placement: 'top' }}>
+          <Tooltip.Trigger asChild>
+            <IconButton
+              aria-label="Dynamic List History"
+              data-umami-event="dynamic-list-history"
+              size="xs"
+              onClick={list.official || isOwner ? onOpenDynamic : undefined}
+              bg="blackAlpha.300"
+              borderRadius={'md'}
+            >
+              <NextImage
+                src={DynamicIcon}
+                alt="lightning bolt"
+                width={12}
+                style={{ display: 'inline' }}
+              />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Positioner>
+            <Tooltip.Content>{t('DynamicList.dynamic-list-history')}</Tooltip.Content>
+          </Tooltip.Positioner>
+        </Tooltip.Root>
+      )}
+      {list.visibility !== 'private' && (
+        <Tooltip.Root positioning={{ placement: 'top' }}>
+          <Tooltip.Trigger asChild>
+            <IconButton
+              onClick={onCopyLink}
+              data-umami-event="copy-link"
+              bg="blackAlpha.300"
+              size="xs"
+              aria-label={t('Layout.copy-link')}
+            >
+              <FaShareAlt />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Positioner>
+            <Tooltip.Content>{t('Layout.copy-link')}</Tooltip.Content>
+          </Tooltip.Positioner>
+        </Tooltip.Root>
+      )}
+      {(list.official || isOwner) && (
+        <Tooltip.Root positioning={{ placement: 'top' }}>
+          <Tooltip.Trigger asChild>
+            <IconButton
+              aria-label="Export as CSV"
+              data-umami-event="export-list"
+              size="xs"
+              onClick={onOpenExport}
+              bg="blackAlpha.300"
+              borderRadius={'md'}
+            >
+              <LuFileSpreadsheet />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Positioner>
+            <Tooltip.Content>{t('Lists.export-as-csv')}</Tooltip.Content>
+          </Tooltip.Positioner>
+        </Tooltip.Root>
+      )}
+    </Flex>
+  );
+}
+
 const ListHeader = (props: ListHeaderProps) => {
   const t = useTranslations();
   const format = useFormatter();
@@ -64,6 +149,7 @@ const ListHeader = (props: ListHeaderProps) => {
   const { open: isOpenExport, onOpen: onOpenExport, onClose: onCloseExport } = useDisclosure();
   const { user } = useAuth();
   const rgb = color.rgb().array();
+  const badgeColor = color.isLight() ? 'black' : 'gray';
 
   const unpricedItems = useMemo(() => {
     if (!list) return 0;
@@ -131,6 +217,11 @@ const ListHeader = (props: ListHeaderProps) => {
       .map((item) => item.item_iid);
   }, [itemInfo, items]);
 
+  const hasSeriesDates = !!(list.seriesStart || list.seriesEnd);
+  const hasPrice = !!NPPrice || !!NCPrice;
+  const hasChart = item_iids.length > 0 && item_iids.length < MAX_ITEMS_LIST_PRICE;
+  const dateFormat = { day: 'numeric', month: 'short', year: 'numeric' } as const;
+
   return (
     <Box>
       {open && (
@@ -159,7 +250,7 @@ const ListHeader = (props: ListHeaderProps) => {
       <Flex
         gap={{ base: 3, md: 6 }}
         pt={4}
-        alignItems="center"
+        alignItems={{ base: 'center', md: 'flex-start' }}
         flexFlow={{ base: 'column', md: 'row' }}
         textAlign={{ base: 'center', md: 'left' }}
       >
@@ -224,276 +315,298 @@ const ListHeader = (props: ListHeaderProps) => {
             </Button>
           )}
         </Flex>
-        <Box>
-          <Stack
-            direction="row"
-            mb={1}
-            alignItems="center"
-            justifyContent={{ base: 'center', md: 'flex-start' }}
+        <Stack
+          flex="1"
+          minW={0}
+          gap={4}
+          alignSelf="stretch"
+          alignItems={{ base: 'center', md: 'stretch' }}
+          w={{ base: 'full', md: 'auto' }}
+        >
+          <Flex
+            w="full"
+            justifyContent={{ base: 'center', md: 'space-between' }}
+            alignItems={{ base: 'center', md: 'flex-start' }}
+            gap={3}
+            flexDir={{ base: 'column', md: 'row' }}
           >
-            {!list.official && list.purpose !== 'none' && (
-              <Badge borderRadius="md" colorPalette={color.isLight() ? 'black' : 'gray'}>
-                {t('Lists.' + list.purpose)}
-              </Badge>
-            )}
-            {list.official && (
-              <Badge asChild borderRadius="md" colorPalette="blue" variant="solid">
-                <MainLink href="/lists/official">✓ {t('General.official')}</MainLink>
-              </Badge>
-            )}
-            {!list.official && list.visibility !== 'public' && (
-              <Badge
-                borderRadius="md"
-                colorPalette={color.isLight() ? 'black' : 'gray'}
-                variant="solid"
-              >
-                {t('Lists.' + list.visibility)}
-              </Badge>
-            )}
-            {!list.official && list.owner.neopetsUser && list.purpose !== 'none' && (
-              <>
-                <Badge
-                  asChild
-                  borderRadius="md"
-                  colorPalette={color.isLight() ? 'black' : 'gray'}
-                  data-umami-event="user-interact"
-                  data-umami-event-type="userlookup"
-                >
-                  <Link
-                    href={`http://www.neopets.com/userlookup.phtml?user=${list.owner.neopetsUser}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
-                  </Link>
-                </Badge>
-
-                <Badge
-                  asChild
-                  borderRadius="md"
-                  colorPalette={color.isLight() ? 'black' : 'gray'}
-                  data-umami-event="user-interact"
-                  data-umami-event-type="neomail"
-                >
-                  <Link
-                    href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.owner.neopetsUser}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
-                  </Link>
-                </Badge>
-              </>
-            )}
-          </Stack>
-          <Heading
-            size={{ base: 'lg', md: undefined }}
-            as={'h1'}
-            display="inline-flex"
-            alignItems={'center'}
-            justifyContent={{ base: 'center', md: 'flex-start' }}
-            gap={2}
-          >
-            {list.name}
-
-            {!!list.dynamicType && (
-              <Tooltip.Root positioning={{ placement: 'top' }}>
-                <Tooltip.Trigger asChild>
-                  <IconButton
-                    ml={1}
-                    aria-label="Dynamic List History"
-                    data-umami-event="dynamic-list-history"
-                    size="xs"
-                    onClick={list.official || isOwner ? onOpenDynamic : undefined}
-                    bg="blackAlpha.300"
-                    borderRadius={'md'}
-                  >
-                    <NextImage
-                      src={DynamicIcon}
-                      alt="lightning bolt"
-                      width={12}
-                      style={{ display: 'inline' }}
-                    />
-                  </IconButton>
-                </Tooltip.Trigger>
-                <Tooltip.Positioner>
-                  <Tooltip.Content>{t('DynamicList.dynamic-list-history')}</Tooltip.Content>
-                </Tooltip.Positioner>
-              </Tooltip.Root>
-            )}
-            {list.visibility !== 'private' && (
-              <Tooltip.Root positioning={{ placement: 'top' }}>
-                <Tooltip.Trigger asChild>
-                  <IconButton
-                    onClick={copyLink}
-                    data-umami-event="copy-link"
-                    bg="blackAlpha.300"
-                    size="xs"
-                    aria-label={t('Layout.copy-link')}
-                  >
-                    <FaShareAlt />
-                  </IconButton>
-                </Tooltip.Trigger>
-                <Tooltip.Positioner>
-                  <Tooltip.Content>{t('Layout.copy-link')}</Tooltip.Content>
-                </Tooltip.Positioner>
-              </Tooltip.Root>
-            )}
-            {(list.official || isOwner) && (
-              <Tooltip.Root positioning={{ placement: 'top' }}>
-                <Tooltip.Trigger asChild>
-                  <IconButton
-                    aria-label="Export as CSV"
-                    data-umami-event="export-list"
-                    size="xs"
-                    onClick={onOpenExport}
-                    bg="blackAlpha.300"
-                    borderRadius={'md'}
-                  >
-                    <LuFileSpreadsheet />
-                  </IconButton>
-                </Tooltip.Trigger>
-                <Tooltip.Positioner>
-                  <Tooltip.Content>{t('Lists.export-as-csv')}</Tooltip.Content>
-                </Tooltip.Positioner>
-              </Tooltip.Root>
-            )}
-          </Heading>
-          <Stack
-            direction="row"
-            mb={1}
-            alignItems="center"
-            flexWrap="wrap"
-            justifyContent={{ base: 'center', md: 'flex-start' }}
-          >
-            <Text fontSize={{ base: 'xs', md: 'sm' }}>
-              {t.rich(list.official ? 'Lists.curatedBy' : 'Lists.by', {
-                Link: (chunk) => (
-                  <Link asChild fontWeight="bold">
-                    <MainLink href={'/lists/' + list.owner.username}>{chunk}</MainLink>
-                  </Link>
-                ),
-                username: list.owner.username ?? '',
-              })}
-              {!list.dynamicType && (
-                <>
-                  {' '}
-                  •{' '}
-                  {t.rich('Lists.updated-x', {
-                    b: (chunk) => <b>{chunk}</b>,
-                    x: format.relativeTime(new Date(list.updatedAt), now),
-                  })}
-                </>
-              )}
-            </Text>
-          </Stack>
-          {/* {list.seriesStart && list.seriesEnd && (
-            <Text fontSize={'xs'} mt={1} color="whiteAlpha.700">
-              Available from{' '}
-              <b>
-                {format.dateTime(new Date(list.seriesStart), {
-                  dateStyle: 'short',
-                })}
-              </b>{' '}
-              through{' '}
-              <b>
-                {format.dateTime(new Date(list.seriesEnd), {
-                  dateStyle: 'short',
-                })}
-              </b>
-            </Text>
-          )} */}
-          {list.description && (
-            <Text
-              mt={{ base: 2, md: 3 }}
-              fontSize={{ base: 'sm', md: 'md' }}
-              css={{ '& a': { color: color.lightness(70).hex() } }}
-              as="h2"
+            <Stack
+              gap={2}
+              minW={0}
+              flex="1"
+              w="full"
+              alignItems={{ base: 'center', md: 'flex-start' }}
             >
-              <Markdown skipParagraph>{list.description}</Markdown>
-            </Text>
-          )}
-
-          <Stack
-            mt={{ base: 2, md: 3 }}
-            flexFlow={'row'}
-            alignItems={'center'}
-            justifyContent={{ base: 'center', md: 'flex-start' }}
-          >
-            {(!!NPPrice || !!NCPrice) && (
               <Flex
-                display={'inline-flex'}
-                py={1}
-                px={2}
-                bg="blackAlpha.300"
-                borderRadius={'md'}
-                alignItems="flex-start"
+                gap={2}
+                flexWrap="wrap"
+                alignItems="center"
+                justifyContent={{ base: 'center', md: 'flex-start' }}
               >
-                <Tooltip.Root positioning={{ placement: 'top' }} disabled={!unpricedItems}>
-                  <Tooltip.Trigger asChild>
-                    <Text fontSize="sm" cursor={unpricedItems ? 'default' : undefined}>
-                      {!!unpricedItems && (
-                        <span>
-                          <Icon
-                            as={MdWarning}
-                            boxSize={'1rem'}
-                            mr="0.2rem"
-                            verticalAlign="text-top"
-                          />
-                        </span>
-                      )}
-                      {t('Lists.this-list-costs-aprox')}{' '}
-                      {!!NPPrice && (
-                        <>
-                          <b>{format.number(NPPrice)} NP</b>
-                          <Image
-                            display="inline"
-                            verticalAlign="bottom"
-                            src={NPBag}
-                            width={24}
-                            height={24}
-                            alt="gift box icon"
-                            mt="-7px"
-                            ml="3px"
-                          />
-                        </>
-                      )}{' '}
-                      {!!NPPrice && !!NCPrice && t('General.and')}{' '}
-                      {!!NCPrice && (
-                        <>
-                          <b>
-                            {format.number(NCPrice)} {t('General.caps')}
-                          </b>{' '}
-                          <Image
-                            as="span"
-                            display="inline"
-                            verticalAlign="bottom"
-                            src={GiftBox}
-                            width={24}
-                            height={24}
-                            alt="gift box icon"
-                          />
-                        </>
-                      )}
-                    </Text>
-                  </Tooltip.Trigger>
-                  {!!unpricedItems && (
-                    <Tooltip.Positioner>
-                      <Tooltip.Content>
-                        {t('Lists.unpricedItems', { 0: unpricedItems })}
-                      </Tooltip.Content>
-                    </Tooltip.Positioner>
-                  )}
-                </Tooltip.Root>
+                {!list.official && list.purpose !== 'none' && (
+                  <Badge borderRadius="md" colorPalette={badgeColor}>
+                    {t('Lists.' + list.purpose)}
+                  </Badge>
+                )}
+                {list.official && (
+                  <Badge asChild borderRadius="md" colorPalette="blue" variant="solid">
+                    <MainLink href="/lists/official">✓ {t('General.official')}</MainLink>
+                  </Badge>
+                )}
+                {!!list.dynamicType && (
+                  <Badge asChild borderRadius="md" colorPalette={'orange'} variant="surface">
+                    <MainLink
+                      href="/articles/checklists-and-dynamic-lists"
+                      trackEvent="dynamic-list-badge"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35em' }}
+                    >
+                      <NextImage
+                        src={DynamicIcon}
+                        alt=""
+                        width={10}
+                        height={10}
+                        style={{ display: 'inline-block' }}
+                      />
+                      {t('Lists.dynamic-list-badge')}
+                    </MainLink>
+                  </Badge>
+                )}
+                {!list.official && list.visibility !== 'public' && (
+                  <Badge borderRadius="md" colorPalette={badgeColor} variant="solid">
+                    {t('Lists.' + list.visibility)}
+                  </Badge>
+                )}
+                {!list.official && list.owner.neopetsUser && list.purpose !== 'none' && (
+                  <>
+                    <Badge
+                      asChild
+                      borderRadius="md"
+                      colorPalette={badgeColor}
+                      data-umami-event="user-interact"
+                      data-umami-event-type="userlookup"
+                    >
+                      <Link
+                        href={`http://www.neopets.com/userlookup.phtml?user=${list.owner.neopetsUser}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t('General.userlookup')}{' '}
+                        <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                      </Link>
+                    </Badge>
+                    <Badge
+                      asChild
+                      borderRadius="md"
+                      colorPalette={badgeColor}
+                      data-umami-event="user-interact"
+                      data-umami-event-type="neomail"
+                    >
+                      <Link
+                        href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.owner.neopetsUser}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                      </Link>
+                    </Badge>
+                  </>
+                )}
               </Flex>
-            )}
-            {item_iids.length > 0 && item_iids.length < MAX_ITEMS_LIST_PRICE && (
-              <IconButton onClick={onOpen} size="sm" py={1} bg="blackAlpha.300" aria-label="Chart">
-                <AiOutlineAreaChart />
-              </IconButton>
-            )}
-          </Stack>
-        </Box>
+              <Box display={{ base: 'block', md: 'none' }}>
+                <HeaderActionButtons
+                  list={list}
+                  isOwner={isOwner}
+                  onOpenDynamic={onOpenDynamic}
+                  onCopyLink={copyLink}
+                  onOpenExport={onOpenExport}
+                />
+              </Box>
+              <Heading size={{ base: 'lg', md: undefined }} as={'h1'} textWrap="balance">
+                {list.name}
+              </Heading>
+              <Text fontSize={{ base: 'xs', md: 'sm' }}>
+                {t.rich(list.official ? 'Lists.curatedBy' : 'Lists.by', {
+                  Link: (chunk) => (
+                    <Link asChild fontWeight="bold">
+                      <MainLink href={'/lists/' + list.owner.username}>{chunk}</MainLink>
+                    </Link>
+                  ),
+                  username: list.owner.username ?? '',
+                })}
+                {!list.dynamicType && (
+                  <>
+                    {' '}
+                    •{' '}
+                    {t.rich('Lists.updated-x', {
+                      b: (chunk) => <b>{chunk}</b>,
+                      x: format.relativeTime(new Date(list.updatedAt), now),
+                    })}
+                  </>
+                )}
+              </Text>
+              {list.description && (
+                <Text
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  css={{ '& a': { color: color.lightness(70).hex() } }}
+                  as="h2"
+                >
+                  <Markdown skipParagraph>{list.description}</Markdown>
+                </Text>
+              )}
+            </Stack>
+            <Box display={{ base: 'none', md: 'block' }}>
+              <HeaderActionButtons
+                list={list}
+                isOwner={isOwner}
+                onOpenDynamic={onOpenDynamic}
+                onCopyLink={copyLink}
+                onOpenExport={onOpenExport}
+              />
+            </Box>
+          </Flex>
+          {(hasSeriesDates || hasPrice || hasChart) && (
+            <SimpleGrid
+              w="full"
+              columns={{ base: 1, lg: hasSeriesDates && (hasPrice || hasChart) ? 2 : 1 }}
+              gap={3}
+            >
+              {hasSeriesDates && (
+                <Box
+                  px={3}
+                  py={2}
+                  border="1px solid"
+                  borderColor="whiteAlpha.200"
+                  borderRadius="lg"
+                  bg="whiteAlpha.100"
+                  textAlign={{ base: 'center', md: 'left' }}
+                >
+                  <HStack
+                    mb={1}
+                    gap={2}
+                    color="whiteAlpha.800"
+                    justifyContent={{ base: 'center', md: 'flex-start' }}
+                  >
+                    <Icon as={MdDateRange} />
+                    <Text fontSize="xs" fontWeight="bold">
+                      {t('Lists.series-dates')}
+                    </Text>
+                  </HStack>
+                  <Grid
+                    templateColumns="auto 1fr"
+                    columnGap={3}
+                    rowGap={1}
+                    fontSize="sm"
+                    maxW="240px"
+                    mx={{ base: 'auto', md: 0 }}
+                  >
+                    {list.seriesStart && (
+                      <>
+                        <Text color="whiteAlpha.500">{t('Lists.starts')}</Text>
+                        <Text fontWeight="semibold">
+                          {format.dateTime(new Date(list.seriesStart), dateFormat)}
+                        </Text>
+                      </>
+                    )}
+                    {list.seriesEnd && (
+                      <>
+                        <Text color="whiteAlpha.500">{t('Lists.ends')}</Text>
+                        <Text fontWeight="semibold">
+                          {format.dateTime(new Date(list.seriesEnd), dateFormat)}
+                        </Text>
+                      </>
+                    )}
+                  </Grid>
+                </Box>
+              )}
+              {(hasPrice || hasChart) && (
+                <Flex
+                  gap={2}
+                  alignItems={{ base: 'center', md: 'flex-start' }}
+                  justifyContent="center"
+                  flexDir="column"
+                  px={3}
+                  py={2}
+                  borderRadius="lg"
+                  bg="blackAlpha.300"
+                  border="1px solid"
+                  borderColor="whiteAlpha.100"
+                  textAlign={{ base: 'center', md: 'left' }}
+                >
+                  {!!unpricedItems && (
+                    <Badge colorPalette="orange" variant="subtle">
+                      {t('Lists.unpriced-count', { count: unpricedItems })}
+                    </Badge>
+                  )}
+                  <Tooltip.Root positioning={{ placement: 'top' }} disabled={!unpricedItems}>
+                    <Tooltip.Trigger asChild>
+                      <Text
+                        fontSize="sm"
+                        cursor={unpricedItems ? 'default' : undefined}
+                        lineHeight="1.6"
+                      >
+                        {hasPrice && (
+                          <>
+                            {t('Lists.this-list-costs-aprox')}{' '}
+                            {!!NPPrice && (
+                              <>
+                                <b>{format.number(NPPrice)} NP</b>
+                                <Image
+                                  display="inline"
+                                  verticalAlign="middle"
+                                  src={NPBag}
+                                  width={24}
+                                  height={24}
+                                  alt="NP icon"
+                                  ml="3px"
+                                />
+                              </>
+                            )}
+                            {!!NPPrice && !!NCPrice && <> {t('General.and')} </>}
+                            {!!NCPrice && (
+                              <>
+                                <b>
+                                  {format.number(NCPrice)} {t('General.caps')}
+                                </b>{' '}
+                                <Image
+                                  display="inline"
+                                  verticalAlign="middle"
+                                  src={GiftBox}
+                                  width={24}
+                                  height={24}
+                                  alt="gift box icon"
+                                />
+                              </>
+                            )}
+                          </>
+                        )}
+                        {hasChart && (
+                          <IconButton
+                            onClick={onOpen}
+                            size="xs"
+                            variant="ghost"
+                            display="inline-flex"
+                            verticalAlign="middle"
+                            ml={1}
+                            aria-label={t('Lists.list-price-history')}
+                          >
+                            <AiOutlineAreaChart />
+                          </IconButton>
+                        )}
+                      </Text>
+                    </Tooltip.Trigger>
+                    {!!unpricedItems && (
+                      <Tooltip.Positioner>
+                        <Tooltip.Content>
+                          {t('Lists.unpricedItems', { 0: unpricedItems })}
+                        </Tooltip.Content>
+                      </Tooltip.Positioner>
+                    )}
+                  </Tooltip.Root>
+                </Flex>
+              )}
+            </SimpleGrid>
+          )}
+        </Stack>
       </Flex>
     </Box>
   );
