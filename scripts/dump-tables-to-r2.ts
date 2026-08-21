@@ -6,12 +6,11 @@ import { mkdir, rm } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createGzip } from 'node:zlib';
-import { S3 } from '../utils/googleCloud.js';
+import { S3, DUMPS_BUCKET } from '../utils/googleCloud.js';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 
 const TEMP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../.dump-temp');
-const R2_BUCKET = 'itemdb';
-const DUMP_PREFIX = 'dumps';
+const R2_BUCKET = DUMPS_BUCKET;
 
 type CliOptions = {
   dryRun: boolean;
@@ -27,6 +26,23 @@ type DatabaseConfig = {
 };
 
 const DEFAULT_TABLES = ['Items', 'ItemColor'] as const;
+const PUBLIC_DATA_MAX_PRICE = 100000;
+const PUBLIC_DATA_PRICE_LIMIT = 5;
+
+const VALID_ITEM_IIDS_SQL = `SELECT item_iid FROM ItemPrices WHERE isLatest = 1 AND price < ${PUBLIC_DATA_MAX_PRICE} AND item_iid IS NOT NULL`;
+
+function getPublicDataWhereClause(table: string): string | undefined {
+  switch (table.toLowerCase()) {
+    case 'items':
+      return `internal_id IN (${VALID_ITEM_IIDS_SQL})`;
+    case 'itemprices':
+      return `internal_id IN (SELECT internal_id FROM (SELECT internal_id, ROW_NUMBER() OVER (PARTITION BY item_iid ORDER BY addedAt DESC, internal_id DESC) AS rn FROM ItemPrices WHERE item_iid IN (${VALID_ITEM_IIDS_SQL})) ranked WHERE rn <= ${PUBLIC_DATA_PRICE_LIMIT})`;
+    case 'itemcolor':
+      return `image_id IN (SELECT DISTINCT image_id FROM Items WHERE image_id IS NOT NULL AND internal_id IN (${VALID_ITEM_IIDS_SQL}))`;
+    default:
+      return undefined;
+  }
+}
 
 function log(message: string): void {
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -64,6 +80,10 @@ Usage: yarn dump:tables [OPTIONS] [TABLES...]
 Dumps specified tables to R2 as individual .sql.gz files.
 Defaults to Items and ItemColor if no tables specified.
 
+Items, ItemColor, and ItemPrices are always filtered to items whose
+latest NP price is under ${PUBLIC_DATA_MAX_PRICE}. ItemPrices includes
+only the ${PUBLIC_DATA_PRICE_LIMIT} most recent prices per item.
+
 Options:
   --tables, -t TABLES...  List of tables to dump (space-separated)
   --dry-run               Validate configuration without creating or uploading files
@@ -82,7 +102,7 @@ Requirements:
   - R2 credentials configured (R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY)
 
 Output:
-  - r2:itemdb/dumps/{table}.sql.gz (one file per table)
+  - r2:dumps/{table}.sql.gz (one file per table)
 `);
       process.exit(0);
     }
@@ -152,6 +172,7 @@ async function dumpTableToFile(
   table: string,
   outputFile: string
 ): Promise<void> {
+  const whereClause = getPublicDataWhereClause(table);
   const args = [
     '--single-transaction',
     '--quick',
@@ -167,11 +188,18 @@ async function dumpTableToFile(
     `--password=${config.password}`,
     `--host=${config.host}`,
     `--port=${config.port}`,
-    config.database,
-    table,
   ];
 
+  if (whereClause) {
+    args.push(`--where=${whereClause}`);
+  }
+
+  args.push(config.database, table);
+
   log(`Dumping table: ${table}...`);
+  if (whereClause) {
+    log(`WHERE: ${whereClause}`);
+  }
 
   await new Promise<void>((resolve, reject) => {
     const dumpProcess = spawn(dumpCmd, args, {
@@ -279,7 +307,7 @@ async function main(): Promise<void> {
   log(`Database: ${dbConfig.database}`);
   log(`Host:     ${dbConfig.host}:${dbConfig.port}`);
   log(`User:     ${dbConfig.user}`);
-  log(`Bucket:   r2:${R2_BUCKET}/${DUMP_PREFIX}/`);
+  log(`Bucket:   r2:${R2_BUCKET}/`);
   log(`Tables:   ${options.tables.join(', ')} (${options.tables.length} total)`);
   log('=================================================================');
 
@@ -288,6 +316,10 @@ async function main(): Promise<void> {
 
   if (options.dryRun) {
     log('DRY RUN MODE - no files will be created or uploaded');
+    for (const table of options.tables) {
+      const whereClause = getPublicDataWhereClause(table);
+      log(`Table ${table}: ${whereClause ? `WHERE ${whereClause}` : 'no row filter'}`);
+    }
     log('Configuration validated successfully');
     return;
   }
@@ -300,7 +332,7 @@ async function main(): Promise<void> {
     for (const table of options.tables) {
       const tableLower = table.toLowerCase();
       const localFile = resolve(TEMP_DIR, `${tableLower}.sql.gz`);
-      const r2Key = `${DUMP_PREFIX}/${tableLower}.sql.gz`;
+      const r2Key = `${tableLower}.sql.gz`;
 
       log('');
       log('-------------------------------------------------------------------');

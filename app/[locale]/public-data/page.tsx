@@ -5,11 +5,16 @@ import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getFolderMeta } from '@utils/googleCloud';
+import { DUMPS_BUCKET, getFolderMeta } from '@utils/googleCloud';
 import { PublicDataPageContent } from './PublicDataPageContent';
-import { mapS3ObjectToExport, staticPublicDataExports } from './publicData';
+import { mapS3ObjectToExport } from './publicData';
+import { buildPublicDataPageProps } from './buildPublicDataPageProps';
 
 const mainColor = '#6c8ab3c7';
+
+type PublicDataPageProps = {
+  params: Promise<{ locale: string }>;
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getStaticAppMetadata({
@@ -21,21 +26,23 @@ export async function generateMetadata(): Promise<Metadata> {
   return metadata;
 }
 
-export default function PublicDataPage() {
+export default function PublicDataPage({ params }: PublicDataPageProps) {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
-      <PublicDataPageContentWrapper />
+      <PublicDataPageContentWrapper params={params} />
     </Suspense>
   );
 }
 
-async function PublicDataPageContentWrapper() {
-  const dumps = await loadPublicDataExports();
+async function PublicDataPageContentWrapper({ params }: PublicDataPageProps) {
+  const { locale } = await params;
+  const { isNewAccount } = await buildPublicDataPageProps(locale);
+  const dumps = isNewAccount ? [] : await loadPublicDataExports();
 
   return (
     <>
       <SetMainColor color={mainColor} />
-      <PublicDataPageContent dumps={dumps} />
+      <PublicDataPageContent dumps={dumps} isNewAccount={isNewAccount} />
     </>
   );
 }
@@ -49,8 +56,8 @@ async function loadPublicDataExports() {
   cacheTag('public-data-exports');
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
 
-  const objects = await getFolderMeta('dumps/');
+  const objects = await getFolderMeta('', DUMPS_BUCKET);
   const s3Exports = objects.map(mapS3ObjectToExport).filter((entry) => entry !== null);
 
-  return [...s3Exports, ...staticPublicDataExports];
+  return [...s3Exports];
 }

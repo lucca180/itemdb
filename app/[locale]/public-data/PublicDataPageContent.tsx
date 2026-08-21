@@ -1,14 +1,15 @@
 /* eslint-disable react/no-unescaped-entities */
-import { Box, Center, Heading, Image, Link, Table, Text } from '@chakra-ui/react';
+import { Alert, Box, Center, Heading, Image, Link, Table, Text } from '@chakra-ui/react';
 import { FeedbackButton } from '@components/Modal/FeedbackModal';
 import MainLink from '@components/Utils/MainLink';
 import type { PublicDataExport } from './publicData';
 
 type PublicDataPageContentProps = {
   dumps: PublicDataExport[];
+  isNewAccount: boolean;
 };
 
-export function PublicDataPageContent({ dumps }: PublicDataPageContentProps) {
+export function PublicDataPageContent({ dumps, isNewAccount }: PublicDataPageContentProps) {
   return (
     <>
       <Box
@@ -52,48 +53,78 @@ export function PublicDataPageContent({ dumps }: PublicDataPageContentProps) {
           You can also check out our <Link href="https://docs.itemdb.com.br">API</Link> for general
           uses.
         </Text>
-        <Table.ScrollArea
-          mt={8}
-          bg="blackAlpha.500"
-          w="100%"
-          css={{ '& a': { color: 'blue.200' } }}
-          maxW="1000px"
-          borderRadius="md"
-          fontSize="sm"
-        >
-          <Table.Root variant="line" size="sm">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader>File</Table.ColumnHeader>
-                <Table.ColumnHeader>Description</Table.ColumnHeader>
-                <Table.ColumnHeader>Date</Table.ColumnHeader>
-                <Table.ColumnHeader>Size</Table.ColumnHeader>
-                <Table.ColumnHeader>Format</Table.ColumnHeader>
-                <Table.ColumnHeader>Auto Update?</Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {dumps
-                .sort((a, b) => b.date.localeCompare(a.date))
-                .map((data) => (
-                  <Table.Row key={data.link}>
-                    <Table.Cell>
-                      <Link href={data.link} target="_blank" rel="noreferrer">
-                        {data.name}
-                      </Link>
-                    </Table.Cell>
-                    <Table.Cell fontSize="xs" whiteSpace="normal">
-                      {data.description}
-                    </Table.Cell>
-                    <Table.Cell>{data.date}</Table.Cell>
-                    <Table.Cell>{data.size}</Table.Cell>
-                    <Table.Cell>{data.format}</Table.Cell>
-                    <Table.Cell>{data.update ?? 'No'}</Table.Cell>
+        {isNewAccount ? (
+          <Center mt={4} maxW="700px">
+            <Alert.Root status="warning" variant="subtle">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>Your account is a bit too new</Alert.Title>
+                <Alert.Description fontSize="sm">
+                  Public data downloads unlock after 7 days. This helps limit automated abuse.
+                </Alert.Description>
+              </Alert.Content>
+            </Alert.Root>
+          </Center>
+        ) : (
+          <>
+            <Center mt={4}>
+              <Alert.Root status="info" variant="subtle">
+                <Alert.Indicator />
+                <Alert.Content>
+                  <Alert.Description fontSize="sm">
+                    Due to constant misuse of public data we're <b>limiting</b> the items returned
+                    in the dump.
+                    <br />
+                    If you need more data for analysis or research, contact us with <b>proof</b> of
+                    what you're building.
+                  </Alert.Description>
+                </Alert.Content>
+              </Alert.Root>
+            </Center>
+            <Table.ScrollArea
+              mt={4}
+              bg="blackAlpha.500"
+              w="100%"
+              css={{ '& a': { color: 'blue.200' } }}
+              maxW="1000px"
+              borderRadius="md"
+              fontSize="sm"
+            >
+              <Table.Root variant="line" size="sm">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeader>File</Table.ColumnHeader>
+                    <Table.ColumnHeader>Description</Table.ColumnHeader>
+                    <Table.ColumnHeader>Date</Table.ColumnHeader>
+                    <Table.ColumnHeader>Size</Table.ColumnHeader>
+                    <Table.ColumnHeader>Format</Table.ColumnHeader>
+                    <Table.ColumnHeader>Auto Update?</Table.ColumnHeader>
                   </Table.Row>
-                ))}
-            </Table.Body>
-          </Table.Root>
-        </Table.ScrollArea>
+                </Table.Header>
+                <Table.Body>
+                  {dumps
+                    .sort((a, b) => b.date.localeCompare(a.date))
+                    .map((data) => (
+                      <Table.Row key={data.link}>
+                        <Table.Cell>
+                          <Link href={data.link} target="_blank" rel="noreferrer">
+                            {data.name}
+                          </Link>
+                        </Table.Cell>
+                        <Table.Cell fontSize="xs" whiteSpace="normal">
+                          {data.description}
+                        </Table.Cell>
+                        <Table.Cell>{data.date}</Table.Cell>
+                        <Table.Cell>{data.size}</Table.Cell>
+                        <Table.Cell>{data.format}</Table.Cell>
+                        <Table.Cell>{data.update ?? 'No'}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                </Table.Body>
+              </Table.Root>
+            </Table.ScrollArea>
+          </>
+        )}
         <FeedbackButton mt={5} />
       </Center>
     </>

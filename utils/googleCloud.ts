@@ -10,7 +10,9 @@ import {
   CopyObjectCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import axios from 'axios';
 
 // Kept for backwards-compatibility — call sites that destructure `decodedToken`
@@ -84,6 +86,10 @@ export const CheckAuth = async (
 };
 // ----------- S3 R2 MIGRATION ----------- //
 
+export const DUMPS_BUCKET = 'dumps';
+const DEFAULT_BUCKET = 'itemdb';
+const DUMP_SIGNED_URL_EXPIRES_IN = 600;
+
 export const S3 = new S3Client({
   region: 'auto',
   endpoint: `https://49f11ef3296870a8f69b32f2d4555981.r2.cloudflarestorage.com`,
@@ -96,9 +102,9 @@ export const S3 = new S3Client({
   },
 });
 
-export const fileExists = async (path: string) => {
+export const fileExists = async (path: string, bucket = DEFAULT_BUCKET) => {
   try {
-    await S3.send(new HeadObjectCommand({ Bucket: 'itemdb', Key: path }));
+    await S3.send(new HeadObjectCommand({ Bucket: bucket, Key: path }));
     return true;
   } catch (error: any) {
     console.error('Error checking file existence:', error.$metadata);
@@ -156,12 +162,23 @@ export async function cdnExists(path: string, includeHeader = false): Promise<bo
   }
 }
 
+export async function getDumpSignedUrl(key: string, filename?: string): Promise<string> {
+  const downloadName = filename || key.split('/').pop() || key;
+  const command = new GetObjectCommand({
+    Bucket: DUMPS_BUCKET,
+    Key: key,
+    ResponseContentDisposition: `attachment; filename="${downloadName}"`,
+  });
+
+  return getSignedUrl(S3, command, { expiresIn: DUMP_SIGNED_URL_EXPIRES_IN });
+}
+
 // check everything inside a S3 "folder" (prefix) and return a list with their meta data
-export async function getFolderMeta(path: string) {
+export async function getFolderMeta(path: string, bucket = DEFAULT_BUCKET) {
   try {
     const response = await S3.send(
       new ListObjectsV2Command({
-        Bucket: 'itemdb',
+        Bucket: bucket,
         Prefix: path,
       })
     );

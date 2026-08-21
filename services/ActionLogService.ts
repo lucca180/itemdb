@@ -6,7 +6,8 @@ export class LogService {
     actionType: string,
     data: Prisma.ActionLogsCreateInput['logData'],
     subjectId?: string,
-    uid?: string
+    uid?: string,
+    ipAddress?: string | null
   ) => {
     await prisma.actionLogs.create({
       data: {
@@ -14,6 +15,7 @@ export class LogService {
         logData: data,
         subject_id: subjectId,
         user_id: uid === 'itemdb_system' ? 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1' : uid,
+        ip_address: ipAddress ?? undefined,
       },
     });
   };
