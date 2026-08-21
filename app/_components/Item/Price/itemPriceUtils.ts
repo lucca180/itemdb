@@ -2,6 +2,8 @@ import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import type { ItemData, PriceData, PriceMarker, PricingInfo, UserList } from '@types';
 
+const LA = tz('America/Los_Angeles');
+
 export type ItemPriceStatLabels = {
   inflation: string;
   noInfo: string;
@@ -105,7 +107,7 @@ export type PriceOrMarker = Partial<PriceData> & {
   marker?: boolean;
   /** Stable source marker id, used for collision-free React keys. */
   markerId?: string;
-  markerEdge?: 'start' | 'end';
+  markerEdge?: 'start' | 'end' | 'range';
   /** Already-translated Badge copy (or custom manual badge). */
   badgeText?: string;
   /** List name / marker title shown under the badge. */
@@ -114,6 +116,8 @@ export type PriceOrMarker = Partial<PriceData> & {
   color?: string;
   slug?: string | null;
   addedAt?: string;
+  /** Closing date when start+end were collapsed into one range row. */
+  rangeEndAt?: string;
   hasEnding?: boolean;
 };
 
@@ -199,6 +203,7 @@ function resolveMarkerBadgeText(
  * Clamping / date validation already happened in the price-markers engine.
  * Official-list badge copy is resolved via i18n here into `badgeText`.
  * Manual markers: `null` = same auto i18n; `""` = no badge; other = custom.
+ * Adjacent start+end of the same series (no rows between) collapse into one range row.
  */
 export function buildPriceTableData(
   data: PriceData[],
@@ -250,11 +255,7 @@ export function buildPriceTableData(
     const aDate = new Date(a.addedAt!);
     const bDate = new Date(b.addedAt!);
 
-    if (
-      isSameDay(aDate, bDate, {
-        in: tz('America/Los_Angeles'),
-      })
-    ) {
+    if (isSameDay(aDate, bDate, { in: LA })) {
       if (a.marker && b.marker) return bDate.getTime() - aDate.getTime();
       return b.marker ? -1 : 1;
     }
@@ -262,8 +263,10 @@ export function buildPriceTableData(
     return bDate.getTime() - aDate.getTime();
   });
 
+  const collapsed = collapseAdjacentRangeMarkers(sorted, t);
+
   let markerColor = '';
-  sorted.forEach((row) => {
+  collapsed.forEach((row) => {
     if (!row.marker && markerColor) row.color = markerColor;
 
     if (markerColor && row.marker && markerColor === row.color) {
@@ -276,7 +279,63 @@ export function buildPriceTableData(
     }
   });
 
-  return sorted;
+  return collapsed;
+}
+
+function collapseAdjacentRangeMarkers(rows: PriceOrMarker[], t: TranslateFn): PriceOrMarker[] {
+  const collapsed: PriceOrMarker[] = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const current = rows[i];
+    const next = rows[i + 1];
+
+    if (current && next && isStartEndPair(current, next)) {
+      collapsed.push(mergeRangeRows(current, next, t));
+      i += 1;
+      continue;
+    }
+
+    collapsed.push(current);
+  }
+
+  return collapsed;
+}
+
+function isStartEndPair(a: PriceOrMarker, b: PriceOrMarker): boolean {
+  if (!a.marker || !b.marker || a.markerId !== b.markerId) return false;
+  const edges = new Set([a.markerEdge, b.markerEdge]);
+  return edges.has('start') && edges.has('end');
+}
+
+function mergeRangeRows(a: PriceOrMarker, b: PriceOrMarker, t: TranslateFn): PriceOrMarker {
+  const startRow = a.markerEdge === 'start' ? a : b;
+  const endRow = a.markerEdge === 'end' ? a : b;
+  const startDate = new Date(startRow.addedAt!);
+  const endDate = new Date(endRow.addedAt!);
+  const sameDay = isSameDay(startDate, endDate, { in: LA });
+
+  return {
+    ...startRow,
+    markerEdge: 'range',
+    rangeEndAt: sameDay ? undefined : endRow.addedAt,
+    hasEnding: false,
+    badgeText: resolveCollapsedRangeBadge(startRow.badgeText, sameDay, t),
+    description: startRow.description,
+  };
+}
+
+function resolveCollapsedRangeBadge(
+  startBadge: string | undefined,
+  sameDay: boolean,
+  t: TranslateFn
+): string | undefined {
+  if (startBadge === undefined) return undefined;
+
+  const autoStart =
+    startBadge === t('ItemPage.available-at') || startBadge === t('ItemPage.added-to');
+  if (!autoStart) return startBadge;
+
+  return t(sameDay ? 'ItemPage.available-only-at' : 'ItemPage.available-at');
 }
 
 export function getNextPrice(sortedData: PriceOrMarker[], index: number): PriceData | undefined {

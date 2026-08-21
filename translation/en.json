@@ -272,6 +272,7 @@
     "mme-chance": "You also have <b>a chance</b> of getting this item",
     "mme-trail": "Trail {x}",
     "available-at": "Available At",
+    "available-only-at": "Only Available On",
     "unavailable-at": "Unavailable At",
     "old-pool-x": "Old Pool {x}",
     "add-x": "Add \"{x}\"",

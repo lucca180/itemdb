@@ -8,6 +8,7 @@ import type { PriceData, PriceMarker } from '@types';
 export type PriceTableMarkerLabels = {
   unavailableAt: string;
   availableAt: string;
+  availableOnlyAt: string;
   addedTo: string;
 };
 
@@ -22,6 +23,7 @@ export async function getCachedPriceTableData(
   markers: PriceMarker[],
   unavailableAt: string,
   availableAt: string,
+  availableOnlyAt: string,
   addedTo: string
 ): Promise<PriceOrMarker[]> {
   'use cache';
@@ -33,6 +35,8 @@ export async function getCachedPriceTableData(
         return unavailableAt;
       case 'ItemPage.available-at':
         return availableAt;
+      case 'ItemPage.available-only-at':
+        return availableOnlyAt;
       case 'ItemPage.added-to':
         return addedTo;
       default:

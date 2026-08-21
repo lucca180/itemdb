@@ -2,11 +2,13 @@ import 'server-only';
 
 import Color from 'color';
 import { tz } from '@date-fns/tz';
-import { isSameDay } from 'date-fns';
+import { isSameDay, startOfDay } from 'date-fns';
 import type { ManualPriceMarker as ManualPriceMarkerRow } from '@prisma/generated/client';
 import type { ManualPriceMarkerDTO, OfficialListPriceMarker, PriceMarker, UserList } from '@types';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
 import prisma from '@utils/prisma';
+
+const LA = tz('America/Los_Angeles');
 
 type PriceMarkerItemRef = {
   internal_id: number;
@@ -86,13 +88,14 @@ function resolveManualMarker(
   if (!isValidDate(startDate) || (endDate && !isValidDate(endDate))) return null;
 
   // Mirror write-path / official-list same-day behavior.
-  const isSameDayRange =
-    !!endDate && isSameDay(startDate, endDate, { in: tz('America/Los_Angeles') });
+  const isSameDayRange = !!endDate && isSameDay(startDate, endDate, { in: LA });
   const isPoint = marker.isPoint || isSameDayRange;
   if (isPoint) endDate = null;
 
-  // Hide the whole marker while any part of it is still in the future.
-  if (startDate > now || (endDate && endDate > now)) return null;
+  // Hide the whole marker while any part of it is on a future LA calendar day.
+  // Date-only values are stored at 18:00 UTC, so a timestamp compare would hide
+  // "today" until that hour.
+  if (isFutureLaDay(startDate, now) || (endDate && isFutureLaDay(endDate, now))) return null;
   // Window ended before the item existed — skip.
   if (endDate && endDate <= itemAdded) return null;
 
@@ -159,19 +162,17 @@ function resolveOfficialListMarker(
   const endDate = rawEndAt ? new Date(rawEndAt) : null;
 
   if (!isValidDate(startDate) || (endDate && !isValidDate(endDate))) return null;
-  // A partially future range is hidden as a whole instead of displaying an
-  // event or availability period that has not happened yet.
-  if (startDate > now || (endDate && endDate > now)) return null;
+  // A range on a future LA calendar day is hidden as a whole instead of
+  // displaying an event or availability period that has not happened yet.
+  if (isFutureLaDay(startDate, now) || (endDate && isFutureLaDay(endDate, now))) return null;
 
-  const isSingleDay = !!endDate && isSameDay(startDate, endDate, { in: tz('America/Los_Angeles') });
+  const isSingleDay = !!endDate && isSameDay(startDate, endDate, { in: LA });
 
   // Preserve a valid interval for table ordering. Chart uses isPoint for
   // single-day cases as one contextual point instead of a line segment.
   if (endDate && endDate <= startDate && isSingleDay) {
     endDate.setTime(startDate.getTime() + 1);
   }
-
-  if (endDate && endDate > now) return null;
 
   // Entire window ended before the item existed — skip.
   if (endDate && endDate <= itemAdded) return null;
@@ -200,4 +201,9 @@ function dateMax(...dates: Date[]) {
 
 function isValidDate(date: Date) {
   return !Number.isNaN(date.getTime());
+}
+
+/** True when `date` falls on a later Los Angeles calendar day than `now`. */
+function isFutureLaDay(date: Date, now: Date) {
+  return startOfDay(date, { in: LA }).getTime() > startOfDay(now, { in: LA }).getTime();
 }

@@ -75,6 +75,7 @@ const PREVIEW_T = (key: string) => {
   const labels: Record<string, string> = {
     'ItemPage.added-to': 'Added to',
     'ItemPage.available-at': 'Available At',
+    'ItemPage.available-only-at': 'Only Available On',
     'ItemPage.unavailable-at': 'Unavailable At',
   };
   return labels[key] ?? key;

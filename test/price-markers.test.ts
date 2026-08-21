@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ListItemInfo, UserList } from '@types';
+import type { ListItemInfo, PriceData, UserList } from '@types';
 
 vi.mock('server-only', () => ({}));
 
@@ -139,6 +139,39 @@ describe('resolveOfficialListMarkers', () => {
     expect(markers).toHaveLength(0);
   });
 
+  it('keeps series whose endDate is today even before the stored 18:00 UTC timestamp', () => {
+    const markers = resolveOfficialListMarkers(
+      [
+        listFixture({
+          name: 'Ends Today',
+          seriesStart: '2024-03-01T18:00:00.000Z',
+          seriesEnd: '2024-06-15T18:00:00.000Z',
+        }),
+      ],
+      { firstSeen: '2020-01-01T00:00:00.000Z' },
+      now
+    );
+
+    expect(markers).toHaveLength(1);
+    expect(markers[0].endAt).toBe(new Date('2024-06-15T18:00:00.000Z').toJSON());
+  });
+
+  it('hides series whose endDate is a future LA calendar day', () => {
+    const markers = resolveOfficialListMarkers(
+      [
+        listFixture({
+          name: 'Ends Tomorrow',
+          seriesStart: '2024-03-01T18:00:00.000Z',
+          seriesEnd: '2024-06-16T18:00:00.000Z',
+        }),
+      ],
+      { firstSeen: '2020-01-01T00:00:00.000Z' },
+      now
+    );
+
+    expect(markers).toHaveLength(0);
+  });
+
   it('skips series whose end is before the item firstSeen', () => {
     const markers = resolveOfficialListMarkers(
       [
@@ -193,26 +226,27 @@ describe('resolveOfficialListMarkers', () => {
 });
 
 describe('buildPriceTableData', () => {
-  it('resolves i18n badgeText and keeps title for list name', () => {
-    const prices = [
-      {
-        price_id: 1,
-        value: 100,
-        addedAt: '2024-05-01T00:00:00.000Z',
-        inflated: false,
-        isLatest: true,
-      },
-    ];
-
-    const t = (key: string) => {
-      if (key === 'ItemPage.added-to') return 'Added to';
-      if (key === 'ItemPage.available-at') return 'Available at';
-      if (key === 'ItemPage.unavailable-at') return 'Unavailable at';
-      return key;
+  const tableT = (key: string) => {
+    const labels: Record<string, string> = {
+      'ItemPage.added-to': 'Added to',
+      'ItemPage.available-at': 'Available at',
+      'ItemPage.available-only-at': 'Only Available On',
+      'ItemPage.unavailable-at': 'Unavailable at',
     };
+    return labels[key] ?? key;
+  };
 
+  const priceOn = (addedAt: string, price_id = 1): PriceData => ({
+    price_id,
+    value: 100,
+    addedAt,
+    inflated: false,
+    isLatest: true,
+  });
+
+  it('resolves i18n badgeText and keeps title for list name', () => {
     const rows = buildPriceTableData(
-      prices,
+      [priceOn('2024-05-01T00:00:00.000Z')],
       [
         {
           id: 'officialList-1',
@@ -237,16 +271,21 @@ describe('buildPriceTableData', () => {
           isPoint: false,
         },
       ],
-      t
+      tableT
     );
 
     const markerRows = rows.filter((row) => row.marker);
-    expect(markerRows).toHaveLength(3);
+    expect(markerRows).toHaveLength(2);
     expect(markerRows.map((row) => row.badgeText).sort()).toEqual(
-      ['Added to', 'Available at', 'Unavailable at'].sort()
+      ['Added to', 'Available at'].sort()
     );
     expect(markerRows.find((row) => row.badgeText === 'Added to')?.title).toBe('Open');
-    expect(markerRows.find((row) => row.description === 'Seasonal drop')?.title).toBe('Window');
+    expect(markerRows.find((row) => row.badgeText === 'Available at')).toMatchObject({
+      title: 'Window',
+      description: 'Seasonal drop',
+      markerEdge: 'range',
+      rangeEndAt: '2024-03-31T00:00:00.000Z',
+    });
   });
 
   it('uses marker.badgeText when already provided (manual markers)', () => {
@@ -273,14 +312,7 @@ describe('buildPriceTableData', () => {
     expect(rows[0].title).toBe('Event');
   });
 
-  it('resolves auto i18n badge when manual badgeText is null', () => {
-    const t = (key: string) => {
-      if (key === 'ItemPage.added-to') return 'Added to';
-      if (key === 'ItemPage.available-at') return 'Available at';
-      if (key === 'ItemPage.unavailable-at') return 'Unavailable at';
-      return key;
-    };
-
+  it('collapses a range with no prices between into one available-at row', () => {
     const rows = buildPriceTableData(
       [],
       [
@@ -296,9 +328,68 @@ describe('buildPriceTableData', () => {
           isPoint: false,
         },
       ],
-      t
+      tableT
     );
 
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      markerEdge: 'range',
+      badgeText: 'Available at',
+      rangeEndAt: '2024-03-31T00:00:00.000Z',
+      hasEnding: false,
+    });
+  });
+
+  it('uses disponível-apenas-em when adjacent start and end fall on the same LA day', () => {
+    const rows = buildPriceTableData(
+      [priceOn('2024-05-01T18:00:00.000Z')],
+      [
+        {
+          id: 'officialList-same-day',
+          type: 'officialList',
+          title: 'Wondercog Hunt',
+          description: null,
+          slug: 'wondercog-hunt',
+          color: '#9ae66e',
+          startAt: '2024-04-10T18:00:00.000Z',
+          endAt: '2024-04-10T18:00:00.001Z',
+          isPoint: true,
+        },
+      ],
+      tableT
+    );
+
+    const markerRows = rows.filter((row) => row.marker);
+    expect(markerRows).toHaveLength(1);
+    expect(markerRows[0]).toMatchObject({
+      markerEdge: 'range',
+      badgeText: 'Only Available On',
+      title: 'Wondercog Hunt',
+      addedAt: '2024-04-10T18:00:00.000Z',
+    });
+    expect(markerRows[0].rangeEndAt).toBeUndefined();
+  });
+
+  it('keeps start and end rows when a price sits between them', () => {
+    const rows = buildPriceTableData(
+      [priceOn('2024-03-15T12:00:00.000Z')],
+      [
+        {
+          id: 'officialList-window',
+          type: 'officialList',
+          title: 'Window',
+          description: null,
+          slug: 'window',
+          color: '#def',
+          startAt: '2024-03-01T00:00:00.000Z',
+          endAt: '2024-03-31T00:00:00.000Z',
+          isPoint: false,
+        },
+      ],
+      tableT
+    ).filter((row) => row.marker);
+
+    expect(rows).toHaveLength(2);
     expect(rows.map((row) => row.badgeText).sort()).toEqual(
       ['Available at', 'Unavailable at'].sort()
     );
@@ -329,9 +420,8 @@ describe('buildPriceTableData', () => {
   });
 
   it('uses custom badge and description at start, translated closing badge at end', () => {
-    const t = (key: string) => (key === 'ItemPage.unavailable-at' ? 'Unavailable at' : key);
     const rows = buildPriceTableData(
-      [],
+      [priceOn('2024-04-05T18:00:00.000Z')],
       [
         {
           id: 'manual-range',
@@ -345,7 +435,7 @@ describe('buildPriceTableData', () => {
           isPoint: false,
         },
       ],
-      t
+      tableT
     ).filter((row) => row.marker);
 
     const start = rows.find((row) => row.markerEdge === 'start');
@@ -362,9 +452,37 @@ describe('buildPriceTableData', () => {
     });
   });
 
-  it('keeps description on both range edges when title is absent', () => {
+  it('keeps a custom start badge when collapsing an empty range', () => {
     const rows = buildPriceTableData(
       [],
+      [
+        {
+          id: 'manual-range',
+          type: 'manual',
+          title: 'Event title',
+          badgeText: 'Event begins',
+          description: 'Event details',
+          color: '#abc',
+          startAt: '2024-04-01T18:00:00.000Z',
+          endAt: '2024-04-10T18:00:00.000Z',
+          isPoint: false,
+        },
+      ],
+      tableT
+    );
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      markerEdge: 'range',
+      badgeText: 'Event begins',
+      description: 'Event details',
+      rangeEndAt: '2024-04-10T18:00:00.000Z',
+    });
+  });
+
+  it('keeps description on both range edges when title is absent and prices sit between', () => {
+    const rows = buildPriceTableData(
+      [priceOn('2024-04-05T18:00:00.000Z')],
       [
         {
           id: 'manual-description-only',
@@ -465,6 +583,23 @@ describe('resolveManualMarkers', () => {
     );
 
     expect(resolved).toHaveLength(0);
+  });
+
+  it('keeps manual ranges whose endAt is today even before the stored 18:00 UTC timestamp', () => {
+    const resolved = resolveManualMarkers(
+      [
+        manualMarkerFixture({
+          internal_id: 11,
+          startAt: new Date('2024-05-01T18:00:00.000Z'),
+          endAt: new Date('2024-06-15T18:00:00.000Z'),
+        }),
+      ],
+      { firstSeen: '2024-01-01T00:00:00.000Z' },
+      now
+    );
+
+    expect(resolved).toHaveLength(1);
+    expect(resolved[0].endAt).toBe(new Date('2024-06-15T18:00:00.000Z').toJSON());
   });
 
   it('skips markers whose window ended before the item existed', () => {

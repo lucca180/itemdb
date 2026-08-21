@@ -273,6 +273,7 @@
     "mme-chance": "Você também tem <b>chances</b> de conseguir este item",
     "mme-trail": "Trilha {x}",
     "available-at": "Disponível em",
+    "available-only-at": "Disponível apenas no dia em",
     "unavailable-at": "Indisponível em",
     "old-pool-x": "Prêmios Antigos {x}",
     "add-x": "Adicionar \"{x}\"",

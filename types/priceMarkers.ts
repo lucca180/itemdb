@@ -27,8 +27,8 @@ type PriceMarkerBase = {
   /** null = open-ended (e.g. "added to" without end). */
   endAt: string | null;
   /**
-   * Render hint: true = single event (chart point; table usually one row via endAt).
-   * false = range (chart segment; table start+end rows when endAt is set).
+   * Render hint: true = single event (chart point).
+   * false = range (chart segment; table start+end rows, or one range row when those edges are adjacent).
    */
   isPoint: boolean;
 };

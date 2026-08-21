@@ -34,6 +34,21 @@ type PriceTableViewProps = {
   footer?: ReactNode;
 };
 
+const MARKER_DATE_FORMAT = {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+} as const;
+
+function formatMarkerDate(price: PriceOrMarker, format: PriceTableFormat) {
+  const start = format.dateTime(new Date(price.addedAt!), MARKER_DATE_FORMAT);
+  if (!price.rangeEndAt) return start;
+
+  const end = format.dateTime(new Date(price.rangeEndAt), MARKER_DATE_FORMAT);
+  if (start === end) return start;
+  return `${start} - ${end}`;
+}
+
 function PriceTableRow({
   price,
   sortedData,
@@ -82,11 +97,7 @@ function PriceTableRow({
               </Box>
             )}
             <Text fontSize="xs" color="whiteAlpha.600">
-              {format.dateTime(new Date(price.addedAt!), {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
+              {formatMarkerDate(price, format)}
             </Text>
           </Flex>
         </Table.Cell>
