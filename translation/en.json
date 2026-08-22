@@ -1324,7 +1324,13 @@
     "cover-kicker-mall": "In the mall this week",
     "cover-open": "Open the item page",
     "cover-also-new": "Also new this week",
-    "cover-found-in": "Found in"
+    "cover-found-in": "Found in",
+    "sale-kicker": "On sale",
+    "sale-lede": "Items for a discounted price, for limited time only!",
+    "sale-deepest": "Best deal",
+    "sale-off": "{n}% off",
+    "sale-until": "until {date}",
+    "sale-caption-price": "{from} → {to} NC"
   },
   "ItemEffects": {
     "stats-change": "Stats Change",

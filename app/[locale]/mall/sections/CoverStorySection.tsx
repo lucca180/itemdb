@@ -172,7 +172,7 @@ async function CoverStoryContent() {
             >
               {t('NcMall.cover-also-new')}
             </Text>
-            <MallItemStrip items={alsoNew} captionFor={captionFor} />
+            <MallItemStrip uniqueID="mall-hub-cover" items={alsoNew} captionFor={captionFor} />
           </Flex>
         </>
       )}

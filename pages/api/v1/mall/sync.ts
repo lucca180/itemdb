@@ -2,7 +2,11 @@ import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@utils/prisma';
 import { NcMallData as dbMallData, Prisma } from '@prisma/generated/client';
-import { revalidateAppCache, HomeRevalidateTags } from '@utils/item/revalidateItem';
+import {
+  revalidateAppCache,
+  HomeRevalidateTags,
+  MallHubRevalidateTags,
+} from '@utils/item/revalidateItem';
 import { enqueueAndProcessItems } from '@utils/item/enqueueItemProcess';
 import { processItemProcessQueue } from '@utils/item/processItemQueue';
 
@@ -197,9 +201,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   await Promise.all(prom);
 
-  // revalidate home NC mall caches when new mall items are added
-  if (create.length > 0) {
-    await revalidateAppCache([HomeRevalidateTags.latestNcMall, HomeRevalidateTags.latestItems]);
+  // revalidate home + hub NC mall caches when mall stock or prices change
+  const mallChanged = create.length > 0 || update.length > 1 || removeIds.size > 0;
+  if (mallChanged) {
+    await revalidateAppCache([
+      HomeRevalidateTags.latestNcMall,
+      HomeRevalidateTags.latestItems,
+      MallHubRevalidateTags.hub,
+    ]);
   }
 
   res.json({

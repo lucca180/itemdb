@@ -52,6 +52,7 @@ export type { AppCacheTag, HomeCacheTag, ItemPageCacheScope };
 export {
   HomeRevalidateTags,
   ItemRevalidateTags,
+  MallHubRevalidateTags,
   itemRootTag,
   itemSectionCacheTags,
   itemSectionTag,

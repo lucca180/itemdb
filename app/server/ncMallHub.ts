@@ -10,6 +10,19 @@ import type { ItemV2For, UserList, WearableData } from '@types';
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const ALSO_NEW_LIMIT = 12;
+const ON_SALE_LIMIT = 24;
+
+export type MallOnSale = {
+  items: ItemV2For<'card'>[];
+  deepestCut: ItemV2For<'card'>;
+};
+
+function activeMallWhere(nowDate: Date) {
+  return {
+    active: true as const,
+    OR: [{ saleEnd: { gte: nowDate } }, { saleEnd: null }],
+  };
+}
 
 export type MallCoverFoundIn = {
   name: string;
@@ -160,11 +173,7 @@ async function loadMallCoverStory(): Promise<MallCoverStory | null> {
   const nowMs = await getCachedNow();
   const nowDate = new Date(nowMs);
   const weekAgo = new Date(nowMs - WEEK_MS);
-
-  const activeMall = {
-    active: true as const,
-    OR: [{ saleEnd: { gte: nowDate } }, { saleEnd: null }],
-  };
+  const activeMall = activeMallWhere(nowDate);
 
   const [newWearableRows, mallWearableRows, recentRows, trending] = await Promise.all([
     prisma.items.findMany({
@@ -257,4 +266,72 @@ function isWearableSummary(data: unknown): data is WearableData {
 
 export function getMallCoverStory() {
   return loadMallCoverStory();
+}
+
+export function getMallDiscountPercent(item: ItemV2For<'card'>): number | null {
+  if (item.price?.type !== 'ncMall') return null;
+  const { price, discountPrice } = item.price;
+  if (discountPrice === null || price <= 0 || discountPrice >= price) return null;
+  return Math.round((1 - discountPrice / price) * 100);
+}
+
+export function compareOnSaleItems(a: ItemV2For<'card'>, b: ItemV2For<'card'>): number {
+  const percentDelta = (getMallDiscountPercent(b) ?? 0) - (getMallDiscountPercent(a) ?? 0);
+  if (percentDelta !== 0) return percentDelta;
+  return a.name.localeCompare(b.name);
+}
+
+export function pickDeepestCut(items: ItemV2For<'card'>[]): ItemV2For<'card'> | null {
+  if (items.length === 0) return null;
+  return [...items].sort(compareOnSaleItems)[0];
+}
+
+async function loadMallOnSale(): Promise<MallOnSale | null> {
+  'use cache';
+  cacheTag('mall-hub');
+  cacheTag('home-latest-nc-mall');
+  cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
+
+  const nowMs = await getCachedNow();
+  const nowDate = new Date(nowMs);
+
+  const rows = await prisma.ncMallData.findMany({
+    where: {
+      active: true,
+      discountPrice: { not: null },
+      discountEnd: { gt: nowDate },
+      AND: [
+        { OR: [{ saleEnd: { gte: nowDate } }, { saleEnd: null }] },
+        { OR: [{ discountBegin: { lte: nowDate } }, { discountBegin: null }] },
+      ],
+    },
+    select: { item_iid: true, price: true, discountPrice: true },
+    orderBy: { discountEnd: 'asc' },
+    take: 100,
+  });
+
+  const discountedRows = rows.filter(
+    (row) => row.discountPrice !== null && row.discountPrice < row.price
+  );
+  if (discountedRows.length === 0) return null;
+
+  const itemsById = await ItemService.getManyItems(
+    { type: 'id', data: discountedRows.map((row) => String(row.item_iid)) },
+    { intent: 'card' }
+  );
+
+  const items = discountedRows
+    .map((row) => itemsById[String(row.item_iid)])
+    .filter((item): item is ItemV2For<'card'> => !!item && getMallDiscountPercent(item) !== null)
+    .sort(compareOnSaleItems)
+    .slice(0, ON_SALE_LIMIT);
+
+  const deepestCut = pickDeepestCut(items);
+  if (!deepestCut) return null;
+
+  return { items, deepestCut };
+}
+
+export function getMallOnSale() {
+  return loadMallOnSale();
 }

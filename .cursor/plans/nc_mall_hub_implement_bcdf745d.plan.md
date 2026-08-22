@@ -10,7 +10,7 @@ todos:
     status: completed
   - id: p3-sale
     content: "Fase 3: on sale + deepest cut"
-    status: pending
+    status: completed
   - id: p4-leaving
     content: "Fase 4: leaving completo agrupado por data no hub (ainda não apagar a rota antiga)"
     status: pending

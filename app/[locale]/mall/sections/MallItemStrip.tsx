@@ -1,15 +1,15 @@
+import type { ReactNode } from 'react';
 import { Box, Flex, Text } from '@chakra-ui/react';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import type { ItemV2For } from '@types';
 
-const UNIQUE_ID = 'mall-hub-cover';
-
 type MallItemStripProps = {
   items: ItemV2For<'card'>[];
-  captionFor: (item: ItemV2For<'card'>) => string;
+  uniqueID: string;
+  captionFor: (item: ItemV2For<'card'>) => ReactNode;
 };
 
-export function MallItemStrip({ items, captionFor }: MallItemStripProps) {
+export function MallItemStrip({ items, uniqueID, captionFor }: MallItemStripProps) {
   return (
     <Box
       w="100%"
@@ -50,7 +50,7 @@ export function MallItemStrip({ items, captionFor }: MallItemStripProps) {
               },
             }}
           >
-            <ItemCardV2 item={item} uniqueID={UNIQUE_ID} small />
+            <ItemCardV2 item={item} uniqueID={uniqueID} small />
           </Box>
           <Text
             fontSize="2xs"
