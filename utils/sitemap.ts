@@ -15,6 +15,7 @@ export const STATIC_SITEMAP_PATHS = [
   '/hub/the-void-within',
   '/lists/import',
   '/lists/official',
+  '/mall',
   '/mall/leaving',
   '/restock',
   '/tools/price-calculator',

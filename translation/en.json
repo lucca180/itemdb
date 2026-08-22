@@ -1315,7 +1315,16 @@
   },
   "NcMall": {
     "leaving-soon-tm": "Leaving Soon™",
-    "leaving-soon-desc": "Items that are leaving the <Link>NC Mall</Link> soon"
+    "leaving-soon-desc": "Items that are leaving the <Link>NC Mall</Link> soon",
+    "hub-h1": "NC Mall",
+    "hub-seo-title": "Neopets NC Mall: new items, sales, leaving dates & Lebron values",
+    "hub-seo-description": "See what's new in the Neopets NC Mall, items on sale, what's leaving soon, Lebron cap values, and Pet Styles — updated from itemdb data.",
+    "hub-lede": "Track NC Mall arrivals, discounts, leave dates, and Lebron values in one place — then jump to the item page, official lists, or the Styling Studio.",
+    "updated": "Updated {date}",
+    "cover-kicker-mall": "In the mall this week",
+    "cover-open": "Open the item page",
+    "cover-also-new": "Also new this week",
+    "cover-found-in": "Found in"
   },
   "ItemEffects": {
     "stats-change": "Stats Change",
