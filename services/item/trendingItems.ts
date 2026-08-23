@@ -2,6 +2,8 @@ import { getClient } from '@umami/api-client';
 import { ItemService } from '@services/ItemService';
 import type { ItemV2For } from '@types';
 
+const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
+
 const getUmamiEnv = () => {
   const suffix = '_2';
 
@@ -28,38 +30,51 @@ type WebsiteMetrics = {
   }[];
 };
 
-export async function getTrendingItemsV2(limit: number): Promise<ItemV2For<'card'>[]> {
+export type UmamiItemPageviewsOptions = {
+  limit?: number;
+  nowMs?: number;
+  windowMs?: number;
+};
+
+/** Path metrics for `/item/...` keyed by slug. NP and NC share the same map. */
+export async function getUmamiItemPageviews(
+  options: UmamiItemPageviewsOptions = {}
+): Promise<Map<string, number>> {
+  const nowMs = options.nowMs ?? Date.now();
+  const windowMs = options.windowMs ?? FIVE_DAYS_MS;
+  const limit = options.limit ?? 500;
+
   const statsRes = (await client.getWebsiteMetrics(env.site_id, {
-    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).getTime(),
-    endAt: Date.now(),
+    startAt: nowMs - windowMs,
+    endAt: nowMs,
     type: env.type,
     // @ts-expect-error missing types
     search: 'item/',
     excludeBounce: true,
-    limit: limit + 10,
+    limit,
   })) as WebsiteMetrics;
 
-  const popularItemsStats: Record<string, { slug: string; pageviews: number }> = {};
+  const pageviews = new Map<string, number>();
+  for (const row of statsRes.data ?? []) {
+    const slug = row.x.split('/').pop();
+    if (!slug) continue;
+    pageviews.set(slug, (pageviews.get(slug) ?? 0) + row.y);
+  }
+  return pageviews;
+}
 
-  statsRes.data.map((data) => {
-    const slug = data.x.split('/').pop();
-    if (!slug) return;
-
-    popularItemsStats[slug] = {
-      slug: slug,
-      pageviews: data.y,
-    };
-  });
+export async function getTrendingItemsV2(limit: number): Promise<ItemV2For<'card'>[]> {
+  const pageviews = await getUmamiItemPageviews({ limit: limit + 10 });
 
   const items = await ItemService.getManyItems(
-    { type: 'slug', data: Object.keys(popularItemsStats) },
+    { type: 'slug', data: [...pageviews.keys()] },
     { intent: 'card' }
   );
 
   const sorted = Object.values(items).sort((a, b) => {
-    if (popularItemsStats[a.slug!]?.pageviews > popularItemsStats[b.slug!]?.pageviews) return -1;
-    if (popularItemsStats[a.slug!]?.pageviews < popularItemsStats[b.slug!]?.pageviews) return 1;
-    return 0;
+    const aViews = a.slug ? (pageviews.get(a.slug) ?? 0) : 0;
+    const bViews = b.slug ? (pageviews.get(b.slug) ?? 0) : 0;
+    return bViews - aViews;
   });
 
   return sorted.slice(0, limit);

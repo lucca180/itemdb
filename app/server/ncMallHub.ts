@@ -2,6 +2,7 @@ import { cacheLife, cacheTag } from 'next/cache';
 import prisma from '@utils/prisma';
 import { getCachedNow } from '@utils/getCachedNow';
 import { ItemService } from '@services/ItemService';
+import { getUmamiItemPageviews } from '@services/item/trendingItems';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { filterOfficialLists, getItemLists } from '@pages/api/v1/items/[id_name]/lists';
 import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
@@ -11,6 +12,10 @@ import type { ItemV2For, UserList, WearableData } from '@types';
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const ALSO_NEW_LIMIT = 12;
 const ON_SALE_LIMIT = 24;
+const LEAVING_STRIP_LIMIT = 5;
+const LEAVING_ASIDE_LIMIT = 3;
+const LEAVING_FETCH_LIMIT = LEAVING_STRIP_LIMIT + LEAVING_ASIDE_LIMIT;
+const LEAVING_POOL_LIMIT = 100;
 
 export type MallOnSale = {
   items: ItemV2For<'card'>[];
@@ -140,6 +145,30 @@ function compareCoverCandidates(
   return mallSaleBeginMs(b) - mallSaleBeginMs(a) || a.name.localeCompare(b.name);
 }
 
+export function popularityFromPageviews(
+  items: Pick<ItemV2For<'card'>, 'internal_id' | 'slug'>[],
+  pageviews: Map<string, number>
+): Map<number, number> {
+  const popularity = new Map<number, number>();
+  for (const item of items) {
+    if (!item.slug) continue;
+    popularity.set(item.internal_id, pageviews.get(item.slug) ?? 0);
+  }
+  return popularity;
+}
+
+export function rankAlsoNewThisWeek(
+  items: ItemV2For<'card'>[],
+  coverId: number,
+  popularity: Map<number, number>,
+  limit = ALSO_NEW_LIMIT
+): ItemV2For<'card'>[] {
+  return [...items]
+    .filter((item) => item.internal_id !== coverId)
+    .sort((a, b) => compareCoverCandidates(a, b, popularity))
+    .slice(0, limit);
+}
+
 export function pickMallCoverWearable(
   newWearables: ItemV2For<'card'>[],
   mallWearables: ItemV2For<'card'>[],
@@ -175,13 +204,13 @@ async function loadMallCoverStory(): Promise<MallCoverStory | null> {
   const weekAgo = new Date(nowMs - WEEK_MS);
   const activeMall = activeMallWhere(nowDate);
 
-  const [newWearableRows, mallWearableRows, recentRows, trending] = await Promise.all([
+  const [newWearableRows, mallWearableRows, recentRows, pageviews] = await Promise.all([
     prisma.items.findMany({
       where: {
         type: 'nc',
         isWearable: true,
         canonical_id: null,
-        OR: [{ addedAt: { gte: weekAgo } }, { releaseDate: { gte: weekAgo } }],
+        addedAt: { gte: weekAgo },
       },
       select: { internal_id: true },
       orderBy: { addedAt: 'desc' },
@@ -194,23 +223,32 @@ async function loadMallCoverStory(): Promise<MallCoverStory | null> {
       select: { item_iid: true },
       orderBy: { saleBegin: 'desc' },
     }),
-    prisma.ncMallData.findMany({
+    prisma.items.findMany({
       where: {
-        ...activeMall,
-        saleBegin: { gte: weekAgo },
+        type: 'nc',
+        canonical_id: null,
+        OR: [
+          { addedAt: { gte: weekAgo } },
+          {
+            ncMallData: {
+              some: {
+                saleBegin: { gte: weekAgo },
+                OR: [{ saleEnd: null }, { saleEnd: { gte: nowDate } }],
+              },
+            },
+          },
+        ],
       },
-      select: { item_iid: true },
-      orderBy: { saleBegin: 'desc' },
-      take: 24,
+      select: { internal_id: true },
     }),
-    ItemService.getTrending(50).catch(() => [] as ItemV2For<'card'>[]),
+    getUmamiItemPageviews({ nowMs, limit: 500 }).catch(() => new Map<string, number>()),
   ]);
 
   const ids = [
     ...new Set([
       ...newWearableRows.map((row) => row.internal_id),
       ...mallWearableRows.map((row) => row.item_iid),
-      ...recentRows.map((row) => row.item_iid),
+      ...recentRows.map((row) => row.internal_id),
     ]),
   ];
   if (ids.length === 0) return null;
@@ -228,17 +266,19 @@ async function loadMallCoverStory(): Promise<MallCoverStory | null> {
     .map((row) => itemsById[String(row.item_iid)])
     .filter((item): item is ItemV2For<'card'> => !!item && item.flags.includes('wearable'));
 
-  const popularity = new Map(
-    trending.map((item, index) => [item.internal_id, trending.length - index])
+  const alsoNewPool = recentRows
+    .map((row) => itemsById[String(row.internal_id)])
+    .filter((item): item is ItemV2For<'card'> => !!item && item.type === 'nc');
+
+  const popularity = popularityFromPageviews(
+    [...newWearables, ...mallWearables, ...alsoNewPool],
+    pageviews
   );
 
   const cover = pickMallCoverWearable(newWearables, mallWearables, popularity);
   if (!cover) return null;
 
-  const alsoNew = recentRows
-    .map((row) => itemsById[String(row.item_iid)])
-    .filter((item): item is ItemV2For<'card'> => !!item && item.internal_id !== cover.internal_id)
-    .slice(0, ALSO_NEW_LIMIT);
+  const alsoNew = rankAlsoNewThisWeek(alsoNewPool, cover.internal_id, popularity);
 
   const [extras, wearable] = await Promise.all([
     hasMallSaleBegin(cover)
@@ -334,4 +374,116 @@ async function loadMallOnSale(): Promise<MallOnSale | null> {
 
 export function getMallOnSale() {
   return loadMallOnSale();
+}
+
+export type MallLeavingEntry = {
+  item: ItemV2For<'card'>;
+  saleEndMs: number;
+};
+
+export type MallLeavingGroup = {
+  label: string;
+  saleEndMs: number;
+  items: ItemV2For<'card'>[];
+};
+
+export type MallLeaving = {
+  stripItems: ItemV2For<'card'>[];
+  asideItems: ItemV2For<'card'>[];
+};
+
+export function mallNumericPrice(price: number, discountPrice: number | null): number {
+  if (discountPrice !== null && discountPrice > 0 && discountPrice < price) return discountPrice;
+  return price;
+}
+
+export function mallSortPrice(item: ItemV2For<'card'>): number {
+  if (item.price?.type !== 'ncMall') return Number.POSITIVE_INFINITY;
+  return mallNumericPrice(item.price.price, item.price.discountPrice);
+}
+
+export function compareLeavingEntries(a: MallLeavingEntry, b: MallLeavingEntry): number {
+  const dayDelta = utcDayKey(a.saleEndMs).localeCompare(utcDayKey(b.saleEndMs));
+  if (dayDelta !== 0) return dayDelta;
+  const priceDelta = mallSortPrice(a.item) - mallSortPrice(b.item);
+  if (priceDelta !== 0) return priceDelta;
+  return a.saleEndMs - b.saleEndMs || a.item.name.localeCompare(b.item.name);
+}
+
+export function pickNextOut(entries: MallLeavingEntry[]): MallLeavingEntry | null {
+  if (entries.length === 0) return null;
+  return [...entries].sort(compareLeavingEntries)[0];
+}
+
+export function groupLeavingByLabel(
+  entries: MallLeavingEntry[],
+  labelFor: (saleEndMs: number) => string
+): MallLeavingGroup[] {
+  const groups: MallLeavingGroup[] = [];
+  const indexByLabel = new Map<string, number>();
+
+  for (const entry of [...entries].sort(compareLeavingEntries)) {
+    const label = labelFor(entry.saleEndMs);
+    const existing = indexByLabel.get(label);
+    if (existing === undefined) {
+      indexByLabel.set(label, groups.length);
+      groups.push({ label, saleEndMs: entry.saleEndMs, items: [entry.item] });
+    } else {
+      groups[existing].items.push(entry.item);
+    }
+  }
+
+  return groups;
+}
+
+async function loadMallLeaving(): Promise<MallLeaving | null> {
+  'use cache';
+  cacheTag('mall-hub');
+  cacheTag('home-latest-nc-mall');
+  cacheLife({ stale: 180, revalidate: 180, expire: 3600 });
+
+  const nowMs = await getCachedNow();
+  const nowDate = new Date(nowMs);
+
+  const rows = await prisma.ncMallData.findMany({
+    where: {
+      active: true,
+      saleEnd: { gte: nowDate },
+    },
+    select: { item_iid: true, saleEnd: true },
+    orderBy: [{ saleEnd: 'asc' }, { price: 'asc' }],
+    take: LEAVING_POOL_LIMIT,
+  });
+
+  const datedRows = rows.filter((row) => row.saleEnd);
+  if (datedRows.length === 0) return null;
+
+  const itemsById = await ItemService.getManyItems(
+    { type: 'id', data: datedRows.map((row) => String(row.item_iid)) },
+    { intent: 'card' }
+  );
+
+  const items = datedRows
+    .map((row) => {
+      const item = itemsById[String(row.item_iid)];
+      if (!item || !row.saleEnd) return null;
+      return { item, saleEndMs: row.saleEnd.getTime() };
+    })
+    .filter((entry): entry is MallLeavingEntry => entry !== null);
+
+  if (items.length === 0) return null;
+
+  return splitMallLeaving(items);
+}
+
+export function splitMallLeaving(entries: MallLeavingEntry[]): MallLeaving {
+  const items = [...entries].sort(compareLeavingEntries);
+  return {
+    stripItems: items.slice(0, LEAVING_STRIP_LIMIT).map((entry) => entry.item),
+    asideItems: items.slice(LEAVING_STRIP_LIMIT, LEAVING_FETCH_LIMIT).map((entry) => entry.item),
+  };
+}
+
+export function getMallLeaving() {
+  return loadMallLeaving();
 }

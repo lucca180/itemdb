@@ -12,8 +12,8 @@ todos:
     content: "Fase 3: on sale + deepest cut"
     status: completed
   - id: p4-leaving
-    content: "Fase 4: leaving completo agrupado por data no hub (ainda não apagar a rota antiga)"
-    status: pending
+    content: "Fase 4: leaving no hub como card editorial (faixa + next out + link /mall/leaving)"
+    status: completed
   - id: p5-lebron
     content: "Fase 5: Lebron desk via OwlsPrice histórico"
     status: pending
@@ -30,7 +30,7 @@ todos:
     content: "Fase 9: FAQ JSON-LD, metadata com contagens, quick links, masthead"
     status: pending
   - id: p10-cutover
-    content: "Fase 10: 301 leaving, apagar leaving/concepts/mock, nav/home, testes"
+    content: "Fase 10: limpeza concepts/mock, nav/home, testes — manter /mall/leaving"
     status: pending
 isProject: false
 ---
@@ -132,12 +132,14 @@ Entrega: `/mall` é uma página itemdb indexável, só chrome.
 
 ---
 
-## Fase 4 — Leaving (bloco completo no hub)
+## Fase 4 — Leaving (card editorial no hub)
 
-- Reusar dataset de `[loadLeavingMallItems](app/[locale]/mall/leaving/page.tsx)` (`limit` 100, agrupado por `saleEnd`)
-- UI: grupos por data com cards em wrap (`ItemCardV2` small no `base`) + aside “next out” abaixo no mobile; `id="leaving"`
-- H2 = copy Leaving Soon™
-- **Ainda não** apagar `/mall/leaving` — o hub ganha o conteúdo; a rota antiga fica até o 301
+`/mall/leaving` **permanece** — lista completa agrupada por data fica na rota dedicada.
+
+- Loader: mesmos itens leaving, `limit` 12 (faixa), `saleEnd` asc
+- UI compatível com o concept: `HorizontalHomeCard` + rail + aside “next out”; link “view all” / “lista completa” → `/mall/leaving`
+- H2 = copy Leaving Soon™; `id="leaving"`
+- Some se vazio
 
 ---
 
@@ -181,14 +183,10 @@ Entrega: `/mall` é uma página itemdb indexável, só chrome.
 
 ---
 
-## Fase 10 — Corte leaving + limpeza
+## Fase 10 — Limpeza (sem matar leaving)
 
-**Confirmar alteração de `next.config.ts` contigo.**
-
-- 301 `/mall/leaving` e `/pt/mall/leaving` → `/mall` (`#leaving` não vai no 301; FAQ/home usam `/mall#leaving`)
-- Apagar `app/[locale]/mall/leaving/`
-- Sitemap: tirar `/mall/leaving`
-- Nav: só NC Mall; home cards → `/mall` e `/mall#leaving`
+- **Manter** `/mall/leaving` (sem 301, sem apagar a pasta, sitemap e nav Leaving continuam)
+- Hub leaving aponta para `/mall/leaving` (lista completa)
 - Apagar `_mock/` e `concepts/`
 - Widget `leaving-ncmall` permanece
 - `yarn lint` / `yarn typecheck`; testes unitários de rank da capa, % off, direção Lebron, `isEventActive`

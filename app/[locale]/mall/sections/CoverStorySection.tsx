@@ -53,12 +53,6 @@ async function CoverStoryContent() {
     : null;
   const priceLabel = pricing && pricing.price > 0 ? `${format.number(pricing.price)} NC` : null;
 
-  const captionFor = (item: ItemV2For<'card'>) => {
-    const mall = mallPrice(item);
-    if (!mall?.saleBegin) return t('NcMall.cover-also-new');
-    return format.dateTime(new Date(mall.saleBegin), { day: 'numeric', month: 'short' });
-  };
-
   return (
     <Flex
       as="section"
@@ -172,7 +166,7 @@ async function CoverStoryContent() {
             >
               {t('NcMall.cover-also-new')}
             </Text>
-            <MallItemStrip uniqueID="mall-hub-cover" items={alsoNew} captionFor={captionFor} />
+            <MallItemStrip uniqueID="mall-hub-cover" items={alsoNew} />
           </Flex>
         </>
       )}

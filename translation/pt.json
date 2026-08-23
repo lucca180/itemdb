@@ -1316,7 +1316,7 @@
   },
   "NcMall": {
     "leaving-soon-desc": "Itens que sairão do <Link>Centro NC</Link> em breve",
-    "leaving-soon-tm": "Deixando o Mall™",
+    "leaving-soon-tm": "Deixando o Mall",
     "hub-h1": "Centro NC",
     "hub-seo-title": "NC Mall do Neopets: itens novos, promoções, saída e valores Lebron",
     "hub-seo-description": "Veja o que há de novo no NC Mall do Neopets, itens em promoção, o que está saindo, valores Lebron e Pet Styles — atualizado com dados do itemdb.",
@@ -1326,12 +1326,19 @@
     "cover-open": "Abrir a página do item",
     "cover-also-new": "Também novos nesta semana",
     "cover-found-in": "Encontrado em",
-    "sale-kicker": "Em promoção",
+    "sale-kicker": "Por tempo limitado",
+    "sale-title": "Em promoção",
     "sale-lede": "Itens com desconto, por tempo limitado.",
     "sale-deepest": "Melhor negócio",
     "sale-off": "{n}% de desconto",
     "sale-until": "até {date}",
-    "sale-caption-price": "{from} → {to} NC"
+    "sale-caption-price": "{from} → {to} NC",
+    "leaving-kicker": "Última chamada",
+    "leaving-lede": "Itens saindo do Mall em breve.",
+    "leaving-next": "Próximos a sair",
+    "leaving-leaves": "Sai em {date}",
+    "leaving-full-list": "Lista completa",
+    "leaving-card-title": "Últimos dias"
   },
   "ItemEffects": {
     "color-species-change": "Troca de Cor/Espécie",

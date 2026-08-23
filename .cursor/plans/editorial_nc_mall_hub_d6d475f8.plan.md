@@ -1,6 +1,6 @@
 ---
 name: Editorial NC Mall Hub
-overview: Promover o Editorial para `/mall` com dados reais e SEO de primeira classe. `/mall/leaving` some — a lista completa agrupada por data mora no hub, com 301 permanente.
+overview: Promover o Editorial para `/mall` com dados reais e SEO de primeira classe. `/mall/leaving` permanece — o hub mostra um recorte (card editorial) com link para a lista completa.
 todos:
   - id: loaders
     content: "Criar app/server/ncMallHub.ts: novos/semana, descontos, leaving, Lebron delta, eventos tag NC Mall, cápsulas canOpen, populares NC, cover = max Umami na semana"
@@ -15,7 +15,7 @@ todos:
     content: Nav Lists → /mall (sem item Leaving), home cards href /mall, cache tag mall-hub no sync
     status: pending
   - id: cleanup
-    content: Remover /mall/leaving (301 para /mall), concepts/, _mock/; testes de ranking/desconto/direção Lebron
+    content: Manter /mall/leaving; apagar concepts/ e _mock/; testes de ranking/desconto/direção Lebron
     status: pending
 isProject: false
 ---

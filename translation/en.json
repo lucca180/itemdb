@@ -1314,7 +1314,7 @@
     "next-page": "Next Page"
   },
   "NcMall": {
-    "leaving-soon-tm": "Leaving Soon™",
+    "leaving-soon-tm": "Leaving Soon",
     "leaving-soon-desc": "Items that are leaving the <Link>NC Mall</Link> soon",
     "hub-h1": "NC Mall",
     "hub-seo-title": "Neopets NC Mall: new items, sales, leaving dates & Lebron values",
@@ -1325,12 +1325,19 @@
     "cover-open": "Open the item page",
     "cover-also-new": "Also new this week",
     "cover-found-in": "Found in",
-    "sale-kicker": "On sale",
+    "sale-kicker": "Limited time",
+    "sale-title": "On sale",
     "sale-lede": "Items for a discounted price, for limited time only!",
     "sale-deepest": "Best deal",
     "sale-off": "{n}% off",
     "sale-until": "until {date}",
-    "sale-caption-price": "{from} → {to} NC"
+    "sale-caption-price": "{from} → {to} NC",
+    "leaving-kicker": "Last call",
+    "leaving-lede": "Items leaving the mall soon.",
+    "leaving-next": "Next out the door",
+    "leaving-leaves": "Leaves {date}",
+    "leaving-full-list": "Full leaving list",
+    "leaving-card-title": "Final days"
   },
   "ItemEffects": {
     "stats-change": "Stats Change",

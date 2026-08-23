@@ -1,7 +1,13 @@
 import { Suspense } from 'react';
 import { Box, Flex, Skeleton } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import { getMallDiscountPercent, getMallOnSale } from '@app/server/ncMallHub';
+import {
+  getMallDiscountPercent,
+  getMallOnSale,
+  pickDeepestCut,
+  type MallOnSale,
+} from '@app/server/ncMallHub';
+import { onSaleMallItems } from '@app/[locale]/mall/_mock/ncMallHubFixtures';
 import type { ItemV2For } from '@types';
 import { MallItemStrip } from './MallItemStrip';
 import { MallSectionHeader } from './MallSectionHeader';
@@ -34,8 +40,22 @@ function mallPrice(item: ItemV2For<'card'>) {
   return item.price;
 }
 
+// TODO(remove-before-deploy): mock on-sale rail when the mall has no live discounts.
+function mockMallOnSale(): MallOnSale | null {
+  const deepestCut = pickDeepestCut(onSaleMallItems);
+  if (!deepestCut) return null;
+  return { items: onSaleMallItems, deepestCut };
+}
+
 async function OnSaleContent() {
-  const [sale, t, format] = await Promise.all([getMallOnSale(), getTranslations(), getFormatter()]);
+  const [liveSale, t, format] = await Promise.all([
+    getMallOnSale(),
+    getTranslations(),
+    getFormatter(),
+  ]);
+
+  // TODO(remove-before-deploy): drop this fallback (and mockMallOnSale / fixture import).
+  const sale = liveSale ?? (process.env.NODE_ENV === 'development' ? mockMallOnSale() : null);
 
   if (!sale) return null;
 
@@ -48,7 +68,7 @@ async function OnSaleContent() {
 
   const captionFor = (item: ItemV2For<'card'>) => {
     const mall = mallPrice(item);
-    if (!mall || mall.discountPrice === null) return t('NcMall.sale-kicker');
+    if (!mall || mall.discountPrice === null) return t('NcMall.sale-title');
     const from = format.number(mall.price);
     const to = format.number(mall.discountPrice);
     const priceLine = t('NcMall.sale-caption-price', { from, to });
@@ -72,38 +92,35 @@ async function OnSaleContent() {
     .join(' · ');
 
   return (
-    <Flex
-      as="section"
-      id="on-sale"
-      direction="column"
-      gap={{ base: 4, md: 5 }}
-      w="100%"
-      minW={0}
-      overflow="hidden"
-      bg="gray.700"
-      borderRadius="xl"
-      borderWidth="1px"
-      borderColor="whiteAlpha.200"
-      p={{ base: 4, md: 6 }}
-      bgGradient={`linear-gradient(to bottom, ${SALE_WASH}, transparent 55%)`}
-    >
+    <Flex as="section" id="on-sale" direction="column" gap={{ base: 4, md: 5 }} w="100%" minW={0}>
       <MallSectionHeader
         kicker={t('NcMall.sale-kicker')}
         kickerColor="orange.200"
+        title={t('NcMall.sale-title')}
         lede={t('NcMall.sale-lede')}
       />
       <Flex
         direction={{ base: 'column', lg: 'row' }}
-        gap={{ base: 0, lg: 6 }}
-        align={{ base: 'stretch', lg: 'stretch' }}
+        align={{ base: 'stretch', lg: 'center' }}
+        gap={{ base: 4, lg: 6 }}
         minW={0}
         w="100%"
+        p={{ base: 3, md: 4 }}
+        bg="gray.700"
+        bgGradient={`linear-gradient(to top, transparent 0, ${SALE_WASH} 0%)`}
+        borderRadius="lg"
       >
-        <Box flex={1} minW={0} overflow="hidden">
-          <MallItemStrip uniqueID="mall-hub-sale" items={items} captionFor={captionFor} />
+        <Box flex="1" minW={0} overflow="hidden">
+          <MallItemStrip
+            uniqueID="mall-hub-sale"
+            items={items}
+            captionFor={captionFor}
+            small={false}
+          />
         </Box>
         <MallStripAside
           kicker={t('NcMall.sale-deepest')}
+          kickerColor="orange.200"
           title={deepestCut.name}
           href={`/item/${deepestCut.slug ?? deepestCut.internal_id}`}
           detail={deepestDetail}

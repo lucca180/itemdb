@@ -6,10 +6,11 @@ import type { ItemV2For } from '@types';
 type MallItemStripProps = {
   items: ItemV2For<'card'>[];
   uniqueID: string;
-  captionFor: (item: ItemV2For<'card'>) => ReactNode;
+  captionFor?: (item: ItemV2For<'card'>) => ReactNode;
+  small?: boolean;
 };
 
-export function MallItemStrip({ items, uniqueID, captionFor }: MallItemStripProps) {
+export function MallItemStrip({ items, uniqueID, captionFor, small = true }: MallItemStripProps) {
   return (
     <Box
       w="100%"
@@ -19,7 +20,7 @@ export function MallItemStrip({ items, uniqueID, captionFor }: MallItemStripProp
       css={{
         display: 'grid',
         gridAutoFlow: 'column',
-        gridAutoColumns: '100px',
+        gridAutoColumns: small ? '100px' : '150px',
         justifyContent: 'start',
         alignItems: 'stretch',
         gap: 'var(--chakra-spacing-3)',
@@ -50,18 +51,25 @@ export function MallItemStrip({ items, uniqueID, captionFor }: MallItemStripProp
               },
             }}
           >
-            <ItemCardV2 item={item} uniqueID={uniqueID} small />
+            <ItemCardV2
+              item={item}
+              uniqueID={uniqueID}
+              small={small}
+              style={small ? undefined : { width: 150 }}
+            />
           </Box>
-          <Text
-            fontSize="2xs"
-            color="whiteAlpha.600"
-            lineHeight="1.4"
-            lineClamp={2}
-            minH="2.8em"
-            flexShrink={0}
-          >
-            {captionFor(item)}
-          </Text>
+          {captionFor && (
+            <Text
+              fontSize="2xs"
+              color="whiteAlpha.600"
+              lineHeight="1.4"
+              lineClamp={2}
+              minH="2.8em"
+              flexShrink={0}
+            >
+              {captionFor(item)}
+            </Text>
+          )}
         </Flex>
       ))}
     </Box>
