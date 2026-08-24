@@ -16,19 +16,19 @@ todos:
     status: completed
   - id: p5-lebron
     content: "Fase 5: Lebron desk via OwlsPrice histórico"
-    status: pending
+    status: completed
   - id: p6-events
     content: "Fase 6: eventos tag NC Mall"
-    status: pending
+    status: cancelled
   - id: p7-styles
     content: "Fase 7: Pet Styles recentes + combos"
-    status: pending
+    status: completed
   - id: p8-popular-capsules
     content: "Fase 8: populares NC + cápsulas canOpen"
-    status: pending
+    status: completed
   - id: p9-seo-faq
-    content: "Fase 9: FAQ JSON-LD, metadata com contagens, quick links, masthead"
-    status: pending
+    content: "Fase 9: Keep Reading (quick links) + FAQ JSON-LD"
+    status: completed
   - id: p10-cutover
     content: "Fase 10: limpeza concepts/mock, nav/home, testes — manter /mall/leaving"
     status: pending
@@ -93,7 +93,7 @@ Regras:
 - Títulos menores no `base`; nome longo da capa com `lineClamp` / `textWrap: balance`, sem H1 `5xl` no mobile
 - Aside das faixas **embaixo** no `base`, ao lado só em `lg`
 - Leaving: wrap de cards, data como heading full-width — não `HStack` que não quebra
-- `sticky` do Lebron **só `lg+`**
+- Lebron desk **sem sticky**
 - Skeletons com altura no `base` para não pular layout; alvos de toque ≥ 40px
 
 Não copiar o demo e “depois ajustar”: o componente nasce no `base`.
@@ -146,7 +146,7 @@ Entrega: `/mall` é uma página itemdb indexável, só chrome.
 ## Fase 5 — Lebron desk
 
 - Loader: `OwlsPrice` `isLatest: true` order `pricedAt` desc; range anterior = row arquivada do mesmo iid
-- UI sticky **apenas `lg+`**; no mobile lista compacta (thumb 40px, sem sticky)
+- UI **sem sticky**; no mobile lista compacta (thumb 40px)
 - `cacheLife` tipo `homeFast`
 
 ---
@@ -174,12 +174,11 @@ Entrega: `/mall` é uma página itemdb indexável, só chrome.
 
 ---
 
-## Fase 9 — FAQ + SEO restante
+## Fase 9 — Keep Reading + FAQ
 
-- 5 FAQs i18n + FAQPage JSON-LD (espelho Pet Styles)
-- `generateMetadata` passa a usar contagens do loader cacheado (fallback estático se 0)
-- Quick links (sem Leaving)
-- Masthead de contagens no hero só com seções que existem (hero pode ter um RSC leve que lê os mesmos caches)
+- Keep Reading: grid de quick links do concept (Leaving, Report, Pet Styles, Lebron, Search NC, Exclusive clothes)
+- FAQ: 5 Qs i18n + FAQPage JSON-LD (espelho Pet Styles)
+- Abaixo do grid popular/cápsulas, com `Separator`
 
 ---
 

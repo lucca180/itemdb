@@ -8,6 +8,7 @@ type MallSectionHeaderProps = {
   title?: string;
   lede?: ReactNode;
   link?: { href: string; label: string };
+  linkColor?: string;
 };
 
 export function MallSectionHeader({
@@ -16,6 +17,7 @@ export function MallSectionHeader({
   title,
   lede,
   link,
+  linkColor = 'purple.200',
 }: MallSectionHeaderProps) {
   return (
     <Flex
@@ -54,7 +56,7 @@ export function MallSectionHeader({
         )}
       </Flex>
       {link && (
-        <Link asChild fontSize="sm" color="purple.200" flexShrink={0} fontWeight="semibold">
+        <Link asChild fontSize="sm" color={linkColor} flexShrink={0} fontWeight="semibold">
           <MainLink href={link.href}>{link.label} →</MainLink>
         </Link>
       )}

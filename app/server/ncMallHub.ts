@@ -16,6 +16,12 @@ const LEAVING_STRIP_LIMIT = 5;
 const LEAVING_ASIDE_LIMIT = 3;
 const LEAVING_FETCH_LIMIT = LEAVING_STRIP_LIMIT + LEAVING_ASIDE_LIMIT;
 const LEAVING_POOL_LIMIT = 100;
+const LEBRON_LIMIT = 5;
+const LEBRON_FETCH_LIMIT = 30;
+/** Trending pool before filtering to NC (home uses 20; many hits are NP). */
+const POPULAR_NC_TRENDING_POOL = 80;
+const POPULAR_NC_LIMIT = 12;
+const CAPSULES_LIMIT = 8;
 
 export type MallOnSale = {
   items: ItemV2For<'card'>[];
@@ -486,4 +492,185 @@ export function splitMallLeaving(entries: MallLeavingEntry[]): MallLeaving {
 
 export function getMallLeaving() {
   return loadMallLeaving();
+}
+
+export type MallLebronDirection = 'up' | 'down' | 'new';
+
+export type MallLebronRange = {
+  min: number;
+  max: number;
+};
+
+export type MallLebronUpdate = {
+  item: ItemV2For<'card'>;
+  previousRange: string | null;
+  newRange: string;
+  direction: MallLebronDirection;
+  pricedAt: string;
+  isVolatile: boolean;
+};
+
+export function parseOwlsRange(value: string): MallLebronRange | null {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.toLowerCase() === 'null') return null;
+  const parts = trimmed.split('-').map((part) => Number(part.trim()));
+  if (parts.length === 0 || parts.some((n) => !Number.isFinite(n))) return null;
+  if (parts.length === 1) return { min: parts[0], max: parts[0] };
+  return { min: parts[0], max: parts[1] };
+}
+
+export function mallLebronDirection(
+  previousValue: string | null,
+  newValue: string
+): MallLebronDirection {
+  const current = parseOwlsRange(newValue);
+  if (!current) return 'new';
+  if (previousValue === null) return 'new';
+  const previous = parseOwlsRange(previousValue);
+  if (!previous) return 'new';
+
+  const currentMid = (current.min + current.max) / 2;
+  const previousMid = (previous.min + previous.max) / 2;
+  if (currentMid !== previousMid) return currentMid > previousMid ? 'up' : 'down';
+  if (current.min !== previous.min) return current.min > previous.min ? 'up' : 'down';
+  if (current.max !== previous.max) return current.max > previous.max ? 'up' : 'down';
+  return 'new';
+}
+
+export function owlsRangesEqual(a: string, b: string): boolean {
+  if (a.trim() === b.trim()) return true;
+  const rangeA = parseOwlsRange(a);
+  const rangeB = parseOwlsRange(b);
+  if (!rangeA || !rangeB) return false;
+  return rangeA.min === rangeB.min && rangeA.max === rangeB.max;
+}
+
+/** Same cap range restated (Lebron often re-touches `pricedAt` without a move). */
+export function isUnchangedLebronValue(previousValue: string | null, newValue: string): boolean {
+  if (previousValue === null) return false;
+  return owlsRangesEqual(previousValue, newValue);
+}
+
+export function previousOwlsValueByIid(
+  rows: { item_iid: number; value: string; pricedAt: Date }[]
+): Map<number, string> {
+  const byIid = new Map<number, string>();
+  const sorted = [...rows].sort((a, b) => b.pricedAt.getTime() - a.pricedAt.getTime());
+  for (const row of sorted) {
+    if (!byIid.has(row.item_iid)) byIid.set(row.item_iid, row.value);
+  }
+  return byIid;
+}
+
+async function loadMallLebronUpdates(): Promise<MallLebronUpdate[] | null> {
+  'use cache';
+  cacheTag('mall-hub-lebron');
+  cacheLife('homeFast');
+
+  const latest = await prisma.owlsPrice.findMany({
+    where: { isLatest: true },
+    select: {
+      item_iid: true,
+      value: true,
+      pricedAt: true,
+      isVolatile: true,
+    },
+    orderBy: { pricedAt: 'desc' },
+    take: LEBRON_FETCH_LIMIT,
+  });
+
+  if (latest.length === 0) return null;
+
+  const iids = latest.map((row) => row.item_iid);
+  const [archived, itemsById] = await Promise.all([
+    prisma.owlsPrice.findMany({
+      where: { item_iid: { in: iids }, isLatest: null },
+      select: { item_iid: true, value: true, pricedAt: true },
+      orderBy: { pricedAt: 'desc' },
+    }),
+    ItemService.getManyItems({ type: 'id', data: iids.map(String) }, { intent: 'card' }),
+  ]);
+
+  const previousByIid = previousOwlsValueByIid(archived);
+  const updates: MallLebronUpdate[] = [];
+
+  for (const row of latest) {
+    if (updates.length >= LEBRON_LIMIT) break;
+    const item = itemsById[String(row.item_iid)];
+    if (!item || !parseOwlsRange(row.value)) continue;
+    const previousRange = previousByIid.get(row.item_iid) ?? null;
+    if (isUnchangedLebronValue(previousRange, row.value)) continue;
+    updates.push({
+      item,
+      previousRange,
+      newRange: row.value,
+      direction: mallLebronDirection(previousRange, row.value),
+      pricedAt: row.pricedAt.toISOString(),
+      isVolatile: row.isVolatile,
+    });
+  }
+
+  return updates.length > 0 ? updates : null;
+}
+
+export function getMallLebronUpdates() {
+  return loadMallLebronUpdates();
+}
+
+async function loadMallPopularNc(): Promise<ItemV2For<'card'>[] | null> {
+  'use cache';
+  cacheTag('home-trending-items');
+  cacheLife('homeSlow');
+
+  const trending = await ItemService.getTrending(POPULAR_NC_TRENDING_POOL).catch(() => []);
+  const items = trending.filter((item) => item.type === 'nc').slice(0, POPULAR_NC_LIMIT);
+  return items.length > 0 ? items : null;
+}
+
+export function getMallPopularNc() {
+  return loadMallPopularNc();
+}
+
+async function loadMallCapsules(): Promise<ItemV2For<'card'>[] | null> {
+  'use cache';
+  cacheTag('mall-hub');
+  cacheTag('home-latest-nc-mall');
+  cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
+
+  const nowMs = await getCachedNow();
+  const nowDate = new Date(nowMs);
+
+  const rows = await prisma.ncMallData.findMany({
+    where: {
+      ...activeMallWhere(nowDate),
+      item: {
+        canOpen: 'true',
+        type: 'nc',
+        canonical_id: null,
+        NOT: { name: { contains: 'bundle' } },
+      },
+    },
+    select: { item_iid: true },
+    orderBy: { saleBegin: 'desc' },
+    take: CAPSULES_LIMIT,
+  });
+
+  if (rows.length === 0) return null;
+
+  const itemsById = await ItemService.getManyItems(
+    { type: 'id', data: rows.map((row) => String(row.item_iid)) },
+    { intent: 'card' }
+  );
+
+  const items = rows
+    .map((row) => itemsById[String(row.item_iid)])
+    .filter(
+      (item): item is ItemV2For<'card'> => !!item && !item.name.toLowerCase().includes('bundle')
+    );
+
+  return items.length > 0 ? items : null;
+}
+
+export function getMallCapsules() {
+  return loadMallCapsules();
 }

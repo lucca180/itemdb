@@ -196,6 +196,22 @@ ItemPage
 
 ---
 
+## NC Mall hub — `app/[locale]/mall/page.tsx`
+
+Route: [`app/[locale]/mall/page.tsx`](../app/[locale]/mall/page.tsx)  
+Loaders: [`app/server/ncMallHub.ts`](../app/server/ncMallHub.ts)
+
+| Function | Tag | cacheLife | Components |
+|----------|-----|-----------|------------|
+| `getMallCoverStory` | `mall-hub`, `home-latest-nc-mall` | inline 600s | `CoverStorySection` |
+| `getMallOnSale` | `mall-hub`, `home-latest-nc-mall` | inline 600s | `OnSaleSection` |
+| `getMallLeaving` | `mall-hub`, `home-latest-nc-mall` | 180s | `LeavingSection` |
+| `getMallLebronUpdates` | `mall-hub-lebron` | `homeFast` | `LebronDeskSection` |
+
+`mall-hub` is invalidated by [`mall/sync.ts`](../pages/api/v1/mall/sync.ts) with `home-latest-nc-mall`. `mall-hub-lebron` relies on `homeFast` TTL.
+
+---
+
 ## Invalidation
 
 ### Home tags → APIs

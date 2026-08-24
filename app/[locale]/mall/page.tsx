@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { Box, Flex, Grid, Skeleton } from '@chakra-ui/react';
+import { Box, Flex, Grid } from '@chakra-ui/react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getTranslations } from 'next-intl/server';
 import { CoverStorySection } from './sections/CoverStorySection';
+import { LebronDeskSection } from './sections/LebronDeskSection';
 import { MallHubSectionSlots } from './MallHubSectionSlots';
 import { MallHubShell, MallHubShellSkeleton } from './MallHubShell';
 import { MALL_HUB_COLOR_WASH, MALL_HUB_OG_IMAGE, MALL_HUB_PATH } from './mallHubTheme';
@@ -63,16 +64,16 @@ export default function NcMallHubPage({ params }: PageProps) {
             alignItems="start"
             w="100%"
             minW={0}
+            css={{
+              '@media screen and (min-width: 62em)': {
+                '&:not(:has(> *:nth-child(2)))': {
+                  gridTemplateColumns: 'minmax(0, 1fr)',
+                },
+              },
+            }}
           >
             <CoverStorySection />
-            <Skeleton
-              w="100%"
-              minW={0}
-              h={{ base: '220px', md: '360px' }}
-              borderRadius="xl"
-              bg="gray.700"
-              aria-hidden="true"
-            />
+            <LebronDeskSection />
           </Grid>
           <MallHubSectionSlots />
         </Flex>

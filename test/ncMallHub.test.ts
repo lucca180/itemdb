@@ -3,9 +3,13 @@ import {
   compareOnSaleItems,
   getMallDiscountPercent,
   groupLeavingByLabel,
+  isUnchangedLebronValue,
+  mallLebronDirection,
   mallSortPrice,
+  parseOwlsRange,
   pickDeepestCut,
   pickNextOut,
+  previousOwlsValueByIid,
   splitMallLeaving,
   rankAlsoNewThisWeek,
   popularityFromPageviews,
@@ -162,6 +166,58 @@ describe('rankAlsoNewThisWeek', () => {
       'Zebra',
       'Quiet new',
     ]);
+  });
+});
+
+describe('parseOwlsRange', () => {
+  it('reads a single cap and a min-max range', () => {
+    expect(parseOwlsRange('5')).toEqual({ min: 5, max: 5 });
+    expect(parseOwlsRange('12-16')).toEqual({ min: 12, max: 16 });
+  });
+
+  it('returns null for empty or unparseable values', () => {
+    expect(parseOwlsRange('')).toBeNull();
+    expect(parseOwlsRange('null')).toBeNull();
+    expect(parseOwlsRange('WB')).toBeNull();
+  });
+});
+
+describe('mallLebronDirection', () => {
+  it('marks a first listing as new', () => {
+    expect(mallLebronDirection(null, '3-5')).toBe('new');
+    expect(mallLebronDirection('WB', '3-5')).toBe('new');
+  });
+
+  it('uses the midpoint, then the floor, matching the editorial mock', () => {
+    expect(mallLebronDirection('12-16', '15-20')).toBe('up');
+    expect(mallLebronDirection('10-14', '8-12')).toBe('down');
+    expect(mallLebronDirection('5-6', '4-7')).toBe('down');
+  });
+});
+
+describe('isUnchangedLebronValue', () => {
+  it('skips a restated range, including 5 vs 5-5', () => {
+    expect(isUnchangedLebronValue('1', '1')).toBe(true);
+    expect(isUnchangedLebronValue('5', '5-5')).toBe(true);
+    expect(isUnchangedLebronValue('12-16', '12-16')).toBe(true);
+  });
+
+  it('keeps a first listing and a real move', () => {
+    expect(isUnchangedLebronValue(null, '3-5')).toBe(false);
+    expect(isUnchangedLebronValue('12-16', '15-20')).toBe(false);
+  });
+});
+
+describe('previousOwlsValueByIid', () => {
+  it('keeps the newest archived row per item', () => {
+    const previous = previousOwlsValueByIid([
+      { item_iid: 1, value: '1-2', pricedAt: new Date('2026-08-01T00:00:00.000Z') },
+      { item_iid: 1, value: '2-3', pricedAt: new Date('2026-08-10T00:00:00.000Z') },
+      { item_iid: 2, value: '8-10', pricedAt: new Date('2026-08-05T00:00:00.000Z') },
+    ]);
+
+    expect(previous.get(1)).toBe('2-3');
+    expect(previous.get(2)).toBe('8-10');
   });
 });
 
