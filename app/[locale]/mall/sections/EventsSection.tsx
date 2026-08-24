@@ -7,19 +7,6 @@ import { getListLink } from '@utils/list/listLink';
 import { MALL_HUB_BANNER, MALL_HUB_THEME_COLOR } from '../mallHubTheme';
 import { MallSectionHeader } from './MallSectionHeader';
 
-/** List descriptions are often markdown; compact cards show plain text only. */
-function plainListDescription(value: string | null | undefined): string | null {
-  if (!value) return null;
-  const plain = value
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  return plain || null;
-}
-
 function EventsSkeleton() {
   return (
     <Skeleton
@@ -40,6 +27,7 @@ export function EventsSection() {
   );
 }
 
+const isEvent = (tag: string) => tag.toLowerCase() === 'event';
 async function EventsContent() {
   const [events, t] = await Promise.all([getMallEvents(), getTranslations()]);
 
@@ -56,15 +44,10 @@ async function EventsContent() {
         linkColor="teal.200"
       />
 
-      <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap={3} w="100%" minW={0}>
+      <SimpleGrid columns={{ base: 2, sm: 3, lg: 4 }} gap={3} w="100%" minW={0}>
         {events.map((event) => {
           const category = mallEventCategoryTag(event);
-          const itemLine =
-            event.itemCount != null ? t('NcMall.events-items', { count: event.itemCount }) : null;
-          const detail = [itemLine, plainListDescription(event.description)]
-            .filter(Boolean)
-            .join(' · ');
-
+          const isEventTag = category && isEvent(category);
           return (
             <MainLink
               key={event.internal_id}
@@ -81,11 +64,11 @@ async function EventsContent() {
             >
               <Flex
                 align="center"
-                gap={4}
+                gap={{ base: 2, sm: 4 }}
                 h="100%"
-                minH="96px"
+                minH="80px"
                 minW={0}
-                p={4}
+                p={{ base: 2, sm: 4 }}
                 bg="gray.700"
                 backgroundImage={`linear-gradient(120deg, ${
                   event.colorHex ?? MALL_HUB_THEME_COLOR
@@ -96,13 +79,13 @@ async function EventsContent() {
                 transition="background-color 0.15s, transform 0.15s, border-color 0.15s"
                 _hover={{
                   bgColor: 'gray.600',
-                  transform: 'translateY(-2px)',
                   borderColor: 'whiteAlpha.400',
                 }}
+                flexFlow={{ base: 'column', sm: 'row' }}
               >
                 <Box
-                  w="64px"
-                  h="64px"
+                  w={{ base: '40px', sm: '50px' }}
+                  h={{ base: '40px', sm: '50px' }}
                   flexShrink={0}
                   overflow="hidden"
                   borderRadius="md"
@@ -117,20 +100,26 @@ async function EventsContent() {
                   />
                 </Box>
 
-                <Flex direction="column" gap={1} minW={0}>
-                  <Text fontWeight="bold" fontSize="sm" color="white" lineClamp={1}>
-                    {event.name}
-                  </Text>
+                <Flex
+                  direction="column"
+                  gap={1}
+                  minW={0}
+                  align={{ base: 'center', sm: 'flex-start' }}
+                  textAlign={{ base: 'center', sm: 'left' }}
+                >
                   {category && (
-                    <Badge colorPalette="teal" variant="subtle" size="sm" w="fit-content">
+                    <Badge
+                      colorPalette={isEventTag ? 'orange' : 'teal'}
+                      variant="subtle"
+                      size="xs"
+                      w="fit-content"
+                    >
                       {category}
                     </Badge>
                   )}
-                  {detail && (
-                    <Text fontSize="xs" color="whiteAlpha.800" lineClamp={2}>
-                      {detail}
-                    </Text>
-                  )}
+                  <Text fontWeight="bold" fontSize="sm" color="white" lineClamp={2}>
+                    {event.name}
+                  </Text>
                 </Flex>
               </Flex>
             </MainLink>
