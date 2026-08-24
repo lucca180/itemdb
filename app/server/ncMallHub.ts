@@ -1,7 +1,9 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import prisma from '@utils/prisma';
 import { getCachedNow } from '@utils/getCachedNow';
+import { isEventActive } from '@app/_components/Item/NCTrade/ncTradeInsightsUtils';
 import { ItemService } from '@services/ItemService';
+import { ListService } from '@services/ListService';
 import { getUmamiItemPageviews } from '@services/item/trendingItems';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { filterOfficialLists, getItemLists } from '@pages/api/v1/items/[id_name]/lists';
@@ -22,6 +24,8 @@ const LEBRON_FETCH_LIMIT = 30;
 const POPULAR_NC_TRENDING_POOL = 80;
 const POPULAR_NC_LIMIT = 12;
 const CAPSULES_LIMIT = 8;
+const EVENTS_FETCH_LIMIT = 50;
+const EVENTS_LIMIT = 12;
 
 export type MallOnSale = {
   items: ItemV2For<'card'>[];
@@ -54,15 +58,27 @@ function hasMallSaleBegin(item: ItemV2For<'card'>): boolean {
   return item.price?.type === 'ncMall' && !!item.price.saleBegin;
 }
 
+export function hasNcMallOfficialTag(list: Pick<UserList, 'officialTag'>): boolean {
+  return list.officialTag.some((tag) => tag.toLowerCase() === 'nc mall');
+}
+
+export function hasRetiredOfficialTag(list: Pick<UserList, 'officialTag'>): boolean {
+  return list.officialTag.some((tag) => tag.toLowerCase() === 'retired');
+}
+
+/** Third official tag after comma-split (e.g. "NC Mall, Event, Wonderclaw" → "Wonderclaw"). */
+export function mallEventCategoryTag(list: Pick<UserList, 'officialTag'>): string | null {
+  const tag = list.officialTag[2]?.trim();
+  return tag || null;
+}
+
 function pickOfficialList(lists: UserList[]): UserList | null {
   const official = filterOfficialLists(lists).filter(
     (list) => list.visibility === 'public' && !list.officialTag.includes('Avatar')
   );
   if (official.length === 0) return null;
 
-  const ncMall = official.find((list) =>
-    list.officialTag.some((tag) => tag.toLowerCase() === 'nc mall')
-  );
+  const ncMall = official.find(hasNcMallOfficialTag);
   if (ncMall) return ncMall;
 
   return official.find((list) => list.coverURL) ?? official[0];
@@ -492,6 +508,28 @@ export function splitMallLeaving(entries: MallLeavingEntry[]): MallLeaving {
 
 export function getMallLeaving() {
   return loadMallLeaving();
+}
+
+export function filterActiveMallEvents(lists: UserList[], now: number): UserList[] {
+  return lists.filter(
+    (list) => hasNcMallOfficialTag(list) && !hasRetiredOfficialTag(list) && isEventActive(list, now)
+  );
+}
+
+async function loadMallEvents(): Promise<UserList[] | null> {
+  'use cache';
+  cacheTag('mall-hub-events');
+  cacheLife('homeSlow');
+
+  const now = await getCachedNow();
+  const listService = ListService.init();
+  const tagged = await listService.getOfficialListsCat('nc mall', EVENTS_FETCH_LIMIT);
+  const active = filterActiveMallEvents(tagged, now).slice(0, EVENTS_LIMIT);
+  return active.length > 0 ? active : null;
+}
+
+export function getMallEvents() {
+  return loadMallEvents();
 }
 
 export type MallLebronDirection = 'up' | 'down' | 'new';

@@ -13,8 +13,13 @@ import {
   splitMallLeaving,
   rankAlsoNewThisWeek,
   popularityFromPageviews,
+  filterActiveMallEvents,
+  hasNcMallOfficialTag,
+  hasRetiredOfficialTag,
+  mallEventCategoryTag,
 } from '@app/server/ncMallHub';
-import type { ItemMallData, ItemV2For } from '@types';
+import { isEventActive } from '@app/_components/Item/NCTrade/ncTradeInsightsUtils';
+import type { ItemMallData, ItemV2For, UserList } from '@types';
 
 function mallCard(
   name: string,
@@ -234,5 +239,83 @@ describe('groupLeavingByLabel', () => {
     expect(groups.map((group) => group.label)).toEqual(['soon', 'later']);
     expect(groups[0].items.map((item) => item.name)).toEqual(['Soon B', 'Soon A']);
     expect(groups[1].items.map((item) => item.name)).toEqual(['Later A']);
+  });
+});
+
+const EVENT_NOW = Date.parse('2026-08-15T12:00:00.000Z');
+
+function eventList(overrides: Partial<UserList> = {}): UserList {
+  return {
+    internal_id: 1,
+    name: 'Mall Fashion Show',
+    officialTag: ['NC Mall'],
+    seriesStart: '2026-08-01T00:00:00.000Z',
+    seriesEnd: '2026-09-01T00:00:00.000Z',
+    ...overrides,
+  } as UserList;
+}
+
+describe('hasNcMallOfficialTag', () => {
+  it('matches NC Mall case-insensitively among other tags', () => {
+    expect(hasNcMallOfficialTag(eventList())).toBe(true);
+    expect(hasNcMallOfficialTag(eventList({ officialTag: ['nc mall', 'plot'] }))).toBe(true);
+    expect(hasNcMallOfficialTag(eventList({ officialTag: ['Plot'] }))).toBe(false);
+  });
+});
+
+describe('isEventActive', () => {
+  it('is active when now is inside the series window', () => {
+    expect(isEventActive(eventList(), EVENT_NOW)).toBe(true);
+  });
+
+  it('is active with no end date after start', () => {
+    expect(isEventActive(eventList({ seriesEnd: null }), EVENT_NOW)).toBe(true);
+  });
+
+  it('is inactive before start, after end, or without a start', () => {
+    expect(isEventActive(eventList({ seriesStart: '2026-08-20T00:00:00.000Z' }), EVENT_NOW)).toBe(
+      false
+    );
+    expect(isEventActive(eventList({ seriesEnd: '2026-08-10T00:00:00.000Z' }), EVENT_NOW)).toBe(
+      false
+    );
+    expect(isEventActive(eventList({ seriesStart: null }), EVENT_NOW)).toBe(false);
+  });
+});
+
+describe('hasRetiredOfficialTag', () => {
+  it('matches Retired case-insensitively', () => {
+    expect(hasRetiredOfficialTag(eventList({ officialTag: ['NC Mall', 'Retired'] }))).toBe(true);
+    expect(hasRetiredOfficialTag(eventList({ officialTag: ['nc mall', 'retired'] }))).toBe(true);
+    expect(hasRetiredOfficialTag(eventList({ officialTag: ['NC Mall', 'Wonderclaw'] }))).toBe(
+      false
+    );
+  });
+});
+
+describe('mallEventCategoryTag', () => {
+  it('returns the third official tag after the comma split', () => {
+    expect(
+      mallEventCategoryTag(eventList({ officialTag: ['NC Mall', 'Event', 'Wonderclaw'] }))
+    ).toBe('Wonderclaw');
+    expect(mallEventCategoryTag(eventList({ officialTag: ['NC Mall', 'Wonderclaw'] }))).toBeNull();
+    expect(mallEventCategoryTag(eventList({ officialTag: ['NC Mall'] }))).toBeNull();
+  });
+});
+
+describe('filterActiveMallEvents', () => {
+  it('keeps active NC Mall lists and drops ended, other-tag, and retired', () => {
+    const active = eventList({ internal_id: 1, name: 'Show' });
+    const ended = eventList({ internal_id: 2, seriesEnd: '2026-08-01T00:00:00.000Z' });
+    const otherTag = eventList({ internal_id: 3, officialTag: ['Plot'] });
+    const retired = eventList({
+      internal_id: 4,
+      name: 'Old Capsules',
+      officialTag: ['NC Mall', 'Retired'],
+    });
+
+    expect(
+      filterActiveMallEvents([active, ended, otherTag, retired], EVENT_NOW).map((list) => list.name)
+    ).toEqual(['Show']);
   });
 });

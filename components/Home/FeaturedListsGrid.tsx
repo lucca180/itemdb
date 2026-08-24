@@ -12,7 +12,7 @@ export function FeaturedListsGrid(props: FeaturedListsGridProps) {
   const { lists, utmContent = 'featured-lists', isSmall } = props;
 
   return (
-    <Flex flexWrap="wrap" gap={4} justifyContent="center">
+    <Flex flexWrap="wrap" gap={4} justifyContent="center" w="100%" minW={0}>
       {lists.map((list) => (
         <UserListCard
           key={list.internal_id}

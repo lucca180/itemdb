@@ -45,6 +45,7 @@ describe('appCacheTags', () => {
     expect(isAppCacheTag(HomeRevalidateTags.latestItems)).toBe(true);
     expect(isAppCacheTag(MallHubRevalidateTags.hub)).toBe(true);
     expect(isAppCacheTag(MallHubRevalidateTags.lebron)).toBe(true);
+    expect(isAppCacheTag(MallHubRevalidateTags.events)).toBe(true);
     expect(isAppCacheTag(itemRootTag(1))).toBe(true);
     expect(isAppCacheTag(itemSectionTag(1, 'avy'))).toBe(true);
     expect(isAppCacheTag('item-1-unknown-scope')).toBe(false);

@@ -21,7 +21,7 @@ export const HOME_CACHE_TAGS = [
 export type HomeCacheTag = (typeof HOME_CACHE_TAGS)[number];
 
 /** NC Mall hub tags — must match `'use cache'` tags in `app/server/ncMallHub.ts`. */
-export const MALL_HUB_CACHE_TAGS = ['mall-hub', 'mall-hub-lebron'] as const;
+export const MALL_HUB_CACHE_TAGS = ['mall-hub', 'mall-hub-lebron', 'mall-hub-events'] as const;
 export type MallHubCacheTag = (typeof MALL_HUB_CACHE_TAGS)[number];
 
 /**
@@ -181,6 +181,7 @@ export const HomeRevalidateTags = {
 export const MallHubRevalidateTags = {
   hub: 'mall-hub',
   lebron: 'mall-hub-lebron',
+  events: 'mall-hub-events',
 } as const satisfies Record<string, MallHubCacheTag>;
 
 const ITEM_ROOT_TAG_PATTERN = /^item-(\d+)$/;

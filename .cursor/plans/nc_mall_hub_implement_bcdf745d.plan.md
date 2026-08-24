@@ -18,8 +18,8 @@ todos:
     content: "Fase 5: Lebron desk via OwlsPrice histórico"
     status: completed
   - id: p6-events
-    content: "Fase 6: eventos tag NC Mall"
-    status: cancelled
+    content: "Fase 6: eventos tag NC Mall — UI compact (Keep Reading DNA)"
+    status: completed
   - id: p7-styles
     content: "Fase 7: Pet Styles recentes + combos"
     status: completed
