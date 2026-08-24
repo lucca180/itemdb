@@ -4,6 +4,7 @@ import { getManyItems } from './many';
 import { redis_setDataCount } from '@utils/api/redis';
 import { validateExtractorHash } from '@utils/api/hashValidator';
 import { enqueueItemsToProcess } from '@utils/item/enqueueItemProcess';
+import { CheckAuth } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 
 export const config = {
@@ -47,7 +48,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (lang !== 'en') return res.status(400).json({ error: 'Language not supported' });
 
-  const hashValidation = await validateExtractorHash({
+  let hashValidation = await validateExtractorHash({
     req,
     endpoint: 'items',
     hash: data.hash,
@@ -55,7 +56,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     bypassKey: tarnumkey,
   });
 
-  if (!hashValidation.valid) return res.status(400).json({ error: 'Invalid hash' });
+  // Admin create-item panel posts without a userscript hash; allow session admins.
+  if (!hashValidation.valid) {
+    const { user } = await CheckAuth(req);
+    if (!user?.isAdmin) return res.status(400).json({ error: 'Invalid hash' });
+
+    hashValidation = {
+      valid: true,
+      mode: 'bypass',
+      versionCode: hashValidation.versionCode,
+    };
+  }
 
   const meta = req.headers['itemdb-version'];
   if (!meta && hashValidation.mode !== 'bypass')

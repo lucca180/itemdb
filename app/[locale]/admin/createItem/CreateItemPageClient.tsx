@@ -135,12 +135,13 @@ export function CreateItemPageClient() {
         body: JSON.stringify({
           lang: 'en',
           items: [itemData],
-          hash: null,
+          dataSource: 'admin-panel',
         }),
       });
 
       if (!res.ok) {
-        throw new Error(`Create failed with status ${res.status}`);
+        const errorBody = await res.json().catch(() => null);
+        throw new Error(errorBody?.error || `Create failed with status ${res.status}`);
       }
 
       await axios.post('/api/v1/items/process', {});
@@ -159,7 +160,7 @@ export function CreateItemPageClient() {
       toast.update(toastID, {
         id: toastID,
         title: 'Error creating item.',
-        description: 'There was an error creating the item.',
+        description: err instanceof Error ? err.message : 'There was an error creating the item.',
         status: 'error',
         duration: 10000,
       });
