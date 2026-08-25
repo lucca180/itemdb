@@ -5,6 +5,7 @@ import { NcMallData as dbMallData, Prisma } from '@prisma/generated/client';
 import { revalidateAppCache, HomeRevalidateTags } from '@utils/item/revalidateItem';
 import { enqueueAndProcessItems } from '@utils/item/enqueueItemProcess';
 import { processItemProcessQueue } from '@utils/item/processItemQueue';
+import { markNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenableFromDrops';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 const TARNUM_SERVER = process.env.TARNUM_SERVER;
@@ -265,6 +266,7 @@ const processBundle = async (data: NCMallData, parent_iid: number) => {
       },
     });
 
+    await markNcItemOpenableFromDrops(parent_iid);
     return true;
   }
 
@@ -289,6 +291,7 @@ const processBundle = async (data: NCMallData, parent_iid: number) => {
       skipDuplicates: true,
     });
 
+    await markNcItemOpenableFromDrops(parent_iid);
     return true;
   }
 
