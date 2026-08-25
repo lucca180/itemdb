@@ -8,8 +8,15 @@ import { getUmamiItemPageviews } from '@services/item/trendingItems';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { filterOfficialLists, getItemLists } from '@pages/api/v1/items/[id_name]/lists';
 import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
+import { listItemsTag } from '@utils/appCacheTags';
+import { DYEWORKS_CURRENT_LIST_ID } from '@utils/dyeworks/sync';
 import { getListLink } from '@utils/list/listLink';
 import type { ItemV2For, UserList, WearableData } from '@types';
+
+/** Official list: NC Collectible (`nc-collectible`). */
+export const MALL_NC_COLLECTIBLE_LIST_ID = 6169;
+/** Official list: Premium Collectible (`premium-collectible`). */
+export const MALL_PREMIUM_COLLECTIBLE_LIST_ID = 5469;
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const ALSO_NEW_LIMIT = 12;
@@ -737,4 +744,225 @@ async function loadMallCapsules(): Promise<ItemV2For<'card'>[] | null> {
 
 export function getMallCapsules() {
   return loadMallCapsules();
+}
+
+export type MallMonthlyHighlightKind =
+  | 'nc-collectible'
+  | 'premium-collectible'
+  | 'dyeworks'
+  | 'gbc';
+
+export type MallMonthlyHighlight = {
+  kind: MallMonthlyHighlightKind;
+  item: ItemV2For<'card'>;
+  highlightedAt: string;
+  listSlug: string | null;
+  listHref: string | null;
+  listLabel: string | null;
+};
+
+export type MallMonthlyHighlights = {
+  ncCollectible: MallMonthlyHighlight;
+  premiumCollectible: MallMonthlyHighlight;
+  dyeworks: MallMonthlyHighlight;
+  gbc: MallMonthlyHighlight | null;
+};
+
+export const MALL_GBC_NAME_MATCH = 'Gift Box Mystery Capsule';
+
+type MonthlyListMeta = {
+  id: number;
+  slug: string;
+  name: string;
+};
+
+type MembershipRow = {
+  item_iid: number;
+  highlightedAt: Date;
+};
+
+/** Prefer a wearable from the latest Dyeworks cohort; otherwise the first resolved card. */
+export function pickDyeworksFeaturedItem(
+  rows: MembershipRow[],
+  itemsById: Record<string, ItemV2For<'card'> | undefined>
+): { item: ItemV2For<'card'>; highlightedAt: Date } | null {
+  const resolved: { item: ItemV2For<'card'>; highlightedAt: Date }[] = [];
+  for (const row of rows) {
+    const item = itemsById[String(row.item_iid)];
+    if (item) resolved.push({ item, highlightedAt: row.highlightedAt });
+  }
+  if (resolved.length === 0) return null;
+  return resolved.find((entry) => entry.item.flags.includes('wearable')) ?? resolved[0];
+}
+
+function membershipHighlightDate(row: { seriesStart: Date | null; addedAt: Date }): Date {
+  return row.seriesStart ?? row.addedAt;
+}
+
+async function loadLatestCollectibleMembership(listId: number): Promise<MembershipRow | null> {
+  const row = await prisma.listItems.findFirst({
+    where: { list_id: listId, isHidden: false },
+    orderBy: { addedAt: 'desc' },
+    select: { item_iid: true, addedAt: true, seriesStart: true },
+  });
+  if (!row) return null;
+  return { item_iid: row.item_iid, highlightedAt: membershipHighlightDate(row) };
+}
+
+async function loadLatestDyeworksMemberships(limit = 24): Promise<MembershipRow[]> {
+  const rows = await prisma.listItems.findMany({
+    where: { list_id: DYEWORKS_CURRENT_LIST_ID, isHidden: false },
+    orderBy: [{ seriesStart: 'desc' }, { addedAt: 'desc' }],
+    take: limit,
+    select: { item_iid: true, addedAt: true, seriesStart: true },
+  });
+  return rows.map((row) => ({
+    item_iid: row.item_iid,
+    highlightedAt: membershipHighlightDate(row),
+  }));
+}
+
+/** Active NC Mall GBC — newest Items.addedAt wins when several match. */
+async function loadCurrentGbcMembership(nowDate: Date): Promise<MembershipRow | null> {
+  const row = await prisma.ncMallData.findFirst({
+    where: {
+      ...activeMallWhere(nowDate),
+      item: {
+        type: 'nc',
+        canonical_id: null,
+        name: { contains: MALL_GBC_NAME_MATCH },
+      },
+    },
+    select: {
+      item_iid: true,
+      item: { select: { addedAt: true } },
+    },
+    orderBy: { item: { addedAt: 'desc' } },
+  });
+  if (!row) return null;
+  return { item_iid: row.item_iid, highlightedAt: row.item.addedAt };
+}
+
+function monthlyListHref(meta: MonthlyListMeta): string {
+  return getListLink({
+    internal_id: meta.id,
+    slug: meta.slug,
+    official: true,
+    dynamicType: null,
+    owner: { username: 'official' },
+  } as UserList);
+}
+
+async function loadMallMonthlyHighlights(): Promise<MallMonthlyHighlights | null> {
+  'use cache';
+  cacheTag('mall-hub');
+  cacheTag('home-latest-nc-mall');
+  cacheTag(listItemsTag('official', MALL_NC_COLLECTIBLE_LIST_ID, 'preload'));
+  cacheTag(listItemsTag('official', MALL_PREMIUM_COLLECTIBLE_LIST_ID, 'preload'));
+  cacheTag(listItemsTag('official', DYEWORKS_CURRENT_LIST_ID, 'preload'));
+  cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
+
+  const nowMs = await getCachedNow();
+  const nowDate = new Date(nowMs);
+
+  const listIds = [
+    MALL_NC_COLLECTIBLE_LIST_ID,
+    MALL_PREMIUM_COLLECTIBLE_LIST_ID,
+    DYEWORKS_CURRENT_LIST_ID,
+  ] as const;
+
+  const [lists, ncRow, premiumRow, dyeworksRows, gbcRow] = await Promise.all([
+    prisma.userList.findMany({
+      where: { internal_id: { in: [...listIds] }, official: true },
+      select: { internal_id: true, slug: true, name: true },
+    }),
+    loadLatestCollectibleMembership(MALL_NC_COLLECTIBLE_LIST_ID),
+    loadLatestCollectibleMembership(MALL_PREMIUM_COLLECTIBLE_LIST_ID),
+    loadLatestDyeworksMemberships(),
+    loadCurrentGbcMembership(nowDate),
+  ]);
+
+  const metaById = new Map<number, MonthlyListMeta>();
+  for (const list of lists) {
+    if (!list.slug) continue;
+    metaById.set(list.internal_id, {
+      id: list.internal_id,
+      slug: list.slug,
+      name: list.name,
+    });
+  }
+
+  const ncMeta = metaById.get(MALL_NC_COLLECTIBLE_LIST_ID);
+  const premiumMeta = metaById.get(MALL_PREMIUM_COLLECTIBLE_LIST_ID);
+  const dyeworksMeta = metaById.get(DYEWORKS_CURRENT_LIST_ID);
+  if (
+    !ncRow ||
+    !premiumRow ||
+    dyeworksRows.length === 0 ||
+    !ncMeta ||
+    !premiumMeta ||
+    !dyeworksMeta
+  ) {
+    return null;
+  }
+
+  const iids = [
+    ncRow.item_iid,
+    premiumRow.item_iid,
+    ...dyeworksRows.map((row) => row.item_iid),
+    ...(gbcRow ? [gbcRow.item_iid] : []),
+  ];
+  const uniqueIids = [...new Set(iids)];
+  const itemsById = await ItemService.getManyItems(
+    { type: 'id', data: uniqueIids.map(String) },
+    { intent: 'card' }
+  );
+
+  const ncItem = itemsById[String(ncRow.item_iid)];
+  const premiumItem = itemsById[String(premiumRow.item_iid)];
+  const dyeworksPick = pickDyeworksFeaturedItem(dyeworksRows, itemsById);
+  const gbcItem = gbcRow ? itemsById[String(gbcRow.item_iid)] : null;
+  if (!ncItem || !premiumItem || !dyeworksPick) return null;
+
+  return {
+    ncCollectible: {
+      kind: 'nc-collectible',
+      item: ncItem,
+      highlightedAt: ncRow.highlightedAt.toISOString(),
+      listSlug: ncMeta.slug,
+      listHref: monthlyListHref(ncMeta),
+      listLabel: ncMeta.name,
+    },
+    premiumCollectible: {
+      kind: 'premium-collectible',
+      item: premiumItem,
+      highlightedAt: premiumRow.highlightedAt.toISOString(),
+      listSlug: premiumMeta.slug,
+      listHref: monthlyListHref(premiumMeta),
+      listLabel: premiumMeta.name,
+    },
+    dyeworks: {
+      kind: 'dyeworks',
+      item: dyeworksPick.item,
+      highlightedAt: dyeworksPick.highlightedAt.toISOString(),
+      listSlug: dyeworksMeta.slug,
+      listHref: monthlyListHref(dyeworksMeta),
+      listLabel: dyeworksMeta.name,
+    },
+    gbc:
+      gbcRow && gbcItem
+        ? {
+            kind: 'gbc',
+            item: gbcItem,
+            highlightedAt: gbcRow.highlightedAt.toISOString(),
+            listSlug: null,
+            listHref: null,
+            listLabel: null,
+          }
+        : null,
+  };
+}
+
+export function getMallMonthlyHighlights() {
+  return loadMallMonthlyHighlights();
 }

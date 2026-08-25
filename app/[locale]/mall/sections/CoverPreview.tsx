@@ -11,11 +11,23 @@ type CoverPreviewProps = {
   imageHash?: string;
   name: string;
   description: string;
+  /**
+   * Shrink the preview inside the frame so tall wearables are not edge-cropped.
+   * 1 = fill the box; 0.85 = ~15% inset (default 1).
+   */
+  imageScale?: number;
 };
 
-export function CoverPreview({ imageId, imageHash, name, description }: CoverPreviewProps) {
+export function CoverPreview({
+  imageId,
+  imageHash,
+  name,
+  description,
+  imageScale = 1,
+}: CoverPreviewProps) {
   const sources = wearablePreviewSources(imageId, imageHash);
   const [useIcon, setUseIcon] = useState(false);
+  const fitPct = `${Math.min(Math.max(imageScale, 0.5), 1) * 100}%`;
 
   return (
     <Box
@@ -28,6 +40,7 @@ export function CoverPreview({ imageId, imageHash, name, description }: CoverPre
       display="flex"
       alignItems="center"
       justifyContent="center"
+      p={imageScale < 1 ? { base: 2, md: 3 } : undefined}
     >
       {!useIcon ? (
         <CdnImage
@@ -37,7 +50,7 @@ export function CoverPreview({ imageId, imageHash, name, description }: CoverPre
           width={200}
           height={200}
           unoptimized
-          style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
+          style={{ objectFit: 'contain', maxWidth: fitPct, maxHeight: fitPct }}
           onError={() => setUseIcon(true)}
         />
       ) : (

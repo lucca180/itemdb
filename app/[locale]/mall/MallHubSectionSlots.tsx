@@ -4,6 +4,7 @@ import { EventsSection } from './sections/EventsSection';
 import { FaqSection } from './sections/FaqSection';
 import { KeepReadingSection } from './sections/KeepReadingSection';
 import { LeavingSection } from './sections/LeavingSection';
+import { MonthlyHighlightsSection } from './sections/MonthlyHighlightsSection';
 import { OnSaleSection } from './sections/OnSaleSection';
 import { PetStylesSection } from './sections/PetStylesSection';
 import { PopularNcSection } from './sections/PopularNcSection';
@@ -14,6 +15,7 @@ export function MallHubSectionSlots() {
       <OnSaleSection />
       <LeavingSection />
       <EventsSection />
+      <MonthlyHighlightsSection />
       <PetStylesSection />
       <Grid
         templateColumns={{ base: '1fr', lg: 'minmax(0, 1.1fr) minmax(0, 1fr)' }}

@@ -734,6 +734,74 @@ export const recentNcTrades: NcMallMockTrade[] = [
   },
 ];
 
+/** Featured “of the month” highlights for Mall Hub monthly-section concepts. */
+export type MonthlyHighlightEntry = {
+  item: ItemV2For<'card'>;
+  /** When the item joined its official list (collectibles) or list series start (dyeworks). */
+  highlightedAt: string;
+  listSlug: string;
+  listLabel: string;
+  kicker: string;
+};
+
+export const monthlyNcCollectible: MonthlyHighlightEntry = {
+  item: card({
+    id: 901,
+    name: 'Bottled Faerie Collectors Trinket',
+    slug: 'bottled-faerie-collectors-trinket',
+    imageId: 'faerie_pb',
+    description: 'August’s NC Collectible — a bottled faerie for collectors.',
+    colorHex: '#C084FC',
+    category: 'Trinkets',
+    price: mallPrice({ price: 250, saleBegin: '2026-08-05T00:00:00.000Z' }),
+  }),
+  highlightedAt: '2026-08-05T12:00:00.000Z',
+  listSlug: 'nc-collectible',
+  listLabel: 'NC Collectible',
+  kicker: 'Collectible of the month',
+};
+
+export const monthlyPremiumCollectible: MonthlyHighlightEntry = {
+  item: card({
+    id: 902,
+    name: 'Premium Collectible: Summer Magical Girl Transformation Filter',
+    slug: 'premium-collectible-summer-magical-girl-transformation-filter',
+    imageId: 'msp_pb',
+    description: 'August’s Premium Collectible — summer magical girl filter.',
+    colorHex: '#F472B6',
+    category: 'Special',
+    price: mallPrice({ price: 0, saleBegin: '2026-08-15T00:00:00.000Z' }),
+  }),
+  highlightedAt: '2026-08-15T12:00:00.000Z',
+  listSlug: 'premium-collectible',
+  listLabel: 'Premium Collectible',
+  kicker: 'Premium of the month',
+};
+
+export const monthlyDyeworks: MonthlyHighlightEntry = {
+  item: card({
+    id: 903,
+    name: 'Royal Boy Aisha Wig - Eventide',
+    slug: 'royal-boy-aisha-wig-eventide',
+    imageId: 'grey_pb',
+    description: 'Current Dyeworks color variant — wearable dye rotation.',
+    colorHex: '#67E8F9',
+    flags: ['wearable'],
+    category: 'Clothes',
+    price: mallPrice({ price: 200, saleBegin: '2026-08-20T00:00:00.000Z' }),
+  }),
+  highlightedAt: '2026-08-20T18:00:00.000Z',
+  listSlug: 'dyeworks',
+  listLabel: 'Current Dyeworks',
+  kicker: 'Dyeworks update',
+};
+
+export const monthlyHighlightsFixtures = {
+  ncCollectible: monthlyNcCollectible,
+  premiumCollectible: monthlyPremiumCollectible,
+  dyeworks: monthlyDyeworks,
+} as const;
+
 export const ncMallHubFixtures = {
   newMallItems,
   onSaleMallItems,
@@ -747,6 +815,7 @@ export const ncMallHubFixtures = {
   studioAvailableNow,
   recentStyleCombos,
   recentNcTrades,
+  monthlyHighlights: monthlyHighlightsFixtures,
   quickLinks: NC_MALL_HUB_QUICK_LINKS,
   theme: NC_MALL_HUB_THEME,
 };

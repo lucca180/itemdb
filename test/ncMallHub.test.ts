@@ -17,6 +17,7 @@ import {
   hasNcMallOfficialTag,
   hasRetiredOfficialTag,
   mallEventCategoryTag,
+  pickDyeworksFeaturedItem,
 } from '@app/server/ncMallHub';
 import { isEventActive } from '@app/_components/Item/NCTrade/ncTradeInsightsUtils';
 import type { ItemMallData, ItemV2For, UserList } from '@types';
@@ -317,5 +318,49 @@ describe('filterActiveMallEvents', () => {
     expect(
       filterActiveMallEvents([active, ended, otherTag, retired], EVENT_NOW).map((list) => list.name)
     ).toEqual(['Show']);
+  });
+});
+
+describe('pickDyeworksFeaturedItem', () => {
+  const at = new Date('2026-08-20T18:00:00.000Z');
+
+  function card(id: number, flags: ItemV2For<'card'>['flags'] = []): ItemV2For<'card'> {
+    return {
+      internal_id: id,
+      name: `Item ${id}`,
+      flags,
+    } as ItemV2For<'card'>;
+  }
+
+  it('prefers the first wearable in the cohort', () => {
+    const rows = [
+      { item_iid: 1, highlightedAt: at },
+      { item_iid: 2, highlightedAt: at },
+      { item_iid: 3, highlightedAt: at },
+    ];
+    const itemsById = {
+      '1': card(1),
+      '2': card(2, ['wearable']),
+      '3': card(3, ['wearable']),
+    };
+
+    expect(pickDyeworksFeaturedItem(rows, itemsById)?.item.internal_id).toBe(2);
+  });
+
+  it('falls back to the first resolved card when none are wearable', () => {
+    const rows = [
+      { item_iid: 10, highlightedAt: at },
+      { item_iid: 11, highlightedAt: at },
+    ];
+    const itemsById = {
+      '10': card(10),
+      '11': card(11),
+    };
+
+    expect(pickDyeworksFeaturedItem(rows, itemsById)?.item.internal_id).toBe(10);
+  });
+
+  it('skips missing items and returns null when none resolve', () => {
+    expect(pickDyeworksFeaturedItem([{ item_iid: 99, highlightedAt: at }], {})).toBeNull();
   });
 });
