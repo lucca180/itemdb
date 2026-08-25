@@ -13,9 +13,9 @@ export function MallHubSectionSlots() {
   return (
     <Flex direction="column" gap={{ base: 6, md: 8 }} w="100%" minW={0}>
       <OnSaleSection />
+      <MonthlyHighlightsSection />
       <LeavingSection />
       <EventsSection />
-      <MonthlyHighlightsSection />
       <PetStylesSection />
       <Grid
         templateColumns={{ base: '1fr', lg: 'minmax(0, 1.1fr) minmax(0, 1fr)' }}

@@ -185,9 +185,12 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       'ets',
       'regular',
       'collectible',
+      'ncBuyable',
       'p2Paintable',
       'p2Canonical',
     ];
+
+    const ncBuyableNow = new Date();
 
     if (typeNeg.length > 0) {
       const type_column = typeNeg.filter((o: string) => !skipColumns.includes(o));
@@ -210,6 +213,17 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       if (typeNeg.includes('collectible')) {
         typeFiltersSQL.push(
           Prisma.sql`not exists (select 1 from listitems li left join userlist l on l.internal_id = li.list_id where li.item_iid = temp.internal_id and l.official = 1 and l.official_tag = 'stamps')`
+        );
+      }
+
+      if (typeNeg.includes('ncBuyable')) {
+        typeFiltersSQL.push(
+          Prisma.sql`not exists (
+            select 1 from NcMallData n
+            where n.item_iid = temp.internal_id
+              and n.active = 1
+              and (n.saleEnd is null or n.saleEnd > ${ncBuyableNow})
+          )`
         );
       }
 
@@ -238,6 +252,17 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       if (typeTrue.includes('collectible')) {
         typeFiltersSQL.push(
           Prisma.sql`exists (select 1 from listitems li left join userlist l on l.internal_id = li.list_id where li.item_iid = temp.internal_id and l.official = 1 and l.official_tag = 'stamps')`
+        );
+      }
+
+      if (typeTrue.includes('ncBuyable')) {
+        typeFiltersSQL.push(
+          Prisma.sql`exists (
+            select 1 from NcMallData n
+            where n.item_iid = temp.internal_id
+              and n.active = 1
+              and (n.saleEnd is null or n.saleEnd > ${ncBuyableNow})
+          )`
         );
       }
 

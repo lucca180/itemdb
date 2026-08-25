@@ -177,6 +177,7 @@ const SearchFilters = (props: Props) => {
     ],
     [
       badgeOption('collectible', <Badge colorPalette="yellow">{t('General.album-item')}</Badge>),
+      badgeOption('ncBuyable', <Badge colorPalette="purple">{t('ItemPage.nc-buyable')}</Badge>),
       badgeOption(
         'p2Paintable',
         <Badge colorPalette="pink">{t('General.paintable-petpet')}</Badge>
