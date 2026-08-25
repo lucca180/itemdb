@@ -1,0 +1,84 @@
+diff --git a/dist/esm/server/lib/router-utils/proxy-request.js b/dist/esm/server/lib/router-utils/proxy-request.js
+index 44ee8af36de7e4e7d8a6888625ba1fe36e9d1ab4..1d47983354d4959f40da874672a64447e0cd452a 100644
+--- a/dist/esm/server/lib/router-utils/proxy-request.js
++++ b/dist/esm/server/lib/router-utils/proxy-request.js
+@@ -25,6 +25,11 @@ export async function proxyRequest(req, res, parsedUrl, upgradeHead, reqBody, pr
+         }
+     });
+     let finished = false;
++    const resCloseListeners = [];
++    const onResClose = (fn)=>{
++        resCloseListeners.push(fn);
++        res.on('close', fn);
++    };
+     // httpxy does not properly detect a client disconnect in newer
+     // versions of Node.js. This is caused because it only listens for the
+     // `aborted` event on the our request object, but it also fully reads
+@@ -33,13 +38,13 @@ export async function proxyRequest(req, res, parsedUrl, upgradeHead, reqBody, pr
+     // object will detect the disconnect, and we can abort the proxy's
+     // connection.
+     proxy.on('proxyReq', (proxyReq)=>{
+-        res.on('close', ()=>proxyReq.destroy());
++        onResClose(()=>proxyReq.destroy());
+     });
+     proxy.on('proxyRes', (proxyRes)=>{
+         if (res.destroyed) {
+             proxyRes.destroy();
+         } else {
+-            res.on('close', ()=>proxyRes.destroy());
++            onResClose(()=>proxyRes.destroy());
+         }
+     });
+     proxy.on('proxyRes', (proxyRes, innerReq, innerRes)=>{
+@@ -106,6 +111,9 @@ export async function proxyRequest(req, res, parsedUrl, upgradeHead, reqBody, pr
+     }
+     // When the proxy finishes proxying the request, shut down the proxy.
+     return detached.promise.finally(()=>{
++        for (const listener of resCloseListeners){
++            res.removeListener('close', listener);
++        }
+         proxy.close();
+     });
+ }
+diff --git a/dist/server/lib/router-utils/proxy-request.js b/dist/server/lib/router-utils/proxy-request.js
+index 62acf58d72bb8ee101fbff98d5da1b62d587598c..3c315c84a53c9508f84ef46924e45262010f328b 100644
+--- a/dist/server/lib/router-utils/proxy-request.js
++++ b/dist/server/lib/router-utils/proxy-request.js
+@@ -40,6 +40,11 @@ async function proxyRequest(req, res, parsedUrl, upgradeHead, reqBody, proxyTime
+         }
+     });
+     let finished = false;
++    const resCloseListeners = [];
++    const onResClose = (fn)=>{
++        resCloseListeners.push(fn);
++        res.on('close', fn);
++    };
+     // httpxy does not properly detect a client disconnect in newer
+     // versions of Node.js. This is caused because it only listens for the
+     // `aborted` event on the our request object, but it also fully reads
+@@ -48,13 +53,13 @@ async function proxyRequest(req, res, parsedUrl, upgradeHead, reqBody, proxyTime
+     // object will detect the disconnect, and we can abort the proxy's
+     // connection.
+     proxy.on('proxyReq', (proxyReq)=>{
+-        res.on('close', ()=>proxyReq.destroy());
++        onResClose(()=>proxyReq.destroy());
+     });
+     proxy.on('proxyRes', (proxyRes)=>{
+         if (res.destroyed) {
+             proxyRes.destroy();
+         } else {
+-            res.on('close', ()=>proxyRes.destroy());
++            onResClose(()=>proxyRes.destroy());
+         }
+     });
+     proxy.on('proxyRes', (proxyRes, innerReq, innerRes)=>{
+@@ -121,6 +126,9 @@ async function proxyRequest(req, res, parsedUrl, upgradeHead, reqBody, proxyTime
+     }
+     // When the proxy finishes proxying the request, shut down the proxy.
+     return detached.promise.finally(()=>{
++        for (const listener of resCloseListeners){
++            res.removeListener('close', listener);
++        }
+         proxy.close();
+     });
+ }
