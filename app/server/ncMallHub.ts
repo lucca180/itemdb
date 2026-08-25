@@ -24,7 +24,7 @@ const LEBRON_FETCH_LIMIT = 30;
 const POPULAR_NC_TRENDING_POOL = 80;
 const POPULAR_NC_LIMIT = 12;
 const CAPSULES_LIMIT = 8;
-const EVENTS_FETCH_LIMIT = 50;
+const EVENTS_FETCH_LIMIT = 3000;
 const EVENTS_LIMIT = 12;
 
 export type MallOnSale = {
@@ -516,15 +516,41 @@ export function filterActiveMallEvents(lists: UserList[], now: number): UserList
   );
 }
 
+function listDateMs(value: string | null | undefined, empty: number): number {
+  if (!value) return empty;
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) ? time : empty;
+}
+
+/** Missing ends sort last; avoid Infinity - Infinity (NaN) which breaks Array.sort. */
+const OPEN_SERIES_END_MS = Number.MAX_SAFE_INTEGER;
+
+/** Series end soonest first (open-ended last), then newest series start, then most recently updated. */
+export function compareMallEvents(a: UserList, b: UserList): number {
+  const endDelta =
+    listDateMs(a.seriesEnd, OPEN_SERIES_END_MS) - listDateMs(b.seriesEnd, OPEN_SERIES_END_MS);
+  if (endDelta !== 0) return endDelta;
+
+  const startDelta = listDateMs(b.seriesStart, 0) - listDateMs(a.seriesStart, 0);
+  if (startDelta !== 0) return startDelta;
+
+  return listDateMs(b.updatedAt, 0) - listDateMs(a.updatedAt, 0);
+}
+
+export function sortMallEvents(lists: UserList[]): UserList[] {
+  return [...lists].sort(compareMallEvents);
+}
+
 async function loadMallEvents(): Promise<UserList[] | null> {
   'use cache';
   cacheTag('mall-hub-events');
-  cacheLife('homeSlow');
+  cacheTag('mall-hub');
+  cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
 
   const now = await getCachedNow();
   const listService = ListService.init();
   const tagged = await listService.getOfficialListsCat('nc mall', EVENTS_FETCH_LIMIT);
-  const active = filterActiveMallEvents(tagged, now).slice(0, EVENTS_LIMIT);
+  const active = sortMallEvents(filterActiveMallEvents(tagged, now)).slice(0, EVENTS_LIMIT);
   return active.length > 0 ? active : null;
 }
 
