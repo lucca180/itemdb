@@ -5,6 +5,8 @@ import prisma from '../../../../utils/prisma';
 import { getManyItems } from './many';
 import requestIp from 'request-ip';
 import { validateExtractorHash } from '@utils/api/hashValidator';
+import { GRAM_OPTION_NOTE } from '@utils/item/itemDropEvidence';
+import { maybeMarkNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenableFromDrops';
 
 const chance = new Chance();
 
@@ -153,6 +155,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     data: openableItems,
   });
 
+  if (hasDisplayableOpeningDrop(openableItems)) {
+    await maybeMarkNcItemOpenableFromDrops(parentData);
+  }
+
   return res.status(200).json(openableItemData);
 };
 
@@ -228,6 +234,10 @@ export const processOpenableItems = async (openableItem: OpenableQueue) => {
     data: openableItems,
   });
 
+  if (hasDisplayableOpeningDrop(openableItems)) {
+    await maybeMarkNcItemOpenableFromDrops(parentData);
+  }
+
   return openableItemData;
 };
 
@@ -250,3 +260,7 @@ const addToQueue = async (
     },
   });
 };
+
+const hasDisplayableOpeningDrop = (
+  rows: Array<Pick<Prisma.OpenableItemsUncheckedCreateInput, 'notes'>>
+) => rows.some((row) => !row.notes?.toLowerCase().includes(GRAM_OPTION_NOTE));
