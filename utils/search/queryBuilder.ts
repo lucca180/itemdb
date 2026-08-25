@@ -181,6 +181,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       'canEat',
       'canRead',
       'canPlay',
+      'canOpen',
       'hts',
       'ets',
       'regular',
@@ -205,6 +206,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       if (typeNeg.includes('canEat')) typeFiltersSQL.push(Prisma.sql`temp.canEat != 'true'`);
       if (typeNeg.includes('canRead')) typeFiltersSQL.push(Prisma.sql`temp.canRead != 'true'`);
       if (typeNeg.includes('canPlay')) typeFiltersSQL.push(Prisma.sql`temp.canPlay != 'true'`);
+      if (typeNeg.includes('canOpen')) typeFiltersSQL.push(Prisma.sql`temp.canOpen != 'true'`);
 
       if (typeNeg.includes('hts')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'hts'`);
       if (typeNeg.includes('ets')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'ets'`);
@@ -244,6 +246,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       if (typeTrue.includes('canEat')) typeFiltersSQL.push(Prisma.sql`temp.canEat = 'true'`);
       if (typeTrue.includes('canRead')) typeFiltersSQL.push(Prisma.sql`temp.canRead = 'true'`);
       if (typeTrue.includes('canPlay')) typeFiltersSQL.push(Prisma.sql`temp.canPlay = 'true'`);
+      if (typeTrue.includes('canOpen')) typeFiltersSQL.push(Prisma.sql`temp.canOpen = 'true'`);
 
       if (typeTrue.includes('hts')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'hts'`);
       if (typeTrue.includes('ets')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'ets'`);
@@ -557,7 +560,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   const facetsItemsSelect = Prisma.sql`
     a.internal_id, a.name, a.description, a.canonical_id,
     a.category, a.isWearable, a.status, a.type, a.isNeohome, a.isBD,
-    a.canEat, a.canRead, a.canPlay, a.rarity, a.est_val, a.weight, a.addedAt, a.item_id
+    a.canEat, a.canRead, a.canPlay, a.canOpen, a.rarity, a.est_val, a.weight, a.addedAt, a.item_id
   `;
 
   const itemsSelect = isFacetsMode

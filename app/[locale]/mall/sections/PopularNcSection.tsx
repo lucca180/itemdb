@@ -48,8 +48,7 @@ async function PopularNcContent() {
         image={NC_ICON}
         color={POPULAR_COLOR}
         items={items}
-        href="/search?type=nc"
-        linkText={t('NcMall.popular-link')}
+        href="/search?s=&type[]=ncBuyable&sortBy=added&sortDir=desc"
         utm_content="mall-hub-popular"
         perPage={6}
       />

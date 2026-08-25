@@ -166,6 +166,7 @@ async function LatestNcMallHomeCardContent() {
   return (
     <HomeCard
       utm_content="latest-nc-mall"
+      href="/search?s=&type[]=ncBuyable&sortBy=added&sortDir=desc"
       color="#BED754"
       title={t('HomePage.new-in-nc-mall')}
       image={'/icons/nc.png'}
