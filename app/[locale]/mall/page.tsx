@@ -25,6 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     ...metadata,
+    title: { absolute: t('NcMall.hub-seo-title') },
     twitter: { ...metadata.twitter, card: 'summary_large_image' },
     openGraph: {
       ...metadata.openGraph,

@@ -60,8 +60,6 @@ function MonthlyTile({
       borderColor={borderTint}
       overflow="hidden"
       bgGradient={`linear-gradient(165deg, ${wash} 0%, ${washSoft} 45%, transparent 78%)`}
-      transition="transform 0.15s ease, box-shadow 0.15s ease"
-      _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
     >
       <MainLink
         href={itemHref}
