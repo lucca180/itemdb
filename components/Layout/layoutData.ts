@@ -82,6 +82,7 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           label: t('Layout.import-wishlist'),
           href: '/lists/import/advanced',
         },
+        { label: 'NC Trading Guide', href: '/articles/nc-trading-guide', newUntil: 1788825599000 },
         { label: t('NcMall.keep-reading-lebron'), href: '/articles/lebron' },
       ],
     },
