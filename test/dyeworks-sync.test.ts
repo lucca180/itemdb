@@ -75,6 +75,18 @@ describe('parseDyeworksEndDate', () => {
     expect(end?.toISOString()).toBe('2027-09-22T18:00:00.000Z');
   });
 
+  test('keeps this year when today is before the 18:00 UTC end', () => {
+    const now = new Date(Date.UTC(2026, 8, 22, 12, 0, 0)); // Sep 22 12:00 UTC
+    const end = parseDyeworksEndDate('09/22', now);
+    expect(end?.toISOString()).toBe('2026-09-22T18:00:00.000Z');
+  });
+
+  test('rolls to next year once today is at or after the 18:00 UTC end', () => {
+    const now = new Date(Date.UTC(2026, 8, 22, 18, 0, 0)); // Sep 22 18:00 UTC
+    const end = parseDyeworksEndDate('09/22', now);
+    expect(end?.toISOString()).toBe('2027-09-22T18:00:00.000Z');
+  });
+
   test('returns null for missing end', () => {
     expect(parseDyeworksEndDate(null)).toBeNull();
     expect(parseDyeworksEndDate('nope')).toBeNull();
@@ -87,6 +99,10 @@ describe('parseCategoriesLiteral', () => {
     const categories = parseCategoriesLiteral(literal);
     const flat = flattenDyeworksCategories(categories);
     expect(flat.map((i) => i.item_id).sort()).toEqual([52790, 57627]);
+  });
+
+  test('rejects non-object results', () => {
+    expect(() => parseCategoriesLiteral('[1, 2]')).toThrow(/not an object/);
   });
 });
 

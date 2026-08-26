@@ -7,6 +7,8 @@ import {
   type DyeworksListEntry,
   type DyeworksSnapshotItem,
 } from '@utils/dyeworks/parseCategories';
+import { listMutationCacheTags, MallHubRevalidateTags } from '@utils/appCacheTags';
+import { revalidateAppCache } from '@utils/item/revalidateItem';
 
 export const DYEWORKS_CURRENT_LIST_ID = 28472;
 export const DYEWORKS_RETIRED_LIST_ID = 28473;
@@ -53,8 +55,8 @@ export function toListSeriesDate(value: Date = new Date()): Date {
 
 /**
  * Parse Neopets Dyeworks `mm/dd` into a list series date (UTC 18:00).
- * End dates are always in the future — use this year, or next year if that
- * day has already passed.
+ * End dates are always in the future — use this year’s 18:00 UTC, or next year
+ * if that instant has already passed (do not compare against midnight).
  */
 export function parseDyeworksEndDate(
   end: string | null | undefined,
@@ -69,12 +71,12 @@ export function parseDyeworksEndDate(
   if (month < 1 || month > 12 || day < 1 || day > 31) return null;
 
   const year = now.getUTCFullYear();
-  let date = new Date(Date.UTC(year, month - 1, day));
+  let date = toListSeriesDate(new Date(Date.UTC(year, month - 1, day)));
   if (date.getTime() <= now.getTime()) {
-    date = new Date(Date.UTC(year + 1, month - 1, day));
+    date = toListSeriesDate(new Date(Date.UTC(year + 1, month - 1, day)));
   }
 
-  return toListSeriesDate(date);
+  return date;
 }
 
 export function imageIdFromUrl(image: string): string {
@@ -342,6 +344,22 @@ export async function syncDyeworksLists(
       ),
       move: true,
     });
+  }
+
+  const listChanged =
+    creates.length > 0 ||
+    removeOriginalIids.length > 0 ||
+    existingToUpdate.length > 0 ||
+    retireColorIids.length > 0;
+
+  if (listChanged) {
+    // ListService only busts Redis membership; hub monthly highlights + official
+    // list RSC caches need App Router tags.
+    await revalidateAppCache([
+      MallHubRevalidateTags.hub,
+      ...listMutationCacheTags('official', DYEWORKS_CURRENT_LIST_ID),
+      ...listMutationCacheTags('official', DYEWORKS_RETIRED_LIST_ID),
+    ]);
   }
 
   return {

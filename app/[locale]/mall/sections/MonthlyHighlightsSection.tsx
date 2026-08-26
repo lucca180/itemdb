@@ -191,34 +191,42 @@ async function MonthlyHighlightsContent() {
     entry: MallMonthlyHighlight;
     kicker: string;
     dateLabel: string;
-  }[] = [
-    {
+  }[] = [];
+
+  if (highlights.ncCollectible) {
+    entries.push({
       entry: highlights.ncCollectible,
       kicker: t('NcMall.monthly-nc-kicker'),
       dateLabel: format.dateTime(new Date(highlights.ncCollectible.highlightedAt), DATE_OPTS),
-    },
-    {
+    });
+  }
+  if (highlights.premiumCollectible) {
+    entries.push({
       entry: highlights.premiumCollectible,
       kicker: t('NcMall.monthly-premium-kicker'),
       dateLabel: format.dateTime(new Date(highlights.premiumCollectible.highlightedAt), DATE_OPTS),
-    },
-    ...(highlights.gbc
-      ? [
-          {
-            entry: highlights.gbc,
-            kicker: t('NcMall.monthly-gbc-kicker'),
-            dateLabel: format.dateTime(new Date(highlights.gbc.highlightedAt), DATE_OPTS),
-          },
-        ]
-      : []),
-    {
+    });
+  }
+  if (highlights.gbc) {
+    entries.push({
+      entry: highlights.gbc,
+      kicker: t('NcMall.monthly-gbc-kicker'),
+      dateLabel: format.dateTime(new Date(highlights.gbc.highlightedAt), DATE_OPTS),
+    });
+  }
+  if (highlights.dyeworks) {
+    entries.push({
       entry: highlights.dyeworks,
       kicker: t('NcMall.monthly-dyeworks-kicker'),
       dateLabel: t('NcMall.monthly-updated', {
         date: format.dateTime(new Date(highlights.dyeworks.highlightedAt), DATE_OPTS),
       }),
-    },
-  ];
+    });
+  }
+
+  if (entries.length === 0) return null;
+
+  const lgColumns = Math.min(4, Math.max(1, entries.length)) as 1 | 2 | 3 | 4;
 
   return (
     <Flex
@@ -239,7 +247,7 @@ async function MonthlyHighlightsContent() {
       />
 
       <SimpleGrid
-        columns={{ base: 1, md: 2, lg: entries.length >= 4 ? 4 : 3 }}
+        columns={{ base: 1, md: Math.min(2, entries.length), lg: lgColumns }}
         gap={{ base: 4, md: 5 }}
         w="100%"
         minW={0}

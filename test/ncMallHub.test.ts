@@ -46,7 +46,6 @@ describe('getMallDiscountPercent', () => {
   it('returns the rounded markdown percent', () => {
     expect(getMallDiscountPercent(mallCard('A', 1, { price: 250, discountPrice: 150 }))).toBe(40);
     expect(getMallDiscountPercent(mallCard('B', 2, { price: 200, discountPrice: 100 }))).toBe(50);
-    expect(getMallDiscountPercent(mallCard('C', 3, { price: 250, discountPrice: 0 }))).toBe(100);
   });
 
   it('returns null when there is no real discount', () => {
@@ -56,6 +55,8 @@ describe('getMallDiscountPercent', () => {
     expect(getMallDiscountPercent(mallCard('B', 2, { price: 250, discountPrice: 250 }))).toBeNull();
     expect(getMallDiscountPercent(mallCard('C', 3, { price: 250, discountPrice: 300 }))).toBeNull();
     expect(getMallDiscountPercent(mallCard('D', 4, { price: 0, discountPrice: 0 }))).toBeNull();
+    // Bundles store 0 as "no markdown", not free
+    expect(getMallDiscountPercent(mallCard('E', 5, { price: 1500, discountPrice: 0 }))).toBeNull();
   });
 });
 

@@ -340,7 +340,10 @@ export function getMallCoverStory() {
 export function getMallDiscountPercent(item: ItemV2For<'card'>): number | null {
   if (item.price?.type !== 'ncMall') return null;
   const { price, discountPrice } = item.price;
-  if (discountPrice === null || price <= 0 || discountPrice >= price) return null;
+  // Bundles/sync often store discountPrice 0 to mean "no markdown" — same as mallNumericPrice.
+  if (discountPrice === null || discountPrice <= 0 || price <= 0 || discountPrice >= price) {
+    return null;
+  }
   return Math.round((1 - discountPrice / price) * 100);
 }
 
@@ -380,7 +383,7 @@ async function loadMallOnSale(): Promise<MallOnSale | null> {
   });
 
   const discountedRows = rows.filter(
-    (row) => row.discountPrice !== null && row.discountPrice < row.price
+    (row) => row.discountPrice !== null && row.discountPrice > 0 && row.discountPrice < row.price
   );
   if (discountedRows.length === 0) return null;
 
@@ -762,9 +765,9 @@ export type MallMonthlyHighlight = {
 };
 
 export type MallMonthlyHighlights = {
-  ncCollectible: MallMonthlyHighlight;
-  premiumCollectible: MallMonthlyHighlight;
-  dyeworks: MallMonthlyHighlight;
+  ncCollectible: MallMonthlyHighlight | null;
+  premiumCollectible: MallMonthlyHighlight | null;
+  dyeworks: MallMonthlyHighlight | null;
   gbc: MallMonthlyHighlight | null;
 };
 
@@ -853,6 +856,23 @@ function monthlyListHref(meta: MonthlyListMeta): string {
   } as UserList);
 }
 
+function monthlyHighlightFromMembership(
+  kind: Exclude<MallMonthlyHighlightKind, 'gbc'>,
+  row: MembershipRow | null,
+  meta: MonthlyListMeta | undefined,
+  item: ItemV2For<'card'> | undefined
+): MallMonthlyHighlight | null {
+  if (!row || !meta || !item) return null;
+  return {
+    kind,
+    item,
+    highlightedAt: row.highlightedAt.toISOString(),
+    listSlug: meta.slug,
+    listHref: monthlyListHref(meta),
+    listLabel: meta.name,
+  };
+}
+
 async function loadMallMonthlyHighlights(): Promise<MallMonthlyHighlights | null> {
   'use cache';
   cacheTag('mall-hub');
@@ -895,60 +915,48 @@ async function loadMallMonthlyHighlights(): Promise<MallMonthlyHighlights | null
   const ncMeta = metaById.get(MALL_NC_COLLECTIBLE_LIST_ID);
   const premiumMeta = metaById.get(MALL_PREMIUM_COLLECTIBLE_LIST_ID);
   const dyeworksMeta = metaById.get(DYEWORKS_CURRENT_LIST_ID);
-  if (
-    !ncRow ||
-    !premiumRow ||
-    dyeworksRows.length === 0 ||
-    !ncMeta ||
-    !premiumMeta ||
-    !dyeworksMeta
-  ) {
-    return null;
-  }
 
   const iids = [
-    ncRow.item_iid,
-    premiumRow.item_iid,
+    ...(ncRow ? [ncRow.item_iid] : []),
+    ...(premiumRow ? [premiumRow.item_iid] : []),
     ...dyeworksRows.map((row) => row.item_iid),
     ...(gbcRow ? [gbcRow.item_iid] : []),
   ];
+  if (iids.length === 0) return null;
+
   const uniqueIids = [...new Set(iids)];
   const itemsById = await ItemService.getManyItems(
     { type: 'id', data: uniqueIids.map(String) },
     { intent: 'card' }
   );
 
-  const ncItem = itemsById[String(ncRow.item_iid)];
-  const premiumItem = itemsById[String(premiumRow.item_iid)];
   const dyeworksPick = pickDyeworksFeaturedItem(dyeworksRows, itemsById);
-  const gbcItem = gbcRow ? itemsById[String(gbcRow.item_iid)] : null;
-  if (!ncItem || !premiumItem || !dyeworksPick) return null;
+  const gbcItem = gbcRow ? itemsById[String(gbcRow.item_iid)] : undefined;
 
-  return {
-    ncCollectible: {
-      kind: 'nc-collectible',
-      item: ncItem,
-      highlightedAt: ncRow.highlightedAt.toISOString(),
-      listSlug: ncMeta.slug,
-      listHref: monthlyListHref(ncMeta),
-      listLabel: ncMeta.name,
-    },
-    premiumCollectible: {
-      kind: 'premium-collectible',
-      item: premiumItem,
-      highlightedAt: premiumRow.highlightedAt.toISOString(),
-      listSlug: premiumMeta.slug,
-      listHref: monthlyListHref(premiumMeta),
-      listLabel: premiumMeta.name,
-    },
-    dyeworks: {
-      kind: 'dyeworks',
-      item: dyeworksPick.item,
-      highlightedAt: dyeworksPick.highlightedAt.toISOString(),
-      listSlug: dyeworksMeta.slug,
-      listHref: monthlyListHref(dyeworksMeta),
-      listLabel: dyeworksMeta.name,
-    },
+  const highlights: MallMonthlyHighlights = {
+    ncCollectible: monthlyHighlightFromMembership(
+      'nc-collectible',
+      ncRow,
+      ncMeta,
+      ncRow ? itemsById[String(ncRow.item_iid)] : undefined
+    ),
+    premiumCollectible: monthlyHighlightFromMembership(
+      'premium-collectible',
+      premiumRow,
+      premiumMeta,
+      premiumRow ? itemsById[String(premiumRow.item_iid)] : undefined
+    ),
+    dyeworks:
+      dyeworksPick && dyeworksMeta
+        ? {
+            kind: 'dyeworks',
+            item: dyeworksPick.item,
+            highlightedAt: dyeworksPick.highlightedAt.toISOString(),
+            listSlug: dyeworksMeta.slug,
+            listHref: monthlyListHref(dyeworksMeta),
+            listLabel: dyeworksMeta.name,
+          }
+        : null,
     gbc:
       gbcRow && gbcItem
         ? {
@@ -961,6 +969,17 @@ async function loadMallMonthlyHighlights(): Promise<MallMonthlyHighlights | null
           }
         : null,
   };
+
+  if (
+    !highlights.ncCollectible &&
+    !highlights.premiumCollectible &&
+    !highlights.dyeworks &&
+    !highlights.gbc
+  ) {
+    return null;
+  }
+
+  return highlights;
 }
 
 export function getMallMonthlyHighlights() {

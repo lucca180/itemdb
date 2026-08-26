@@ -15,7 +15,6 @@ import {
   MANUAL_OPENING_ID,
 } from '@utils/item/itemDropEvidence';
 import { maybeMarkNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenableFromDrops';
-import { runAfter } from '@utils/api/after';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
@@ -45,12 +44,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id) : null,
     getItemParent(item.internal_id),
   ]);
-
-  if (drops) {
-    await runAfter(async () => {
-      await maybeMarkNcItemOpenableFromDrops(item);
-    });
-  }
 
   redis_setDataCount(Object.keys(drops?.drops || {}).length, req);
 
