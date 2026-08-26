@@ -36,7 +36,9 @@ export function StyleTokenSeriesBlock({ series, items }: StyleTokenSeriesBlockPr
     setActiveIndex(((index % len) + len) % len);
   };
 
-  const activePreview = active.imageId ? wearablePreviewSources(active.imageId) : null;
+  const activePreview = active.imageId
+    ? wearablePreviewSources(active.imageId, active.imageHash)
+    : null;
 
   return (
     <Box w="100%">

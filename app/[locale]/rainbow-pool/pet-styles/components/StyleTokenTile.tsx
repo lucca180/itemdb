@@ -28,7 +28,7 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
     linkTo === 'item'
       ? `/item/${token.itemSlug}`
       : stylesComboHref(token.speciesName, token.colorName);
-  const sources = token.imageId ? wearablePreviewSources(token.imageId) : null;
+  const sources = token.imageId ? wearablePreviewSources(token.imageId, token.imageHash) : null;
   const preview = sources ? { ...sources, api: `${sources.api}?noPlaceholder=1` } : null;
   const [useItemIcon, setUseItemIcon] = useState(!preview);
   const [trackedImageId, setTrackedImageId] = useState(token.imageId);

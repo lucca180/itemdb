@@ -28,6 +28,8 @@ export type StyleToken = {
   previewUrl: string;
   /** Item image_id for CDN/API preview sources. */
   imageId: string | null;
+  /** Items.imgCacheOverride — bust CDN preview when present. */
+  imageHash: string | null;
   itemSlug: string;
   releasedAt: string;
 };
