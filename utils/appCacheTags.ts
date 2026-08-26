@@ -20,6 +20,10 @@ export const HOME_CACHE_TAGS = [
 
 export type HomeCacheTag = (typeof HOME_CACHE_TAGS)[number];
 
+/** NC Mall hub tags — must match `'use cache'` tags in `app/server/ncMallHub.ts`. */
+export const MALL_HUB_CACHE_TAGS = ['mall-hub', 'mall-hub-lebron', 'mall-hub-events'] as const;
+export type MallHubCacheTag = (typeof MALL_HUB_CACHE_TAGS)[number];
+
 /**
  * Item page Data Cache scopes — one tag per card/loader (`item-{id}-{scope}`).
  * Every `'use cache'` loader on the item page should use `itemSectionCacheTags(id, scope)`.
@@ -77,6 +81,7 @@ export type ListItemsCacheTag = `list-items-${string}-${number}-${ListItemCacheS
 
 export type AppCacheTag =
   | HomeCacheTag
+  | MallHubCacheTag
   | ItemScopedCacheTag
   | UserListsPageCacheTag
   | ListItemsCacheTag;
@@ -173,6 +178,12 @@ export const HomeRevalidateTags = {
   newItemCount: 'home-new-item-count',
 } as const satisfies Record<string, HomeCacheTag>;
 
+export const MallHubRevalidateTags = {
+  hub: 'mall-hub',
+  lebron: 'mall-hub-lebron',
+  events: 'mall-hub-events',
+} as const satisfies Record<string, MallHubCacheTag>;
+
 const ITEM_ROOT_TAG_PATTERN = /^item-(\d+)$/;
 const ITEM_SECTION_TAG_PATTERN = /^item-(\d+)-([a-z][a-z0-9-]*)$/;
 
@@ -211,6 +222,7 @@ export function isAppCacheTag(tag: string): tag is AppCacheTag {
   if (tag.length > MAX_CACHE_TAG_LENGTH) return false;
 
   if ((HOME_CACHE_TAGS as readonly string[]).includes(tag)) return true;
+  if ((MALL_HUB_CACHE_TAGS as readonly string[]).includes(tag)) return true;
 
   if (ITEM_ROOT_TAG_PATTERN.test(tag)) return true;
 

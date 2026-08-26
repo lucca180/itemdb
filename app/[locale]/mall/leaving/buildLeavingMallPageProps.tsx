@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { IconLink } from '@components/Utils/IconLink';
 import { getFormatter, getTranslations } from 'next-intl/server';
+import { mallNumericPrice } from '@app/server/ncMallHub';
 import type { ItemData, NCMallData } from '@types';
 
 export type LeavingMallDateGroup = {
@@ -35,6 +36,15 @@ export async function buildLeavingMallPageProps(
     dates[dateFormatted].push(data);
   });
 
+  const itemsByDate = Object.entries(dates).map(([date, items]) => ({
+    date,
+    mallData: [...items].sort((a, b) => {
+      const priceDelta =
+        mallNumericPrice(a.price, a.discountPrice) - mallNumericPrice(b.price, b.discountPrice);
+      return priceDelta || a.item_iid - b.item_iid;
+    }),
+  }));
+
   return {
     title: t('NcMall.leaving-soon-tm'),
     description: t.rich('NcMall.leaving-soon-desc', {
@@ -50,7 +60,7 @@ export async function buildLeavingMallPageProps(
           Link: (chunk) => chunk,
         })
         ?.toString() ?? '',
-    itemsByDate: Object.entries(dates).map(([date, items]) => ({ date, mallData: items })),
+    itemsByDate,
     itemData,
   };
 }

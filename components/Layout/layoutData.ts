@@ -66,9 +66,24 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           href: '/hub/outfits/acara',
         },
         { label: t('General.dynamic-lists'), href: '/articles/checklists-and-dynamic-lists' },
-        { label: t('HomePage.leaving-nc-mall'), href: '/mall/leaving' },
         { label: 'Quest Log', href: '/lists/official/cat/quest-log' },
         { label: t('Layout.all-official-lists'), href: '/lists/official' },
+      ],
+    },
+    {
+      label: 'Mall',
+      href: '/mall',
+      options: [
+        { label: t('Layout.nc-mall-hub'), href: '/mall', newUntil: 1788825599000 },
+        { label: t('NcMall.keep-reading-pet-styles'), href: '/rainbow-pool/pet-styles' },
+        { label: t('HomePage.leaving-nc-mall'), href: '/mall/leaving' },
+        { label: t('Layout.report-your-nc-trades'), href: '/mall/report' },
+        {
+          label: t('Layout.import-wishlist'),
+          href: '/lists/import/advanced',
+        },
+        { label: 'NC Trading Guide', href: '/articles/nc-trading-guide', newUntil: 1788825599000 },
+        { label: t('NcMall.keep-reading-lebron'), href: '/articles/lebron' },
       ],
     },
     {
@@ -77,7 +92,7 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
       options: [
         { label: t('Layout.sdb-pricer'), href: '/articles/userscripts' },
         { label: t('Layout.rainbow-pool-tool'), href: '/rainbow-pool' },
-        { label: 'Pet Styles Tokens', href: '/rainbow-pool/pet-styles', newUntil: 1786849199000 },
+        { label: 'Pet Styles Tokens', href: '/rainbow-pool/pet-styles' },
         { label: t('Layout.item-effects'), href: '/hub/item-effects' },
         { label: t('Layout.restock-dashboard'), href: '/restock/dashboard' },
       ],

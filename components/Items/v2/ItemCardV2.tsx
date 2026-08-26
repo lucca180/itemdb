@@ -124,7 +124,13 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
       flex="1 1 auto"
     >
       <ItemImageV2 item={item} />
-      <Text fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}>{item.name}</Text>
+      <Text
+        fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}
+        w="100%"
+        css={{ textWrap: 'balance' }}
+      >
+        {item.name}
+      </Text>
 
       <ItemCardBadgeV2
         item={item}
@@ -170,7 +176,12 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
         //@ts-ignore
         disableWhileShiftPressed
         disable={isMobile ? true : undefined}
-        style={{ ...props.style, display: 'flex', alignSelf: 'stretch' }}
+        display="flex"
+        h="100%"
+        w="100%"
+        flex="1"
+        alignSelf="stretch"
+        style={props.style}
         attributes={{
           onPointerEnter: loadContextMenu,
           onFocus: loadContextMenu,

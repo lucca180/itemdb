@@ -167,6 +167,11 @@ export const saleStatusQuery: QueryType = {
   type: ['ets'],
 };
 
+export const ncBuyableQuery: QueryType = {
+  ...baseQuery,
+  type: ['ncBuyable'],
+};
+
 const negativeTypeQuery: QueryType = {
   ...baseQuery,
   type: ['!wearable', '!neohome', '!battledome'],
@@ -223,6 +228,7 @@ export const consistentPageCases: SearchCase[] = [
   { query: zoneFilterQuery, description: 'Wearable Zone Search' },
   { query: angelpussQuery, description: 'Petpet Species Search' },
   { query: saleStatusQuery, description: 'Sale Status Search' },
+  { query: ncBuyableQuery, description: 'NC Mall Buyable Search' },
   { query: paginationQuery, description: 'Paginated Search' },
 ];
 

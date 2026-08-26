@@ -64,7 +64,7 @@ export function generateStaticParams() {
 
 async function loadLeavingMallItems(): Promise<{ mallData: NCMallData[]; itemData: ItemData[] }> {
   'use cache';
-  cacheTag('mall-leaving');
+  cacheTag('mall-hub');
   cacheLife({ stale: 180, revalidate: 180, expire: 3600 });
 
   const [itemData, mallData] = await Promise.all([

@@ -12,6 +12,7 @@ import parse, {
 } from 'html-react-parser';
 import type { WP_Article } from '@types';
 import type { ArticlePageLabels } from './buildArticlePageProps';
+import { wpImgDefaults } from './wpImgDefaults';
 
 const articleParserOptions: HTMLReactParserOptions = {
   replace: (domChildren) => {
@@ -50,9 +51,13 @@ const articleParserOptions: HTMLReactParserOptions = {
         </Link>
       );
 
-    if (domChildren instanceof Element && domChildren.name === 'ul')
+    if (domChildren instanceof Element && (domChildren.name === 'ul' || domChildren.name === 'ol'))
       return (
-        <List.Root as="ul" gap={1}>
+        <List.Root
+          as={domChildren.name}
+          gap={1}
+          listStyle={domChildren.name === 'ol' ? 'decimal' : undefined}
+        >
           {domToReact(children, articleParserOptions)}
         </List.Root>
       );
@@ -92,7 +97,13 @@ const articleParserOptions: HTMLReactParserOptions = {
 
     if (domChildren instanceof Element && domChildren.name === 'blockquote')
       return (
-        <Box p={3} borderRadius="md" bg="whiteAlpha.50" css={{ '& p': { mb: 3 } }}>
+        <Box
+          p={3}
+          borderRadius="md"
+          fontSize={'sm'}
+          bg="whiteAlpha.50"
+          css={{ '& p': { mb: 3 }, '& p:last-child': { mb: 0 } }}
+        >
           {domToReact(children, articleParserOptions)}
         </Box>
       );
@@ -104,11 +115,16 @@ const articleParserOptions: HTMLReactParserOptions = {
         | 'success'
         | 'error';
       const title = domChildren.attribs.title ?? '';
+      const variant = (domChildren.attribs.variant ?? 'surface') as
+        | 'surface'
+        | 'subtle'
+        | 'solid'
+        | 'outline';
 
       return (
         <Alert.Root
           status={status}
-          variant="surface"
+          variant={variant}
           borderStartWidth="3px"
           borderStartColor="colorPalette.solid"
           css={{
@@ -181,6 +197,7 @@ export function ArticlePageContent({
         flexFlow="column"
         gap={3}
         css={{
+          ...wpImgDefaults,
           '& a': { color: color.lightness(65).hex() ?? 'cyan.300' },
           '& b,& strong': {
             color: Color(post.palette?.lightvibrant.hex).lightness(60).hex() ?? 'blue.300',
@@ -189,8 +206,9 @@ export function ArticlePageContent({
             fontStyle: 'italic',
           },
           '& img': { my: 2 },
-          '& ul': { my: 2, ml: 7 },
-          '& ul li': { my: 1 },
+          '& p img': { display: 'inline' },
+          '& ul, & ol': { my: 2, ml: 7 },
+          '& ul li, & ol li': { my: 1 },
         }}
       >
         <Flex flexFlow="column" gap={3} px={3} maxW="900px" w="100%" fontSize="md" mx="auto">

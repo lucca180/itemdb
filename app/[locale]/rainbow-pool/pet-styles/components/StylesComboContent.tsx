@@ -39,7 +39,7 @@ export async function StylesComboContent({
   // Prefer style wearable over OpenNeo pet body — colour combos may not exist as pets.
   const heroToken = tokens[0];
   const heroPreview = heroToken?.imageId
-    ? wearablePreviewSources(heroToken.imageId)
+    ? wearablePreviewSources(heroToken.imageId, heroToken.imageHash)
     : heroToken?.previewUrl
       ? { cdn: heroToken.previewUrl, api: heroToken.previewUrl }
       : null;

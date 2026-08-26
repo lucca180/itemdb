@@ -2,7 +2,11 @@ import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@utils/prisma';
 import { NcMallData as dbMallData, Prisma } from '@prisma/generated/client';
-import { revalidateAppCache, HomeRevalidateTags } from '@utils/item/revalidateItem';
+import {
+  revalidateAppCache,
+  HomeRevalidateTags,
+  MallHubRevalidateTags,
+} from '@utils/item/revalidateItem';
 import { enqueueAndProcessItems } from '@utils/item/enqueueItemProcess';
 import { processItemProcessQueue } from '@utils/item/processItemQueue';
 import { markNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenableFromDrops';
@@ -116,7 +120,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const removeIds = new Set(allCurrentData.map((data) => data.item_id));
 
   const create: Prisma.NcMallDataCreateManyInput[] = [];
-  const update = [];
+  const priceUpdates = [];
   const bundles = [];
 
   for (const id in ncMallData) {
@@ -149,7 +153,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       const existentData = allCurrentData.find((data) => data.item_id === item.id);
       if (!checkDataChanged(existentData!, item)) continue;
 
-      update.push(
+      priceUpdates.push(
         prisma.ncMallData.update({
           where: {
             internal_id: allCurrentData.find((data) => data.item_id === item.id)!.internal_id,
@@ -170,7 +174,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
   }
 
-  update.unshift(
+  const response = await prisma.$transaction([
+    prisma.ncMallData.createMany({ data: create, skipDuplicates: true }),
     prisma.ncMallData.updateMany({
       where: {
         item_id: {
@@ -181,12 +186,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       data: {
         active: null,
       },
-    })
-  );
-
-  const response = await prisma.$transaction([
-    prisma.ncMallData.createMany({ data: create, skipDuplicates: true }),
-    ...update,
+    }),
+    ...priceUpdates,
   ]);
 
   const prom = [];
@@ -198,9 +199,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   await Promise.all(prom);
 
-  // revalidate home NC mall caches when new mall items are added
-  if (create.length > 0) {
-    await revalidateAppCache([HomeRevalidateTags.latestNcMall, HomeRevalidateTags.latestItems]);
+  // revalidate home + hub NC mall caches when mall stock or prices change
+  const mallChanged = create.length > 0 || priceUpdates.length > 0 || removeIds.size > 0;
+  if (mallChanged) {
+    await revalidateAppCache([
+      HomeRevalidateTags.latestNcMall,
+      HomeRevalidateTags.latestItems,
+      MallHubRevalidateTags.hub,
+    ]);
   }
 
   res.json({

@@ -87,6 +87,7 @@ type TokenSourceRow = {
     slug: string | null;
     image_id: string | null;
     image: string | null;
+    imgCacheOverride: string | null;
     addedAt: Date;
   };
 };
@@ -109,9 +110,10 @@ function colorStringOrFilters(terms: string[]): Prisma.PetStyleWhereInput[] {
   ]);
 }
 
-function wearablePreviewUrl(imageId: string | null | undefined): string {
+function wearablePreviewUrl(imageId: string | null | undefined, hash?: string | null): string {
   if (!imageId) return '';
-  return `https://cdn.itemdb.com.br/preview/${imageId}.png`;
+  const base = `https://cdn.itemdb.com.br/preview/${imageId}.png`;
+  return hash ? `${base}?hash=${hash}` : base;
 }
 
 function itemIconUrl(
@@ -207,8 +209,9 @@ function mapTokenRows(
       trades: tradeBundle?.samples ?? [],
       ncValue: ncValueByIid[row.item_iid] ?? null,
       imageUrl: itemIconUrl(row.item.image_id, row.item.image),
-      previewUrl: wearablePreviewUrl(row.item.image_id),
+      previewUrl: wearablePreviewUrl(row.item.image_id, row.item.imgCacheOverride),
       imageId: row.item.image_id ?? null,
+      imageHash: row.item.imgCacheOverride ?? null,
       itemSlug: row.item.slug || petColorSlug(row.item.name),
       releasedAt: row.item.addedAt.toISOString().slice(0, 10),
     });
@@ -248,6 +251,7 @@ const tokenSelect = {
       slug: true,
       image_id: true,
       image: true,
+      imgCacheOverride: true,
       addedAt: true,
     },
   },

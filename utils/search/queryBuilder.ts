@@ -181,13 +181,17 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       'canEat',
       'canRead',
       'canPlay',
+      'canOpen',
       'hts',
       'ets',
       'regular',
       'collectible',
+      'ncBuyable',
       'p2Paintable',
       'p2Canonical',
     ];
+
+    const ncBuyableNow = new Date();
 
     if (typeNeg.length > 0) {
       const type_column = typeNeg.filter((o: string) => !skipColumns.includes(o));
@@ -202,6 +206,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       if (typeNeg.includes('canEat')) typeFiltersSQL.push(Prisma.sql`temp.canEat != 'true'`);
       if (typeNeg.includes('canRead')) typeFiltersSQL.push(Prisma.sql`temp.canRead != 'true'`);
       if (typeNeg.includes('canPlay')) typeFiltersSQL.push(Prisma.sql`temp.canPlay != 'true'`);
+      if (typeNeg.includes('canOpen')) typeFiltersSQL.push(Prisma.sql`temp.canOpen != 'true'`);
 
       if (typeNeg.includes('hts')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'hts'`);
       if (typeNeg.includes('ets')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'ets'`);
@@ -210,6 +215,17 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       if (typeNeg.includes('collectible')) {
         typeFiltersSQL.push(
           Prisma.sql`not exists (select 1 from listitems li left join userlist l on l.internal_id = li.list_id where li.item_iid = temp.internal_id and l.official = 1 and l.official_tag = 'stamps')`
+        );
+      }
+
+      if (typeNeg.includes('ncBuyable')) {
+        typeFiltersSQL.push(
+          Prisma.sql`not exists (
+            select 1 from NcMallData n
+            where n.item_iid = temp.internal_id
+              and n.active = 1
+              and (n.saleEnd is null or n.saleEnd > ${ncBuyableNow})
+          )`
         );
       }
 
@@ -230,6 +246,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       if (typeTrue.includes('canEat')) typeFiltersSQL.push(Prisma.sql`temp.canEat = 'true'`);
       if (typeTrue.includes('canRead')) typeFiltersSQL.push(Prisma.sql`temp.canRead = 'true'`);
       if (typeTrue.includes('canPlay')) typeFiltersSQL.push(Prisma.sql`temp.canPlay = 'true'`);
+      if (typeTrue.includes('canOpen')) typeFiltersSQL.push(Prisma.sql`temp.canOpen = 'true'`);
 
       if (typeTrue.includes('hts')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'hts'`);
       if (typeTrue.includes('ets')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'ets'`);
@@ -238,6 +255,17 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       if (typeTrue.includes('collectible')) {
         typeFiltersSQL.push(
           Prisma.sql`exists (select 1 from listitems li left join userlist l on l.internal_id = li.list_id where li.item_iid = temp.internal_id and l.official = 1 and l.official_tag = 'stamps')`
+        );
+      }
+
+      if (typeTrue.includes('ncBuyable')) {
+        typeFiltersSQL.push(
+          Prisma.sql`exists (
+            select 1 from NcMallData n
+            where n.item_iid = temp.internal_id
+              and n.active = 1
+              and (n.saleEnd is null or n.saleEnd > ${ncBuyableNow})
+          )`
         );
       }
 
@@ -532,7 +560,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   const facetsItemsSelect = Prisma.sql`
     a.internal_id, a.name, a.description, a.canonical_id,
     a.category, a.isWearable, a.status, a.type, a.isNeohome, a.isBD,
-    a.canEat, a.canRead, a.canPlay, a.rarity, a.est_val, a.weight, a.addedAt, a.item_id
+    a.canEat, a.canRead, a.canPlay, a.canOpen, a.rarity, a.est_val, a.weight, a.addedAt, a.item_id
   `;
 
   const itemsSelect = isFacetsMode

@@ -31,6 +31,20 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
   const category = (item.category ?? 'unknown').toLowerCase();
 
   const breadcrumbList = useMemo(() => {
+    const isNcItem = item.isNC || item.type === 'nc';
+    const categoryCrumb: BreadcrumbItem = isNcItem
+      ? {
+          position: 3,
+          name: t('General.nc-mall'),
+          item: '/mall',
+        }
+      : {
+          position: 3,
+          name: capitalize(category),
+          item: `/search?s=&category[]=${category}`,
+          nofollow: true,
+        };
+
     const breadList: BreadcrumbItem[] = [
       {
         position: 1,
@@ -43,12 +57,7 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
         item: '/search?s=',
         nofollow: true,
       },
-      {
-        position: 3,
-        name: capitalize(category),
-        item: `/search?s=&category[]=${category}`,
-        nofollow: true,
-      },
+      categoryCrumb,
       {
         position: 4,
         name: item.name,
