@@ -4,7 +4,6 @@ import MainLink from '@components/Utils/MainLink';
 import { STYLES_BASE_PATH } from '@utils/petStyles/paths';
 import { MallSectionHeader } from './MallSectionHeader';
 
-/** Same destinations as the editorial concept quick-link grid. */
 const QUICK_LINKS = [
   { id: 'leaving', href: '/mall/leaving' },
   { id: 'report', href: '/mall/report' },

@@ -31,7 +31,7 @@ todos:
     status: completed
   - id: p10-cutover
     content: "Fase 10: limpeza concepts/mock, nav/home, testes — manter /mall/leaving"
-    status: pending
+    status: completed
 isProject: false
 ---
 

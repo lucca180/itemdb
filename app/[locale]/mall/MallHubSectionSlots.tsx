@@ -28,7 +28,6 @@ export function MallHubSectionSlots() {
         <CapsulesSection />
       </Grid>
 
-      {/* Concept: Keep reading sits after a large vertical gap, no hairline separator. */}
       <Flex direction="column" gap={{ base: 10, md: 14 }} pt={{ base: 4, md: 8 }} w="100%" minW={0}>
         <KeepReadingSection />
         <FaqSection />

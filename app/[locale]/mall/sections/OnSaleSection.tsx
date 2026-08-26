@@ -1,13 +1,7 @@
 import { Suspense } from 'react';
 import { Box, Flex, Skeleton } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import {
-  getMallDiscountPercent,
-  getMallOnSale,
-  pickDeepestCut,
-  type MallOnSale,
-} from '@app/server/ncMallHub';
-import { onSaleMallItems } from '@app/[locale]/mall/_mock/ncMallHubFixtures';
+import { getMallDiscountPercent, getMallOnSale } from '@app/server/ncMallHub';
 import type { ItemV2For } from '@types';
 import { MallItemStrip } from './MallItemStrip';
 import { MallSectionHeader } from './MallSectionHeader';
@@ -40,22 +34,8 @@ function mallPrice(item: ItemV2For<'card'>) {
   return item.price;
 }
 
-// TODO(remove-before-deploy): mock on-sale rail when the mall has no live discounts.
-function mockMallOnSale(): MallOnSale | null {
-  const deepestCut = pickDeepestCut(onSaleMallItems);
-  if (!deepestCut) return null;
-  return { items: onSaleMallItems, deepestCut };
-}
-
 async function OnSaleContent() {
-  const [liveSale, t, format] = await Promise.all([
-    getMallOnSale(),
-    getTranslations(),
-    getFormatter(),
-  ]);
-
-  // TODO(remove-before-deploy): drop this fallback (and mockMallOnSale / fixture import).
-  const sale = liveSale ?? (process.env.NODE_ENV === 'development' ? mockMallOnSale() : null);
+  const [sale, t, format] = await Promise.all([getMallOnSale(), getTranslations(), getFormatter()]);
 
   if (!sale) return null;
 
