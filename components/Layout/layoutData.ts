@@ -66,9 +66,23 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           href: '/hub/outfits/acara',
         },
         { label: t('General.dynamic-lists'), href: '/articles/checklists-and-dynamic-lists' },
-        { label: t('HomePage.leaving-nc-mall'), href: '/mall/leaving' },
         { label: 'Quest Log', href: '/lists/official/cat/quest-log' },
         { label: t('Layout.all-official-lists'), href: '/lists/official' },
+      ],
+    },
+    {
+      label: 'Mall',
+      href: '/mall',
+      options: [
+        { label: t('Layout.nc-mall-hub'), href: '/mall' },
+        { label: t('NcMall.keep-reading-pet-styles'), href: '/rainbow-pool/pet-styles' },
+        { label: t('HomePage.leaving-nc-mall'), href: '/mall/leaving' },
+        { label: t('Layout.report-your-nc-trades'), href: '/mall/report' },
+        {
+          label: t('Layout.browse-nc-mall'),
+          href: '/search?s=&type[]=ncBuyable&sortBy=added&sortDir=desc',
+        },
+        { label: t('NcMall.keep-reading-lebron'), href: '/articles/lebron' },
       ],
     },
     {

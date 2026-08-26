@@ -99,7 +99,7 @@
     "tavi-alert": "Alguns preços podem estar bastante desatualizados devido às Buscas de Tavi. \n<Link>Saiba como ajudar</Link> ou use o Botão de Preço Errado :)",
     "item-effects": "Efeitos de Itens",
     "view-all-shops": "Ver Todas as Lojas",
-    "report-your-nc-trades": "Reporte Suas Trocas NC",
+    "report-your-nc-trades": "Reportar Trocas NC",
     "rainbow-pool-tool": "Piscina do Arco-íris",
     "update-available": "Atualização Disponível",
     "script-info": "Script Info",
@@ -107,7 +107,9 @@
     "dailies-and-freebies": "Diários e Freebies",
     "exclusive-clothes": "Roupas Exclusivas",
     "import-items-and-checklists": "Importar Itens & Checklists",
-    "troubleshooting": "Solução de Problemas"
+    "troubleshooting": "Solução de Problemas",
+    "browse-nc-mall": "Explorar Centro NC",
+    "nc-mall-hub": "NC Mall Hub"
   },
   "ItemPage": {
     "item-info": "Item Info",
