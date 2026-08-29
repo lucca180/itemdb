@@ -90,19 +90,29 @@ export function getPetpetMapIdByName(name: string, maps: PetpetCatalogMaps): num
 }
 
 /**
- * Same heuristic as legacy getPetpetSpeciesFromString:
- * species name must appear as a whole token in the item name.
+ * Species display name from item name.
+ * Multi-word species (e.g. "Baby Space Fungus") must match all tokens — same idea as
+ * findPetpetSpeciesMapId. Prefers the longest matching species name.
  */
 export function getPetpetSpeciesNameFromItemName(
   itemName: string,
   maps: PetpetCatalogMaps
 ): string | null {
   if (!itemName) return null;
+
+  const exact = maps.byName.get(itemName.toLowerCase());
+  if (exact) return exact.name;
+
   const tokens = itemName.toLowerCase().split(' ');
+  let best: string | null = null;
+
   for (const entry of maps.byMapId.values()) {
-    if (tokens.includes(entry.name.toLowerCase())) return entry.name;
+    const speciesWords = entry.name.toLowerCase().split(' ');
+    if (!speciesWords.every((word) => tokens.includes(word))) continue;
+    if (!best || entry.name.length > best.length) best = entry.name;
   }
-  return null;
+
+  return best;
 }
 
 /**

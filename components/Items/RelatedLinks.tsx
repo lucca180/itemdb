@@ -395,7 +395,7 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     petpetData?.color.name ||
     (colorId != null ? `#${colorId}` : null);
 
-  if (colorId && petpetColor) {
+  if (colorId && petpetColor && petpetColor !== 'Unknown' && petpetColor !== 'No Color') {
     petpetLinks.push({
       href: `/search?s=&petpetColor[]=${colorId}`,
       imageUrl:
@@ -407,8 +407,10 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     });
   }
 
-  const petpetSpeciesName = getPetpetSpeciesNameFromItemName(item.name, petpetSpeciesMaps);
-  const specieId = getPetpetMapIdByName(petpetSpeciesName ?? '', petpetSpeciesMaps);
+  const petpetSpeciesName =
+    petpetData?.species.name || getPetpetSpeciesNameFromItemName(item.name, petpetSpeciesMaps);
+  const specieId =
+    petpetData?.species.id ?? getPetpetMapIdByName(petpetSpeciesName ?? '', petpetSpeciesMaps);
 
   if (petpetSpeciesName && specieId) {
     petpetLinks.push({
