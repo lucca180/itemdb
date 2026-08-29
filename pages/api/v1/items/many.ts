@@ -106,7 +106,7 @@ export const getManyItems = async (
       b.hsv_h, b.hsv_s, b.hsv_v,
       c.addedAt as priceAdded, c.price, c.noInflation_id,
       d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
-      o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin,
+      o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin, o.isVolatile as owlsIsVolatile,
       s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
@@ -244,6 +244,7 @@ export const rawToItemData = (raw: any, options: RawToItemOptions = {}): ItemDat
             range: result.owlsValue,
             addedAt: result.owlsPriced.toJSON(),
             source: 'lebron',
+            isVolatile: !!result.owlsIsVolatile,
           }
         : null;
 

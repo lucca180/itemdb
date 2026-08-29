@@ -681,6 +681,8 @@ export type NCValue = {
   range: string;
   addedAt: string;
   source: 'itemdb' | 'lebron';
+  /** Present when sourced from Lebron; true while the range is still settling. */
+  isVolatile?: boolean;
 };
 
 export type InsightsResponse = {

@@ -216,7 +216,7 @@ export const getItem = async (id_name: number | string, includeFlags = false) =>
       b.hsv_h, b.hsv_s, b.hsv_v,
       c.addedAt as priceAdded, c.price, c.noInflation_id, c.newPrice,
       d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
-      o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin,
+      o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin, o.isVolatile as owlsIsVolatile,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"

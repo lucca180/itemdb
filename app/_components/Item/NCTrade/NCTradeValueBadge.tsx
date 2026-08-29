@@ -10,6 +10,7 @@ type Props = {
 
 export async function NCTradeValueBadge({ item }: Props) {
   const t = await getTranslations();
+  const showVolatile = item.ncValue?.source === 'lebron' && item.ncValue.isVolatile;
 
   return (
     <Badge
@@ -52,6 +53,11 @@ export async function NCTradeValueBadge({ item }: Props) {
         )}
         {item.ncValue && (
           <>
+            {showVolatile && (
+              <Badge colorPalette="red" variant="subtle" size="sm" mb={1}>
+                {t('ItemPage.lebron-volatile')}
+              </Badge>
+            )}
             <Stat.ValueText mb={0}>
               {item.ncValue.range}
               <Text fontSize="xs" as="span">
