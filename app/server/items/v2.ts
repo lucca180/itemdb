@@ -116,7 +116,8 @@ const RAW_COLUMNS = {
   saleAdded: Prisma.sql`saleStats.addedAt AS saleAdded`,
 } as const;
 
-const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;
+// TODO: restore JOIN branching on NC_VALUES_TYPE (itemdb / best).
+// const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;
 
 /**
  * JOINs needed for the configured NC value source. `NC_VALUES_TYPE` is a static
@@ -127,15 +128,18 @@ const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;
  * `MapItemV2Options.ncValuesType` (a test-only override — no production call site
  * passes it) does not affect this: it bypasses the query planner and reads
  * whatever columns the caller's raw row already has.
+ *
+ * TODO: restore `itemdb` / `best` JOINs when itemdb NC values are re-enabled.
+ * Until then, always join `owlsPrice` (Lebron-only), regardless of `NC_VALUES_TYPE`.
  */
-export const NC_VALUE_JOINS: readonly JoinName[] =
-  NC_VALUES_TYPE === 'lebron'
-    ? ['owlsPrice']
-    : NC_VALUES_TYPE === 'itemdb'
-      ? ['ncValue']
-      : NC_VALUES_TYPE === 'best'
-        ? ['ncValue', 'owlsPrice']
-        : []; // no source configured — mapItemV2NcValue always omits the field
+export const NC_VALUE_JOINS: readonly JoinName[] = ['owlsPrice'];
+// NC_VALUES_TYPE === 'lebron'
+//   ? ['owlsPrice']
+//   : NC_VALUES_TYPE === 'itemdb'
+//     ? ['ncValue']
+//     : NC_VALUES_TYPE === 'best'
+//       ? ['ncValue', 'owlsPrice']
+//       : []; // no source configured — mapItemV2NcValue always omits the field
 
 /**
  * Columns for the configured NC value source. These MUST stay in lockstep with

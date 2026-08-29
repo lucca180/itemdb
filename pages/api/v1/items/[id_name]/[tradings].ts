@@ -6,6 +6,12 @@ import { CheckAuth } from '@utils/googleCloud';
 import { Prisma } from '@prisma/generated/client';
 import { redis_setDataCount } from '@utils/api/redis';
 import {
+  ItemRevalidateTags,
+  MallHubRevalidateTags,
+  revalidateAppCache,
+  revalidateItem,
+} from '@utils/item/revalidateItem';
+import {
   getAuctionHistory,
   getRestockHistory,
   getTradeHistory,
@@ -154,7 +160,7 @@ export const getNCTradeData = async (name: string | number) => {
 };
 
 const updateLebronVal = async (res: LebronSearchResponse) => {
-  if (!res.itemStats.value || res.itemStats.value === 'null') return;
+  if (!res.itemStats.value) return;
   const lebronItem = res.itemStats;
 
   const item = await prisma.items.findFirst({
@@ -209,4 +215,9 @@ const updateLebronVal = async (res: LebronSearchResponse) => {
   });
 
   await prisma.$transaction([updateRaw, createRaw]);
+
+  await Promise.all([
+    revalidateItem(item.internal_id, ItemRevalidateTags.root(item.internal_id)),
+    revalidateAppCache([MallHubRevalidateTags.lebron]),
+  ]);
 };

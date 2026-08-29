@@ -233,34 +233,32 @@ export const rawToItemData = (raw: any, options: RawToItemOptions = {}): ItemDat
     item.itemFlags = result.flags;
   }
 
-  // ncValue logic
+  // ncValue logic — Lebron only until itemdb NC values are re-enabled.
+  // TODO: restore `itemdb` / `best` fallback via NC_VALUES_TYPE.
   if (item.isNC && item.status === 'active' && NC_VALUES_TYPE) {
-    const ncType = NC_VALUES_TYPE;
-
-    if (NC_VALUES_TYPE === 'lebron' || NC_VALUES_TYPE === 'best') {
-      item.ncValue =
-        result.owlsValue && result.owlsValue !== 'null'
-          ? {
-              minValue: result.owlsValueMin,
-              maxValue: result.owlsValueMin,
-              range: result.owlsValue,
-              addedAt: result.owlsPriced.toJSON(),
-              source: 'lebron',
-            }
-          : null;
-    }
-
-    if (ncType === 'itemdb' || (ncType === 'best' && !item.ncValue)) {
-      item.ncValue = result.valueRange
+    item.ncValue =
+      result.owlsValue && result.owlsValue !== 'null'
         ? {
-            minValue: result.minValue,
-            maxValue: result.maxValue,
-            range: result.minValue >= 30 ? '+30' : result.valueRange,
-            addedAt: result.ncValueAddedAt.toJSON(),
-            source: 'itemdb',
+            minValue: result.owlsValueMin,
+            maxValue: result.owlsValueMin,
+            range: result.owlsValue,
+            addedAt: result.owlsPriced.toJSON(),
+            source: 'lebron',
           }
         : null;
-    }
+
+    // const ncType = NC_VALUES_TYPE;
+    // if (ncType === 'itemdb' || (ncType === 'best' && !item.ncValue)) {
+    //   item.ncValue = result.valueRange
+    //     ? {
+    //         minValue: result.minValue,
+    //         maxValue: result.maxValue,
+    //         range: result.minValue >= 30 ? '+30' : result.valueRange,
+    //         addedAt: result.ncValueAddedAt.toJSON(),
+    //         source: 'itemdb',
+    //       }
+    //     : null;
+    // }
   }
 
   item.findAt = getItemFindAtLinks(item); // does have all the info we need :)

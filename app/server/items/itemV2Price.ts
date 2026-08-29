@@ -55,6 +55,9 @@ function mapItemDbNcValue(raw: RawItemV2Row): NCValue | null {
   };
 }
 
+// TODO: restore itemdb NC values — keep the mapper for a quick re-enable.
+void mapItemDbNcValue;
+
 function isOutdatedPrice(addedAt: unknown): boolean {
   if (!(addedAt instanceof Date) && typeof addedAt !== 'string' && typeof addedAt !== 'number') {
     return false;
@@ -103,6 +106,9 @@ export function mapItemV2Price(raw: RawItemV2Row): ItemPriceField {
  * `pages/api/v1/items/many.ts` / `[id_name]/index.ts`): a trade value is only ever
  * surfaced for `active` items, not just "not no-trade" — a retired/other-status NC
  * item should not show a possibly-stale trade value.
+ *
+ * TODO: restore itemdb / `best` via `NC_VALUES_TYPE` when itemdb NC values are re-enabled.
+ * Until then, always map Lebron (`mapOwlsNcValue`); `"null"` / missing owls rows omit the field.
  */
 export function mapItemV2NcValue(
   raw: RawItemV2Row,
@@ -110,11 +116,13 @@ export function mapItemV2NcValue(
 ): NCValue | undefined {
   if (raw.status !== 'active' || raw.type !== 'nc') return undefined;
 
-  const source = options.ncValuesType ?? process.env.NC_VALUES_TYPE;
-  let value: NCValue | null = null;
-  if (source === 'lebron') value = mapOwlsNcValue(raw);
-  else if (source === 'itemdb') value = mapItemDbNcValue(raw);
-  else if (source === 'best') value = mapOwlsNcValue(raw) ?? mapItemDbNcValue(raw);
+  // const source = options.ncValuesType ?? process.env.NC_VALUES_TYPE;
+  // let value: NCValue | null = null;
+  // if (source === 'lebron') value = mapOwlsNcValue(raw);
+  // else if (source === 'itemdb') value = mapItemDbNcValue(raw);
+  // else if (source === 'best') value = mapOwlsNcValue(raw) ?? mapItemDbNcValue(raw);
+  void options;
+  const value = mapOwlsNcValue(raw);
 
   return value ?? undefined;
 }

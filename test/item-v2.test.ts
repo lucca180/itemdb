@@ -99,6 +99,7 @@ describe('ItemV2 query planning', () => {
   });
 
   test('card intent derives only the joins needed by card fields', () => {
+    expect(NC_VALUE_JOINS).toEqual(['owlsPrice']);
     expect(getItemV2QueryPlan('card').joins).toEqual([...CARD_JOINS]);
   });
 
@@ -272,7 +273,7 @@ describe('ItemV2 mapper', () => {
     });
   });
 
-  test('falls back from OWLS to ItemDB for the best NC value (in ncValue)', () => {
+  test('omits ncValue when Lebron is unset, even if itemdb has a range', () => {
     const item = mapItemV2(
       completeRow({
         type: 'nc',
@@ -289,12 +290,33 @@ describe('ItemV2 mapper', () => {
 
     // No NC Mall entry → no acquisition price for an NC item.
     expect(item.price).toBeNull();
+    // Itemdb NC values are temporarily disabled; `"null"` from Lebron omits ncValue.
+    expect(item).not.toHaveProperty('ncValue');
+  });
+
+  test('uses Lebron even when ncValuesType is itemdb', () => {
+    const item = mapItemV2(
+      completeRow({
+        type: 'nc',
+        ncMallPrice: null,
+        owlsValue: '2-3',
+        owlsValueMin: 2,
+        owlsPricedAt: new Date('2026-03-01T00:00:00.000Z'),
+        ncValueRange: '9-10',
+        ncValueMin: 9,
+        ncValueMax: 10,
+        ncValueAddedAt: new Date('2026-04-01T00:00:00.000Z'),
+      }),
+      'card',
+      { ncValuesType: 'itemdb' }
+    );
+
     expect(item.ncValue).toEqual({
-      minValue: 3,
-      maxValue: 4,
-      range: '3-4',
-      addedAt: '2026-04-01T00:00:00.000Z',
-      source: 'itemdb',
+      minValue: 2,
+      maxValue: 2,
+      range: '2-3',
+      addedAt: '2026-03-01T00:00:00.000Z',
+      source: 'lebron',
     });
   });
 

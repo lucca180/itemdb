@@ -642,7 +642,7 @@ async function loadMallLebronUpdates(): Promise<MallLebronUpdate[] | null> {
   cacheLife('homeFast');
 
   const latest = await prisma.owlsPrice.findMany({
-    where: { isLatest: true },
+    where: { isLatest: true, value: { not: 'null' } },
     select: {
       item_iid: true,
       value: true,

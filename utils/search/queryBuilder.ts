@@ -329,10 +329,13 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   }
 
   if (ncValueFilter.length > 0) {
-    if (ncValueFilter[0] !== '')
-      numberFilters.push(Prisma.sql`temp.owlsValueMin >= ${parseInt(ncValueFilter[0])}`);
-    if (ncValueFilter[1] !== '')
-      numberFilters.push(Prisma.sql`temp.owlsValueMin <= ${parseInt(ncValueFilter[1])}`);
+    const hasMin = ncValueFilter[0] !== '';
+    const hasMax = ncValueFilter[1] !== '';
+    if (hasMin || hasMax) {
+      numberFilters.push(Prisma.sql`(temp.owlsValue IS NOT NULL AND temp.owlsValue <> 'null')`);
+    }
+    if (hasMin) numberFilters.push(Prisma.sql`temp.owlsValueMin >= ${parseInt(ncValueFilter[0])}`);
+    if (hasMax) numberFilters.push(Prisma.sql`temp.owlsValueMin <= ${parseInt(ncValueFilter[1])}`);
   }
 
   if (restockProfit !== '' && !isNaN(Number(restockProfit))) {
@@ -606,7 +609,8 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   if (sortBy === 'name') sortQuery = Prisma.sql`ORDER BY temp.name`;
   else if (sortBy === 'price') sortQuery = Prisma.sql`ORDER BY temp.price`;
   else if (sortBy === 'added') sortQuery = Prisma.sql`ORDER BY temp.addedAt`;
-  else if (sortBy === 'ncValue') sortQuery = Prisma.sql`ORDER BY temp.owlsValueMin`;
+  else if (sortBy === 'ncValue')
+    sortQuery = Prisma.sql`ORDER BY (temp.owlsValue IS NULL OR temp.owlsValue = 'null'), temp.owlsValueMin`;
   else if (sortBy === 'color' && isColorSearch) sortQuery = Prisma.sql`ORDER BY dist`;
   else if (sortBy === 'color')
     sortQuery = Prisma.sql`ORDER BY temp.hsv_h ${

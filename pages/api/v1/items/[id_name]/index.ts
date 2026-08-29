@@ -4,18 +4,18 @@ import { getItemFindAtLinks, isMissingInfo, slugify } from '../../../../../utils
 import prisma from '../../../../../utils/prisma';
 import { Items, Prisma } from '@prisma/generated/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
-import { differenceInCalendarDays } from 'date-fns';
+// import { differenceInCalendarDays } from 'date-fns';
 import { getSaleStats } from './saleStats';
 import { redis_setDataCount } from '@utils/api/redis';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 import type { ItemChangesLog } from '../process';
 import { rawToItemData } from '../many';
-import { getNCValue } from '../../mall/[iid]';
+// import { getNCValue } from '../../mall/[iid]';
 import { UTCDate } from '@date-fns/utc';
 import { LogService } from '@services/ActionLogService';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
-const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE; // 'itemdb' or 'lebron'
+// const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE; // 'itemdb' or 'lebron'
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -235,13 +235,14 @@ export const getItem = async (id_name: number | string, includeFlags = false) =>
     includeFlags: includeFlags,
   });
 
-  if (
-    item.isNC &&
-    item.status === 'active' &&
-    NC_VALUES_TYPE === 'itemdb' &&
-    differenceInCalendarDays(Date.now(), new Date(result.addedAt)) > 3
-  )
-    item.ncValue = await getNCValue(item.internal_id, item.name, 15, false);
+  // TODO: restore itemdb NC value refresh when NC_VALUES_TYPE itemdb is re-enabled.
+  // if (
+  //   item.isNC &&
+  //   item.status === 'active' &&
+  //   NC_VALUES_TYPE === 'itemdb' &&
+  //   differenceInCalendarDays(Date.now(), new Date(result.addedAt)) > 3
+  // )
+  //   item.ncValue = await getNCValue(item.internal_id, item.name, 15, false);
 
   if (!DISABLE_SALE_STATS && item.price.value && item.price.addedAt)
     item.saleStatus = await getSaleStats(item.internal_id, 15, new Date(item.price.addedAt));
