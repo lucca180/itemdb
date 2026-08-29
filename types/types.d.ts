@@ -530,7 +530,10 @@ type ItemEffect = {
   strVal?: string | null;
   text?: string | null;
   speciesTarget?: string | null;
+  /** Display name (Neopet or petpet color). */
   colorTarget?: string | null;
+  /** Canonical id for links: Neopet color id or petpet `map_id`. Set by formatEffect. */
+  colorTargetId?: number | null;
   isChance: boolean;
 };
 

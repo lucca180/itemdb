@@ -6,7 +6,13 @@ import { getItem } from '.';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 import { formatEffect } from '@utils/item/formatEffect';
 import { fetchAllNeopetsColors } from '@utils/pet-colors';
-import { findPetColorId, getSpeciesId } from '../../../../../utils/pet-utils';
+import {
+  buildPetpetCatalogMaps,
+  fetchAllPetpetColors,
+  findPetpetColorMapId,
+  petpetCatalogToNameRecord,
+} from '@utils/petpet-catalog';
+import { findPetColorId, getSpeciesId } from '@utils/pet-utils';
 
 export { formatEffect };
 
@@ -43,7 +49,21 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!item) return res.status(400).json({ error: 'Item not found' });
 
   const { effect } = req.body as { effect: ItemEffect };
-  const colors = await fetchAllNeopetsColors();
+  const [colors, petpetColorEntries] = await Promise.all([
+    fetchAllNeopetsColors(),
+    fetchAllPetpetColors(),
+  ]);
+  const petpetColorMaps = buildPetpetCatalogMaps(petpetColorEntries);
+  const petpetColorNames = petpetCatalogToNameRecord(petpetColorEntries);
+
+  if (effect.type === 'petpetColor' && !effect.colorTarget?.trim()) {
+    return res.status(400).json({ error: 'Petpet color is required' });
+  }
+
+  const colorTarget =
+    effect.type === 'petpetColor'
+      ? findPetpetColorMapId(effect.colorTarget ?? '', petpetColorMaps)
+      : findPetColorId(effect.colorTarget ?? '', colors) || undefined;
 
   const newEffect = await prisma.itemEffect.create({
     data: {
@@ -55,14 +75,14 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       minVal: effect.minVal ? Number(effect.minVal) : undefined,
       maxVal: effect.maxVal ? Number(effect.maxVal) : undefined,
       strVal: effect.strVal,
-      colorTarget: findPetColorId(effect.colorTarget ?? '', colors) || undefined,
+      colorTarget,
       speciesTarget: getSpeciesId(effect.speciesTarget ?? '') || undefined,
       text: effect.text,
     },
   });
 
   await revalidateItem(item.internal_id, ItemRevalidateTags.effects(item.internal_id));
-  return res.status(200).json(formatEffect(newEffect, colors));
+  return res.status(200).json(formatEffect(newEffect, colors, petpetColorNames));
 };
 
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -75,7 +95,21 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const { effect, effect_id } = req.body as { effect: ItemEffect; effect_id: number };
-  const colors = await fetchAllNeopetsColors();
+  const [colors, petpetColorEntries] = await Promise.all([
+    fetchAllNeopetsColors(),
+    fetchAllPetpetColors(),
+  ]);
+  const petpetColorMaps = buildPetpetCatalogMaps(petpetColorEntries);
+  const petpetColorNames = petpetCatalogToNameRecord(petpetColorEntries);
+
+  if (effect.type === 'petpetColor' && !effect.colorTarget?.trim()) {
+    return res.status(400).json({ error: 'Petpet color is required' });
+  }
+
+  const colorTarget =
+    effect.type === 'petpetColor'
+      ? findPetpetColorMapId(effect.colorTarget ?? '', petpetColorMaps)
+      : findPetColorId(effect.colorTarget ?? '', colors) || undefined;
 
   const updated = await prisma.itemEffect.update({
     where: {
@@ -90,7 +124,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
       maxVal: effect.maxVal ? Number(effect.maxVal) : undefined,
       strVal: effect.strVal,
       text: effect.text,
-      colorTarget: findPetColorId(effect.colorTarget ?? '', colors) || undefined,
+      colorTarget,
       speciesTarget: getSpeciesId(effect.speciesTarget ?? '') || undefined,
     },
   });
@@ -101,7 +135,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     await revalidateItem(item.internal_id, ItemRevalidateTags.effects(item.internal_id));
   }
 
-  return res.status(200).json(formatEffect(updated, colors));
+  return res.status(200).json(formatEffect(updated, colors, petpetColorNames));
 };
 
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -145,8 +179,12 @@ export const getItemEffects = async (item_id_name: ItemData | string | number) =
     },
   });
 
-  const colors = await fetchAllNeopetsColors();
-  const effects = effectsRaw.map((effect) => formatEffect(effect, colors));
+  const [colors, petpetColorEntries] = await Promise.all([
+    fetchAllNeopetsColors(),
+    fetchAllPetpetColors(),
+  ]);
+  const petpetColorNames = petpetCatalogToNameRecord(petpetColorEntries);
+  const effects = effectsRaw.map((effect) => formatEffect(effect, colors, petpetColorNames));
   const isFood = item.useTypes.canEat === 'true';
 
   // some custom effects

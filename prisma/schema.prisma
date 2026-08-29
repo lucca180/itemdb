@@ -823,6 +823,31 @@ model WrappedSettings {
   @@unique([user_id, year])
 }
 
+// Catalog of petpet species (replaces hardcoded petpetSpecies map — phase 1 seed)
+model PetpetSpecies {
+  internal_id Int      @id @default(autoincrement())
+  neo_id      Int?     @unique // Official Neopets id; null = itemdb-only / custom
+  map_id      Int      @unique // Canonical id: PetpetColors.petpet_id, search params
+  name        String
+  addedAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
+// Catalog of petpet colors (replaces hardcoded petpetColors map — phase 1 seed)
+// Named *Catalog to avoid clashing with the PetpetColors item↔species↔color join table.
+model PetpetColorCatalog {
+  internal_id Int      @id @default(autoincrement())
+  neo_id      Int?     @unique // Official Neopets id; null = itemdb-only / custom
+  map_id      Int      @unique // Canonical id: PetpetColors.color_id, ItemEffect.colorTarget, search params
+  name        String
+  addedAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
 model PetpetColors {
   internal_id Int @id @default(autoincrement())
 

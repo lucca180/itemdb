@@ -15,13 +15,13 @@ import {
 import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
 import { browseColorTitle, browseSpeciesTitle, indefiniteArticle } from '@utils/petColorCopy';
+import { getSpeciesFromString, petColorSlug } from '@utils/pet-utils';
 import {
-  getPetpetColorId,
-  getPetpetSpeciesFromString,
-  getPetpetSpeciesId,
-  getSpeciesFromString,
-  petColorSlug,
-} from '@utils/pet-utils';
+  getPetpetMapIdByName,
+  getPetpetSpeciesNameFromItemName,
+  type PetpetCatalogMaps,
+} from '@utils/petpet-catalog';
+import { getPetpetColorMaps, getPetpetSpeciesMaps } from '@app/server/petpetCatalog';
 import {
   STYLES_BASE_PATH,
   stylesBrowseHref,
@@ -46,18 +46,23 @@ export default function RelatedLinksCard(props: Props) {
 }
 
 async function RelatedLinksCardContent({ item }: Props) {
-  const [t, itemEffects, lists, petpetData, petStyle] = await Promise.all([
-    getTranslations(),
-    loadItemEffects(item.internal_id),
-    getOfficialItemLists(item.internal_id, shouldShowTradeLists(item, await getCachedNow())),
-    loadPetpetData(item.internal_id),
-    loadPetStyleForItem(item.internal_id),
-  ]);
+  const [t, itemEffects, lists, petpetData, petStyle, petpetSpeciesMaps, petpetColorMaps] =
+    await Promise.all([
+      getTranslations(),
+      loadItemEffects(item.internal_id),
+      getOfficialItemLists(item.internal_id, shouldShowTradeLists(item, await getCachedNow())),
+      loadPetpetData(item.internal_id),
+      loadPetStyleForItem(item.internal_id),
+      getPetpetSpeciesMaps(),
+      getPetpetColorMaps(),
+    ]);
   const relatedLinks = buildRelatedLinks(item, t, {
     itemEffects,
     lists,
     petpetData: petpetData || undefined,
     petStyle,
+    petpetSpeciesMaps,
+    petpetColorMaps,
   });
   const color = item.color.rgb;
 
@@ -172,12 +177,14 @@ type RelatedOthers = {
   lists?: UserList[];
   petpetData?: ItemPetpetData;
   petStyle?: PetStyleLinkData | null;
+  petpetSpeciesMaps: PetpetCatalogMaps;
+  petpetColorMaps: PetpetCatalogMaps;
 };
 
 type Translate = Awaited<ReturnType<typeof getTranslations>>;
 
 function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
-  const { itemEffects, lists, petpetData, petStyle } = rest;
+  const { itemEffects, lists, petpetData, petStyle, petpetSpeciesMaps, petpetColorMaps } = rest;
   const rainbowLinks: RelatedLinkProps[] = [];
   const outfitLinks: RelatedLinkProps[] = [];
   const petStyleLinks: RelatedLinkProps[] = [];
@@ -378,10 +385,15 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     }
   });
 
+  const petpetColorEffect = itemEffects?.find((effect) => effect.type === 'petpetColor');
+  const colorId =
+    petpetColorEffect?.colorTargetId ??
+    getPetpetMapIdByName(petpetColorEffect?.colorTarget || '', petpetColorMaps) ??
+    petpetData?.color.id;
   const petpetColor =
-    itemEffects?.find((effect) => effect.type === 'petpetColor')?.colorTarget ||
-    petpetData?.color.name;
-  const colorId = getPetpetColorId(petpetColor || '') || petpetData?.color.id;
+    petpetColorEffect?.colorTarget ||
+    petpetData?.color.name ||
+    (colorId != null ? `#${colorId}` : null);
 
   if (colorId && petpetColor) {
     petpetLinks.push({
@@ -395,17 +407,17 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     });
   }
 
-  const petpetSpecies = getPetpetSpeciesFromString(item.name);
-  const specieId = getPetpetSpeciesId(petpetSpecies ?? '');
+  const petpetSpeciesName = getPetpetSpeciesNameFromItemName(item.name, petpetSpeciesMaps);
+  const specieId = getPetpetMapIdByName(petpetSpeciesName ?? '', petpetSpeciesMaps);
 
-  if (petpetSpecies && specieId) {
+  if (petpetSpeciesName && specieId) {
     petpetLinks.push({
       href: `/search?s=&petpetSpecies[]=${specieId}`,
       imageUrl: 'https://images.neopets.com/themes/h5/basic/images/v3/adoptpet-icon.svg',
-      alt: petpetSpecies,
+      alt: petpetSpeciesName,
       trackEvent: 'related-link',
       trackEventLabel: 'petpet-species',
-      children: t('ItemPage.all-x-petpets', { 0: petpetSpecies }),
+      children: t('ItemPage.all-x-petpets', { 0: petpetSpeciesName }),
     });
   }
 

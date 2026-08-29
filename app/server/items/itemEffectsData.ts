@@ -5,6 +5,8 @@ import { ItemService } from '@services/ItemService';
 import type { ItemEffect, ItemV2For } from '@types';
 import prisma from '@utils/prisma';
 import { getAllNeopetsColors } from '@app/server/petColors';
+import { getAllPetpetColors } from '@app/server/petpetCatalog';
+import { petpetCatalogToNameRecord } from '@utils/petpet-catalog';
 
 export type ItemWithEffectsCard = ItemV2For<'card'> & { effects: ItemEffect[] };
 
@@ -39,11 +41,14 @@ export async function getItemsWithEffectsPage(options: {
 
   const iids = itemIds.map((item) => item.internal_id);
 
-  const [effectsRaw, items, colors] = await Promise.all([
+  const [effectsRaw, items, colors, petpetColorEntries] = await Promise.all([
     prisma.itemEffect.findMany({ where: { item_iid: { in: iids } } }),
     ItemService.getManyItems({ type: 'id', data: iids }, { intent: 'card', limit }),
     getAllNeopetsColors(),
+    getAllPetpetColors(),
   ]);
+
+  const petpetColorNames = petpetCatalogToNameRecord(petpetColorEntries);
 
   return Object.values(items)
     .map((item) => ({
@@ -51,7 +56,7 @@ export async function getItemsWithEffectsPage(options: {
       effects: effectsRaw
         .filter((effect) => effect.item_iid === item.internal_id)
         .sort((a, b) => b.type.localeCompare(a.type))
-        .map((effect) => formatEffect(effect, colors)),
+        .map((effect) => formatEffect(effect, colors, petpetColorNames)),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

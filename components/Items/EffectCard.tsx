@@ -5,7 +5,7 @@ import { ItemEffect } from '@types';
 import { useLocale, useTranslations } from 'next-intl';
 import { getDiseaseTranslation } from '@utils/utils';
 import NextImage from 'next/image';
-import { getPetpetColorId, petColorSlug } from '@utils/pet-utils';
+import { petColorSlug } from '@utils/pet-utils';
 import Markdown from '@components/Utils/Markdown';
 import { EffectTypes } from '@components/Items/effectTypes';
 
@@ -74,6 +74,7 @@ export const EffectText = (props: EffectTextProps) => {
     maxVal,
     speciesTarget,
     colorTarget,
+    colorTargetId,
   } = props.effect;
   const t = useTranslations();
   const locale = useLocale() as 'en' | 'pt';
@@ -181,19 +182,15 @@ export const EffectText = (props: EffectTextProps) => {
           {t.rich('Effects.effects-petpetColor', {
             b: (chunk) => <b>{chunk}</b>,
             random: Boolean(isChance).toString(),
-            Target1: () => (
-              <>
-                {colorTarget && (
-                  <Link
-                    href={`/search?s=&petpetColor[]=${getPetpetColorId(
-                      colorTarget
-                    )}&p2Paintable=true`}
-                  >
-                    {colorTarget}
-                  </Link>
-                )}
-              </>
-            ),
+            Target1: () => {
+              if (colorTargetId == null) return colorTarget;
+              const label = colorTarget || `#${colorTargetId}`;
+              return (
+                <Link href={`/search?s=&petpetColor[]=${colorTargetId}&p2Paintable=true`}>
+                  {label}
+                </Link>
+              );
+            },
           })}
         </>
       )}

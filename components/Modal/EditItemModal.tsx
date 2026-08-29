@@ -1002,8 +1002,17 @@ export const EffectsTab = (props: EffectsTabProps) => {
   const [isLoading, setLoading] = useState<boolean>(false);
 
   const saveChanges = async () => {
+    const missingPetpetColor = effects.some(
+      (effect) => effect.type === 'petpetColor' && !effect.colorTarget?.trim()
+    );
+    if (missingPetpetColor) {
+      setError('Petpet color is required');
+      return;
+    }
+
     try {
       setLoading(true);
+      setError('');
       const create = effects.filter((effect) => !effect.internal_id);
       const update = effects.filter((effect) => effect.internal_id && effect.internal_id > 0);
 
@@ -1029,8 +1038,10 @@ export const EffectsTab = (props: EffectsTabProps) => {
     } catch (e: any) {
       console.error(e);
       setError(
-        'An error occurred while saving the effects. Please REFRESH the page and try later.'
+        e?.response?.data?.error ||
+          'An error occurred while saving the effects. Please REFRESH the page and try later.'
       );
+      setLoading(false);
     }
   };
 
@@ -1312,8 +1323,14 @@ export const PetpetTab = (props: PetpetTabProps) => {
   };
 
   const saveChanges = async () => {
+    if (!petpetInfo.species.trim() || !petpetInfo.color.trim()) {
+      setError('Species and color are required');
+      return;
+    }
+
     try {
       setLoading(true);
+      setError('');
       await axios.post(`/api/v1/items/${item.internal_id}/petpet`, {
         ...petpetInfo,
         item_iid: item.internal_id,
@@ -1323,8 +1340,10 @@ export const PetpetTab = (props: PetpetTabProps) => {
     } catch (e: any) {
       console.error(e);
       setError(
-        'An error occurred while saving the petpet info. Please REFRESH the page and try later.'
+        e?.response?.data?.error ||
+          'An error occurred while saving the petpet info. Please REFRESH the page and try later.'
       );
+      setLoading(false);
     }
   };
 
@@ -1400,7 +1419,13 @@ export const PetpetTab = (props: PetpetTabProps) => {
         </NativeSelect.Root>
       </VStack>
       {unsavedChanges && (
-        <Button onClick={saveChanges} colorPalette="green" variant={'outline'} loading={isLoading}>
+        <Button
+          onClick={saveChanges}
+          colorPalette="green"
+          variant={'outline'}
+          loading={isLoading}
+          disabled={!petpetInfo.species.trim() || !petpetInfo.color.trim()}
+        >
           Save Petpet
         </Button>
       )}

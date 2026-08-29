@@ -3,8 +3,14 @@ import { ItemData, ItemPetpetData } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getManyItems } from '../many';
 import { getItem } from '.';
-import { petpetColors, petpetSpecies } from '../../../../../utils/pet-utils';
-import { CheckAuth } from '../../../../../utils/googleCloud';
+import {
+  fetchPetpetColorMaps,
+  fetchPetpetSpeciesMaps,
+  findPetpetColorMapId,
+  findPetpetSpeciesMapId,
+  getPetpetNameByMapId,
+} from '@utils/petpet-catalog';
+import { CheckAuth } from '@utils/googleCloud';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -55,8 +61,17 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   if (typeof item_iid !== 'number' || typeof color !== 'string' || typeof species !== 'string')
     return res.status(400).json({ error: 'Invalid body' });
 
-  const speciesId = Number(findSpecies(species));
-  const colorId = Number(findColor(color));
+  if (!species.trim() || !color.trim())
+    return res.status(400).json({ error: 'Species and color are required' });
+
+  const [speciesMaps, colorMaps] = await Promise.all([
+    fetchPetpetSpeciesMaps(),
+    fetchPetpetColorMaps(),
+  ]);
+  const speciesId = findPetpetSpeciesMapId(species, speciesMaps);
+  const colorId = findPetpetColorMapId(color, colorMaps);
+
+  if (speciesId == null) return res.status(400).json({ error: 'Unknown petpet species' });
 
   const petpet = await prisma.petpetColors.upsert({
     create: {
@@ -118,13 +133,18 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
 
   const originalPetpet = originalPetpetData[0];
 
+  const [speciesMaps, colorMaps] = await Promise.all([
+    fetchPetpetSpeciesMaps(),
+    fetchPetpetColorMaps(),
+  ]);
+
   const species = {
-    name: petpetSpecies[originalPetpet.petpet_id],
+    name: getPetpetNameByMapId(originalPetpet.petpet_id, speciesMaps) ?? '',
     id: originalPetpet.petpet_id,
   };
 
   const color = {
-    name: petpetColors[originalPetpet.color_id],
+    name: getPetpetNameByMapId(originalPetpet.color_id, colorMaps) ?? '',
     id: originalPetpet.color_id,
   };
 
@@ -278,35 +298,4 @@ const getItemPrice = (item: ItemData) => item.price.value || Infinity;
 
 const getPriceSum = (items: ItemData[]) => {
   return items.reduce((acc, item) => acc + getItemPrice(item), 0);
-};
-
-const findSpecies = (itemName: string) => {
-  if (itemName.includes('Ultra Pinceron')) return '297';
-
-  for (const [id, species] of Object.entries(petpetSpecies)) {
-    const name = itemName.toLowerCase().split(' ');
-    const speciesArr = species.toLowerCase().split(' ');
-
-    if (speciesArr.every((word) => name.includes(word))) {
-      return id;
-    }
-  }
-
-  return null;
-};
-
-const findColor = (itemName: string) => {
-  if (itemName.includes('Spoppy III')) return '999999';
-  if (itemName.includes('Spoppy II')) return '99999';
-  if (itemName.includes('Glowing')) return '17';
-  for (const [id, color] of Object.entries(petpetColors)) {
-    const name = itemName.toLowerCase().split(' ');
-    const colorArr = color.toLowerCase().split(' ');
-
-    if (colorArr.every((word) => name.includes(word))) {
-      return id;
-    }
-  }
-
-  return '9999';
 };

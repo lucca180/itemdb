@@ -1,22 +1,23 @@
 import type { ItemEffect } from '@types';
 import { ItemEffect as PrismaItemEffect } from '@prisma/generated/client';
-import {
-  allSpecies,
-  findPetColorName,
-  petpetColors,
-  type PetColorsCatalog,
-} from '@utils/pet-utils';
+import { allSpecies, findPetColorName, type PetColorsCatalog } from '@utils/pet-utils';
 
 /** Maps a Prisma `ItemEffect` row to the public `ItemEffect` shape. */
 export const formatEffect = (
   effect: PrismaItemEffect,
-  colors: PetColorsCatalog = {}
+  colors: PetColorsCatalog = {},
+  /** map_id → name from PetpetColorCatalog */
+  petpetColorNames: Record<string, string> = {}
 ): ItemEffect => {
-  let colorTarget = null;
+  let colorTarget: string | null = null;
+  let colorTargetId: number | null = null;
+
   if (effect.colorTarget && effect.type === 'colorSpecies') {
+    colorTargetId = effect.colorTarget;
     colorTarget = findPetColorName(effect.colorTarget, colors) ?? null;
   } else if (effect.colorTarget && effect.type === 'petpetColor') {
-    colorTarget = petpetColors[`${effect.colorTarget}`];
+    colorTargetId = effect.colorTarget;
+    colorTarget = petpetColorNames[`${effect.colorTarget}`] ?? null;
   }
 
   const obj: ItemEffect = {
@@ -28,7 +29,8 @@ export const formatEffect = (
     minVal: effect.minVal,
     maxVal: effect.maxVal,
     strVal: effect.strVal,
-    colorTarget: colorTarget,
+    colorTarget,
+    colorTargetId,
     speciesTarget: effect.speciesTarget ? allSpecies[`${effect.speciesTarget}`] : null,
     text: effect.text,
   };

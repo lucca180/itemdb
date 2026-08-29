@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AutoComplete,
   AutoCompleteInput,
@@ -6,7 +6,8 @@ import {
   AutoCompleteList,
   AutoCompleteTag,
 } from '@choc-ui/chakra-autocomplete';
-import { allSpecies, petpetSpecies } from '../../utils/pet-utils';
+import axios from 'axios';
+import { allSpecies } from '@utils/pet-utils';
 
 type Props = {
   value?: string[] | string;
@@ -15,12 +16,47 @@ type Props = {
   placeHolder?: string;
   isMultiple?: boolean;
   isPetpet?: boolean;
+  /** Preloaded petpet species names; when omitted with isPetpet, loaded from /api/petpet-catalog */
+  species?: string[];
 };
 
 const SpeciesSelect = (props: Props) => {
-  const { value: valueProps, onChange, disabled, placeHolder, isMultiple, isPetpet } = props;
+  const {
+    value: valueProps,
+    onChange,
+    disabled,
+    placeHolder,
+    isMultiple,
+    isPetpet,
+    species,
+  } = props;
 
-  const data = isPetpet ? Object.values(petpetSpecies) : Object.values(allSpecies);
+  const [fetchedSpecies, setFetchedSpecies] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!isPetpet || species) return;
+
+    let cancelled = false;
+    axios
+      .get<{ species?: Record<string, string> }>('/api/petpet-catalog')
+      .then((res) => {
+        if (cancelled || !res.data.species) return;
+        setFetchedSpecies(Object.values(res.data.species).sort());
+      })
+      .catch(() => {
+        if (!cancelled) setFetchedSpecies([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPetpet, species]);
+
+  const data = useMemo(() => {
+    if (!isPetpet) return Object.values(allSpecies);
+    if (species) return [...species].sort();
+    return fetchedSpecies;
+  }, [isPetpet, species, fetchedSpecies]);
 
   return (
     <AutoComplete
