@@ -163,6 +163,11 @@ const updateLebronVal = async (res: LebronSearchResponse) => {
   if (!res.itemStats.value) return;
   const lebronItem = res.itemStats;
 
+  const lastUpdated = lebronItem.lastUpdated;
+  if (lastUpdated == null || lastUpdated === 'unknown') return;
+  const pricedAt = new Date(lastUpdated);
+  if (Number.isNaN(pricedAt.getTime())) return;
+
   const item = await prisma.items.findFirst({
     where: {
       name: lebronItem.name,
@@ -185,7 +190,7 @@ const updateLebronVal = async (res: LebronSearchResponse) => {
   if (
     oldVal &&
     oldVal.value === lebronItem.value &&
-    oldVal.pricedAt.getTime() === lebronItem.lastUpdated
+    oldVal.pricedAt.getTime() === pricedAt.getTime()
   )
     return;
 
@@ -194,7 +199,7 @@ const updateLebronVal = async (res: LebronSearchResponse) => {
     item_iid: item.internal_id,
     addedAt: new Date(),
     isLatest: true,
-    pricedAt: new Date(lebronItem.lastUpdated),
+    pricedAt,
     valueMin: Number(lebronItem.value.split('-')[0]) || 0,
     isVolatile: lebronItem.isVolatile,
     source: 'lebron',

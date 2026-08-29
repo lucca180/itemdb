@@ -701,7 +701,8 @@ export type LebronSearchResponse = {
   itemStats: {
     name: string;
     value: string;
-    lastUpdated: number;
+    /** Epoch ms when known; Lebron may send `"unknown"` for unset values. */
+    lastUpdated: number | string;
     isVolatile: boolean;
   };
   reports: LebronTrade[];
