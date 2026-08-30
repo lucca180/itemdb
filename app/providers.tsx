@@ -8,25 +8,23 @@ import type { ReactNode } from 'react';
 import { system } from '@utils/theme/theme';
 import { AuthProvider } from '@utils/auth';
 import { installProofInterceptor } from '@utils/api/proofInterceptor';
-import type { PreloadedAuthState } from '@app/utils/preloadData';
 import { ProgressProvider } from '@bprogress/next/app';
 
 type ProvidersProps = {
   children: ReactNode;
-  initialAuthState?: PreloadedAuthState;
 };
 
 if (typeof window !== 'undefined') {
   installProofInterceptor();
 }
 
-export function Providers({ children, initialAuthState }: ProvidersProps) {
+export function Providers({ children }: ProvidersProps) {
   return (
     <EmotionRegistry>
       <ChakraProvider value={system}>
         <Provider>
           <ProgressProvider color="#718096">
-            <AuthProvider initialUser={initialAuthState?.user} clientAuthSync={false}>
+            <AuthProvider clientAuthSync={false}>
               {children}
               <Toaster />
             </AuthProvider>
