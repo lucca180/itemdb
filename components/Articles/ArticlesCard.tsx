@@ -1,12 +1,34 @@
+'use client';
+
 import { Flex, Heading, Text, Link, Card, Stack, HStack, Badge } from '@chakra-ui/react';
-import { WP_Article } from '../../types';
+import { useFormatter } from 'next-intl';
+import type { WP_Article } from '@types';
 import MainLink from '@components/Utils/MainLink';
-import Image from '../Utils/Image';
+import Image from '@components/Utils/Image';
+import { toIso8601Utc } from '@utils/isoDate';
 
 type Props = {
   article: WP_Article;
   vertical?: boolean;
 };
+
+function ArticlePublishTime({ date }: { date: string }) {
+  const formatter = useFormatter();
+  const publishedIso = toIso8601Utc(date);
+  if (!publishedIso) return null;
+
+  return (
+    <Text fontSize="xs" color="whiteAlpha.700">
+      <time dateTime={publishedIso}>
+        {formatter.dateTime(new Date(publishedIso), {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })}
+      </time>
+    </Text>
+  );
+}
 
 export const ArticleCard = (props: Props) => {
   const { article, vertical } = props;
@@ -48,6 +70,7 @@ export const ArticleCard = (props: Props) => {
                 <Text fontSize="xs" lineClamp={3}>
                   {article.excerpt}
                 </Text>
+                <ArticlePublishTime date={article.date} />
               </Stack>
             </Card.Body>
           </Card.Root>
@@ -87,6 +110,7 @@ export const ArticleCard = (props: Props) => {
             <Heading size="md">{article.title}</Heading>
           </HStack>
           <Text fontSize="xs">{article.excerpt}</Text>
+          <ArticlePublishTime date={article.date} />
         </Flex>
       </MainLink>
     </Link>

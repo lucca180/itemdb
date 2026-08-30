@@ -2,6 +2,7 @@ import { Alert, Box, Code, Flex, Heading, Link, List, Table, Text } from '@chakr
 import { ArticleCard } from '@components/Articles/ArticlesCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
 import HeaderCard from '@components/Card/HeaderCard';
+import { toIso8601Utc } from '@utils/isoDate';
 import { processShortcodes } from '@utils/shortcodes';
 import Color from 'color';
 import parse, {
@@ -159,6 +160,8 @@ export function ArticlePageContent({
   labels,
 }: ArticlePageContentProps) {
   const color = Color(post.palette?.vibrant.hex ?? '#05B7E8');
+  const publishedAt = toIso8601Utc(post.date);
+  const updatedAt = toIso8601Utc(post.updated);
 
   return (
     <>
@@ -190,7 +193,9 @@ export function ArticlePageContent({
           {post.excerpt}
         </Text>
         <Text fontSize="xs" mt={1} textAlign="center">
-          {labels.postedAt} - {labels.updatedAt}
+          <time dateTime={publishedAt}>{labels.postedAt}</time>
+          {' - '}
+          <time dateTime={updatedAt}>{labels.updatedAt}</time>
         </Text>
       </HeaderCard>
       <Flex

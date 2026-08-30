@@ -1,4 +1,5 @@
 import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
+import { getCachedNow } from '@utils/getCachedNow';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import type { WP_Article } from '@types';
 
@@ -10,8 +11,11 @@ export type ArticlePageLabels = {
 };
 
 export async function buildArticlePageProps(post: WP_Article): Promise<ArticlePageLabels> {
-  const t = await getTranslations();
-  const formatter = await getFormatter();
+  const [t, formatter, now] = await Promise.all([
+    getTranslations(),
+    getFormatter(),
+    getCachedNow(),
+  ]);
 
   return {
     breadcrumbList: [
@@ -27,7 +31,7 @@ export async function buildArticlePageProps(post: WP_Article): Promise<ArticlePa
       }),
     }),
     updatedAt: t('Articles.updated-x', {
-      x: formatter.relativeTime(new Date(post.updated)),
+      x: formatter.relativeTime(new Date(post.updated), new Date(now)),
     }),
     recommendedArticles: t('Articles.recommended-articles'),
   };
