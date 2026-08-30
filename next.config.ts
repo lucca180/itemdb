@@ -6,6 +6,12 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
 
+/** Shared `'use cache'` store across PM2 workers. Off in local/dev and until ops sets the flag. */
+const redisCacheHandlerEnabled =
+  process.env.NEXT_REDIS_CACHE_HANDLER === '1' &&
+  process.env.NODE_ENV !== 'development' &&
+  Boolean(process.env.REDIS_HOST && process.env.REDIS_PASSWORD);
+
 const nextConfig: NextConfig = {
   typescript: {
     // Typecheck runs separately via `yarn typecheck:fast` (TS 7) during deploy.
@@ -26,7 +32,15 @@ const nextConfig: NextConfig = {
   generateBuildId: async () => {
     return process.env.BUILD_ID || 'dev';
   },
+  // Keep in-process ISR/fetch LRU (no custom cacheHandler). Redis only backs `'use cache'`.
   cacheMaxMemorySize: 256 * 1024 * 1024,
+  ...(redisCacheHandlerEnabled
+    ? {
+        cacheHandlers: {
+          default: require.resolve('./cache/components-handler.cjs'),
+        },
+      }
+    : {}),
   compress: false, // cloudflare does it for us
   enablePrerenderSourceMaps: false,
   productionBrowserSourceMaps: false,

@@ -4,6 +4,14 @@ Reference for `'use cache'` functions (persistent Data Cache) and per-request ca
 
 Global config: `cacheComponents: true` in [`next.config.ts`](../next.config.ts). Tags and scopes in [`utils/appCacheTags.ts`](../utils/appCacheTags.ts). Tag helper in [`utils/applyItemCacheTags.ts`](../utils/applyItemCacheTags.ts).
 
+## Shared Data Cache (Redis)
+
+By default, `'use cache'` lives in the Next.js in-process Data Cache (not shared across PM2 workers).
+
+When `NEXT_REDIS_CACHE_HANDLER=1` in production with `REDIS_HOST` / `REDIS_PASSWORD` set, [`next.config.ts`](../next.config.ts) points `cacheHandlers.default` at [`cache/components-handler.cjs`](../cache/components-handler.cjs) (`@trieb.work/nextjs-turbo-redis-cache` on Redis **DB 2**, key prefix `itemdb:cc:`). Tag revalidation still goes through [`app/api/internal/revalidate/route.ts`](../app/api/internal/revalidate/route.ts) (`revalidateTag`). The singular `cacheHandler` (ISR / fetch / Pages) is **not** customized — those stay on Next defaults.
+
+Server requirement: Redis `notify-keyspace-events Exe`. Kill switch: unset the flag and reload PM2.
+
 ## `cacheLife` presets
 
 | Preset | stale | revalidate | expire | Typical use |
