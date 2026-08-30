@@ -39,6 +39,7 @@ import {
   type GetUserListsOptions,
 } from '@services/list/userListsQuery';
 import { fetchListItemsV2, type FetchListItemsV2Result } from '@services/list/listItemsV2';
+import { adminListSeoWriteData, getListSeo } from '@services/list/listSeo';
 
 export { rawToList, rawToListItems } from '@services/list/listMappers';
 export type { PutListItemInput, DynamicItemChanges };
@@ -53,6 +54,8 @@ export class ListService {
   static hideItems = hideItems;
   static removeItems = removeItems;
   static applyDynamicItemChanges = applyDynamicItemChanges;
+  static getListSeo = getListSeo;
+  static adminListSeoWriteData = adminListSeoWriteData;
 
   static init() {
     return ListService.initUser(null);

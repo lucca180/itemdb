@@ -8,6 +8,7 @@ export const listCategoriesData: {
     color: string;
     description: string;
     featured?: string[];
+    seoTitle?: string;
   };
 } = {
   dailies: {
@@ -48,7 +49,8 @@ export const listCategoriesData: {
     url: 'https://images.neopets.com/neopies/y25/images/nominees/Surprise_2sytnvcmnj/04.png',
     color: '#F3C242',
     description:
-      'Explore prize lists from current and past Quest Log prizes! Stay updated on the latest Daily Quests Prizes, find the best Weekly Prizes and make Neopoints easily! ',
+      'Explore prize lists from current and past Quest Log prizes! Stay updated on the latest Daily Quests Prizes, find the best Weekly Prizes and make Neopoints easily!',
+    seoTitle: 'Quest Log Prizes: Daily, Weekly and Premium | itemdb',
     featured: ['weekly-quest-prize', 'daily-quest-prize', 'premium-daily-quest-prizes'],
   },
   stamps: {

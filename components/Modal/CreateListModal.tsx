@@ -17,7 +17,7 @@ import {
   Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ColorType, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
@@ -31,7 +31,13 @@ export type CreateListModalProps = {
   refresh?: () => void;
 };
 
-type EditableList = Partial<Omit<UserList, 'officialTag'> & { officialTag: string | string[] }>;
+type EditableList = Partial<
+  Omit<UserList, 'officialTag'> & {
+    officialTag: string | string[];
+    seoTitle: string;
+    seoDescription: string;
+  }
+>;
 
 const defaultList: Partial<UserList> = {
   name: '',
@@ -78,6 +84,25 @@ const CreateListModal = (props: CreateListModalProps) => {
   const { revalidate } = useLists();
   const [colorPalette, setColorPalette] = useState<string[]>(defaultColors);
 
+  useEffect(() => {
+    if (!isOpen || !user?.isAdmin || !props.list?.internal_id) return;
+
+    const username = props.list.owner?.username ?? user.username;
+    if (!username) return;
+
+    axios
+      .get(`/api/v1/lists/${username}/${props.list.internal_id}`)
+      .then((res) => {
+        if (!res.data) return;
+        setList((prev) => ({
+          ...prev,
+          seoTitle: res.data.seoTitle ?? '',
+          seoDescription: res.data.seoDescription ?? '',
+        }));
+      })
+      .catch(() => undefined);
+  }, [isOpen, user?.isAdmin, user?.username, props.list?.internal_id, props.list?.owner?.username]);
+
   const saveChanges = async () => {
     setLoading(true);
     try {
@@ -109,6 +134,12 @@ const CreateListModal = (props: CreateListModalProps) => {
 
         highlight: list.highlight,
         highlightText: list.highlightText,
+        ...(user.isAdmin
+          ? {
+              seoTitle: list.seoTitle ?? '',
+              seoDescription: list.seoDescription ?? '',
+            }
+          : {}),
       };
 
       const username = list.owner?.username ?? user.username;
@@ -280,6 +311,28 @@ const CreateListModal = (props: CreateListModalProps) => {
                           )}
                         </>
                       )}
+                      <Field.Root>
+                        <Field.Label color="gray.300">{t('Lists.seo-title')}</Field.Label>
+                        <Input
+                          variant="subtle"
+                          name="seoTitle"
+                          onChange={handleChange}
+                          value={list.seoTitle ?? ''}
+                          maxLength={255}
+                        />
+                        <Field.HelperText fontSize={'xs'}>
+                          {t('Lists.seo-title-helper')}
+                        </Field.HelperText>
+                      </Field.Root>
+                      <Field.Root>
+                        <Field.Label color="gray.300">{t('Lists.seo-description')}</Field.Label>
+                        <Textarea
+                          variant="subtle"
+                          name="seoDescription"
+                          onChange={handleChange}
+                          value={list.seoDescription ?? ''}
+                        />
+                      </Field.Root>
                       <Separator />
                     </Stack>
                   )}

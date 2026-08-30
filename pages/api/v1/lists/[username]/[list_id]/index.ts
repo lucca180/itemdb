@@ -68,6 +68,11 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       isOfficial: isOfficial,
     });
 
+    if (list && listService.user?.isAdmin) {
+      const seo = await ListService.getListSeo(list.internal_id);
+      return res.status(200).json({ ...list, ...seo });
+    }
+
     return res.status(200).json(list);
   } catch (e: any) {
     console.error(e);
@@ -254,6 +259,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           slug: slug,
           highlight: highlight?.trim() ?? undefined,
           highlightText: highlightText?.trim() ?? undefined,
+          ...ListService.adminListSeoWriteData(req.body, user.isAdmin),
         },
       });
     }

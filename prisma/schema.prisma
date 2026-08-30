@@ -511,6 +511,10 @@ model UserList {
 
   highlight       String?
   highlightText   String?          @db.Text
+
+  seo_title       String?          @db.VarChar(255)
+  seo_description String?          @db.Text
+
   avatarSolutions AvatarSolution[]
 
   @@unique([slug, user_id])

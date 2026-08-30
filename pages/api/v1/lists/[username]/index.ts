@@ -120,6 +120,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         highlight: highlight?.trim() ?? undefined,
         highlightText: highlightText?.trim() ?? undefined,
         visibleItemCount: 0,
+        ...ListService.adminListSeoWriteData(req.body, user.isAdmin),
       },
     });
 

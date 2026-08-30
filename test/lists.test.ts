@@ -81,6 +81,8 @@ describe.concurrent('List Service tests', () => {
 
       expect(list).not.toBeNull();
       expect(list?.itemCount).toBe(testList.listCount);
+      expect(list).not.toHaveProperty('seoTitle');
+      expect(list).not.toHaveProperty('seoDescription');
     });
 
     test('Get List Item Data', async () => {

@@ -24,14 +24,18 @@ export async function generateMetadata({ params }: OfficialListsCatPageProps): P
   if (!catInfo) return {};
 
   const t = await getTranslations();
+  const pageTitle = catInfo.seoTitle ?? `${catInfo.name} - ${t('General.official-lists')}`;
+  const description = catInfo.seoTitle ? catInfo.description : t('Lists.officialList-description');
+
   const metadata = await getStaticAppMetadata({
-    title: `${catInfo.name} - ${t('General.official-lists')}`,
-    description: t('Lists.officialList-description'),
+    title: pageTitle,
+    description,
     pathname: `/lists/official/cat/${category}`,
   });
 
   return {
     ...metadata,
+    ...(catInfo.seoTitle ? { title: { absolute: catInfo.seoTitle } } : {}),
     openGraph: {
       ...metadata.openGraph,
       images: [ogImage],

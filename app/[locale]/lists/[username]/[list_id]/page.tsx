@@ -3,7 +3,12 @@ import { Suspense } from 'react';
 import Color from 'color';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppMetadata } from '@app/utils/appPage';
+import { ListService } from '@services/ListService';
+import {
+  getItemDbCanonical,
+  getStaticAppMetadata,
+  normalizeItemDbLocale,
+} from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getTranslations } from 'next-intl/server';
 import { stripMarkdown } from '@utils/utils';
@@ -28,14 +33,18 @@ export async function generateMetadata({ params }: ListDetailPageProps): Promise
 
   const listUsername = list.official ? 'official' : (list.owner.username ?? username);
   const pathname = `/lists/${listUsername}/${list.slug ?? list.internal_id}` as `/${string}`;
+  const seo = await ListService.getListSeo(list.internal_id);
+  const fallbackTitle = `${list.name} - ${
+    list.official
+      ? t('Lists.neopets-lists')
+      : t('Lists.owner-username-s-lists', { username: list.owner.username ?? '' })
+  }`;
+  const pageTitle = seo?.seoTitle || fallbackTitle;
+  const description = seo?.seoDescription || stripMarkdown(list.description ?? '') || undefined;
 
   const metadata = await getStaticAppMetadata({
-    title: `${list.name} - ${
-      list.official
-        ? t('Lists.neopets-lists')
-        : t('Lists.owner-username-s-lists', { username: list.owner.username ?? '' })
-    }`,
-    description: stripMarkdown(list.description ?? '') || undefined,
+    title: pageTitle,
+    description,
     pathname,
     noindex: !list.official,
     nofollow: !list.official,
@@ -43,6 +52,7 @@ export async function generateMetadata({ params }: ListDetailPageProps): Promise
 
   return {
     ...metadata,
+    ...(seo?.seoTitle ? { title: { absolute: seo.seoTitle } } : {}),
     openGraph: {
       ...metadata.openGraph,
       ...(list.coverURL ? { images: [{ url: list.coverURL, width: 150, height: 150 }] } : {}),
@@ -118,10 +128,30 @@ async function ListDetailPageContent({ params }: ListDetailPageProps) {
   const core = await getListCore(locale, username, list_id);
   const color = Color(core.list.colorHex || '#4A5568');
   const mainColor = `${color.hex()}b8`;
+  const { list } = core;
+
+  const listUsername = list.official ? 'official' : (list.owner.username ?? username);
+  const pathname = `/lists/${listUsername}/${list.slug ?? list.internal_id}` as `/${string}`;
+  const officialListJsonLd = list.official
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: list.name,
+        url: getItemDbCanonical(pathname, normalizeItemDbLocale(locale)),
+        datePublished: new Date(list.createdAt).toISOString(),
+        dateModified: new Date(list.updatedAt).toISOString(),
+      }
+    : null;
 
   return (
     <>
       <SetMainColor color={mainColor} />
+      {officialListJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(officialListJsonLd) }}
+        />
+      )}
       <ListPageBody locale={locale} username={username} list_id={list_id} core={core} />
     </>
   );

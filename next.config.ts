@@ -164,7 +164,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/tools/pet-colors',
-        destination: '/tools/rainbow-pool/',
+        destination: '/rainbow-pool/',
         permanent: true,
       },
       {

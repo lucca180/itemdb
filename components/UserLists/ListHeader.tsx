@@ -437,10 +437,23 @@ const ListHeader = (props: ListHeaderProps) => {
                   <>
                     {' '}
                     •{' '}
-                    {t.rich('Lists.updated-x', {
-                      b: (chunk) => <b>{chunk}</b>,
-                      x: format.relativeTime(new Date(list.updatedAt), now),
-                    })}
+                    {list.official
+                      ? t.rich('Lists.official-updated', {
+                          time: (chunks) => (
+                            <time dateTime={new Date(list.updatedAt).toISOString()}>{chunks}</time>
+                          ),
+                          b: (chunks) => <b>{chunks}</b>,
+                          date: format.dateTime(new Date(list.updatedAt), {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          }),
+                          relative: format.relativeTime(new Date(list.updatedAt), now),
+                        })
+                      : t.rich('Lists.updated-x', {
+                          b: (chunk) => <b>{chunk}</b>,
+                          x: format.relativeTime(new Date(list.updatedAt), now),
+                        })}
                   </>
                 )}
               </Text>
