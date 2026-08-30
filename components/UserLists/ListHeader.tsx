@@ -219,7 +219,7 @@ const ListHeader = (props: ListHeaderProps) => {
 
   const hasSeriesDates = !!(list.seriesStart || list.seriesEnd);
   const hasPrice = !!NPPrice || !!NCPrice;
-  const hasChart = item_iids.length > 0 && item_iids.length < MAX_ITEMS_LIST_PRICE;
+  const hasChart = hasPrice && item_iids.length > 0 && item_iids.length < MAX_ITEMS_LIST_PRICE;
   const dateFormat = { day: 'numeric', month: 'short', year: 'numeric' } as const;
 
   return (
