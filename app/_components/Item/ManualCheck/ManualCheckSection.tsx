@@ -1,4 +1,4 @@
-import { getItemManualCheck } from '@pages/api/admin/manual/[id]';
+import { getItemManualCheck } from '@app/api/admin/manual/manualCheckService';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import type { ItemData } from '@types';
 import dynamic from 'next/dynamic';

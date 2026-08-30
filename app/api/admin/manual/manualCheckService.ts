@@ -1,28 +1,23 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { CheckAuth } from '../../../../utils/googleCloud';
-import prisma from '../../../../utils/prisma';
+import 'server-only';
+
+import { revalidateTag } from 'next/cache';
 import { ItemPrices, ItemProcess } from '@prisma/generated/client';
-import { slugify } from '../../../../utils/utils';
-import { User } from '@types';
 import { LogService } from '@services/ActionLogService';
+import { HomeRevalidateTags, itemRootTag, itemSectionTag } from '@utils/appCacheTags';
 import {
   computeItemProcessDiff,
   ItemProcessDiffEntry,
   parseConflictField,
 } from '@utils/manualCheck/itemProcessDiff';
+import prisma from '@utils/prisma';
+import { slugify } from '@utils/utils';
+import type { User } from '@types';
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  let user: User | null = null;
-  try {
-    user = (await CheckAuth(req)).user;
-    if (!user || !user.isAdmin) throw new Error('Unauthorized');
-  } catch (e) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
+export class ManualCheckInputError extends Error {
+  constructor(message = 'Bad Request') {
+    super(message);
+    this.name = 'ManualCheckInputError';
   }
-
-  if (req.method === 'GET') return GET(req, res);
-  if (req.method === 'POST') return POST(req, res, user);
 }
 
 export type ItemManualCheckInfoData = {
@@ -36,7 +31,14 @@ export type ItemManualCheckData = {
   info: ItemManualCheckInfoData | null;
 };
 
-export const getItemManualCheck = async (itemInternalId: number): Promise<ItemManualCheckData> => {
+export type ResolveManualCheckRequest = {
+  type?: unknown;
+  action?: unknown;
+  checkID?: unknown;
+  correctInfo?: { field?: unknown; value?: unknown };
+};
+
+export async function getItemManualCheck(itemInternalId: number): Promise<ItemManualCheckData> {
   const inflation = await prisma.itemPrices.findFirst({
     where: {
       item_iid: itemInternalId,
@@ -73,22 +75,19 @@ export const getItemManualCheck = async (itemInternalId: number): Promise<ItemMa
       changes,
     },
   };
-};
+}
 
-const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const id = req.query.id as string;
-  const data = await getItemManualCheck(Number(id));
-  return res.json(data);
-};
-
-const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
-  const { type, action, checkID, correctInfo } = req.body;
-  const id = req.query.id as string;
+export async function resolveManualCheck(
+  itemId: number,
+  body: ResolveManualCheckRequest,
+  user: User
+): Promise<{ success: true }> {
+  const { type, action, checkID, correctInfo } = body;
 
   if (type === 'inflation') {
     const check = (await prisma.itemPrices.findFirst({
       where: {
-        internal_id: checkID,
+        internal_id: Number(checkID),
       },
     })) as ItemPrices;
 
@@ -108,7 +107,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
 
       await prisma.itemPrices.update({
         where: {
-          internal_id: checkID,
+          internal_id: Number(checkID),
         },
         data: {
           manual_check: null,
@@ -117,7 +116,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
         },
       });
 
-      return res.json({ success: true });
+      if (check.item_iid) revalidateItemPrices(check.item_iid);
+      return { success: true };
     }
 
     if (action === 'reprove') {
@@ -125,7 +125,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
 
       await prisma.itemPrices.delete({
         where: {
-          internal_id: checkID,
+          internal_id: Number(checkID),
         },
       });
 
@@ -140,22 +140,24 @@ const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
         },
       });
 
-      return res.json({ success: true });
+      if (check.item_iid) revalidateItemPrices(check.item_iid);
+      return { success: true };
     }
   }
 
   if (type === 'info') {
-    if ((!correctInfo || !correctInfo.field || !correctInfo.value) && action !== 'reprove')
-      return res.status(400).json({ error: 'Bad Request' });
+    if ((!correctInfo || !correctInfo.field || !correctInfo.value) && action !== 'reprove') {
+      throw new ManualCheckInputError();
+    }
 
     if (action === 'approve') {
-      await handleItemUpdate(Number(id), correctInfo.field, correctInfo.value, user);
+      await handleItemUpdate(itemId, String(correctInfo!.field), String(correctInfo!.value), user);
 
       await prisma.itemProcess.updateMany({
         where: {
           processed: false,
           manual_check: {
-            contains: `(${id})`,
+            contains: `(${itemId})`,
           },
         },
         data: {
@@ -163,41 +165,42 @@ const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
         },
       });
 
-      return res.json({ success: true });
+      revalidateTag(itemRootTag(itemId), 'max');
+      return { success: true };
     }
 
     if (action === 'reprove') {
       await prisma.itemProcess.update({
         where: {
-          internal_id: checkID,
+          internal_id: Number(checkID),
         },
         data: {
           processed: true,
         },
       });
 
-      return res.json({ success: true });
+      return { success: true };
     }
 
     if (action === 'correct') {
       await prisma.itemProcess.update({
         where: {
-          internal_id: checkID,
+          internal_id: Number(checkID),
         },
         data: {
-          [correctInfo.field]: correctInfo.value,
+          [String(correctInfo!.field)]: correctInfo!.value,
           manual_check: null,
         },
       });
 
-      return res.json({ success: true });
+      return { success: true };
     }
   }
 
-  return res.status(400).json({ error: 'Bad Request' });
-};
+  throw new ManualCheckInputError();
+}
 
-const handleItemUpdate = async (id: number, field: string, value: string, user: User) => {
+async function handleItemUpdate(id: number, field: string, value: string, user: User) {
   let itemSlug = '';
   let image_id = '';
 
@@ -250,4 +253,10 @@ const handleItemUpdate = async (id: number, field: string, value: string, user: 
     id.toString(),
     user.id
   );
-};
+}
+
+function revalidateItemPrices(itemId: number): void {
+  revalidateTag(itemRootTag(itemId), 'max');
+  revalidateTag(itemSectionTag(itemId, 'np-prices'), 'max');
+  revalidateTag(HomeRevalidateTags.latestPrices, 'max');
+}
