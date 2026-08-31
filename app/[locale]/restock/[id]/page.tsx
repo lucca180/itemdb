@@ -29,14 +29,18 @@ export async function generateMetadata({ params }: RestockShopPageProps): Promis
     profitMean: 0,
   });
 
+  const title = `${shopInfo.name} Restock: Best Items to Buy | Neopets Shops`;
+  const ogTitle = `${shopInfo.name} | Neopets Shops`;
+
   const metadata = await getStaticAppMetadata({
-    title: `${shopInfo.name} | Neopets Shops`,
+    title: ogTitle,
     description: labels.metaDescription,
     pathname: getRestockShopPathname(shopInfo),
   });
 
   return {
     ...metadata,
+    title: { absolute: title },
     twitter: { ...metadata.twitter, card: 'summary_large_image' },
     openGraph: {
       ...metadata.openGraph,
