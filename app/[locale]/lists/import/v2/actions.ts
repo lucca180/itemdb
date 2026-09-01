@@ -8,19 +8,31 @@ import { ListService } from '@services/ListService';
 import { listMutationCacheTags } from '@utils/appCacheTags';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { buildImportListItems, importQuantity } from '@utils/list/buildImportListItems';
+import { computeImportSummary } from '@utils/list/computeImportSummary';
+import {
+  countImportFilterBuckets,
+  filterImportPreviewItems,
+  isImportFilterType,
+} from '@utils/list/filterImportPreviewItems';
 import { getListImportSession, type ListImportSession } from '@utils/list/importSession';
+import {
+  isImportSortKey,
+  sortImportPreviewItems,
+  type ImportSortDir,
+} from '@utils/list/sortImportPreviewItems';
 import prisma from '@utils/prisma';
 import { dynamicListCan } from '@utils/utils';
 import {
   IMPORT_ERROR,
+  IMPORT_V2_PAGE_SIZE,
   MAX_IMPORT_ITEMS,
-  type ApplyListImportInput,
-  type ApplyListImportResult,
+  type ApplyListImportV2Input,
+  type ApplyListImportV2Result,
   type ImportErrorCode,
-  type ImportPreview,
-} from './importShared';
-
-const PREVIEW_LIMIT = 30;
+  type ImportItemsPageResult,
+  type ImportPreviewItem,
+  type LoadImportItemsPageInput,
+} from './importV2Shared';
 
 function throwImportError(code: ImportErrorCode): never {
   throw new Error(code);
@@ -75,25 +87,84 @@ async function requireImportSession(importToken: string) {
   return session;
 }
 
-export async function loadImportPreview(importToken: string): Promise<ImportPreview> {
-  const session = await requireImportSession(importToken);
-  const query = buildImportQuery(session, PREVIEW_LIMIT);
+async function resolveImportPreviewItems(session: ListImportSession): Promise<{
+  items: ImportPreviewItem[];
+  totalCount: number;
+  notFoundCount: number;
+}> {
+  const totalCount = Object.keys(session.items).length;
+  if (totalCount > MAX_IMPORT_ITEMS) throwImportError(IMPORT_ERROR.TOO_LARGE);
+
+  const query = buildImportQuery(session, MAX_IMPORT_ITEMS);
   const data = await ItemService.getManyItems(query, {
     intent: 'card',
-    limit: PREVIEW_LIMIT,
+    limit: MAX_IMPORT_ITEMS,
   });
 
+  const items = Object.entries(data).map(([key, item]) => ({
+    key,
+    item,
+    quantity: importQuantity(session.items, item, key),
+  }));
+
   return {
-    items: Object.entries(data).map(([key, item]) => ({
-      key,
-      item,
-      quantity: importQuantity(session.items, item, key),
-    })),
-    totalCount: Object.keys(session.items).length,
+    items,
+    totalCount,
+    notFoundCount: totalCount - Object.keys(data).length,
   };
 }
 
-export async function applyListImport(input: ApplyListImportInput): Promise<ApplyListImportResult> {
+function clampPageSize(pageSize: number | undefined): number {
+  if (!pageSize || !Number.isFinite(pageSize)) return IMPORT_V2_PAGE_SIZE;
+  return Math.min(Math.max(Math.floor(pageSize), 1), IMPORT_V2_PAGE_SIZE);
+}
+
+export async function loadImportItemsPage(
+  input: LoadImportItemsPageInput
+): Promise<ImportItemsPageResult> {
+  if (!input?.importToken) throwImportError(IMPORT_ERROR.INVALID_TYPE);
+  if (!isImportSortKey(input.sortBy)) throwImportError(IMPORT_ERROR.INVALID_TYPE);
+
+  const sortDir: ImportSortDir = input.sortDir === 'asc' ? 'asc' : 'desc';
+  const filter = isImportFilterType(input.filter) ? input.filter : 'all';
+  const pageSize = clampPageSize(input.pageSize);
+  const page = Math.max(1, Math.floor(input.page) || 1);
+
+  const session = await requireImportSession(input.importToken);
+  const resolved = await resolveImportPreviewItems(session);
+  const summary = computeImportSummary(resolved.items);
+  const filterCounts = countImportFilterBuckets(resolved.items);
+
+  const filtered = filterImportPreviewItems(resolved.items, {
+    search: input.search,
+    filter,
+  });
+  const sorted = sortImportPreviewItems(filtered, input.sortBy, sortDir);
+  const filteredSummary = computeImportSummary(sorted);
+
+  const totalFiltered = sorted.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * pageSize;
+
+  return {
+    items: sorted.slice(start, start + pageSize),
+    page: safePage,
+    pageSize,
+    totalFiltered,
+    totalPages,
+    totalCount: resolved.totalCount,
+    notFoundCount: resolved.notFoundCount,
+    summary,
+    filteredSummary,
+    filterCounts,
+  };
+}
+
+/** Parallel copy of applyListImport for v2 — consolidate on switch. */
+export async function applyListImportV2(
+  input: ApplyListImportV2Input
+): Promise<ApplyListImportV2Result> {
   const { user } = await getServerCurrentUser();
   if (!user || user.banned) throwImportError(IMPORT_ERROR.UNAUTHORIZED);
 

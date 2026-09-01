@@ -3,9 +3,9 @@ import React from 'react';
 export const LATEST_VERSIONS_CODE = {
   itemdb_script: 201,
   itemdb_restock: 204,
-  itemdb_sdbPricer: 200,
+  itemdb_sdbPricer: 202,
   itemdb_albumHelper: 103,
-  itemdb_listImporter: 132,
+  itemdb_listImporter: 200,
   itemdb_sortGallery: 110,
 };
 
@@ -14,7 +14,7 @@ export const DETECTABLE_SCRIPTS = [
   'Restock Tracker',
   'SDB Pricer',
   'Album Helper',
-  'List Importer',
+  'Price Checker & List Importer',
   'Gallery Sorter',
 ] as const;
 
@@ -98,7 +98,7 @@ const _getScriptStatus = () => {
       link: 'https://github.com/lucca180/itemdb/raw/main/userscripts/albumHelper.user.js',
     },
     itemdb_listImporter: {
-      name: 'List Importer',
+      name: 'Price Checker & List Importer',
       status: 'notFound',
       versionCode: 0,
       version: window.itemdb_listImporter?.version || '',

@@ -31,7 +31,6 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
       label: t('Layout.articles'),
       href: '/articles',
       options: [
-        { label: t('Layout.userscripts'), href: '/articles/userscripts' },
         { label: t('Layout.patch-notes'), href: '/articles' },
         { label: t('Layout.how-to-contribute'), href: '/contribute' },
         { label: t('Layout.sort-galleries-by-color'), href: '/articles/sort-gallery' },
@@ -90,7 +89,8 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
       label: t('Layout.tools'),
       href: '/rainbow-pool',
       options: [
-        { label: t('Layout.sdb-pricer'), href: '/articles/userscripts' },
+        { label: t('Layout.userscripts'), href: '/articles/userscripts' },
+        { label: 'Price Checker', href: '/tools/price-checker', newUntil: 1788825600000 },
         { label: t('Layout.rainbow-pool-tool'), href: '/rainbow-pool' },
         { label: 'Pet Styles Tokens', href: '/rainbow-pool/pet-styles' },
         { label: t('Layout.item-effects'), href: '/hub/item-effects' },
