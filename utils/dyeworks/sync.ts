@@ -222,9 +222,12 @@ function toListItemInfo(
 /**
  * Sync Dyeworks availability onto official current/retired lists.
  *
- * - Originals: current + highlight; when gone, delete from current (never retired).
- * - Color variants: current; when gone, move to retired with seriesEnd.
- * - `end: "mm/dd"` from Neopets is written to `seriesEnd` (UTC 18:00).
+ * - Originals: current + highlight; no seriesStart/seriesEnd; when gone, delete
+ *   from current (never retired).
+ * - Color variants: current with seriesStart/seriesEnd; when gone, move to
+ *   retired with seriesEnd.
+ * - `end: "mm/dd"` from Neopets is written to `seriesEnd` on color variants only
+ *   (UTC 18:00).
  *
  * Leaving items are classified by `isHighlight` on the current list row
  * (originals are always stored highlighted).
@@ -268,7 +271,7 @@ export async function syncDyeworksLists(
     else retireColorIids.push(iid);
   }
 
-  const seriesEndFor = (item_iid: number): Date | null =>
+  const seriesEndForColor = (item_iid: number): Date | null =>
     parseDyeworksEndDate(matchedByIid.get(item_iid)?.end ?? null, now);
 
   const creates = [
@@ -276,15 +279,15 @@ export async function syncDyeworksLists(
       list_id: DYEWORKS_CURRENT_LIST_ID,
       item_iid,
       isHighlight: true,
-      seriesStart: seriesNow,
-      seriesEnd: seriesEndFor(item_iid),
+      seriesStart: null,
+      seriesEnd: null,
     })),
     ...toAddColors.map((item_iid) => ({
       list_id: DYEWORKS_CURRENT_LIST_ID,
       item_iid,
       isHighlight: false,
       seriesStart: seriesNow,
-      seriesEnd: seriesEndFor(item_iid),
+      seriesEnd: seriesEndForColor(item_iid),
     })),
   ];
 
@@ -295,14 +298,23 @@ export async function syncDyeworksLists(
     });
   }
 
-  // Keep highlight + seriesEnd in sync for items already on the current list.
+  // Keep highlight + series dates in sync for items already on the current list.
+  // Originals never carry seriesStart/seriesEnd (clear if leftover from older syncs).
   const existingToUpdate = currentRows.filter((row) => {
     if (!snapshotIids.has(row.item_iid)) return false;
     const matchedItem = matchedByIid.get(row.item_iid);
     if (!matchedItem) return false;
 
-    const shouldHighlight = matchedItem.kind === 'original';
-    const desiredEnd = seriesEndFor(row.item_iid);
+    const isOriginal = matchedItem.kind === 'original';
+    const shouldHighlight = isOriginal;
+
+    if (isOriginal) {
+      return (
+        row.isHighlight !== shouldHighlight || row.seriesStart != null || row.seriesEnd != null
+      );
+    }
+
+    const desiredEnd = seriesEndForColor(row.item_iid);
     const currentEndMs = row.seriesEnd?.getTime() ?? null;
     const desiredEndMs = desiredEnd?.getTime() ?? null;
 
@@ -314,9 +326,18 @@ export async function syncDyeworksLists(
       DYEWORKS_CURRENT_LIST_ID,
       existingToUpdate.map((row) => {
         const matchedItem = matchedByIid.get(row.item_iid)!;
-        const desiredEnd = seriesEndFor(row.item_iid);
+        const isOriginal = matchedItem.kind === 'original';
+        if (isOriginal) {
+          return toListItemInfo(row, {
+            isHighlight: true,
+            seriesStart: null,
+            seriesEnd: null,
+          });
+        }
+
+        const desiredEnd = seriesEndForColor(row.item_iid);
         return toListItemInfo(row, {
-          isHighlight: matchedItem.kind === 'original',
+          isHighlight: false,
           seriesStart: row.seriesStart ? row.seriesStart.toJSON() : null,
           seriesEnd: desiredEnd ? desiredEnd.toJSON() : null,
         });

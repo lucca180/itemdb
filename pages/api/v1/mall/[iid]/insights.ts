@@ -117,14 +117,30 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
   const ncEventsRaw = prisma.userList.findMany({
     where: {
       official: true,
+      seriesType: {
+        not: null,
+      },
       items: {
         some: {
           item_iid: Number(item_iid),
         },
       },
-      seriesStart: {
-        not: null,
-      },
+      OR: [
+        {
+          seriesStart: {
+            not: null,
+          },
+        },
+        {
+          items: {
+            some: {
+              seriesStart: {
+                not: null,
+              },
+            },
+          },
+        },
+      ],
     },
     include: {
       items: {
