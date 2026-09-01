@@ -56,13 +56,10 @@ function StepBody({ step, bodyKey }: { step: StepKey; bodyKey: `PriceChecker.${S
       </Link>
     ),
     HelpLink: (chunks) => (
-      <MainLink
-        viaNextLink
-        prefetch={false}
-        href="/articles/help-my-scripts-are-not-working"
-        fontWeight="semibold"
-      >
-        {chunks}
+      <MainLink viaNextLink prefetch={false} href="/articles/help-my-scripts-are-not-working">
+        <Text as="span" fontWeight="semibold">
+          {chunks}
+        </Text>
       </MainLink>
     ),
     Small: (chunks) => (

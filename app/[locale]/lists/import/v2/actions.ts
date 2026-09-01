@@ -4,10 +4,10 @@ import { updateTag } from 'next/cache';
 import { parseManyItemsV2Query } from '@app/api/v2/items/parse';
 import { type FindManyItemsV2Query, type FindManyItemsV2Type } from '@app/server/items/v2';
 import { ItemService } from '@services/ItemService';
-import { ListService, type PutListItemInput } from '@services/ListService';
-import type { ItemV2For } from '@types';
+import { ListService } from '@services/ListService';
 import { listMutationCacheTags } from '@utils/appCacheTags';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { buildImportListItems, importQuantity } from '@utils/list/buildImportListItems';
 import { computeImportSummary } from '@utils/list/computeImportSummary';
 import {
   countImportFilterBuckets,
@@ -79,21 +79,6 @@ function buildImportQuery(
   const parsed = parseManyItemsV2Query(query as unknown as Record<string, unknown>);
   if (!parsed) throwImportError(IMPORT_ERROR.INVALID_TYPE);
   return parsed;
-}
-
-function importQuantity(
-  source: ListImportSession['items'],
-  item: ItemV2For<'full'> | ItemV2For<'card'>,
-  responseKey: string
-): number {
-  return (
-    source[responseKey] ??
-    source[item.item_id ?? -1] ??
-    source[item.name] ??
-    source[item.image.id] ??
-    source[`${item.name},${item.image.id}`] ??
-    1
-  );
 }
 
 async function requireImportSession(importToken: string) {
@@ -227,25 +212,7 @@ export async function applyListImportV2(
     return true;
   });
 
-  const canonicalAmount: Record<number, number> = {};
-  for (const [, item] of entries) {
-    if (item.canonical_id) {
-      canonicalAmount[item.canonical_id] = (canonicalAmount[item.canonical_id] ?? 0) + 1;
-    }
-  }
-
-  const importData: PutListItemInput[] = entries.map(([responseKey, item]) => ({
-    item_iid: String(item.canonical_id ?? item.internal_id),
-    capValue: undefined,
-    amount: String(
-      ignore.has('quantity')
-        ? 1
-        : item.canonical_id
-          ? canonicalAmount[item.canonical_id]
-          : importQuantity(session.items, item, responseKey)
-    ),
-    imported: true,
-  }));
+  const importData = buildImportListItems(entries, session.items, ignore.has('quantity'));
 
   if (!importData.length) throwImportError(IMPORT_ERROR.NO_ITEMS);
 
