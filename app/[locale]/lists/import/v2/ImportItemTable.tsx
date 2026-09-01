@@ -124,7 +124,11 @@ export function ImportItemTable({
                       <ItemImageV2 item={item} width={40} height={40} />
                     </Box>
                     <Flex direction="column" minW={0} gap={0.5}>
-                      <MainLink href={`/item/${item.slug ?? item.internal_id}`} prefetch={false}>
+                      <MainLink
+                        href={`/item/${item.slug ?? item.internal_id}`}
+                        prefetch={false}
+                        target="_blank"
+                      >
                         <HStack gap={1} align="baseline">
                           <Text
                             fontSize="sm"

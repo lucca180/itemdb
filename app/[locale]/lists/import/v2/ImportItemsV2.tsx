@@ -24,6 +24,7 @@ import {
 import { ImportControlsSidebar } from './ImportControlsSidebar';
 import { ImportItemTable } from './ImportItemTable';
 import { ImportItemsLoadingSkeleton } from './ImportItemsLoadingSkeleton';
+import { ImportSessionAlert } from './ImportSessionAlert';
 import { ImportSummaryBar } from './ImportSummaryBar';
 import { ImportToolbar } from './ImportToolbar';
 
@@ -277,8 +278,6 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
 
   return (
     <Flex flexFlow="column" gap={4} css={{ '& a': { color: '#b8e9a9' } }}>
-      <Heading size="lg">{t('Lists.importing-x-items', { x: itemCount })}</Heading>
-
       {isTooLarge && (
         <Alert.Root status="error" variant="surface" maxW="750px">
           <Alert.Indicator />
@@ -292,13 +291,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
       )}
 
       {!isTooLarge && loadError === IMPORT_ERROR.EXPIRED && (
-        <Alert.Root status="error" variant="surface" maxW="750px">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>{t('Lists.import-error-expired-title')}</Alert.Title>
-            <Alert.Description>{t('Lists.import-error-expired')}</Alert.Description>
-          </Alert.Content>
-        </Alert.Root>
+        <ImportSessionAlert variant="expired" />
       )}
 
       {!isTooLarge && loadError && loadError !== IMPORT_ERROR.EXPIRED && (
@@ -337,8 +330,9 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
               sortDir={sortDir}
               onSortChange={handleSortChange}
               filterCounts={result.filterCounts}
+              page={result.page}
+              pageSize={result.pageSize}
               totalFiltered={result.totalFiltered}
-              totalResolved={result.summary.resolvedCount}
               hasActiveFilters={hasActiveFilters}
               onResetFilters={handleResetFilters}
             />

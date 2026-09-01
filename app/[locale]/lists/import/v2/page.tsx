@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { Heading, Text, Link, Box } from '@chakra-ui/react';
+import { Heading, Text, Box } from '@chakra-ui/react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
@@ -8,9 +8,9 @@ import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
 import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getTranslations } from 'next-intl/server';
-import MainLink from '@components/Utils/MainLink';
 import { buildImportPageProps } from '../buildImportPageProps';
 import { ImportItemsV2 } from './ImportItemsV2';
+import { ImportSessionAlert } from './ImportSessionAlert';
 
 const mainColor = '#65855Bc7';
 const ogImage = {
@@ -29,7 +29,7 @@ type ImportV2PageProps = {
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
   const metadata = await getStaticAppMetadata({
-    title: `${t('Lists.checklists-and-importing-items')} (v2)`,
+    title: t('Lists.importV2-title'),
     description: t('Lists.import-page-description'),
     pathname: '/lists/import/v2',
   });
@@ -62,7 +62,7 @@ async function ImportV2PageContent({ params, searchParams }: ImportV2PageProps) 
     ...labels.breadcrumbList,
     {
       position: 4,
-      name: 'v2',
+      name: t('Lists.importV2-title'),
       item: '/lists/import/v2',
     },
   ];
@@ -79,7 +79,7 @@ async function ImportV2PageContent({ params, searchParams }: ImportV2PageProps) 
         breadcrumb={<BreadcrumbsView breadcrumbList={breadcrumbList} locale={locale} useAppDir />}
       >
         <Heading as="h1" size="lg">
-          {labels.heading} (v2)
+          {t('Lists.importV2-title')}
         </Heading>
         <Text as="div" css={{ '& a': { color: '#b8e9a9' } }}>
           {t('Lists.importV2-page-description')}
@@ -87,17 +87,8 @@ async function ImportV2PageContent({ params, searchParams }: ImportV2PageProps) 
       </HeaderCard>
 
       {!labels.importToken && (
-        <Box maxW="720px" px={4} py={6}>
-          <Text mb={3}>
-            {labels.sessionExpired
-              ? t('Lists.import-error-expired')
-              : t('Lists.importV2-need-token')}
-          </Text>
-          <Link asChild>
-            <MainLink href="/lists/import" prefetch={false}>
-              {t('Lists.importV2-back-to-import')}
-            </MainLink>
-          </Link>
+        <Box px={{ base: 2, md: 4 }} pb={8}>
+          <ImportSessionAlert variant={labels.sessionExpired ? 'expired' : 'need-token'} />
         </Box>
       )}
 

@@ -12,7 +12,7 @@ import {
   InputGroup,
   Text,
 } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { LuArrowUpDown, LuRotateCcw, LuSearch, LuX } from 'react-icons/lu';
 import { SortSelect } from '@components/Input/SortSelect';
 import type { ImportFilterCounts, ImportFilterType } from '@utils/list/filterImportPreviewItems';
@@ -27,8 +27,9 @@ export type ImportToolbarProps = {
   sortDir: ImportSortDir;
   onSortChange: (key: ImportSortKey, dir: ImportSortDir) => void;
   filterCounts: ImportFilterCounts;
+  page: number;
+  pageSize: number;
   totalFiltered: number;
-  totalResolved: number;
   hasActiveFilters: boolean;
   onResetFilters: () => void;
 };
@@ -51,12 +52,16 @@ export function ImportToolbar({
   sortDir,
   onSortChange,
   filterCounts,
+  page,
+  pageSize,
   totalFiltered,
-  totalResolved,
   hasActiveFilters,
   onResetFilters,
 }: ImportToolbarProps) {
   const t = useTranslations();
+  const format = useFormatter();
+  const showingFrom = totalFiltered === 0 ? 0 : pageSize * (page - 1) + 1;
+  const showingTo = Math.min(pageSize * page, totalFiltered);
 
   return (
     <Flex direction="column" gap={3} w="100%">
@@ -148,8 +153,9 @@ export function ImportToolbar({
         <HStack gap={2}>
           <Text fontSize="xs" color="whiteAlpha.600">
             {t('Lists.importV2-showing', {
-              shown: totalFiltered,
-              total: totalResolved,
+              val1: format.number(showingFrom),
+              val2: format.number(showingTo),
+              val3: format.number(totalFiltered),
             })}
           </Text>
           {hasActiveFilters && (
