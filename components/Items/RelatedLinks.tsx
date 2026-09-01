@@ -8,6 +8,7 @@ import { Link } from '@i18n/navigation';
 import {
   getOfficialItemLists,
   loadItemEffects,
+  loadPbOutfitComboForItem,
   loadPetpetData,
   loadPetStyleForItem,
   type PetStyleLinkData,
@@ -29,6 +30,8 @@ import {
   stylesUnknownHref,
 } from '@utils/petStyles/paths';
 import { isStudioEssentialItemName } from '@utils/petStyles/studioEssentials';
+import { resolveRelatedLinkCandidates, type RelatedLinkCandidate } from '@utils/item/relatedLinks';
+import type { PbOutfitCombo } from '@utils/pbOutfits';
 
 const STYLING_STUDIO_ICON =
   'https://images.neopets.com/themes/h5/basic/images/stylingstudio-icon.png';
@@ -46,16 +49,27 @@ export default function RelatedLinksCard(props: Props) {
 }
 
 async function RelatedLinksCardContent({ item }: Props) {
-  const [t, itemEffects, lists, petpetData, petStyle, petpetSpeciesMaps, petpetColorMaps] =
-    await Promise.all([
-      getTranslations(),
-      loadItemEffects(item.internal_id),
-      getOfficialItemLists(item.internal_id, shouldShowTradeLists(item, await getCachedNow())),
-      loadPetpetData(item.internal_id),
-      loadPetStyleForItem(item.internal_id),
-      getPetpetSpeciesMaps(),
-      getPetpetColorMaps(),
-    ]);
+  const [
+    t,
+    itemEffects,
+    lists,
+    petpetData,
+    petStyle,
+    petpetSpeciesMaps,
+    petpetColorMaps,
+    pbOutfitCombo,
+  ] = await Promise.all([
+    getTranslations(),
+    loadItemEffects(item.internal_id),
+    getOfficialItemLists(item.internal_id, shouldShowTradeLists(item, await getCachedNow())),
+    loadPetpetData(item.internal_id),
+    loadPetStyleForItem(item.internal_id),
+    getPetpetSpeciesMaps(),
+    getPetpetColorMaps(),
+    item.type === 'pb' && item.isWearable
+      ? loadPbOutfitComboForItem(item.internal_id, item.name, item.type, item.isWearable)
+      : Promise.resolve(null),
+  ]);
   const relatedLinks = buildRelatedLinks(item, t, {
     itemEffects,
     lists,
@@ -63,6 +77,7 @@ async function RelatedLinksCardContent({ item }: Props) {
     petStyle,
     petpetSpeciesMaps,
     petpetColorMaps,
+    pbOutfitCombo,
   });
   const color = item.color.rgb;
 
@@ -73,7 +88,7 @@ async function RelatedLinksCardContent({ item }: Props) {
       <Flex gap={1} flexFlow="column">
         {relatedLinks.map((link) => (
           <ChakraLink
-            key={`${link.href}-${link.trackEventLabel}-${link.alt}`}
+            key={link.id}
             asChild
             display="block"
             borderRadius="sm"
@@ -157,15 +172,7 @@ function getSpeciesImage(speciesName: string): string {
   return `https://images.neopets.com/community/hub/calendar/events/${normalizedSpecies}.png`;
 }
 
-function pushUniqueLink(links: RelatedLinkProps[], hrefs: Set<string>, link: RelatedLinkProps) {
-  if (hrefs.has(link.href)) return;
-  hrefs.add(link.href);
-  links.push(link);
-}
-
-type RelatedLinkProps = {
-  href: string;
-  alt: string;
+type RelatedLinkProps = RelatedLinkCandidate & {
   imageUrl: string;
   children: ReactNode;
   trackEvent?: string;
@@ -179,19 +186,27 @@ type RelatedOthers = {
   petStyle?: PetStyleLinkData | null;
   petpetSpeciesMaps: PetpetCatalogMaps;
   petpetColorMaps: PetpetCatalogMaps;
+  pbOutfitCombo?: PbOutfitCombo | null;
 };
 
 type Translate = Awaited<ReturnType<typeof getTranslations>>;
 
 function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
-  const { itemEffects, lists, petpetData, petStyle, petpetSpeciesMaps, petpetColorMaps } = rest;
+  const {
+    itemEffects,
+    lists,
+    petpetData,
+    petStyle,
+    petpetSpeciesMaps,
+    petpetColorMaps,
+    pbOutfitCombo,
+  } = rest;
   const rainbowLinks: RelatedLinkProps[] = [];
   const outfitLinks: RelatedLinkProps[] = [];
   const petStyleLinks: RelatedLinkProps[] = [];
   const checklistLinks: RelatedLinkProps[] = [];
   const petpetLinks: RelatedLinkProps[] = [];
-  const rainbowHrefs = new Set<string>();
-  const petStyleHrefs = new Set<string>();
+  const ncLinks: RelatedLinkProps[] = [];
   const speciesName = getSpeciesFromString(item.name);
   const colorSpeciesEffects = (itemEffects ?? []).filter(
     (effect) =>
@@ -205,13 +220,49 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
   );
   const comboColorSlugs = new Set(comboEffects.map((effect) => petColorSlug(effect.colorTarget!)));
 
+  if (pbOutfitCombo) {
+    // A validated PB outfit combo has the same dominance as an ItemEffect combo: do not also
+    // show broader Rainbow Pool/Pet Styles browse links for this species or colour.
+    comboSpeciesSlugs.add(petColorSlug(pbOutfitCombo.speciesName));
+    comboColorSlugs.add(petColorSlug(pbOutfitCombo.colorName));
+  }
+
+  if (pbOutfitCombo) {
+    const speciesSlug = petColorSlug(pbOutfitCombo.speciesName);
+    const colorSlug = petColorSlug(pbOutfitCombo.colorName);
+    rainbowLinks.push({
+      id: `rainbow:combo:${speciesSlug}:${colorSlug}`,
+      href: `/rainbow-pool/${speciesSlug}/${colorSlug}`,
+      family: 'rainbow',
+      source: 'pb-outfit',
+      specificity: 'combo',
+      priority: 0,
+      imageUrl: getSpeciesImage(pbOutfitCombo.speciesName),
+      trackEvent: 'related-link',
+      trackEventLabel: 'pb-outfit-combo',
+      children: t('ItemPage.related-combo-painting', {
+        article: indefiniteArticle(pbOutfitCombo.colorName),
+        color: pbOutfitCombo.colorName,
+        species: pbOutfitCombo.speciesName,
+      }),
+    });
+  }
+
+  // PB and ItemEffect can independently resolve to the same combo. They intentionally emit the
+  // same semantic id/href; resolveRelatedLinkCandidates keeps the first (PB) candidate.
   comboEffects.forEach((effect) => {
     const speciesTarget = effect.speciesTarget!;
     const colorTarget = effect.colorTarget!;
-    pushUniqueLink(rainbowLinks, rainbowHrefs, {
-      href: `/rainbow-pool/${petColorSlug(speciesTarget)}/${petColorSlug(colorTarget)}`,
+    const speciesSlug = petColorSlug(speciesTarget);
+    const colorSlug = petColorSlug(colorTarget);
+    rainbowLinks.push({
+      id: `rainbow:combo:${speciesSlug}:${colorSlug}`,
+      href: `/rainbow-pool/${speciesSlug}/${colorSlug}`,
+      family: 'rainbow',
+      source: 'item-effect',
+      specificity: 'combo',
+      priority: 0,
       imageUrl: getSpeciesImage(speciesTarget),
-      alt: `${colorTarget} ${speciesTarget}`,
       trackEvent: 'related-link',
       trackEventLabel: 'color-species-painting',
       children: t('ItemPage.related-combo-painting', {
@@ -224,10 +275,15 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
 
   if (speciesName) {
     if (!comboSpeciesSlugs.has(petColorSlug(speciesName))) {
-      pushUniqueLink(rainbowLinks, rainbowHrefs, {
-        href: `/rainbow-pool/${petColorSlug(speciesName)}`,
+      const speciesSlug = petColorSlug(speciesName);
+      rainbowLinks.push({
+        id: `rainbow:browse:species:${speciesSlug}`,
+        href: `/rainbow-pool/${speciesSlug}`,
+        family: 'rainbow',
+        source: 'item-name',
+        specificity: 'browse',
+        priority: 10,
         imageUrl: getSpeciesImage(speciesName),
-        alt: speciesName,
         trackEvent: 'related-link',
         trackEventLabel: 'rainbow-pool',
         children: browseSpeciesTitle(t, speciesName),
@@ -235,9 +291,13 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     }
 
     outfitLinks.push({
+      id: `outfits:species:${petColorSlug(speciesName)}`,
       href: `/hub/outfits/${speciesName?.toLowerCase()}`,
+      family: 'outfits',
+      source: 'item-name',
+      specificity: 'browse',
+      priority: 0,
       imageUrl: '/icons/closet.svg',
-      alt: speciesName,
       trackEvent: 'related-link',
       trackEventLabel: 'exclusive-clothes',
       children: t.rich('ItemPage.exclusive-0-clothes-guide', {
@@ -259,10 +319,14 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
       ) {
         return;
       }
-      pushUniqueLink(rainbowLinks, rainbowHrefs, {
+      rainbowLinks.push({
+        id: `rainbow:browse:${isColor ? 'color' : 'species'}:${targetSlug}`,
         href: `/rainbow-pool/${targetSlug}`,
+        family: 'rainbow',
+        source: 'item-effect',
+        specificity: 'browse',
+        priority: 10,
         imageUrl: item.image,
-        alt: target,
         trackEvent: 'related-link',
         trackEventLabel: isColor ? 'color-painting' : 'species-painting',
         children: isColor ? browseColorTitle(t, target) : browseSpeciesTitle(t, target),
@@ -273,10 +337,16 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     const href = petStyle.colorName
       ? stylesComboHref(petStyle.speciesName, petStyle.colorName)
       : stylesUnknownHref(petStyle.speciesName);
-    pushUniqueLink(petStyleLinks, petStyleHrefs, {
+    petStyleLinks.push({
+      id: `pet-styles:combo:${petColorSlug(petStyle.speciesName)}:${petColorSlug(
+        petStyle.colorName ?? 'unknown'
+      )}`,
       href,
+      family: 'pet-styles',
+      source: 'pet-style',
+      specificity: 'combo',
+      priority: 0,
       imageUrl: STYLING_STUDIO_ICON,
-      alt: petStyle.speciesName,
       trackEvent: 'related-link',
       trackEventLabel: 'pet-styles-combo',
       children: petStyle.colorName
@@ -294,10 +364,14 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
   comboEffects.forEach((effect) => {
     const speciesTarget = effect.speciesTarget!;
     const colorTarget = effect.colorTarget!;
-    pushUniqueLink(petStyleLinks, petStyleHrefs, {
+    petStyleLinks.push({
+      id: `pet-styles:combo:${petColorSlug(speciesTarget)}:${petColorSlug(colorTarget)}`,
       href: stylesComboHref(speciesTarget, colorTarget),
+      family: 'pet-styles',
+      source: 'item-effect',
+      specificity: 'combo',
+      priority: 0,
       imageUrl: STYLING_STUDIO_ICON,
-      alt: `${colorTarget} ${speciesTarget}`,
       trackEvent: 'related-link',
       trackEventLabel: 'pet-styles-combo',
       children: t.rich('PetStyles.related-combo-styles', {
@@ -308,10 +382,14 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
   });
 
   if (isStudioEssentialItemName(item.name)) {
-    pushUniqueLink(petStyleLinks, petStyleHrefs, {
+    petStyleLinks.push({
+      id: 'pet-styles:hub:studio-essentials',
       href: STYLES_BASE_PATH,
+      family: 'pet-styles',
+      source: 'studio-essential-name',
+      specificity: 'hub',
+      priority: 10,
       imageUrl: STYLING_STUDIO_ICON,
-      alt: t('PetStyles.hub-h1'),
       trackEvent: 'related-link',
       trackEventLabel: 'pet-styles-hub',
       children: t.rich('PetStyles.related-supplies-hub', {
@@ -321,10 +399,15 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
   }
 
   if (speciesName && !comboSpeciesSlugs.has(petColorSlug(speciesName))) {
-    pushUniqueLink(petStyleLinks, petStyleHrefs, {
+    const speciesSlug = petColorSlug(speciesName);
+    petStyleLinks.push({
+      id: `pet-styles:browse:species:${speciesSlug}`,
       href: stylesBrowseHref(speciesName),
+      family: 'pet-styles',
+      source: 'item-name',
+      specificity: 'browse',
+      priority: 20,
       imageUrl: STYLING_STUDIO_ICON,
-      alt: speciesName,
       trackEvent: 'related-link',
       trackEventLabel: 'pet-styles',
       children: t('PetStyles.all-species-styles', { species: speciesName }),
@@ -334,10 +417,15 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
   colorSpeciesEffects.forEach((effect) => {
     if (!effect.colorTarget) return;
     if (comboColorSlugs.has(petColorSlug(effect.colorTarget))) return;
-    pushUniqueLink(petStyleLinks, petStyleHrefs, {
+    const colorSlug = petColorSlug(effect.colorTarget);
+    petStyleLinks.push({
+      id: `pet-styles:browse:color:${colorSlug}`,
       href: stylesBrowseHref(effect.colorTarget),
+      family: 'pet-styles',
+      source: 'item-effect',
+      specificity: 'browse',
+      priority: 20,
       imageUrl: STYLING_STUDIO_ICON,
-      alt: effect.colorTarget,
       trackEvent: 'related-link',
       trackEventLabel: 'pet-styles',
       children: t('PetStyles.all-color-styles', { color: effect.colorTarget }),
@@ -351,9 +439,13 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
 
     if (list.slug && checklists.includes(list.slug)) {
       checklistLinks.push({
+        id: `checklist:${list.slug}`,
         href: '/lists/import',
+        family: 'checklist',
+        source: 'official-list',
+        specificity: 'guide',
+        priority: 0,
         imageUrl: 'https://images.neopets.com/themes/h5/basic/images/v3/transferlog-icon.svg',
-        alt: list.name,
         trackEvent: 'related-link',
         trackEventLabel: 'item-lists',
         children: t.rich('ItemPage.create-your-0-checklist', {
@@ -371,14 +463,19 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
       list.visibility === 'public'
     ) {
       stampAlbumAdded = true;
+      const stampAlbumName = t('General.stamp-album');
       checklistLinks.push({
+        id: 'checklist:stamp-album',
         href: '/lists/import',
+        family: 'checklist',
+        source: 'official-list-tag',
+        specificity: 'guide',
+        priority: 0,
         imageUrl: 'https://images.neopets.com/themes/h5/basic/images/v3/stamps-icon.svg',
-        alt: 'Stamp Album',
         trackEvent: 'related-link',
         trackEventLabel: 'item-lists',
         children: t.rich('ItemPage.create-your-0-checklist', {
-          0: 'Stamp Album',
+          0: stampAlbumName,
           b: (chunk) => <b>{chunk}</b>,
         }),
       });
@@ -397,10 +494,14 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
 
   if (colorId && petpetColor && petpetColor !== 'Unknown' && petpetColor !== 'No Color') {
     petpetLinks.push({
+      id: `petpet:color:${colorId}`,
       href: `/search?s=&petpetColor[]=${colorId}`,
+      family: 'petpet',
+      source: petpetColorEffect ? 'item-effect' : 'petpet-data',
+      specificity: 'browse',
+      priority: 0,
       imageUrl:
         'https://images.neopets.com/themes/h5/hauntedwoods/images/community-icon.svg?d=20210209',
-      alt: petpetColor,
       trackEvent: 'related-link',
       trackEventLabel: 'petpet-color',
       children: t('ItemPage.all-x-petpets', { 0: petpetColor }),
@@ -414,14 +515,42 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
 
   if (petpetSpeciesName && specieId) {
     petpetLinks.push({
+      id: `petpet:species:${specieId}`,
       href: `/search?s=&petpetSpecies[]=${specieId}`,
+      family: 'petpet',
+      source: petpetData?.species.name ? 'petpet-data' : 'item-name',
+      specificity: 'browse',
+      priority: 10,
       imageUrl: 'https://images.neopets.com/themes/h5/basic/images/v3/adoptpet-icon.svg',
-      alt: petpetSpeciesName,
       trackEvent: 'related-link',
       trackEventLabel: 'petpet-species',
       children: t('ItemPage.all-x-petpets', { 0: petpetSpeciesName }),
     });
   }
 
-  return [...rainbowLinks, ...outfitLinks, ...petStyleLinks, ...checklistLinks, ...petpetLinks];
+  if (item.isNC && item.status === 'active') {
+    ncLinks.push({
+      id: 'nc:guide:trading',
+      href: '/articles/nc-trading-guide',
+      family: 'nc',
+      source: 'item-status',
+      specificity: 'guide',
+      priority: 0,
+      imageUrl: '/icons/giftbox.png',
+      trackEvent: 'related-link',
+      trackEventLabel: 'nc-trading-guide',
+      children: t.rich('ItemPage.related-nc-trading-guide', {
+        b: (chunk) => <b>{chunk}</b>,
+      }),
+    });
+  }
+
+  return resolveRelatedLinkCandidates([
+    ...rainbowLinks,
+    ...outfitLinks,
+    ...petStyleLinks,
+    ...checklistLinks,
+    ...petpetLinks,
+    ...ncLinks,
+  ]);
 }

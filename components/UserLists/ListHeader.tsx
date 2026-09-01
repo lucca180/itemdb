@@ -550,71 +550,62 @@ const ListHeader = (props: ListHeaderProps) => {
                       {t('Lists.unpriced-count', { count: unpricedItems })}
                     </Badge>
                   )}
-                  <Tooltip.Root positioning={{ placement: 'top' }} disabled={!unpricedItems}>
-                    <Tooltip.Trigger asChild>
-                      <Text
-                        fontSize="sm"
-                        cursor={unpricedItems ? 'default' : undefined}
-                        lineHeight="1.6"
-                      >
-                        {hasPrice && (
+                  <Text
+                    fontSize="sm"
+                    cursor={unpricedItems ? 'default' : undefined}
+                    lineHeight="1.6"
+                  >
+                    {hasPrice && (
+                      <>
+                        {t('Lists.this-list-costs-aprox')}{' '}
+                        {!!NPPrice && (
                           <>
-                            {t('Lists.this-list-costs-aprox')}{' '}
-                            {!!NPPrice && (
-                              <>
-                                <b>{format.number(NPPrice)} NP</b>
-                                <Image
-                                  display="inline"
-                                  verticalAlign="middle"
-                                  src={NPBag}
-                                  width={24}
-                                  height={24}
-                                  alt="NP icon"
-                                  ml="3px"
-                                />
-                              </>
-                            )}
-                            {!!NPPrice && !!NCPrice && <> {t('General.and')} </>}
-                            {!!NCPrice && (
-                              <>
-                                <b>
-                                  {format.number(NCPrice)} {t('General.caps')}
-                                </b>{' '}
-                                <Image
-                                  display="inline"
-                                  verticalAlign="middle"
-                                  src={GiftBox}
-                                  width={24}
-                                  height={24}
-                                  alt="gift box icon"
-                                />
-                              </>
-                            )}
+                            <b>{format.number(NPPrice)} NP</b>
+                            <Image
+                              display="inline"
+                              verticalAlign="middle"
+                              src={NPBag}
+                              width={24}
+                              height={24}
+                              alt="NP icon"
+                              ml="3px"
+                            />
                           </>
                         )}
-                        {hasChart && (
-                          <IconButton
-                            onClick={onOpen}
-                            size="xs"
-                            variant="ghost"
-                            display="inline-flex"
-                            verticalAlign="middle"
-                            ml={1}
-                            aria-label={t('Lists.list-price-history')}
-                          >
-                            <AiOutlineAreaChart />
-                          </IconButton>
+                        {!!NPPrice && !!NCPrice && <> {t('General.and')} </>}
+                        {!!NCPrice && (
+                          <>
+                            <b>
+                              {format.number(NCPrice)} {t('General.caps')}
+                            </b>{' '}
+                            <Image
+                              display="inline"
+                              verticalAlign="middle"
+                              src={GiftBox}
+                              width={24}
+                              height={24}
+                              alt="gift box icon"
+                            />
+                          </>
                         )}
-                      </Text>
-                    </Tooltip.Trigger>
-                    {!!unpricedItems && (
-                      <Tooltip.Positioner>
-                        <Tooltip.Content>
-                          {t('Lists.unpricedItems', { 0: unpricedItems })}
-                        </Tooltip.Content>
-                      </Tooltip.Positioner>
+                      </>
                     )}
-                  </Tooltip.Root>
+                    {hasChart && (
+                      <IconButton
+                        onClick={onOpen}
+                        size="xs"
+                        variant="ghost"
+                        display="inline-flex"
+                        verticalAlign="middle"
+                        ml={1}
+                        aria-label={t('Lists.list-price-history')}
+                      >
+                        <AiOutlineAreaChart />
+                      </IconButton>
+                    )}
+                  </Text>
+
+                  {!!unpricedItems && <>{t('Lists.unpricedItems', { 0: unpricedItems })}</>}
                 </Flex>
               )}
             </SimpleGrid>

@@ -38,7 +38,14 @@ import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 import { itemRootTag } from '@utils/appCacheTags';
 import prisma from '@utils/prisma';
 import { getAllNeopetsColors } from '@app/server/petColors';
-import { allSpecies, findPetColorName } from '@utils/pet-utils';
+import { allSpecies, findPetColorName, PET_COLORS_CACHE_TAG } from '@utils/pet-utils';
+import {
+  getComboPbOutfitIds,
+  isPbWearableItem,
+  parsePbOutfitComboCandidates,
+  selectUniquePbOutfitCombo,
+  type PbOutfitCombo,
+} from '@utils/pbOutfits';
 import {
   PRICE_TABLE_INITIAL_LIMIT,
   toPriceSummary,
@@ -323,5 +330,72 @@ export const loadPetStyleForItem = cache(
     if (!colorName) return null;
 
     return { speciesName, colorName, series: row.series };
+  }
+);
+
+export const loadPbOutfitComboForItem = cache(
+  async (
+    internalId: number,
+    itemName: string,
+    itemType: ItemData['type'],
+    isWearable: boolean
+  ): Promise<PbOutfitCombo | null> => {
+    'use cache';
+    // PB paint brushes and other non-wearable items cannot be outfit pieces. Keep this gate
+    // before every fetch/query so ordinary item pages pay no PB-resolution cost.
+    if (!isPbWearableItem({ type: itemType, isWearable })) return null;
+
+    applyItemSectionCacheTags(internalId, 'wearable');
+    cacheTag(PET_COLORS_CACHE_TAG);
+    cacheLife('itemSection');
+
+    const [wearableData, colors] = await Promise.all([
+      loadItemWearableData(internalId),
+      getAllNeopetsColors(),
+    ]);
+
+    // Stage 1 — cheap, pure inference. This may deliberately return multiple possibilities;
+    // item names are legacy free-form data and are not sufficient proof of a combo.
+    const candidates = parsePbOutfitComboCandidates(
+      itemName,
+      {
+        canonicalSpecies: wearableData.canonicalSpecies,
+        speciesNames: wearableData.species_name,
+      },
+      colors
+    );
+    if (candidates.length === 0) return null;
+
+    // Stage 2 — read-only route validation. ColorSpecies is the set of combos the Rainbow Pool
+    // knows how to render, so candidates without a known destination are discarded.
+    const knownCombos = await prisma.colorSpecies.findMany({
+      where: {
+        OR: candidates.map((candidate) => ({
+          species_id: candidate.speciesId,
+          color_id: candidate.colorId,
+        })),
+      },
+      select: { species_id: true, color_id: true },
+    });
+    const knownComboKeys = new Set(
+      knownCombos.map((combo) => `${combo.species_id}:${combo.color_id}`)
+    );
+    const knownCandidates = candidates.filter((candidate) =>
+      knownComboKeys.has(`${candidate.speciesId}:${candidate.colorId}`)
+    );
+
+    // Stage 3 — inverse-membership validation. A name match is accepted only if the existing
+    // PB outfit lookup also places this exact item inside that colour × species outfit.
+    const matches = (
+      await Promise.all(
+        knownCandidates.map(async (candidate) => {
+          const outfitIds = await getComboPbOutfitIds(candidate.colorName, candidate.speciesName);
+          return outfitIds.includes(internalId) ? candidate : null;
+        })
+      )
+    ).filter((candidate): candidate is PbOutfitCombo => candidate !== null);
+
+    // Fail closed: one semantic combo is safe to link; zero or conflicting combos produce no link.
+    return selectUniquePbOutfitCombo(matches);
   }
 );
