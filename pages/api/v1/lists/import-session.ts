@@ -20,6 +20,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const items = JSON.parse(body?.itemDataJson || 'null');
     const indexType = body?.indexType ?? 'item_id';
+    const meta = body?.meta
+      ? typeof body.meta === 'string'
+        ? JSON.parse(body.meta)
+        : body.meta
+      : null;
+    // Old userscripts posted `list_id` as a form field instead of `meta`.
     const list_id = body?.list_id ?? null;
 
     if (!items || typeof items !== 'object' || Array.isArray(items)) {
@@ -29,6 +35,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const token = await createListImportSession({
       items,
       indexType,
+      meta,
       list_id,
     });
 

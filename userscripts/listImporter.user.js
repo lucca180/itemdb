@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         itemdb - List Importer
-// @version      1.3.2
+// @name         itemdb - List Importer & Price Checker
+// @version      2.0.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Imports items to your wishlists
@@ -13,8 +13,12 @@
 // @match        *://*.neopets.com/games/neodeck/index.phtml*
 // @match        *://*.neopets.com/books_read.phtml*
 // @match        *://*.neopets.com/moon/books_read.phtml*
+// @match        *://*.neopets.com/quickstock.phtml*
+// @match        *://*.neopets.com/market.phtml?type=your*
+// @match       *://*.neopets.com/neohome/shed*
 // @match        *://*.itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
+// @require      https://itemdb.com.br/js/script-utils.js?v2
 // @grant        unsafeWindow
 // @run-at       document-start
 // @noframes
@@ -40,29 +44,25 @@ function getImageID(url){
   return url.split('/').pop().split('.')[0];
 }
 
-const albumID_to_listID={1:137,2:138,3:139,4:148,5:149,6:174,7:175,8:176,9:177,10:178,11:179,12:209,13:210,14:211,15:212,16:213,17:214,18:215,19:216,20:217,21:218,22:219,23:220,24:221,25:222,26:223,27:224,28:225,29:226,30:229,31:230,32:231,33:232,34:233,35:234,36:235,37:236,38:237,39:238,40:239,41:240,42:241,43:242,44:1144,45:1729,46:3453,47:2520,48:7818};
-
-const originalFetch = window.fetch;
-
 let item_list = {};
 
 const itemdb_importer = function() {
   function createImportButton() {
     return $(`
-      <button type="button" style="padding: 5px;display: inline-flex;background: #2D3748;border-radius: 3px;justify-content: center;align-items: center;gap: 5px;color: white;border: none;cursor: pointer;">
+      <button type="button" style="font-family: Verdana, Arial, sans-serif; font-size: 12px; padding: 5px;display: inline-flex;background: #2D3748;border-radius: 3px;justify-content: center;align-items: center;gap: 5px;color: white !important;border: none;cursor: pointer;">
         <img
           src="https://itemdb.com.br/logo_icon.svg"
           width="25px"
           height="auto"
         />
-        Import to itemdb
+        Import or Price Check with itemdb
       </button>
     `);
   }
 
-  function submitImport({ items, indexType, listId = '' }) {
+  function submitImport({ items, indexType, meta }) {
     const form = document.createElement('form');
-    form.action = 'https://itemdb.com.br/api/v1/lists/import-session';
+    form.action = 'http://localhost:3000/api/v1/lists/import-session';
     form.method = 'POST';
     form.target = '_blank';
     form.style.display = 'none';
@@ -70,8 +70,11 @@ const itemdb_importer = function() {
     const fields = {
       itemDataJson: JSON.stringify(items),
       indexType,
-      list_id: listId,
     };
+
+    if (meta) {
+      fields.meta = JSON.stringify(meta);
+    }
 
     Object.entries(fields).forEach(([name, value]) => {
       const input = document.createElement('input');
@@ -105,7 +108,6 @@ const itemdb_importer = function() {
     return {
       items: collectSDBItems(),
       indexType: 'item_id',
-      listId: '',
     };
   }
 
@@ -113,7 +115,6 @@ const itemdb_importer = function() {
     return {
       items: collectGalleryRemoveItems(),
       indexType: 'item_id',
-      listId: '',
     };
   }
 
@@ -121,18 +122,17 @@ const itemdb_importer = function() {
     return {
       items: collectClosetItems(),
       indexType: 'item_id',
-      listId: '',
     };
   }
 
   function handleStamps(){
     let params = (new URL(document.location)).searchParams;
-    let page_id = params.get("page_id");
+    let albumID = parseInt(params.get("page_id"), 10);
 
     return {
       items: collectStampItems(),
       indexType: 'image_id',
-      listId: albumID_to_listID[parseInt(page_id)],
+      meta: Number.isFinite(albumID) ? { albumID } : undefined,
     };
   }
 
@@ -140,7 +140,7 @@ const itemdb_importer = function() {
     return {
       items: collectImageItems($(".content p img")),
       indexType: 'image_id',
-      listId: 72,
+      meta: { list_id: 72 },
     };
   }
 
@@ -148,7 +148,7 @@ const itemdb_importer = function() {
     return {
       items: collectNeoDeckItems(),
       indexType: 'name',
-      listId: 248,
+      meta: { list_id: 248 },
     };
   }
 
@@ -156,7 +156,7 @@ const itemdb_importer = function() {
     return {
       items: collectImageItems($(".content table img")),
       indexType: 'image_id',
-      listId: URLHas('moon') ? 663 : 664,
+      meta: { list_id: URLHas('moon') ? 663 : 664 },
     };
   }
 
@@ -227,12 +227,60 @@ const itemdb_importer = function() {
     return items;
   }
 
+  function collectMyShopItems() {
+    const items = {};
+    $(".np-table-row").each(function () {
+      const item_id = $(this).find('input[name*=obj_id]').val();
+      const qty = $(this).find('.mkt-stepper').data('max') ?? 1;
+
+      items[item_id] = qty;
+    })
+
+    return items;
+  }
+
+  function collectShed() {
+    const items = {};
+    const shedItems = $("td.content form[action*='move_to_inventory'] tr")
+    shedItems.each(function (i) {
+      if(i === 0 || i === shedItems.length - 1) return; // skip header and footer
+
+      const item_id = $(this).find('input').eq(-1).attr('name');
+      const qty = $(this).find('td').eq(-2).text().trim() || 1;
+
+      items[item_id] = qty;
+    })
+
+    return items;
+  }
+
   function canImportStamps() {
     return $('.content center').eq(-1).text().includes("You have");
   }
 
   function canImportNeoDeck() {
     return nl === 'en';
+  }
+
+  function handleQuickstock(){
+    return {
+      items: item_list,
+      indexType: 'item_id',
+    };
+  }
+
+  function handleMyShop(){
+    return {
+      items: collectMyShopItems(),
+      indexType: 'item_id',
+    };
+  }
+
+  function handleShed() {
+    return {
+      items: collectShed(),
+      indexType: 'item_id',
+    };
   }
 
   if (URLHas('safetydeposit'))
@@ -277,6 +325,29 @@ const itemdb_importer = function() {
       collector: handleBooks,
       withBreak: true,
     });
+  if (URLHas('quickstock.phtml'))
+    mountImportButton({
+      target: $('#qs-instructions'),
+      collector: handleQuickstock,
+      where: 'after',
+      withBreak: true,
+    });
+
+  if (URLHas('market.phtml?type=your'))
+    mountImportButton({
+      target: $('.market-your-headerbar'),
+      collector: handleMyShop,
+      where: 'before',
+      withBreak: true,
+    });
+
+  if (URLHas('neohome/shed'))
+    mountImportButton({
+      target: $("form[action*='move_to_inventory']"),
+      collector: handleShed,
+      where: 'before',
+      withBreak: true,
+    });
 }
 
 // only runs the script if the page is fully loaded
@@ -301,56 +372,18 @@ const watchSDBChanges = () => {
     }
   })
 }
-
-function registerFetchWatcher({ match, eventName }) {
-  const targetWindow = unsafeWindow ?? window;
-
-  if (!targetWindow.__idbFetchWatchers) {
-    targetWindow.__idbFetchWatchers = [];
-  }
-
-  if (!targetWindow.__idbFetchPatched) {
-    targetWindow.__idbFetchPatched = true;
-
-    const originalFetch = targetWindow.fetch;
-
-    targetWindow.fetch = async (...args) => {
-      const response = await originalFetch(...args);
-      const clonedResponse = response.clone();
-
-      let responseText = '';
-      try {
-        responseText = await clonedResponse.text();
-      } catch {
-        return response;
-      }
-
-      let requestData;
-      try {
-        requestData = JSON.parse(responseText);
-      } catch {
-        return response;
-      }
-
-      for (const watcher of targetWindow.__idbFetchWatchers) {
-        try {
-          if (watcher.match({ args, requestData, response })) {
-            document.dispatchEvent(
-              new CustomEvent(watcher.eventName, { detail: requestData })
-            );
-          }
-        } catch {}
-      }
-
-      return response;
-    };
-  }
-
-  targetWindow.__idbFetchWatchers.push({ match, eventName });
+const watchQuickstockChanges = () => {
+  document.addEventListener('idb:importer:quickstock', (e) => {
+    const itemList = e.detail.items;
+    item_list = {};
+    for (const item of itemList) {
+      item_list[item.oii] = item.count;
+    }
+  })
 }
 
 if (URLHas('/closet')) {
-  registerFetchWatcher({
+  idb_registerFetchWatcher({
     eventName: 'idb:importer:closet',
     match: ({ requestData }) => typeof requestData.items !== 'undefined',
   });
@@ -359,10 +392,19 @@ if (URLHas('/closet')) {
 }
 
 if (URLHas('/safetydeposit')) {
-  registerFetchWatcher({
+  idb_registerFetchWatcher({
     eventName: 'idb:importer:sdb',
     match: ({ requestData }) => typeof requestData.data.items !== 'undefined',
   });
 
   watchSDBChanges();
+}
+
+if (URLHas('/quickstock.phtml')) {
+  idb_registerFetchWatcher({
+    eventName: 'idb:importer:quickstock',
+    match: ({ requestData }) => typeof requestData.items !== 'undefined',
+  });
+
+  watchQuickstockChanges();
 }

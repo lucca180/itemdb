@@ -1,10 +1,15 @@
 import crypto from 'crypto';
 import { redis } from '@utils/api/redis';
+import type { ListImportMeta } from '@utils/list/importMeta';
+
+export type { ListImportMeta };
 
 export type ListImportSession = {
   items: { [index: number | string]: number };
   indexType: string;
+  /** @deprecated Old userscripts sent this as a form field. Prefer `meta`. */
   list_id?: string | number | null;
+  meta?: ListImportMeta | null;
   createdAt: number;
 };
 
