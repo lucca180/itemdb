@@ -15,7 +15,7 @@ export type PriceCheckerPage = {
   id: PriceCheckerPageId;
   labelKey:
     | 'General.closet'
-    | 'General.safety-deposit-box'
+    | 'PriceChecker.sdb'
     | 'General.stamp-album'
     | 'General.gourmet-club'
     | 'General.neodeck'
@@ -43,7 +43,7 @@ export const PRICE_CHECKER_PAGES: PriceCheckerPage[] = [
   },
   {
     id: 'sdb',
-    labelKey: 'General.safety-deposit-box',
+    labelKey: 'PriceChecker.sdb',
     descriptionKey: 'PriceChecker.page-description-sdb',
     href: 'https://www.neopets.com/safetydeposit.phtml',
     isChecklist: false,

@@ -10,12 +10,17 @@ import { PRICE_CHECKER_ACCENT } from './priceCheckerTheme';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('PriceChecker');
-
-  return await getStaticAppMetadata({
-    title: t('seo-title'),
+  const title = t('seo-title');
+  const metadata = await getStaticAppMetadata({
+    title,
     description: t('seo-description'),
     pathname: '/tools/price-checker',
   });
+
+  return {
+    ...metadata,
+    title: { absolute: title },
+  };
 }
 
 export default function PriceCheckerPage() {

@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         itemdb - List Importer & Price Checker
+// @name         itemdb - Price Checker & List Importer
 // @version      2.0.0
 // @author       itemdb
 // @namespace    itemdb
-// @description  Imports items to your wishlists
+// @description  Price check your items, filter, sort and import to your wishlists
 // @website      https://itemdb.com.br
 // @match        *://*.neopets.com/closet.phtml*
 // @match        *://*.neopets.com/safetydeposit.phtml*
@@ -62,7 +62,7 @@ const itemdb_importer = function() {
 
   function submitImport({ items, indexType, meta }) {
     const form = document.createElement('form');
-    form.action = 'http://localhost:3000/api/v1/lists/import-session';
+    form.action = 'https://itemdb.com.br/api/v1/lists/import-session';
     form.method = 'POST';
     form.target = '_blank';
     form.style.display = 'none';

@@ -43,7 +43,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       typeof body?.locale === 'string' ? body.locale : req.cookies.NEXT_LOCALE
     );
     const destination = getLocalizedHref(
-      `/lists/import?importToken=${encodeURIComponent(token)}`,
+      `/lists/import/v2?importToken=${encodeURIComponent(token)}`,
       locale
     );
 

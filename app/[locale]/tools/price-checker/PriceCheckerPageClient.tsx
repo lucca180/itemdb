@@ -27,7 +27,7 @@ export function PriceCheckerPageClient() {
         }}
       >
         <Heading as="h1" size="lg">
-          {t('PriceChecker.title')}
+          {t('PriceChecker.h1')}
         </Heading>
         <Text fontSize={{ base: 'sm', md: undefined }}>{t('PriceChecker.description')}</Text>
       </HeaderCard>
