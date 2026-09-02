@@ -36,6 +36,7 @@ export const wp_getLatestPosts = async (
   page = 1,
   ignorePatch = false
 ): Promise<WP_Article[]> => {
+  limit = Math.min(limit * 2, 100);
   const posts_res = await wp.get('/posts', {
     params: {
       _embed: true,
@@ -71,5 +72,5 @@ export const wp_getLatestPosts = async (
 
   const posts_data = await Promise.all(posts);
 
-  return posts_data.filter((post) => post.category?.toLowerCase() !== 'hidden');
+  return posts_data.filter((post) => post.category?.toLowerCase() !== 'hidden').slice(0, limit);
 };
