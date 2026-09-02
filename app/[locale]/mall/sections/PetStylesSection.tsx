@@ -1,15 +1,14 @@
 import { Suspense } from 'react';
 import { Box, Flex, Separator, SimpleGrid, Skeleton, Text } from '@chakra-ui/react';
-import { getFormatter, getTranslations } from 'next-intl/server';
-import { ComboTile } from '@app/[locale]/rainbow-pool/components/ComboTile';
+import { getTranslations } from 'next-intl/server';
 import { MAIN_COLOR } from '@app/[locale]/rainbow-pool/components/RainbowPoolShell';
 import { StyleTokenTile } from '@app/[locale]/rainbow-pool/pet-styles/components/StyleTokenTile';
-import { loadRecentPetStyleCombos, loadRecentlyReleasedPetStyles } from '@app/server/petStyles';
+import { loadRecentPrismaticTokens, loadRecentlyReleasedPetStyles } from '@app/server/petStyles';
 import { STYLES_BASE_PATH } from '@utils/petStyles/paths';
 import { MallSectionHeader } from './MallSectionHeader';
 
 const TOKEN_LIMIT = 6;
-const COMBO_LIMIT = 4;
+const PRISMATIC_LIMIT = 6;
 /** Same wash as the Pet Styles / Rainbow Pool hub (`MAIN_COLOR`). */
 const STYLES_WASH = MAIN_COLOR;
 const STYLES_KICKER = '#75b6a4';
@@ -35,14 +34,13 @@ export function PetStylesSection() {
 }
 
 async function PetStylesContent() {
-  const [tokens, combos, t, format] = await Promise.all([
-    loadRecentlyReleasedPetStyles(TOKEN_LIMIT),
-    loadRecentPetStyleCombos(COMBO_LIMIT),
+  const [tokens, recentPrismatics, t] = await Promise.all([
+    loadRecentlyReleasedPetStyles(TOKEN_LIMIT, { includePrismatic: false }),
+    loadRecentPrismaticTokens(PRISMATIC_LIMIT),
     getTranslations(),
-    getFormatter(),
   ]);
 
-  if (tokens.length === 0 && combos.length === 0) return null;
+  if (tokens.length === 0 && recentPrismatics.length === 0) return null;
 
   const inStudio = tokens.filter((token) => token.inStudio).length;
   const lede =
@@ -82,9 +80,11 @@ async function PetStylesContent() {
             </SimpleGrid>
           )}
 
-          {tokens.length > 0 && combos.length > 0 && <Separator borderColor="whiteAlpha.200" />}
+          {tokens.length > 0 && recentPrismatics.length > 0 && (
+            <Separator borderColor="whiteAlpha.200" />
+          )}
 
-          {combos.length > 0 && (
+          {recentPrismatics.length > 0 && (
             <Flex direction="column" gap={3} w="100%" minW={0}>
               <Text
                 fontSize="xs"
@@ -93,27 +93,12 @@ async function PetStylesContent() {
                 textTransform="uppercase"
                 color="whiteAlpha.700"
               >
-                {t('NcMall.pet-styles-combos')}
+                {t('PetStyles.recent-prismatics')}
               </Text>
-              <SimpleGrid columns={{ base: 2, sm: 4 }} gap={3} w="100%" minW={0}>
-                {combos.map((combo) => (
-                  <Box key={combo.href} minW={0}>
-                    <ComboTile
-                      combo={{
-                        speciesId: combo.speciesId,
-                        colorId: combo.colorId,
-                        speciesName: combo.speciesName,
-                        colorName: combo.colorName,
-                        previewUrl: combo.previewUrl,
-                        href: combo.href,
-                        addedAt: combo.addedAt,
-                      }}
-                      compact
-                      releasedLabel={format.dateTime(new Date(combo.addedAt), {
-                        day: 'numeric',
-                        month: 'short',
-                      })}
-                    />
+              <SimpleGrid columns={{ base: 2, sm: 3, lg: 6 }} gap={3} w="100%" minW={0}>
+                {recentPrismatics.map((token) => (
+                  <Box key={token.id} minW={0}>
+                    <StyleTokenTile token={token} />
                   </Box>
                 ))}
               </SimpleGrid>

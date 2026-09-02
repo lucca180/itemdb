@@ -50,8 +50,8 @@ export async function PetStylesBrowseContent({
   const isUnknown = name === UNKNOWN_COLOR_NAME;
   const paintBrowseHref = isUnknown ? BASE_PATH : `${BASE_PATH}/${petColorSlug(name)}`;
   const browsePath = stylesBrowseHref(name);
-  const hasActiveFilter = Boolean(seriesName || prismatic || availableNow);
-  const isPageDefault = !hasActiveFilter && page === 1;
+  const hasSearchFilter = Boolean(seriesName || availableNow);
+  const isPageDefault = !hasSearchFilter && !prismatic && page === 1;
 
   const h1 = isUnknown ? t('PetStyles.browse-h1-unknown') : t('PetStyles.browse-h1', { name });
   const subtitle =
@@ -109,7 +109,7 @@ export async function PetStylesBrowseContent({
         <VStack align="stretch" gap={3}>
           <Flex justify="space-between" align="baseline" gap={2} flexWrap="wrap">
             <Heading as="h2" size="md">
-              {hasActiveFilter ? t('PetStyles.search-results') : t('PetStyles.all-tokens')}
+              {hasSearchFilter ? t('PetStyles.search-results') : t('PetStyles.all-tokens')}
             </Heading>
           </Flex>
           <HubResultsGrid

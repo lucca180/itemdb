@@ -54,7 +54,8 @@ export type ComboPetStyleGroup = {
 
 export type PetStyleHubFilters = {
   series?: string | null;
-  prismaticOnly?: boolean;
+  /** When false (default for hub/browse lists), prismatic rows are omitted. */
+  includePrismatic?: boolean;
   availableNowOnly?: boolean;
   page?: number;
   pageSize?: number;
@@ -202,6 +203,7 @@ function mapTokenRows(
       colorName,
       isPrismatic: row.isPrismatic,
       prismaticVariant: row.prismaticVariant,
+      prismaticCount: 0,
       inStudio: row.inStudio,
       seekingCount: counts.seekingCount,
       tradingCount: counts.tradingCount,
@@ -462,16 +464,18 @@ export async function resolvePetStyleSeriesSlug(slug: string | undefined): Promi
 /** Recent tokens by item discovery date (`Items.addedAt`). No seeking/trading batch. */
 export async function loadRecentlyReleasedPetStyles(
   limit = 24,
-  opts: { ncValues?: boolean } = {}
+  opts: { ncValues?: boolean; includePrismatic?: boolean } = {}
 ): Promise<StyleToken[]> {
   'use cache';
   cacheTag(PET_COLORS_CACHE_TAG);
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
 
   const includeNcValues = opts.ncValues !== false;
+  // Default include: mall / combo derivation still mix prismatics. Hub/browse pass false.
+  const includePrismatic = opts.includePrismatic !== false;
 
   const rows = await prisma.petStyle.findMany({
-    where: DISPLAYABLE_STYLE,
+    where: includePrismatic ? DISPLAYABLE_STYLE : { ...DISPLAYABLE_STYLE, isPrismatic: false },
     orderBy: NEWEST_STYLE_ORDER,
     take: limit,
     select: tokenSelect,
@@ -482,7 +486,81 @@ export async function loadRecentlyReleasedPetStyles(
   const ncValues = includeNcValues
     ? await loadNcValuesByItemIids(mapped.map((row) => row.item_iid))
     : {};
-  return mapTokenRows(mapped, colorNames, {}, {}, ncValues);
+  return withPrismaticCounts(
+    mapped,
+    mapTokenRows(mapped, colorNames, {}, {}, ncValues),
+    includePrismatic
+  );
+}
+
+function styleFamilyKey(
+  series: string,
+  speciesId: number | null | undefined,
+  colorId: number | null | undefined
+): string {
+  return `${series}\0${speciesId ?? 'null'}\0${colorId ?? 'null'}`;
+}
+
+/** Prismatic variants of the same series × species × colour. */
+async function withPrismaticCounts(
+  rows: Array<{
+    item_iid: number;
+    series: string;
+    species_id: number | null;
+    color_id: number | null;
+    isPrismatic: boolean;
+  }>,
+  tokens: StyleToken[],
+  includePrismatic: boolean
+): Promise<StyleToken[]> {
+  if (includePrismatic || !tokens.length) return tokens;
+
+  const familyRows = rows.filter((row) => row.species_id != null);
+  if (!familyRows.length) return tokens;
+
+  const families: Array<{ series: string; species_id: number; color_id: number | null }> = [];
+  const seen = new Set<string>();
+  for (const row of familyRows) {
+    const key = styleFamilyKey(row.series, row.species_id, row.color_id);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    families.push({ series: row.series, species_id: row.species_id!, color_id: row.color_id });
+  }
+
+  const grouped = await prisma.petStyle.groupBy({
+    by: ['series', 'species_id', 'color_id'],
+    where: {
+      ...DISPLAYABLE_STYLE,
+      isPrismatic: true,
+      OR: families.map((family) => ({
+        series: family.series,
+        species_id: family.species_id,
+        color_id: family.color_id,
+      })),
+    },
+    _count: { _all: true },
+  });
+
+  const countByFamily = new Map<string, number>();
+  for (const group of grouped) {
+    countByFamily.set(
+      styleFamilyKey(group.series, group.species_id, group.color_id),
+      group._count._all
+    );
+  }
+
+  const countByIid = new Map<number, number>();
+  for (const row of familyRows) {
+    countByIid.set(
+      row.item_iid,
+      countByFamily.get(styleFamilyKey(row.series, row.species_id, row.color_id)) ?? 0
+    );
+  }
+
+  return tokens.map((token) => ({
+    ...token,
+    prismaticCount: countByIid.get(token.id) ?? 0,
+  }));
 }
 
 function applyListFilters(
@@ -490,11 +568,15 @@ function applyListFilters(
   filters: PetStyleHubFilters
 ): Prisma.PetStyleWhereInput {
   if (filters.series) where.series = filters.series;
-  if (filters.prismaticOnly) where.isPrismatic = true;
+  if (filters.includePrismatic !== true) where.isPrismatic = false;
   if (filters.availableNowOnly) {
     where.availability = { some: { active: true } };
   }
   return where;
+}
+
+function comboListFilters(filters: PetStyleHubFilters): PetStyleHubFilters {
+  return { ...filters, includePrismatic: true };
 }
 
 function listPageSize(filters: PetStyleHubFilters): number {
@@ -532,8 +614,13 @@ async function loadTokenPage(
     resolveColorNames(mapped.map((row) => row.color_id)),
     loadNcValuesByItemIids(iids),
   ]);
+  const tokens = await withPrismaticCounts(
+    mapped,
+    mapTokenRows(mapped, colorNames, {}, {}, ncValues),
+    filters.includePrismatic === true
+  );
   return {
-    tokens: mapTokenRows(mapped, colorNames, {}, {}, ncValues),
+    tokens,
     total,
     page,
     pageSize,
@@ -581,9 +668,13 @@ export async function loadPetStylesBrowseBySpecies(
   if (!allSpecies[String(speciesId)]) return null;
 
   const where = applyListFilters({ ...DISPLAYABLE_STYLE, species_id: speciesId }, filters);
+  const comboWhere = applyListFilters(
+    { ...DISPLAYABLE_STYLE, species_id: speciesId },
+    comboListFilters(filters)
+  );
   const [tokenPage, combos] = await Promise.all([
     loadTokenPage(where, filters),
-    loadComboTilesForWhere(where),
+    loadComboTilesForWhere(comboWhere),
   ]);
 
   return { ...tokenPage, combos };
@@ -609,10 +700,10 @@ export async function loadPetStylesBrowseByColor(
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
 
   if (isUnknownColorName(colorName)) {
-    const where = applyListFilters({ ...DISPLAYABLE_STYLE, color_id: null }, filters);
+    const baseWhere = { ...DISPLAYABLE_STYLE, color_id: null };
     const [tokenPage, combos] = await Promise.all([
-      loadTokenPage(where, filters),
-      loadComboTilesForWhere(where),
+      loadTokenPage(applyListFilters({ ...baseWhere }, filters), filters),
+      loadComboTilesForWhere(applyListFilters({ ...baseWhere }, comboListFilters(filters))),
     ]);
     return { ...tokenPage, combos };
   }
@@ -629,7 +720,7 @@ export async function loadPetStylesBrowseByColor(
       color_id: { not: null },
       OR: [{ color_id: colorId }, ...stringFilters],
     },
-    filters
+    comboListFilters(filters)
   );
 
   // Token match needs a post-filter, so page in memory after the SQL candidate set.
@@ -640,21 +731,31 @@ export async function loadPetStylesBrowseByColor(
   });
   const matched = rows.filter((row) => matchesColorToken(colorId, terms, row)).map(withInStudio);
   const colorNames = await resolveColorNames(matched.map((row) => row.color_id));
-  // Map without NC values first so we can page, then enrich only the visible slice.
+  const includePrismatic = filters.includePrismatic === true;
+  const visibleRows = includePrismatic ? matched : matched.filter((row) => !row.isPrismatic);
+  // Combos stay unfiltered by prismatic so paint-path previews stay complete.
   const allTokens = mapTokenRows(matched, colorNames);
+  const visibleTokens = mapTokenRows(visibleRows, colorNames);
 
   const pageSize = listPageSize(filters);
-  const total = allTokens.length;
+  const total = visibleTokens.length;
   const page = clampListPage(filters.page, total, pageSize);
   const start = (page - 1) * pageSize;
-  const pageTokens = allTokens.slice(start, start + pageSize);
+  const pageTokens = visibleTokens.slice(start, start + pageSize);
   const ncValues = await loadNcValuesByItemIids(pageTokens.map((token) => token.id));
-
-  return {
-    tokens: pageTokens.map((token) => ({
+  const pageIids = new Set(pageTokens.map((token) => token.id));
+  const pageRows = visibleRows.filter((row) => pageIids.has(row.item_iid));
+  const tokens = await withPrismaticCounts(
+    pageRows,
+    pageTokens.map((token) => ({
       ...token,
       ncValue: ncValues[token.id] ?? null,
     })),
+    includePrismatic
+  );
+
+  return {
+    tokens,
     combos: comboTilesFromTokens(allTokens),
     total,
     page,
@@ -662,7 +763,44 @@ export async function loadPetStylesBrowseByColor(
   };
 }
 
-/** Recent species×colour combos that have styles (hub secondary grid). */
+/** Latest prismatic tokens, one per species × colour combo (hub secondary grid). */
+export async function loadRecentPrismaticTokens(limit = 6): Promise<StyleToken[]> {
+  'use cache';
+  cacheTag(PET_COLORS_CACHE_TAG);
+  cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
+
+  const rows = await prisma.petStyle.findMany({
+    where: { ...DISPLAYABLE_STYLE, isPrismatic: true },
+    orderBy: NEWEST_STYLE_ORDER,
+    take: Math.max(limit * 8, 48),
+    select: tokenSelect,
+  });
+
+  const mapped = rows.map(withInStudio);
+  const colorNames = await resolveColorNames(mapped.map((row) => row.color_id));
+  const allTokens = mapTokenRows(mapped, colorNames);
+
+  const unique: StyleToken[] = [];
+  const seenCombo = new Set<string>();
+  for (const token of allTokens) {
+    const key = `${token.speciesName}::${token.colorName}`;
+    if (seenCombo.has(key)) continue;
+    seenCombo.add(key);
+    unique.push(token);
+    if (unique.length >= limit) break;
+  }
+
+  const uniqueIids = new Set(unique.map((token) => token.id));
+  const uniqueRows = mapped.filter((row) => uniqueIids.has(row.item_iid));
+  const ncValues = await loadNcValuesByItemIids(unique.map((token) => token.id));
+  const withValues = unique.map((token) => ({
+    ...token,
+    ncValue: ncValues[token.id] ?? null,
+  }));
+  return withPrismaticCounts(uniqueRows, withValues, false);
+}
+
+/** Recent species×colour combos that have styles (mall strip). */
 export async function loadRecentPetStyleCombos(limit = 8): Promise<StyleComboTile[]> {
   'use cache';
   cacheTag(PET_COLORS_CACHE_TAG);

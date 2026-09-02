@@ -46,12 +46,12 @@ export function withUnknownColorOption(colors: string[]): string[] {
 /** Hub / browse filter query (`?series=&prismatic=1&available=1`). */
 export function stylesFilterQuery(opts: {
   series?: string;
-  prismaticOnly?: boolean;
+  includePrismatic?: boolean;
   availableNowOnly?: boolean;
 }): string {
   const params = new URLSearchParams();
   if (opts.series) params.set('series', petColorSlug(opts.series));
-  if (opts.prismaticOnly) params.set('prismatic', '1');
+  if (opts.includePrismatic) params.set('prismatic', '1');
   if (opts.availableNowOnly) params.set('available', '1');
   return params.toString();
 }
@@ -59,7 +59,7 @@ export function stylesFilterQuery(opts: {
 /** Filter query plus `page` when > 1. */
 export function stylesListQuery(opts: {
   series?: string;
-  prismaticOnly?: boolean;
+  includePrismatic?: boolean;
   availableNowOnly?: boolean;
   page?: number;
 }): string {

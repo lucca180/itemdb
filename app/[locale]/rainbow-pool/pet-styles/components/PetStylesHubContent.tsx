@@ -15,12 +15,12 @@ import { IconLink } from '@components/Utils/IconLink';
 import Image from '@components/Utils/Image';
 import MainLink from '@components/Utils/MainLink';
 import type { StudioEssentialItem } from '@app/server/petStyles';
-import type { StyleComboTile, StyleToken } from '@utils/petStyles/display';
+import type { StyleToken } from '@utils/petStyles/display';
 import { STYLES_BASE_PATH } from '@utils/petStyles/paths';
 import { getTranslations } from 'next-intl/server';
-import { ComboTile } from '../../components/ComboTile';
 import { BASE_PATH, RainbowPoolShell } from '../../components/RainbowPoolShell';
 import { HubResultsGrid, PetStylesSearchBar } from './PetStylesSearchBar';
+import { StyleTokenTile } from './StyleTokenTile';
 
 const OFFICIAL_LINKS = {
   stylingStudio: 'https://www.neopets.com/mall/stylingstudio/',
@@ -98,7 +98,7 @@ type PetStylesHubContentProps = {
   total: number;
   page: number;
   pageSize: number;
-  recentCombos: StyleComboTile[];
+  recentPrismatics: StyleToken[];
   studioItems: StudioEssentialItem[];
   seriesName?: string;
   prismatic?: boolean;
@@ -114,15 +114,15 @@ export async function PetStylesHubContent({
   total,
   page,
   pageSize,
-  recentCombos,
+  recentPrismatics,
   studioItems,
   seriesName = '',
   prismatic = false,
   availableNow = false,
 }: PetStylesHubContentProps) {
   const t = await getTranslations();
-  const hasActiveFilter = Boolean(seriesName || prismatic || availableNow);
-  const isPageDefault = !hasActiveFilter;
+  const hasSearchFilter = Boolean(seriesName || availableNow);
+  const isPageDefault = !hasSearchFilter && !prismatic;
 
   const breadcrumbList = createPoolBreadcrumbList(
     (key) => t(key),
@@ -178,7 +178,7 @@ export async function PetStylesHubContent({
         <Box>
           <Flex justify="space-between" align="baseline" mb={3} gap={2} flexWrap="wrap">
             <Heading as="h2" size="md">
-              {hasActiveFilter ? t('PetStyles.search-results') : t('PetColors.recently-released')}
+              {hasSearchFilter ? t('PetStyles.search-results') : t('PetColors.recently-released')}
             </Heading>
             <Link asChild fontSize="sm" color="teal.200">
               <MainLink href={BASE_PATH}>{t('PetStyles.paint-paths')}</MainLink>
@@ -193,32 +193,22 @@ export async function PetStylesHubContent({
             seriesName={seriesName}
             prismatic={prismatic}
             availableNow={availableNow}
-            showRange={hasActiveFilter}
+            showRange={hasSearchFilter}
           />
         </Box>
 
-        {isPageDefault && recentCombos.length > 0 && (
+        {!hasSearchFilter && recentPrismatics.length > 0 && (
           <Box>
             <Heading as="h2" size="md" mb={3}>
-              {t('PetStyles.combos-with-styles')}
+              {t('PetStyles.recent-prismatics')}
             </Heading>
-            <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} gap={3}>
-              {recentCombos.map((combo) => (
-                <ComboTile
-                  key={combo.href}
-                  combo={{
-                    speciesId: combo.speciesId,
-                    colorId: combo.colorId,
-                    speciesName: combo.speciesName,
-                    colorName: combo.colorName,
-                    previewUrl: combo.previewUrl,
-                    href: combo.href,
-                    addedAt: combo.addedAt,
-                  }}
-                  releasedLabel={t('PetStyles.styles-count', { count: combo.styleCount })}
-                />
+            <Flex flexWrap="wrap" gap={3} justify="center" w="100%">
+              {recentPrismatics.map((token) => (
+                <Box key={token.id} w={{ base: 'calc(50% - 6px)', sm: '160px' }}>
+                  <StyleTokenTile token={token} />
+                </Box>
               ))}
-            </SimpleGrid>
+            </Flex>
           </Box>
         )}
 

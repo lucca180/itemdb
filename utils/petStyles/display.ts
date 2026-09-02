@@ -14,6 +14,11 @@ export type StyleToken = {
   colorName: string;
   isPrismatic: boolean;
   prismaticVariant: string | null;
+  /**
+   * Prismatic variants for this base (same series × species × colour).
+   * Set when the list excludes prismatics; 0 otherwise.
+   */
+  prismaticCount: number;
   inStudio: boolean;
   seekingCount: number;
   tradingCount: number;

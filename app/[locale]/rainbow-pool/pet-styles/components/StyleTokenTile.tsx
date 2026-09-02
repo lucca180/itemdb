@@ -38,7 +38,12 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
     setUseItemIcon(!token.imageId);
   }
 
-  const hasBadges = token.isPrismatic || token.inStudio || !!token.ncValue;
+  const showPrismaticCount = token.prismaticCount > 0;
+  const hasBadges =
+    (token.isPrismatic && !showPrismaticCount) ||
+    showPrismaticCount ||
+    token.inStudio ||
+    !!token.ncValue;
 
   return (
     <MainLink href={href} style={{ textDecoration: 'none' }}>
@@ -90,7 +95,7 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
         </Text>
         {hasBadges && (
           <HStack gap={1} flexWrap="wrap" justify="center">
-            {token.isPrismatic && (
+            {token.isPrismatic && !showPrismaticCount && (
               <Badge
                 colorPalette="purple"
                 size="xs"
@@ -102,6 +107,20 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
                 whiteSpace="normal"
               >
                 {t('prismatic')}
+              </Badge>
+            )}
+            {showPrismaticCount && (
+              <Badge
+                colorPalette="purple"
+                size="xs"
+                alignSelf="flex-start"
+                w="fit-content"
+                fontSize="2xs"
+                px={1.5}
+                py={0}
+                whiteSpace="normal"
+              >
+                {t('prismatic-count', { count: token.prismaticCount })}
               </Badge>
             )}
             {token.ncValue && <LebronValueBadge ncValue={token.ncValue} />}

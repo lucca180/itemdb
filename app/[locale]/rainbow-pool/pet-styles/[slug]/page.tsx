@@ -92,8 +92,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const browse =
     resolved.mode === 'species'
-      ? await loadPetStylesBrowseBySpecies(resolved.speciesId!)
-      : await loadPetStylesBrowseByColor(resolved.colorId, resolved.name);
+      ? await loadPetStylesBrowseBySpecies(resolved.speciesId!, { includePrismatic: true })
+      : await loadPetStylesBrowseByColor(resolved.colorId, resolved.name, {
+          includePrismatic: true,
+        });
   const tokenCount = browse?.tokens.length ?? 0;
   const isUnknown = resolved.name === UNKNOWN_COLOR_NAME;
 
@@ -160,7 +162,7 @@ async function PageContent({ params, searchParams }: PageProps) {
   const seriesName = (await resolvePetStyleSeriesSlug(query.series)) ?? '';
   const filters = {
     series: seriesName || null,
-    prismaticOnly: prismatic,
+    includePrismatic: prismatic,
     availableNowOnly: availableNow,
     page,
   };

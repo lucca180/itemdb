@@ -6,7 +6,7 @@ import { getStaticAppMetadata } from '@app/utils/appPage';
 import { getAllNeopetsColors } from '@app/server/petColors';
 import {
   loadPetStyleSeriesCatalog,
-  loadRecentPetStyleCombos,
+  loadRecentPrismaticTokens,
   loadRecentlyReleasedPetStyles,
   loadStudioEssentialItems,
   resolvePetStyleSeriesSlug,
@@ -55,29 +55,30 @@ async function PageContent({ params, searchParams }: PageProps) {
   const prismatic = query.prismatic === '1';
   const availableNow = query.available === '1';
   const seriesName = (await resolvePetStyleSeriesSlug(query.series)) ?? '';
-  const hasActiveFilter = Boolean(seriesName || prismatic || availableNow);
-  const page = hasActiveFilter ? parseStylesPage(query.page) : 1;
+  const hasSearchFilter = Boolean(seriesName || availableNow);
+  const page = hasSearchFilter ? parseStylesPage(query.page) : 1;
 
-  const [colorsCatalog, seriesOptions, tokenPage, recentCombos, studioItems] = await Promise.all([
-    getAllNeopetsColors(),
-    loadPetStyleSeriesCatalog(),
-    hasActiveFilter
-      ? searchPetStylesHub({
-          series: seriesName || null,
-          prismaticOnly: prismatic,
-          availableNowOnly: availableNow,
-          page,
-        })
-      : loadRecentlyReleasedPetStyles(12).then((tokens) => ({
-          tokens,
-          // No pagination on the default “recently released” strip.
-          total: tokens.length,
-          page: 1,
-          pageSize: tokens.length || 1,
-        })),
-    hasActiveFilter ? Promise.resolve([]) : loadRecentPetStyleCombos(8),
-    loadStudioEssentialItems(),
-  ]);
+  const [colorsCatalog, seriesOptions, tokenPage, recentPrismatics, studioItems] =
+    await Promise.all([
+      getAllNeopetsColors(),
+      loadPetStyleSeriesCatalog(),
+      hasSearchFilter
+        ? searchPetStylesHub({
+            series: seriesName || null,
+            includePrismatic: prismatic,
+            availableNowOnly: availableNow,
+            page,
+          })
+        : loadRecentlyReleasedPetStyles(12, { includePrismatic: prismatic }).then((tokens) => ({
+            tokens,
+            // No pagination on the default “recently released” strip.
+            total: tokens.length,
+            page: 1,
+            pageSize: tokens.length || 1,
+          })),
+      hasSearchFilter ? Promise.resolve([]) : loadRecentPrismaticTokens(6),
+      loadStudioEssentialItems(),
+    ]);
 
   const colors = withUnknownColorOption(
     Object.values(colorsCatalog).sort((a, b) => a.localeCompare(b))
@@ -96,7 +97,7 @@ async function PageContent({ params, searchParams }: PageProps) {
         total={tokenPage.total}
         page={tokenPage.page}
         pageSize={tokenPage.pageSize}
-        recentCombos={recentCombos}
+        recentPrismatics={recentPrismatics}
         studioItems={studioItems}
         seriesName={seriesName}
         prismatic={prismatic}

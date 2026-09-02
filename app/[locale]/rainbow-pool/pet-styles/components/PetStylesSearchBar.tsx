@@ -58,7 +58,7 @@ export function PetStylesSearchBar({
   const [speciesValue, setSpeciesValue] = useState(initialSpecies);
   const [color, setColor] = useState(initialColor);
   const [series, setSeries] = useState(initialSeries);
-  const [prismaticOnly, setPrismaticOnly] = useState(initialPrismatic);
+  const [includePrismatic, setIncludePrismatic] = useState(initialPrismatic);
   const [availableNowOnly, setAvailableNowOnly] = useState(initialAvailableNow);
 
   const speciesId = useId();
@@ -69,13 +69,14 @@ export function PetStylesSearchBar({
     setSpeciesValue('');
     setColor('');
     setSeries('');
-    setPrismaticOnly(false);
+    setIncludePrismatic(false);
     setAvailableNowOnly(false);
     router.push(STYLES_BASE_PATH);
   };
 
   const apply = () => {
-    const draftIsEmpty = !speciesValue && !color && !series && !prismaticOnly && !availableNowOnly;
+    const draftIsEmpty =
+      !speciesValue && !color && !series && !includePrismatic && !availableNowOnly;
     if (draftIsEmpty) {
       reset();
       return;
@@ -83,7 +84,7 @@ export function PetStylesSearchBar({
 
     const filterQs = stylesFilterQuery({
       series: series || undefined,
-      prismaticOnly,
+      includePrismatic,
       availableNowOnly,
     });
 
@@ -165,8 +166,8 @@ export function PetStylesSearchBar({
 
         <Switch.Root
           size="sm"
-          checked={prismaticOnly}
-          onCheckedChange={(e) => setPrismaticOnly(e.checked)}
+          checked={includePrismatic}
+          onCheckedChange={(e) => setIncludePrismatic(e.checked)}
           colorPalette="purple"
         >
           <Switch.HiddenInput />
@@ -255,7 +256,7 @@ export function HubResultsGrid({
         pathname,
         stylesListQuery({
           series: seriesName || undefined,
-          prismaticOnly: prismatic,
+          includePrismatic: prismatic,
           availableNowOnly: availableNow,
           page: nextPage,
         })

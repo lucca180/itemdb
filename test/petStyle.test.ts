@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { colorNameSearchTerms, parsePetStyleFromName, textHasColorToken } from '@utils/petStyles';
+import { stylesFilterQuery } from '@utils/petStyles/paths';
 import type { PetColorsCatalog } from '@utils/pet-utils';
 
 /** Subset of PetColor ids used by style name parse tests. */
@@ -302,5 +303,19 @@ describe('styles.json smoke', () => {
       colors: SAMPLE_COLORS,
     });
     expect(sample).toMatchObject({ series: 'Coastal', color_id: 94, needsReview: false });
+  });
+});
+
+describe('stylesFilterQuery', () => {
+  test('omits prismatic when include is off (default)', () => {
+    expect(stylesFilterQuery({})).toBe('');
+    expect(stylesFilterQuery({ includePrismatic: false })).toBe('');
+  });
+
+  test('sets prismatic=1 when include is on', () => {
+    expect(stylesFilterQuery({ includePrismatic: true })).toBe('prismatic=1');
+    expect(stylesFilterQuery({ series: 'Coastal', includePrismatic: true })).toBe(
+      'series=coastal&prismatic=1'
+    );
   });
 });
