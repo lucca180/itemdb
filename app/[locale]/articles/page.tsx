@@ -106,6 +106,7 @@ async function loadGroupedArticles(): Promise<Record<string, WP_Article[]>> {
 
   allPosts.forEach((post) => {
     const category = post.category || 'Uncategorized';
+    if (category.toLowerCase() === 'hidden') return;
     if (!groupedPosts[category]) {
       groupedPosts[category] = [];
     }

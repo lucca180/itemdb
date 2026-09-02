@@ -71,5 +71,5 @@ export const wp_getLatestPosts = async (
 
   const posts_data = await Promise.all(posts);
 
-  return posts_data;
+  return posts_data.filter((post) => post.category?.toLowerCase() !== 'hidden');
 };

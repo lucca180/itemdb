@@ -32,6 +32,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     title: post.title,
     description: post.excerpt,
     pathname: `/articles/${slug}`,
+    noindex: post.category?.toLowerCase() === 'hidden',
   });
   const datePublished = toIso8601Utc(post.date);
   const dateModified = toIso8601Utc(post.updated) ?? datePublished;
