@@ -54,44 +54,47 @@ export function MallItemStrip({
             }
       }
     >
-      {items.map((item) => (
-        <Flex key={item.internal_id} direction="column" gap={2} minW={0} h="100%">
-          <Box
-            flex="1"
-            display="flex"
-            minH={0}
-            w="100%"
-            css={{
-              '& > *': {
-                display: 'flex',
-                flex: 1,
-                width: '100%',
-                height: '100%',
-                alignSelf: 'stretch',
-              },
-            }}
-          >
-            <ItemCardV2
-              item={item}
-              uniqueID={uniqueID}
-              small={small}
-              style={small ? undefined : { width: 150 }}
-            />
-          </Box>
-          {captionFor && (
-            <Text
-              fontSize="2xs"
-              color="whiteAlpha.600"
-              lineHeight="1.4"
-              lineClamp={2}
-              minH="2.8em"
-              flexShrink={0}
+      {items.map((item) => {
+        const caption = captionFor?.(item);
+        return (
+          <Flex key={item.internal_id} direction="column" gap={2} minW={0} h="100%">
+            <Box
+              flex="1"
+              display="flex"
+              minH={0}
+              w="100%"
+              css={{
+                '& > *': {
+                  display: 'flex',
+                  flex: 1,
+                  width: '100%',
+                  height: '100%',
+                  alignSelf: 'stretch',
+                },
+              }}
             >
-              {captionFor(item)}
-            </Text>
-          )}
-        </Flex>
-      ))}
+              <ItemCardV2
+                item={item}
+                uniqueID={uniqueID}
+                small={small}
+                style={small ? undefined : { width: 150 }}
+              />
+            </Box>
+            {caption ? (
+              <Text
+                fontSize="2xs"
+                color="whiteAlpha.600"
+                lineHeight="1.4"
+                lineClamp={2}
+                minH="2.8em"
+                flexShrink={0}
+              >
+                {caption}
+              </Text>
+            ) : null}
+          </Flex>
+        );
+      })}
     </Box>
   );
 }

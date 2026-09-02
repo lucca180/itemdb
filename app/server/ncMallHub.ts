@@ -347,7 +347,19 @@ export function getMallDiscountPercent(item: ItemV2For<'card'>): number | null {
   return Math.round((1 - discountPrice / price) * 100);
 }
 
+/** Active mall list price of 0 — not a bundle `discountPrice: 0` placeholder. */
+export function isMallFree(item: ItemV2For<'card'>): boolean {
+  return item.price?.type === 'ncMall' && item.price.price === 0;
+}
+
+export function isMallOnSaleItem(item: ItemV2For<'card'>): boolean {
+  return isMallFree(item) || getMallDiscountPercent(item) !== null;
+}
+
 export function compareOnSaleItems(a: ItemV2For<'card'>, b: ItemV2For<'card'>): number {
+  const aFree = isMallFree(a);
+  const bFree = isMallFree(b);
+  if (aFree !== bFree) return aFree ? 1 : -1;
   const percentDelta = (getMallDiscountPercent(b) ?? 0) - (getMallDiscountPercent(a) ?? 0);
   if (percentDelta !== 0) return percentDelta;
   return a.name.localeCompare(b.name);
@@ -367,34 +379,54 @@ async function loadMallOnSale(): Promise<MallOnSale | null> {
   const nowMs = await getCachedNow();
   const nowDate = new Date(nowMs);
 
-  const rows = await prisma.ncMallData.findMany({
-    where: {
-      active: true,
-      discountPrice: { not: null },
-      discountEnd: { gt: nowDate },
-      AND: [
-        { OR: [{ saleEnd: { gte: nowDate } }, { saleEnd: null }] },
-        { OR: [{ discountBegin: { lte: nowDate } }, { discountBegin: null }] },
-      ],
-    },
-    select: { item_iid: true, price: true, discountPrice: true },
-    orderBy: { discountEnd: 'asc' },
-    take: 100,
-  });
+  const onSaleSelect = { item_iid: true, price: true, discountPrice: true } as const;
+  const [discountRows, freeRows] = await Promise.all([
+    prisma.ncMallData.findMany({
+      where: {
+        active: true,
+        discountPrice: { not: null },
+        discountEnd: { gt: nowDate },
+        AND: [
+          { OR: [{ saleEnd: { gte: nowDate } }, { saleEnd: null }] },
+          { OR: [{ discountBegin: { lte: nowDate } }, { discountBegin: null }] },
+        ],
+      },
+      select: onSaleSelect,
+      orderBy: { discountEnd: 'asc' },
+      take: 100,
+    }),
+    prisma.ncMallData.findMany({
+      where: {
+        ...activeMallWhere(nowDate),
+        price: 0,
+      },
+      select: onSaleSelect,
+      orderBy: { saleBegin: 'desc' },
+      take: 100,
+    }),
+  ]);
 
-  const discountedRows = rows.filter(
-    (row) => row.discountPrice !== null && row.discountPrice > 0 && row.discountPrice < row.price
-  );
-  if (discountedRows.length === 0) return null;
+  const seen = new Set<number>();
+  const onSaleRows: typeof discountRows = [];
+  for (const row of [...freeRows, ...discountRows]) {
+    if (seen.has(row.item_iid)) continue;
+    const isFree = row.price === 0;
+    const isDiscounted =
+      row.discountPrice !== null && row.discountPrice > 0 && row.discountPrice < row.price;
+    if (!isFree && !isDiscounted) continue;
+    seen.add(row.item_iid);
+    onSaleRows.push(row);
+  }
+  if (onSaleRows.length === 0) return null;
 
   const itemsById = await ItemService.getManyItems(
-    { type: 'id', data: discountedRows.map((row) => String(row.item_iid)) },
+    { type: 'id', data: onSaleRows.map((row) => String(row.item_iid)) },
     { intent: 'card' }
   );
 
-  const items = discountedRows
+  const items = onSaleRows
     .map((row) => itemsById[String(row.item_iid)])
-    .filter((item): item is ItemV2For<'card'> => !!item && getMallDiscountPercent(item) !== null)
+    .filter((item): item is ItemV2For<'card'> => !!item && isMallOnSaleItem(item))
     .sort(compareOnSaleItems)
     .slice(0, ON_SALE_LIMIT);
 

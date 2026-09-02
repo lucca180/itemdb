@@ -3,6 +3,8 @@ import {
   compareOnSaleItems,
   getMallDiscountPercent,
   groupLeavingByLabel,
+  isMallFree,
+  isMallOnSaleItem,
   isUnchangedLebronValue,
   mallLebronDirection,
   mallSortPrice,
@@ -60,6 +62,23 @@ describe('getMallDiscountPercent', () => {
   });
 });
 
+describe('isMallFree', () => {
+  it('is true only for an NC Mall list price of 0', () => {
+    expect(isMallFree(mallCard('Free', 1, { price: 0 }))).toBe(true);
+    expect(isMallFree(mallCard('Sale', 2, { price: 250, discountPrice: 150 }))).toBe(false);
+    expect(isMallFree(mallCard('Bundle', 3, { price: 1500, discountPrice: 0 }))).toBe(false);
+  });
+});
+
+describe('isMallOnSaleItem', () => {
+  it('keeps free items and real markdowns, not bundle placeholders', () => {
+    expect(isMallOnSaleItem(mallCard('Free', 1, { price: 0 }))).toBe(true);
+    expect(isMallOnSaleItem(mallCard('Sale', 2, { price: 250, discountPrice: 150 }))).toBe(true);
+    expect(isMallOnSaleItem(mallCard('Bundle', 3, { price: 1500, discountPrice: 0 }))).toBe(false);
+    expect(isMallOnSaleItem(mallCard('Full price', 4, { price: 250 }))).toBe(false);
+  });
+});
+
 describe('pickDeepestCut', () => {
   it('picks the steepest markdown and ties on name', () => {
     const items = [
@@ -70,6 +89,22 @@ describe('pickDeepestCut', () => {
 
     expect(pickDeepestCut(items)?.name).toBe('Apple Hat');
     expect(compareOnSaleItems(items[0], items[1])).toBeGreaterThan(0);
+  });
+
+  it('ranks markdowns ahead of free items and ties free items on name', () => {
+    const items = [
+      mallCard('Sale', 1, { price: 200, discountPrice: 100 }),
+      mallCard('Zebra Free', 2, { price: 0 }),
+      mallCard('Apple Free', 3, { price: 0 }),
+    ];
+
+    expect(pickDeepestCut(items)?.name).toBe('Sale');
+    expect(compareOnSaleItems(items[1], items[0])).toBeGreaterThan(0);
+    expect([...items].sort(compareOnSaleItems).map((item) => item.name)).toEqual([
+      'Sale',
+      'Apple Free',
+      'Zebra Free',
+    ]);
   });
 
   it('returns null for an empty list', () => {
