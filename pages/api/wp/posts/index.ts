@@ -36,11 +36,10 @@ export const wp_getLatestPosts = async (
   page = 1,
   ignorePatch = false
 ): Promise<WP_Article[]> => {
-  limit = Math.min(limit * 2, 100);
   const posts_res = await wp.get('/posts', {
     params: {
       _embed: true,
-      per_page: limit,
+      per_page: Math.min(limit * 2, 100),
       page: page,
       categories_exclude: ignorePatch ? 2 : undefined,
     },
