@@ -1,9 +1,10 @@
 import { Suspense } from 'react';
-import { Flex, Skeleton, Text } from '@chakra-ui/react';
+import { Box, Flex, Skeleton } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { HomeItem } from '@components/Card/HomeCard';
-import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import { getMallLeaving } from '@app/server/ncMallHub';
+import type { ItemV2For } from '@types';
+import { MallItemStrip } from './MallItemStrip';
 import { MallSectionHeader } from './MallSectionHeader';
 import { MallStripAside } from './MallStripAside';
 
@@ -36,6 +37,14 @@ async function LeavingContent() {
 
   if (!leaving) return null;
 
+  const captionFor = (item: ItemV2For<'card'>) => {
+    const saleEnd = item.price?.type === 'ncMall' ? item.price.saleEnd : null;
+    if (!saleEnd) return t('NcMall.leaving-soon-tm');
+    return t('NcMall.leaving-leaves', {
+      date: format.dateTime(new Date(saleEnd), { day: 'numeric', month: 'short' }),
+    });
+  };
+
   return (
     <Flex as="section" id="leaving" direction="column" gap={{ base: 4, md: 5 }} w="100%" minW={0}>
       <MallSectionHeader
@@ -56,25 +65,15 @@ async function LeavingContent() {
         bgGradient="linear-gradient(to top, transparent 0, rgba(139, 92, 246, 0.2) 0%)"
         borderRadius="lg"
       >
-        <Flex flex="1" minW={0} wrap="wrap" justify="center" align="stretch" gap={3}>
-          {leaving.stripItems.map((item) => {
-            const saleEnd = item.price?.type === 'ncMall' ? item.price.saleEnd : null;
-            const caption = saleEnd
-              ? t('NcMall.leaving-leaves', {
-                  date: format.dateTime(new Date(saleEnd), { day: 'numeric', month: 'short' }),
-                })
-              : t('NcMall.leaving-soon-tm');
-
-            return (
-              <Flex key={item.internal_id} direction="column" gap={2} w="150px" minW={0}>
-                <ItemCardV2 item={item} uniqueID="mall-hub-leaving" style={{ width: 150 }} />
-                <Text fontSize="2xs" color="whiteAlpha.600" lineHeight="1.4" lineClamp={2}>
-                  {caption}
-                </Text>
-              </Flex>
-            );
-          })}
-        </Flex>
+        <Box flex="1" minW={0}>
+          <MallItemStrip
+            uniqueID="mall-hub-leaving"
+            items={leaving.stripItems}
+            captionFor={captionFor}
+            small={false}
+            wrap
+          />
+        </Box>
         {leaving.asideItems.length > 0 && (
           <MallStripAside kicker={t('NcMall.leaving-next')} kickerColor="purple.200">
             {leaving.asideItems.map((item) => (

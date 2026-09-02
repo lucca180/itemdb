@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
 import { Box, Flex, Heading, Link, Skeleton, Text } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import MainLink from '@components/Utils/MainLink';
 import { getMallCapsules } from '@app/server/ncMallHub';
 import type { ItemV2For } from '@types';
+import { MallItemStrip } from './MallItemStrip';
 
 const CAPSULES_WASH = 'rgba(250, 204, 21, 0.14)';
 const CAPSULES_SEARCH_HREF = '/search?s=&type[]=canOpen&type[]=ncBuyable&sortBy=added&sortDir=desc';
@@ -82,26 +82,13 @@ async function CapsulesContent() {
               {t('NcMall.capsules-lede')}
             </Text>
           </Flex>
-          <Flex gap={3} flexWrap="wrap" justify="center">
-            {items.map((item) => {
-              const caption = capsuleCaption(item, t, format);
-              return (
-                <Flex key={item.internal_id} direction="column" gap={2} w="100px" minW={0}>
-                  <ItemCardV2
-                    item={item}
-                    small
-                    uniqueID="mall-hub-capsules"
-                    style={{ width: 100 }}
-                  />
-                  {caption && (
-                    <Text fontSize="2xs" color="whiteAlpha.600" lineHeight="1.4" lineClamp={2}>
-                      {caption}
-                    </Text>
-                  )}
-                </Flex>
-              );
-            })}
-          </Flex>
+          <MallItemStrip
+            uniqueID="mall-hub-capsules"
+            items={items}
+            small
+            wrap
+            captionFor={(item) => capsuleCaption(item, t, format)}
+          />
           <Link asChild fontSize="sm" color="yellow.200" fontWeight="semibold" alignSelf="flex-end">
             <MainLink href={CAPSULES_SEARCH_HREF}>{t('NcMall.capsules-link')} →</MainLink>
           </Link>
