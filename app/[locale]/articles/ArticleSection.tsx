@@ -35,7 +35,7 @@ export function ArticleSection({
     >
       <Heading size="md">{title}</Heading>
 
-      <Flex gap={3} flexWrap="wrap" justifyContent="center">
+      <Flex gap={3} flexWrap="wrap" justifyContent="center" alignItems="stretch">
         {displayedArticles.map((article) => (
           <ArticleCard vertical key={article.id} article={article} />
         ))}

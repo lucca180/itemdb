@@ -225,7 +225,7 @@ export function ArticlePageContent({
           <Heading size="md" as="h3" my={2}>
             {labels.recommendedArticles}
           </Heading>
-          <Flex gap={[2, 3]} overflow="auto" pb={3}>
+          <Flex gap={[2, 3]} overflow="auto" pb={3} alignItems="stretch">
             {recommendations.slice(0, 3).map((article) => (
               <ArticleCard key={article.id} article={article} vertical />
             ))}

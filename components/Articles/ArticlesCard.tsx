@@ -18,7 +18,7 @@ function ArticlePublishTime({ date }: { date: string }) {
   if (!publishedIso) return null;
 
   return (
-    <Text fontSize="xs" color="whiteAlpha.700">
+    <Text fontSize="xs" color="whiteAlpha.700" mt="auto" flexShrink={0}>
       <time dateTime={publishedIso}>
         {formatter.dateTime(new Date(publishedIso), {
           year: 'numeric',
@@ -40,6 +40,8 @@ export const ArticleCard = (props: Props) => {
     return (
       <Link
         asChild
+        display="flex"
+        alignSelf="stretch"
         borderRadius="md"
         _hover={{
           textDecoration: 'none',
@@ -50,20 +52,23 @@ export const ArticleCard = (props: Props) => {
           <Card.Root
             w={['150px', '200px']}
             h="100%"
-            maxH="300px"
+            overflow="visible"
+            display="flex"
+            flexDirection="column"
             bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.3)`}
           >
-            <Card.Body>
+            <Card.Body overflow="visible" display="flex" flexDirection="column" flex="1">
               <Image
                 width={150}
                 height={150}
                 w="125px"
                 maxH={'125px'}
+                flexShrink={0}
                 src={article.thumbnail ?? '/logo.png'}
                 alt={article.title}
                 borderRadius="lg"
               />
-              <Stack mt={['2', '3']} gap={['1', '3']}>
+              <Stack mt={['2', '3']} gap={['1', '3']} flex="1">
                 <Heading size="sm" lineClamp={3}>
                   {article.title}
                 </Heading>
