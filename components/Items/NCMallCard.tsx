@@ -1,6 +1,8 @@
 import { Center, Flex, HStack, Tag, Text, Link, Badge } from '@chakra-ui/react';
 import { ItemData, ItemMallData, NCMallData } from '@types';
 import CardBase from '@components/Card/CardBase';
+import MainLink from '@components/Utils/MainLink';
+import Color from 'color';
 import Image from 'next/image';
 import { getFormatter, getTranslations } from 'next-intl/server';
 
@@ -21,6 +23,8 @@ export default async function NcMallCard(props: Props) {
 
   const isBuyable =
     ncMallData.active && (!ncMallData.saleEnd || new Date(ncMallData.saleEnd).getTime() > now);
+
+  const color = Color(item.color.hex);
 
   return (
     <CardBase title={t('ItemPage.nc-mall-info')} color={item.color.rgb}>
@@ -114,6 +118,17 @@ export default async function NcMallCard(props: Props) {
             </Flex>
           </HStack>
         )}
+        <Flex
+          justifyContent="flex-start"
+          mt={1}
+          css={{ '& a': { color: color.lightness(70).hex() } }}
+        >
+          <Link asChild fontSize="sm">
+            <MainLink href="/mall" trackEvent="nc-mall-info" trackEventLabel="hub">
+              {t('ItemPage.nc-mall-hub')} →
+            </MainLink>
+          </Link>
+        </Flex>
       </Flex>
     </CardBase>
   );
