@@ -4,11 +4,18 @@ import { Link } from '@i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { localizeInternalHref, type AppLocale } from '@utils/locales';
 
-type Props = {
+type DropdownButtonProps = {
   label: string;
   href: string;
   bg?: string;
   children?: React.ReactNode;
+  hardNavigation?: boolean;
+};
+
+type DropdownOptionProps = {
+  label: string;
+  href: string;
+  trackEventLabel: string;
   newUntil?: number;
   hardNavigation?: boolean;
 };
@@ -23,7 +30,7 @@ function useIsMenuItemNew(newUntil?: number) {
   );
 }
 
-export const DropdownButton = (props: Props) => {
+export const DropdownButton = (props: DropdownButtonProps) => {
   const { label, href, children, bg } = props;
   const locale = useLocale() as AppLocale;
   const [isOpen, setIsOpen] = useState(false);
@@ -96,10 +103,10 @@ export const DropdownButton = (props: Props) => {
   );
 };
 
-export const DropdownOption = (props: Props) => {
+export const DropdownOption = (props: DropdownOptionProps) => {
   const t = useTranslations();
   const locale = useLocale() as AppLocale;
-  const { label, href, newUntil } = props;
+  const { label, href, newUntil, trackEventLabel } = props;
   const hardHref = localizeInternalHref(href, locale);
   const isNew = useIsMenuItemNew(newUntil);
 
@@ -115,7 +122,7 @@ export const DropdownOption = (props: Props) => {
       px={3}
       borderRadius={0}
       data-umami-event="dropdown-link"
-      data-umami-event-label={label}
+      data-umami-event-label={trackEventLabel}
       outline={'none'}
       _focus={{ outline: 'none', bg: 'whiteAlpha.200' }}
     >

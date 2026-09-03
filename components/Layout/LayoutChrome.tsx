@@ -84,6 +84,7 @@ function LayoutNavMenu({
               key={`${section.href}-${option.href}-${index}`}
               label={option.label}
               href={option.href}
+              trackEventLabel={option.trackEventLabel}
               newUntil={option.newUntil}
               hardNavigation={hardNavigation}
             />

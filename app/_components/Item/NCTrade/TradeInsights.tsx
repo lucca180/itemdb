@@ -203,7 +203,7 @@ async function MallReleaseCard({ release, parentData, itemData, item, now }: Mal
               href={`/item/${capItem.slug}`}
               prefetch={false}
               data-umami-event="nc-insights"
-              data-umami-event-label={item.name}
+              data-umami-event-label="openable-parent"
             >
               {capItem.name}
             </I18nLink>
@@ -263,7 +263,7 @@ async function ListReleaseCard({ release, item, now }: ListReleaseCardProps) {
             href={`/lists/official/${release.slug}`}
             prefetch={false}
             data-umami-event="nc-insights"
-            data-umami-event-label={release.name}
+            data-umami-event-label="nc-list"
           >
             {release.name}
           </I18nLink>
