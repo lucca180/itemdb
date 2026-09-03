@@ -242,7 +242,12 @@ async function MonthlyHighlightsContent() {
         kickerColor="cyan.200"
         title={t('NcMall.monthly-title')}
         lede={t('NcMall.monthly-lede')}
-        link={{ href: '/lists/official', label: t('NcMall.monthly-all-lists') }}
+        link={{
+          href: '/lists/official',
+          label: t('NcMall.monthly-all-lists'),
+          trackEvent: 'mall-hub-monthly',
+          trackEventLabel: 'all-lists',
+        }}
         linkColor="cyan.200"
       />
 

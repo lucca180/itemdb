@@ -10,21 +10,31 @@ function stripRichTags(value: string): string {
   return value.replace(/<\/?[A-Za-z][A-Za-z0-9]*>/g, '');
 }
 
-function richInternalLink(href: string) {
+function richInternalLink(href: string, trackEventLabel: string) {
   function RichLink(chunks: ReactNode) {
     return (
       <Link asChild color="purple.200" fontWeight="semibold">
-        <MainLink href={href}>{chunks}</MainLink>
+        <MainLink href={href} trackEvent="mall-hub-faq" trackEventLabel={trackEventLabel}>
+          {chunks}
+        </MainLink>
       </Link>
     );
   }
   return RichLink;
 }
 
-function richExternalLink(href: string) {
+function richExternalLink(href: string, trackEventLabel: string) {
   function RichLink(chunks: ReactNode) {
     return (
-      <Link href={href} color="purple.200" fontWeight="semibold" target="_blank" rel="noreferrer">
+      <Link
+        href={href}
+        color="purple.200"
+        fontWeight="semibold"
+        target="_blank"
+        rel="noreferrer"
+        data-umami-event="mall-hub-faq"
+        data-umami-event-label={trackEventLabel}
+      >
         {chunks}
       </Link>
     );
@@ -57,12 +67,12 @@ export async function FaqSection() {
   const t = await getTranslations();
 
   const richTags = {
-    LeavingLink: richInternalLink('/mall/leaving'),
-    LeavingAnchor: richInternalLink('#leaving'),
-    ReportLink: richInternalLink('/mall/report'),
-    CapsulesAnchor: richInternalLink('#capsules'),
-    LebronLink: richInternalLink('/articles/lebron'),
-    MallLink: richExternalLink(OFFICIAL_NC_MALL),
+    LeavingLink: richInternalLink('/mall/leaving', 'leaving'),
+    LeavingAnchor: richInternalLink('#leaving', 'leaving-anchor'),
+    ReportLink: richInternalLink('/mall/report', 'report'),
+    CapsulesAnchor: richInternalLink('#capsules', 'capsules'),
+    LebronLink: richInternalLink('/articles/lebron', 'lebron'),
+    MallLink: richExternalLink(OFFICIAL_NC_MALL, 'official-mall'),
   };
 
   const faqItems: FaqItem[] = Array.from({ length: FAQ_COUNT }, (_, index) => {

@@ -108,6 +108,8 @@ async function OnSaleContent() {
             title={deepestCut.name}
             href={`/item/${deepestCut.slug ?? deepestCut.internal_id}`}
             detail={deepestDetail ?? undefined}
+            trackEvent="mall-hub-sale"
+            trackEventLabel="deepest"
           />
         )}
       </Flex>

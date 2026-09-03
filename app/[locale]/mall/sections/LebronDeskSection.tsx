@@ -111,7 +111,11 @@ async function LebronDeskContent() {
                 </Box>
                 <Flex direction="column" gap={1} minW={0} flex={1}>
                   <Link asChild fontSize="sm" fontWeight="semibold" lineClamp={1}>
-                    <MainLink href={`/item/${update.item.slug ?? update.item.internal_id}`}>
+                    <MainLink
+                      href={`/item/${update.item.slug ?? update.item.internal_id}`}
+                      trackEvent="mall-hub-lebron"
+                      trackEventLabel={update.item.slug ?? String(update.item.internal_id)}
+                    >
                       {update.item.name}
                     </MainLink>
                   </Link>
@@ -154,10 +158,14 @@ async function LebronDeskContent() {
 
       <Flex direction="column" gap={1} minW={0}>
         <Link asChild fontSize="sm" color="purple.200" fontWeight="semibold" w="fit-content">
-          <MainLink href="/articles/lebron">{t('NcMall.lebron-how')} →</MainLink>
+          <MainLink href="/articles/lebron" trackEvent="mall-hub-lebron" trackEventLabel="how">
+            {t('NcMall.lebron-how')} →
+          </MainLink>
         </Link>
         <Link asChild fontSize="sm" color="purple.200" w="fit-content">
-          <MainLink href="/mall/report">{t('NcMall.lebron-report')} →</MainLink>
+          <MainLink href="/mall/report" trackEvent="mall-hub-lebron" trackEventLabel="report">
+            {t('NcMall.lebron-report')} →
+          </MainLink>
         </Link>
       </Flex>
     </Flex>

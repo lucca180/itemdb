@@ -90,7 +90,13 @@ async function CapsulesContent() {
             captionFor={(item) => capsuleCaption(item, t, format)}
           />
           <Link asChild fontSize="sm" color="yellow.200" fontWeight="semibold" alignSelf="flex-end">
-            <MainLink href={CAPSULES_SEARCH_HREF}>{t('NcMall.capsules-link')} →</MainLink>
+            <MainLink
+              href={CAPSULES_SEARCH_HREF}
+              trackEvent="mall-hub-capsules"
+              trackEventLabel="see-all"
+            >
+              {t('NcMall.capsules-link')} →
+            </MainLink>
           </Link>
         </Flex>
       </Box>

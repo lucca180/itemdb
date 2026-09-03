@@ -9,6 +9,8 @@ type MallStripAsideProps = {
   href?: string;
   detail?: string;
   children?: ReactNode;
+  trackEvent?: string;
+  trackEventLabel?: string;
 };
 
 export function MallStripAside({
@@ -18,6 +20,8 @@ export function MallStripAside({
   href,
   detail,
   children,
+  trackEvent,
+  trackEventLabel,
 }: MallStripAsideProps) {
   return (
     <Flex
@@ -52,7 +56,9 @@ export function MallStripAside({
             w="fit-content"
             css={{ textWrap: 'balance' }}
           >
-            <MainLink href={href}>{title}</MainLink>
+            <MainLink href={href} trackEvent={trackEvent} trackEventLabel={trackEventLabel}>
+              {title}
+            </MainLink>
           </Link>
         ) : (
           <Text fontSize="md" fontWeight="bold" css={{ textWrap: 'balance' }}>

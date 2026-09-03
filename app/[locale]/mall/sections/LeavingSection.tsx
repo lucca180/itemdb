@@ -52,7 +52,12 @@ async function LeavingContent() {
         kickerColor="purple.200"
         title={t('NcMall.leaving-soon-tm')}
         lede={t('NcMall.leaving-lede')}
-        link={{ href: '/mall/leaving', label: t('NcMall.leaving-full-list') }}
+        link={{
+          href: '/mall/leaving',
+          label: t('NcMall.leaving-full-list'),
+          trackEvent: 'mall-hub-leaving',
+          trackEventLabel: 'full-list',
+        }}
       />
       <Flex
         direction={{ base: 'column', lg: 'row' }}

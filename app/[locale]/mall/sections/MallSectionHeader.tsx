@@ -7,7 +7,7 @@ type MallSectionHeaderProps = {
   kickerColor?: string;
   title?: string;
   lede?: ReactNode;
-  link?: { href: string; label: string };
+  link?: { href: string; label: string; trackEvent?: string; trackEventLabel?: string };
   linkColor?: string;
 };
 
@@ -57,7 +57,13 @@ export function MallSectionHeader({
       </Flex>
       {link && (
         <Link asChild fontSize="sm" color={linkColor} flexShrink={0} fontWeight="semibold">
-          <MainLink href={link.href}>{link.label} →</MainLink>
+          <MainLink
+            href={link.href}
+            trackEvent={link.trackEvent}
+            trackEventLabel={link.trackEventLabel}
+          >
+            {link.label} →
+          </MainLink>
         </Link>
       )}
     </Flex>

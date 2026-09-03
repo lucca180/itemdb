@@ -10,7 +10,12 @@ type CoverFoundInCardProps = {
 
 export function CoverFoundInCard({ foundIn, label }: CoverFoundInCardProps) {
   return (
-    <MainLink href={foundIn.href} style={{ textDecoration: 'none', width: '100%' }}>
+    <MainLink
+      href={foundIn.href}
+      trackEvent="mall-hub-cover"
+      trackEventLabel={foundIn.kind === 'item' ? 'found-in-item' : 'found-in-list'}
+      style={{ textDecoration: 'none', width: '100%' }}
+    >
       <Flex
         gap={2}
         p={2}

@@ -19,9 +19,16 @@ type StyleTokenTileProps = {
   token: StyleToken;
   /** Link to species×color styles page (default) or item page. */
   linkTo?: 'combo' | 'item';
+  trackEvent?: string;
+  trackEventLabel?: string;
 };
 
-export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps) {
+export function StyleTokenTile({
+  token,
+  linkTo = 'combo',
+  trackEvent,
+  trackEventLabel,
+}: StyleTokenTileProps) {
   const t = useTranslations('PetStyles');
   const formatLongDate = useFormatLongDate();
   const href =
@@ -46,7 +53,12 @@ export function StyleTokenTile({ token, linkTo = 'combo' }: StyleTokenTileProps)
     !!token.ncValue;
 
   return (
-    <MainLink href={href} style={{ textDecoration: 'none' }}>
+    <MainLink
+      href={href}
+      trackEvent={trackEvent}
+      trackEventLabel={trackEventLabel}
+      style={{ textDecoration: 'none' }}
+    >
       <Flex
         flexFlow="column"
         align="center"

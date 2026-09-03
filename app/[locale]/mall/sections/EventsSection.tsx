@@ -40,7 +40,12 @@ async function EventsContent() {
         kickerColor="teal.200"
         title={t('NcMall.events-title')}
         lede={t('NcMall.events-lede')}
-        link={{ href: '/lists/official', label: t('NcMall.events-all-lists') }}
+        link={{
+          href: '/lists/official',
+          label: t('NcMall.events-all-lists'),
+          trackEvent: 'mall-hub-events',
+          trackEventLabel: 'all-lists',
+        }}
         linkColor="teal.200"
       />
 
@@ -52,7 +57,7 @@ async function EventsContent() {
             <MainLink
               key={event.internal_id}
               href={getListLink(event)}
-              trackEvent="mall-hub-events"
+              trackEvent="mall-hub-events-list"
               trackEventLabel={event.slug ?? String(event.internal_id)}
               style={{
                 color: 'inherit',

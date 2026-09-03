@@ -146,6 +146,8 @@ async function CoverStoryContent() {
             <MainLink
               href={`/item/${cover.slug ?? cover.internal_id}`}
               aria-label={`${t('NcMall.cover-open')}: ${cover.name}`}
+              trackEvent="mall-hub-cover"
+              trackEventLabel="open-main"
             >
               {t('NcMall.cover-open')} →
             </MainLink>

@@ -28,6 +28,8 @@ export async function KeepReadingSection() {
           <MainLink
             key={link.id}
             href={link.href}
+            trackEvent="mall-hub-keep-reading"
+            trackEventLabel={link.id}
             style={{ textDecoration: 'none', height: '100%', display: 'block', color: 'inherit' }}
           >
             <Flex

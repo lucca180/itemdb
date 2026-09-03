@@ -66,7 +66,12 @@ async function PetStylesContent() {
             kickerColor={STYLES_KICKER}
             title={t('NcMall.pet-styles-title')}
             lede={lede}
-            link={{ href: STYLES_BASE_PATH, label: t('NcMall.pet-styles-hub-link') }}
+            link={{
+              href: STYLES_BASE_PATH,
+              label: t('NcMall.pet-styles-hub-link'),
+              trackEvent: 'mall-hub-pet-styles',
+              trackEventLabel: 'hub',
+            }}
             linkColor={STYLES_KICKER}
           />
 
@@ -74,7 +79,12 @@ async function PetStylesContent() {
             <SimpleGrid columns={{ base: 2, sm: 3, lg: 6 }} gap={3} w="100%" minW={0}>
               {tokens.map((token) => (
                 <Box key={token.id} minW={0}>
-                  <StyleTokenTile token={token} linkTo="item" />
+                  <StyleTokenTile
+                    token={token}
+                    linkTo="item"
+                    trackEvent="mall-hub-pet-styles"
+                    trackEventLabel="token"
+                  />
                 </Box>
               ))}
             </SimpleGrid>
@@ -98,7 +108,11 @@ async function PetStylesContent() {
               <SimpleGrid columns={{ base: 2, sm: 3, lg: 6 }} gap={3} w="100%" minW={0}>
                 {recentPrismatics.map((token) => (
                   <Box key={token.id} minW={0}>
-                    <StyleTokenTile token={token} />
+                    <StyleTokenTile
+                      token={token}
+                      trackEvent="mall-hub-pet-styles"
+                      trackEventLabel="prismatic"
+                    />
                   </Box>
                 ))}
               </SimpleGrid>

@@ -76,6 +76,7 @@ export function MallItemStrip({
               <ItemCardV2
                 item={item}
                 uniqueID={uniqueID}
+                utm_content={uniqueID}
                 small={small}
                 style={small ? undefined : { width: 150 }}
               />
