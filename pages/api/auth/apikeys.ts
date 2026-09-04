@@ -56,6 +56,10 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
     where: {
       key_id,
     },
+    select: {
+      key_id: true,
+      user_id: true,
+    },
   });
 
   if (!apiKey || apiKey.user_id !== user.id)
@@ -183,6 +187,11 @@ export const getAPIKeys = async (userId: string) => {
     },
     omit: {
       api_key: true,
+      lastUsedAt: true,
+      lastIp: true,
+      lastPath: true,
+      requestCount: true,
+      dataPoints24h: true,
     },
   });
 

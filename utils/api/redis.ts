@@ -223,7 +223,31 @@ export const redis_setItemCount = async (
 
 // ------- api token ------- //
 
-export const checkApiToken = async (token: string) => {
+export type ApiTokenContext = {
+  ip?: string;
+  path?: string;
+};
+
+function recordApiKeyUse(
+  keyId: string | number,
+  ctx?: ApiTokenContext & { requests?: number; dataPoints?: number }
+) {
+  void import('./apiKeyTelemetry')
+    .then((telemetry) => {
+      telemetry.trackApiKeyTelemetry({
+        keyId,
+        ip: ctx?.ip,
+        path: ctx?.path,
+        requests: ctx?.requests,
+        dataPoints: ctx?.dataPoints,
+      });
+    })
+    .catch((e) => {
+      console.error('api key telemetry error', e);
+    });
+}
+
+export const checkApiToken = async (token: string, ctx?: ApiTokenContext) => {
   if (!redis) throw API_ERROR_CODES.noRedis;
   if (!token) throw API_ERROR_CODES.invalidKey;
 
@@ -239,19 +263,25 @@ export const checkApiToken = async (token: string) => {
 
   if (Number.isNaN(limit)) throw API_ERROR_CODES.invalidKey;
 
-  if (limit === -1) return true; // unlimited key
+  if (limit === -1) {
+    recordApiKeyUse(keyId, ctx);
+    return true; // unlimited key
+  }
 
   const keyData = await redis.get(`apiKey:${keyId}`);
 
   if (keyData && !isNaN(Number(keyData))) {
     if (Number(keyData) >= limit) {
+      recordApiKeyUse(keyId, ctx);
       throw API_ERROR_CODES.limitExceeded;
     }
 
+    recordApiKeyUse(keyId, ctx);
     return true;
   }
 
   await redis.set(`apiKey:${keyId}`, 0, 'EX', 30 * 60);
+  recordApiKeyUse(keyId, ctx);
 
   return true;
 };
@@ -275,6 +305,8 @@ const incrementApiKey = async (token: string | null | undefined, incrementBy: nu
     .incrby(`apiKey:${keyId}`, incrementBy)
     .expire(`apiKey:${keyId}`, 120 * 60)
     .exec();
+
+  recordApiKeyUse(keyId, { requests: 0, dataPoints: incrementBy });
 
   return;
 };

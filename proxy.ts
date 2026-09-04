@@ -234,7 +234,10 @@ export const apiMiddleware = async (request: NextRequest) => {
     Sentry.setTag('api_type', 'api-token');
     Sentry.setTag('api_key_id', tokenPayload.sub);
     try {
-      await Redis.checkApiToken(apiToken);
+      await Redis.checkApiToken(apiToken, {
+        ip,
+        path: request.nextUrl.pathname,
+      });
 
       Sentry.metrics.count('api.requests', 1, {
         attributes: {

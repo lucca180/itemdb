@@ -25,6 +25,10 @@ export const generateAPIToken = async (apiKey: string) => {
       api_key: apiKey,
       active: true,
     },
+    select: {
+      key_id: true,
+      limit: true,
+    },
   });
 
   if (!keyData) throw new Error('Invalid API key');
