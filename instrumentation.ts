@@ -1,5 +1,23 @@
 import * as Sentry from '@sentry/nextjs';
 
+const DEFAULT_TRACE_RATE = 0.12;
+
+/** node-redis (Cache Components handler) names spans `redis-GET` / `redis-SET`. ioredis uses `GET` / `SET`. */
+const IGNORE_SPANS = [/^redis-/];
+
+function tracesSampler({
+  parentSampled,
+  normalizedRequest,
+}: {
+  parentSampled?: boolean;
+  normalizedRequest?: { headers?: Record<string, string> };
+}) {
+  if (typeof parentSampled === 'boolean') return parentSampled;
+  const headers = normalizedRequest?.headers;
+  if (headers?.['x-itemdb-token'] || headers?.['X-Itemdb-Token']) return 1;
+  return DEFAULT_TRACE_RATE;
+}
+
 export function register() {
   const SENTRY_DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
 
@@ -12,9 +30,9 @@ export function register() {
         dsn:
           SENTRY_DSN ||
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
-        // Adjust this value in production, or use tracesSampler for greater control
-        tracesSampleRate: 0.12,
-        profilesSampleRate: 0.12,
+        tracesSampler,
+        profilesSampleRate: DEFAULT_TRACE_RATE,
+        ignoreSpans: IGNORE_SPANS,
         ignoreErrors: ['MaxListenersExceededWarning'],
         integrations: [
           Sentry.prismaIntegration(),
@@ -30,9 +48,9 @@ export function register() {
         dsn:
           SENTRY_DSN ||
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
-        // Adjust this value in production, or use tracesSampler for greater control
-        tracesSampleRate: 0.12,
-        profilesSampleRate: 0.12,
+        tracesSampler,
+        profilesSampleRate: DEFAULT_TRACE_RATE,
+        ignoreSpans: IGNORE_SPANS,
         ignoreErrors: ['MaxListenersExceededWarning'],
         integrations: [
           Sentry.captureConsoleIntegration({

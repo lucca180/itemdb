@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 import { generateSessionToken, normalizeIP, verifySessionToken } from './api-utils';
 import jwt from 'jsonwebtoken';
 import requestIp from 'request-ip';
+import * as Sentry from '@sentry/nextjs';
 
 const API_CONST = {
   MIN_LIMIT_COUNT: 5000, // maximum items allowed before banning
@@ -305,6 +306,12 @@ const incrementApiKey = async (token: string | null | undefined, incrementBy: nu
     .incrby(`apiKey:${keyId}`, incrementBy)
     .expire(`apiKey:${keyId}`, 120 * 60)
     .exec();
+
+  Sentry.metrics.count('api.data_points', incrementBy, {
+    attributes: {
+      api_key_id: String(keyId),
+    },
+  });
 
   recordApiKeyUse(keyId, { requests: 0, dataPoints: incrementBy });
 
