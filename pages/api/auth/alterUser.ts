@@ -6,8 +6,7 @@ import { rawToUser } from './login';
 import { invalidateCachedUser } from '@utils/auth/userCache';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST')
-    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { neopetsUser, prefLang, username } = req.body as {
     neopetsUser: string;

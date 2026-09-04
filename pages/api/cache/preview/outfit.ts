@@ -15,7 +15,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   if (req.method !== 'GET' || !req.url)
-    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
+    return res.status(405).json({ error: 'Method not allowed' });
   let start = Date.now();
   const { refresh, hash, parent_iid, petId, colorId } = req.query;
   const reqQuery = queryString.parse(req.url.split('?')[1], {

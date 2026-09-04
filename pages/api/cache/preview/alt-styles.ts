@@ -21,8 +21,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(200).json({});
   }
 
-  if (req.method !== 'GET')
-    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     const dtiRes = await axios.get(DTI_ALT_STYLES_URL, {

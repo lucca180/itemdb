@@ -5,8 +5,7 @@ import { verifyListJWT } from '@utils/api/api-utils';
 import { buildSearchQueryParts } from '../../../../utils/search/queryBuilder';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET')
-    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const query = (req.query.s as string)?.trim() ?? '';
   const forceCategory = req.query.forceCategory as string | undefined;

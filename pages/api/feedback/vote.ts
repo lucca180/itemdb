@@ -10,8 +10,7 @@ export const FEEDBACK_VOTE_TARGET = 7;
 export const MAX_VOTE_MULTIPLIER = 3;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST')
-    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const feedback_id = req.body.feedback_id as string;
   const action = req.body.action as string;
