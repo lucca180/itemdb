@@ -1,37 +1,27 @@
 import * as Sentry from '@sentry/nextjs';
 
+const DEFAULT_TRACE_RATE = 0.12;
+
+/** node-redis (Cache Components handler) names spans `redis-GET` / `redis-SET`. ioredis uses `GET` / `SET`. */
+const IGNORE_SPANS = [/^redis-/];
+
 const ignoreErrors = [
   'MaxListenersExceededWarning',
-  // Stale hashed assets after deploy (ITEMDB-7XS)
   "The requested resource isn't a valid image",
-  // Redis Cache Components command timeout (ITEMDB-7RN)
   'The command was aborted',
 ];
 
-function stringifyConsoleArg(value: unknown): string {
-  if (typeof value === 'string') return value;
-  if (value && typeof value === 'object' && 'message' in value) {
-    return String((value as { message: unknown }).message);
-  }
-  return '';
-}
-
-/** captureConsoleIntegration stores args in extra; ignoreErrors may miss those. */
-function beforeSend(event: Sentry.ErrorEvent): Sentry.ErrorEvent | null {
-  const extraArgs = event.extra?.arguments;
-  const haystack = [
-    event.message ?? '',
-    ...(Array.isArray(extraArgs) ? extraArgs.map(stringifyConsoleArg) : []),
-  ].join(' ');
-
-  if (
-    haystack.includes("The requested resource isn't a valid image") ||
-    haystack.includes('The command was aborted')
-  ) {
-    return null;
-  }
-
-  return event;
+function tracesSampler({
+  parentSampled,
+  normalizedRequest,
+}: {
+  parentSampled?: boolean;
+  normalizedRequest?: { headers?: Record<string, string> };
+}) {
+  if (typeof parentSampled === 'boolean') return parentSampled;
+  const headers = normalizedRequest?.headers;
+  if (headers?.['x-itemdb-token'] || headers?.['X-Itemdb-Token']) return 1;
+  return DEFAULT_TRACE_RATE;
 }
 
 export function register() {
@@ -46,11 +36,10 @@ export function register() {
         dsn:
           SENTRY_DSN ||
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
-        // Adjust this value in production, or use tracesSampler for greater control
-        tracesSampleRate: 0.12,
-        profilesSampleRate: 0.12,
+        tracesSampler,
+        profilesSampleRate: DEFAULT_TRACE_RATE,
+        ignoreSpans: IGNORE_SPANS,
         ignoreErrors,
-        beforeSend,
         integrations: [
           Sentry.prismaIntegration(),
           Sentry.captureConsoleIntegration({
@@ -65,11 +54,10 @@ export function register() {
         dsn:
           SENTRY_DSN ||
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
-        // Adjust this value in production, or use tracesSampler for greater control
-        tracesSampleRate: 0.12,
-        profilesSampleRate: 0.12,
+        tracesSampler,
+        profilesSampleRate: DEFAULT_TRACE_RATE,
+        ignoreSpans: IGNORE_SPANS,
         ignoreErrors,
-        beforeSend,
         integrations: [
           Sentry.captureConsoleIntegration({
             // array of methods that should be captured

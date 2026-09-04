@@ -988,6 +988,13 @@ model apiKeys {
   updatedAt   DateTime @updatedAt
   active      Boolean  @default(true)
 
+  lastUsedAt    DateTime?
+  lastIp        String?
+  lastPath      String?   @db.VarChar(255)
+  requestCount  Int       @default(0)
+  /// Snapshot of the current 24h Redis bucket (replaced on flush, not a lifetime sum).
+  dataPoints24h Int       @default(0)
+
   user_id String?
   user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

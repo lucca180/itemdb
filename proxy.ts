@@ -234,11 +234,16 @@ export const apiMiddleware = async (request: NextRequest) => {
     Sentry.setTag('api_type', 'api-token');
     Sentry.setTag('api_key_id', tokenPayload.sub);
     try {
-      await Redis.checkApiToken(apiToken);
+      await Redis.checkApiToken(apiToken, {
+        ip,
+        path: request.nextUrl.pathname,
+      });
 
       Sentry.metrics.count('api.requests', 1, {
         attributes: {
           type: 'api-token',
+          api_key_id: String(tokenPayload.sub),
+          route: apiKeyMetricRoute(pathname),
         },
       });
 
@@ -251,6 +256,8 @@ export const apiMiddleware = async (request: NextRequest) => {
         Sentry.metrics.count('api.requests', 1, {
           attributes: {
             type: 'api-rate-limit',
+            api_key_id: String(tokenPayload.sub),
+            route: apiKeyMetricRoute(pathname),
           },
         });
 
@@ -265,6 +272,8 @@ export const apiMiddleware = async (request: NextRequest) => {
         Sentry.metrics.count('api.requests', 1, {
           attributes: {
             type: 'api-invalid-key',
+            api_key_id: String(tokenPayload.sub),
+            route: apiKeyMetricRoute(pathname),
           },
         });
 
@@ -296,3 +305,8 @@ export const apiMiddleware = async (request: NextRequest) => {
 
   return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
 };
+
+/** `/api/v1/items/123` → `/api/v1/items` — low-cardinality route for Sentry metrics. */
+function apiKeyMetricRoute(pathname: string) {
+  return '/' + pathname.split('/').filter(Boolean).slice(0, 3).join('/');
+}
