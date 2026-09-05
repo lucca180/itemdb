@@ -147,6 +147,8 @@ export const deleteFromS3 = async (path: string) => {
 };
 
 export async function cdnExists(path: string, includeHeader = false): Promise<boolean | string> {
+  if (path.includes('..')) return false;
+
   try {
     const response = await axios.head('https://cdn.itemdb.com.br/' + path, {
       validateStatus: () => true,

@@ -19,7 +19,6 @@ import { useToast } from '@utils/theme/toast';
 import React, { useEffect, useRef, useState } from 'react';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import type { ItemV2For, SearchStats, UserList } from '@types';
-import { usePathname, useRouter } from '@i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import type { SearchFilters as SearchFiltersType } from '@types';
 import Pagination from '@components/Input/Pagination';
@@ -77,8 +76,6 @@ function getSearchQuery(search: string): string {
 }
 
 export function SearchPageClient(props: SearchPageClientProps) {
-  const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamsString = searchParams?.toString() ?? '';
   const t = useTranslations();
@@ -232,9 +229,10 @@ export function SearchPageClient(props: SearchPageClientProps) {
 
     paramsString = paramsString ? '&' + paramsString : '';
 
-    const url = pathname + '?s=' + encodeURIComponent(query) + paramsString;
-    // App Router stand-in for Pages `router.push(..., { shallow: true })`.
-    router.push(url, { scroll: false });
+    // Query-only History API: App Router equivalent of Pages `shallow: true`.
+    // `router.push` is a real navigation (RSC + action queue). `pathname + query`
+    // with next-intl's locale-stripped pathname would also drop `/pt`.
+    window.history.pushState(null, '', '?s=' + encodeURIComponent(query) + paramsString);
   };
 
   // Mirror Pages effect on `router.query`: only sync filters from the URL.

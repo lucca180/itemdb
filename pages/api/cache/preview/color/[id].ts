@@ -32,6 +32,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (!id) return res.status(400).send('No image id provided');
 
     const requestedId = (id as string).split('.')[0];
+    if (!/^[a-zA-Z0-9_-]+$/.test(requestedId)) return res.status(400).send('Invalid image id');
     let img_id = requestedId;
 
     const species = img_id.split('_')[0];

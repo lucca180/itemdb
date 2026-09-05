@@ -22,6 +22,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (!id) return res.status(400).send('No image id provided');
 
     const img_id = (id as string).split('.')[0];
+    if (!/^[a-zA-Z0-9_-]+$/.test(img_id)) return res.status(400).send('Invalid image id');
 
     const path = `items/${img_id}.gif`;
 

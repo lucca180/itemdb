@@ -66,7 +66,6 @@ const SearchModalContent = (props: SearchModalContentProps) => {
     search,
     searchCards,
     loading,
-    liveSearchUrl,
     buildSearchUrl,
     onClose,
     inputRef,
@@ -140,10 +139,27 @@ const SearchModalContent = (props: SearchModalContentProps) => {
     (url: string) => {
       const href = getLocalizedHref(url, locale);
       if (router) return router.push(href);
+
+      // App Router: next/navigation useRouter throws on Pages (no AppRouterContext),
+      // so shared chrome cannot call it. Prefer the row's next-intl <Link>.
+      const rowHref = new URL(href, window.location.origin);
+      if (rowHref.pathname === window.location.pathname) {
+        window.history.pushState(null, '', `${rowHref.pathname}${rowHref.search}`);
+        return;
+      }
+
       window.location.assign(href);
     },
     [locale, router]
   );
+
+  const activateOmniRow = useCallback((index: number) => {
+    const row = document.getElementById(`omni-search-el-${index}`);
+    const anchor = row?.closest('a');
+    if (!(anchor instanceof HTMLAnchorElement)) return false;
+    anchor.click();
+    return true;
+  }, []);
 
   const track = useCallback((event: string, type?: string) => {
     const run = () => {
@@ -207,6 +223,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
     latestSearches,
     buildSearchUrl,
     navigate,
+    activateOmniRow,
     setLatest,
     onClose,
     track,
@@ -217,6 +234,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
     latestSearches,
     buildSearchUrl,
     navigate,
+    activateOmniRow,
     setLatest,
     onClose,
     track,
@@ -235,6 +253,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
         latestSearches: recent,
         buildSearchUrl: toUrl,
         navigate: go,
+        activateOmniRow: activateRow,
         setLatest: saveLatest,
         onClose: close,
         track: trackEvent,
@@ -267,7 +286,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
               const searchUrl = toUrl(q);
               saveLatest({ type: 'search', query: q, index: 0, url: searchUrl });
               trackEvent('omni-search', !cards.length ? 'latest-enter-search' : 'enter-search');
-              go(searchUrl);
+              if (!activateRow(0)) go(searchUrl);
               close();
             }
             break;
@@ -294,7 +313,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
 
           if (url) {
             saveLatest(card);
-            go(url);
+            if (!activateRow(focusedIndex)) go(url);
             close();
           }
           break;
@@ -346,13 +365,13 @@ const SearchModalContent = (props: SearchModalContentProps) => {
             <SearchQuery
               query={search}
               index={0}
-              url={liveSearchUrl}
+              url={buildSearchUrl(search)}
               onSelect={onSelectCard}
               selectCard={{
                 type: 'search',
                 query: search,
                 index: 0,
-                url: liveSearchUrl,
+                url: buildSearchUrl(search),
               }}
             />
           </Flex>
