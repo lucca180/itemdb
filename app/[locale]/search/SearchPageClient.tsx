@@ -156,6 +156,29 @@ export function SearchPageClient(props: SearchPageClientProps) {
     if (fetchStats) setStatus(null);
     if (fetchCount) setTotalResults(null);
 
+    // Next.js dispatches server actions sequentially per client. Run the page
+    // of results first so cards are not stuck behind count + facet queries.
+    const searchGeneration = ++searchGenerationRef.current;
+
+    try {
+      const result = await runSearch(query, filters, props.listJWT);
+      if (searchGenerationRef.current !== searchGeneration) return;
+      setResult(result);
+    } catch (err) {
+      if (searchGenerationRef.current !== searchGeneration) return;
+      console.error(err);
+      toast({
+        id: 'search-error',
+        title: t('General.an-error-occurred'),
+        description: t('General.try-again-later'),
+        status: 'error',
+        duration: null,
+        isClosable: true,
+      });
+    }
+
+    if (searchGenerationRef.current !== searchGeneration) return;
+
     if (fetchCount) {
       const countGeneration = ++countGenerationRef.current;
       runSearchCount(query, filters, props.listJWT)
@@ -182,25 +205,6 @@ export function SearchPageClient(props: SearchPageClientProps) {
           if (statsKeyRef.current === statsKey) statsKeyRef.current = null;
           console.error(error);
         });
-    }
-
-    const searchGeneration = ++searchGenerationRef.current;
-
-    try {
-      const result = await runSearch(query, filters, props.listJWT);
-      if (searchGenerationRef.current !== searchGeneration) return;
-      setResult(result);
-    } catch (err) {
-      if (searchGenerationRef.current !== searchGeneration) return;
-      console.error(err);
-      toast({
-        id: 'search-error',
-        title: t('General.an-error-occurred'),
-        description: t('General.try-again-later'),
-        status: 'error',
-        duration: null,
-        isClosable: true,
-      });
     }
   };
 
