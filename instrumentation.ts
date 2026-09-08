@@ -2,8 +2,8 @@ import * as Sentry from '@sentry/nextjs';
 
 const DEFAULT_TRACE_RATE = 0.12;
 
-/** node-redis (Cache Components handler) names spans `redis-GET` / `redis-SET`. ioredis uses `GET` / `SET`. */
-const IGNORE_SPANS = [/^redis-/];
+/** Cache Components handler (node-redis). Leaves ioredis `redis-get` / `redis-set` alone. */
+const IGNORE_CACHE_REDIS = [/^(HDEL|HSET|HSCAN|PUBLISH|SUBSCRIBE|UNLINK|SCAN)\b/i];
 
 const ignoreErrors = [
   'MaxListenersExceededWarning',
@@ -12,12 +12,15 @@ const ignoreErrors = [
 ];
 
 function tracesSampler({
+  name,
   parentSampled,
   normalizedRequest,
 }: {
+  name?: string;
   parentSampled?: boolean;
   normalizedRequest?: { headers?: Record<string, string> };
 }) {
+  if (name && IGNORE_CACHE_REDIS[0].test(name)) return 0;
   if (typeof parentSampled === 'boolean') return parentSampled;
   const headers = normalizedRequest?.headers;
   if (headers?.['x-itemdb-token'] || headers?.['X-Itemdb-Token']) return 1;
@@ -38,7 +41,8 @@ export function register() {
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
         tracesSampler,
         profilesSampleRate: DEFAULT_TRACE_RATE,
-        ignoreSpans: IGNORE_SPANS,
+        ignoreSpans: IGNORE_CACHE_REDIS,
+        ignoreTransactions: IGNORE_CACHE_REDIS,
         ignoreErrors,
         integrations: [
           Sentry.prismaIntegration(),
@@ -56,7 +60,8 @@ export function register() {
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
         tracesSampler,
         profilesSampleRate: DEFAULT_TRACE_RATE,
-        ignoreSpans: IGNORE_SPANS,
+        ignoreSpans: IGNORE_CACHE_REDIS,
+        ignoreTransactions: IGNORE_CACHE_REDIS,
         ignoreErrors,
         integrations: [
           Sentry.captureConsoleIntegration({
