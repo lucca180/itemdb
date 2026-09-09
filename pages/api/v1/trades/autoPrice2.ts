@@ -7,7 +7,6 @@ import { MAX_VOTE_MULTIPLIER } from '../../feedback/vote';
 import { getManyItems } from '../items/many';
 import { differenceInCalendarDays } from 'date-fns';
 import { ItemData } from '@types';
-import { shouldSkipTrade } from '@utils/utils';
 import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/item/tradeCanonical';
 import { omitOwnerHash } from '@utils/ownerHash';
 import {
@@ -15,6 +14,8 @@ import {
   buildTradeItemSignature,
   getTradeIsAllItemsEqual,
   isWishlistBanned,
+  itemPriceExceedsInstantBuy,
+  shouldSkipInstaBuySimilar,
 } from '@utils/trades/findSimilarTrade';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
@@ -129,6 +130,9 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
 const fetchSimilarTrade = async (trade: Trades & { items: TradeItems[] }) => {
   const isAllItemsEqual = getTradeIsAllItemsEqual(trade);
 
+  // Match wishlist/size/mix and the same Instant Buy (null → IS NULL).
+  // Without that, an IB 3.7M egg lot could seed prices onto an IB 1.5M lot
+  // that only shared wishlist "none" + 2 mixed items.
   return prisma.trades.findFirst({
     where: {
       priced: true,
@@ -136,6 +140,7 @@ const fetchSimilarTrade = async (trade: Trades & { items: TradeItems[] }) => {
       auto_ignore_pricing: false,
       itemsCount: trade.itemsCount,
       isAllItemsEqual,
+      instantBuy: trade.instantBuy,
     },
     orderBy: { addedAt: 'desc' },
     include: { items: true },
@@ -151,7 +156,8 @@ const getCachedSimilarTrade = async (
     trade.wishlist,
     trade.itemsCount,
     getTradeIsAllItemsEqual(trade),
-    buildTradeItemSignature(trade.items)
+    buildTradeItemSignature(trade.items),
+    trade.instantBuy
   );
 
   if (cache.has(key)) return cache.get(key)!;
@@ -177,6 +183,7 @@ const findSimilar = async (
 ) => {
   if (isWishlistBanned(trade.wishlist)) return null;
 
+  // Handlers first: true means the lot was priced or closed — do not similar-match.
   const shouldSkip =
     (await checkTradeEstPrice(trade, itemDataCache)) || (await checkInstaBuy(trade, itemDataCache));
   if (shouldSkip) return null;
@@ -188,6 +195,7 @@ const findSimilar = async (
 
   const updatedItems: any[] = [...trade.items];
 
+  // Copy by slot order (not item identity). Never copy a price above this lot's IB.
   for (const similarItem of similar.items) {
     const item = getTradeItemByOrder(updatedItems, similarItem.order);
     if (!item) continue;
@@ -199,10 +207,12 @@ const findSimilar = async (
 
     if (similarItem.amount === 1 && item.amount !== 1 && similarItem.price) {
       const adjustedPrice = Math.floor(Number(similarItem.price) / item.amount);
+      if (itemPriceExceedsInstantBuy(adjustedPrice, trade.instantBuy)) continue;
       item.price = adjustedPrice;
       continue;
     }
 
+    if (itemPriceExceedsInstantBuy(Number(similarItem.price), trade.instantBuy)) continue;
     item.price = similarItem.price;
   }
 
@@ -319,9 +329,16 @@ const checkTradeEstPrice = async (
   return true;
 };
 
-// Instant Buy on mixed lots: if the rest of the lot is at most 25% of the
-// most expensive item's market value, apply IB to that item. Otherwise dump
-// cheap/skip-wishlist IBs from the similar queue.
+// Mixed-lot Instant Buy. Returns true when handled here so findSimilar must not run.
+//
+// 1. Fresh market prices + rest of lot ≤ 25% of the expensive item → put IB on that item.
+// 2. Else if shouldSkipInstaBuySimilar → close without prices (no similar match).
+// 3. Else return false → high IB + real NP wishlist + similar-valued items may
+//    still similar-match (only against the same IB).
+//
+// Stale/missing/inflated prices cannot do (1), but (2) still applies. Returning
+// false on "none" lots used to leak them into findSimilar, which then copied
+// prices from an unrelated IB lot by slot order.
 const checkInstaBuy = async (
   trade: Trades & { items: TradeItems[] },
   itemDataCache: Map<string, ItemData>
@@ -332,9 +349,15 @@ const checkInstaBuy = async (
     itemDataCache.get(item.item_iid!.toString())
   ) as ItemData[];
 
-  // there is a very small chance an item is not found, in that case we skip the trade
+  const closeWithoutSimilar = async () => {
+    await processTradePrice(trade as any);
+    return true;
+  };
+
+  // Cannot apply IB to the expensive item without item data; still skip similar if needed.
   if (items.includes(undefined!)) {
     console.error('Item data not found for trade:', trade.trade_id);
+    if (shouldSkipInstaBuySimilar(trade)) return closeWithoutSimilar();
     return false;
   }
 
@@ -344,7 +367,11 @@ const checkInstaBuy = async (
       item.price.inflated ||
       differenceInCalendarDays(new Date(), new Date(item.price.addedAt ?? 0)) > 30
   );
-  if (hasItemUnpriced) return false;
+  // No usable market for the 25% path — still skip similar for none / cheap IB / skip-wishlist.
+  if (hasItemUnpriced) {
+    if (shouldSkipInstaBuySimilar(trade)) return closeWithoutSimilar();
+    return false;
+  }
 
   const mostExpensiveItem = items.reduce(
     (prev, current) => ((prev.price.value ?? 0) > (current.price.value ?? 0) ? prev : current),
@@ -374,11 +401,7 @@ const checkInstaBuy = async (
     return true;
   }
 
-  // different items with similar value and insta buy is low -> skip
-  if (trade.instantBuy < 1000000 || trade.wishlist === 'none' || shouldSkipTrade(trade.wishlist)) {
-    await processTradePrice(trade as any);
-    return true;
-  }
+  if (shouldSkipInstaBuySimilar(trade)) return closeWithoutSimilar();
 
   return false;
 };
