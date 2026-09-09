@@ -9,6 +9,16 @@ import { processTradePrice } from '@pages/api/v1/trades';
 export const FEEDBACK_VOTE_TARGET = 7;
 export const MAX_VOTE_MULTIPLIER = 3;
 
+const isAutoFeedback = (feedback: Feedbacks) => {
+  if (feedback.user_id === 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1') return true;
+  try {
+    const parsed = JSON.parse(feedback.json as string) as FeedbackParsed;
+    return parsed.pageRef === 'auto' || !!parsed.auto_ref;
+  } catch {
+    return false;
+  }
+};
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -128,10 +138,13 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          decrement: FEEDBACK_VOTE_TARGET * 6,
+          decrement: FEEDBACK_VOTE_TARGET * 10, // -70
         },
       },
     });
+
+    // Auto rejection: harder hit for rubber-stamp ups, bonus for catching bad copies
+    const isAuto = isAutoFeedback(feedback);
 
     const approveVotes = prisma.user.updateMany({
       where: {
@@ -144,7 +157,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          decrement: FEEDBACK_VOTE_TARGET * 3,
+          decrement: isAuto ? 50 : FEEDBACK_VOTE_TARGET * 5,
         },
       },
     });
@@ -160,7 +173,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          increment: FEEDBACK_VOTE_TARGET,
+          increment: isAuto ? 20 : 15,
         },
       },
     });
@@ -213,7 +226,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          increment: Math.ceil(FEEDBACK_VOTE_TARGET / 2),
+          increment: 2,
         },
       },
     });
