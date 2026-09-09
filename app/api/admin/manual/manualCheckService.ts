@@ -151,7 +151,7 @@ export async function resolveManualCheck(
     }
 
     if (action === 'approve') {
-      await handleItemUpdate(itemId, String(correctInfo!.field), String(correctInfo!.value), user);
+      await handleItemUpdate(itemId, String(correctInfo!.field), correctInfo!.value, user);
 
       await prisma.itemProcess.updateMany({
         where: {
@@ -200,12 +200,12 @@ export async function resolveManualCheck(
   throw new ManualCheckInputError();
 }
 
-async function handleItemUpdate(id: number, field: string, value: string, user: User) {
+async function handleItemUpdate(id: number, field: string, value: unknown, user: User) {
   let itemSlug = '';
   let image_id = '';
 
   if (field === 'name') {
-    itemSlug = slugify(value);
+    itemSlug = slugify(String(value));
 
     const dbSlugItems = await prisma.items.findMany({
       where: {
@@ -230,15 +230,19 @@ async function handleItemUpdate(id: number, field: string, value: string, user: 
   }
 
   if (field === 'image') {
-    image_id = (value as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+    image_id = String(value).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
   }
+
+  const parsedValue = ['weight', 'rarity', 'est_val', 'item_id'].includes(field)
+    ? Number(value)
+    : value;
 
   await prisma.items.update({
     where: {
       internal_id: Number(id),
     },
     data: {
-      [field]: value,
+      [field]: parsedValue,
       slug: itemSlug || undefined,
       image_id: image_id || undefined,
     },
@@ -248,7 +252,7 @@ async function handleItemUpdate(id: number, field: string, value: string, user: 
     'itemUpdate',
     {
       field,
-      value,
+      value: String(value),
     },
     id.toString(),
     user.id
