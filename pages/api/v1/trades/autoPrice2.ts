@@ -25,12 +25,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (!req.headers.authorization || req.headers.authorization !== TARNUM_KEY)
       return res.status(401).json({ error: 'Unauthorized' });
 
-    // if (req.method === 'GET') return GET(req, res);
     if (req.method === 'POST') return POST(req, res);
-    // if (req.method === 'PATCH') return PATCH(req, res);
 
     if (req.method == 'OPTIONS') {
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH');
+      res.setHeader('Access-Control-Allow-Methods', 'POST');
       return res.status(200).json({});
     }
 
@@ -76,6 +74,7 @@ const applyInstantBuyUnitPrice = async (trade: Trades & { items: TradeItems[] })
 export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[] })[]) => {
   const similarCache = new Map<string, (Trades & { items: TradeItems[] }) | null>();
   const similarInflight = new Map<string, Promise<(Trades & { items: TradeItems[] }) | null>>();
+  const itemDataCache = new Map<string, ItemData>();
 
   const promResult = await pMap(
     tradeRaw,
@@ -89,7 +88,7 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
 
       const afterCanonical = await findCanonical(trade);
       if (!afterCanonical) return null;
-      return findSimilar(afterCanonical, similarCache, similarInflight);
+      return findSimilar(afterCanonical, similarCache, similarInflight, itemDataCache);
     },
     { concurrency: AUTO_PRICE_CONCURRENCY }
   );
@@ -126,8 +125,6 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
 
   return await prisma.$transaction([feedbacks, updateTrades]);
 };
-
-const banWords = ['cool negg', 'baby', 'bby', 'bb'];
 
 const fetchSimilarTrade = async (trade: Trades & { items: TradeItems[] }) => {
   const isAllItemsEqual = getTradeIsAllItemsEqual(trade);
@@ -175,11 +172,13 @@ const getCachedSimilarTrade = async (
 const findSimilar = async (
   trade: Trades & { items: TradeItems[] },
   similarCache: Map<string, (Trades & { items: TradeItems[] }) | null>,
-  similarInflight: Map<string, Promise<(Trades & { items: TradeItems[] }) | null>>
+  similarInflight: Map<string, Promise<(Trades & { items: TradeItems[] }) | null>>,
+  itemDataCache: Map<string, ItemData>
 ) => {
-  if (isWishlistBanned(trade.wishlist, banWords)) return null;
+  if (isWishlistBanned(trade.wishlist)) return null;
 
-  const shouldSkip = (await checkTradeEstPrice(trade)) || (await checkInstaBuy(trade));
+  const shouldSkip =
+    (await checkTradeEstPrice(trade, itemDataCache)) || (await checkInstaBuy(trade, itemDataCache));
   if (shouldSkip) return null;
 
   const similar = await getCachedSimilarTrade(trade, similarCache, similarInflight);
@@ -274,12 +273,12 @@ const findCanonical = async (trade: Trades & { items: TradeItems[] }) => {
   return null;
 };
 
-const itemDataCache = new Map<string, ItemData>();
-
-// this will skip trade pricing if the trade is est price is less than 100k
-const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
-  // if (trade.items.length === 1) return false;
-
+// Skip similar matching when every item has a recent non-inflated market price
+// and the lot estimate is under 1M (and there is no Instant Buy).
+const checkTradeEstPrice = async (
+  trade: Trades & { items: TradeItems[] },
+  itemDataCache: Map<string, ItemData>
+) => {
   const itemsQuery = trade.items
     .map((item) => item.item_iid?.toString())
     .filter((id) => !!id) as string[];
@@ -320,16 +319,14 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
   return true;
 };
 
-// this will check if the trade has an instant buy and if the most expensive item is worth more than 80% of the insta buy
-const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
+// Instant Buy on mixed lots: if the rest of the lot is at most 25% of the
+// most expensive item's market value, apply IB to that item. Otherwise dump
+// cheap/skip-wishlist IBs from the similar queue.
+const checkInstaBuy = async (
+  trade: Trades & { items: TradeItems[] },
+  itemDataCache: Map<string, ItemData>
+) => {
   if (!trade.instantBuy) return false;
-
-  // One unique item type: always take the IB unit price — no market data needed.
-  // Mirrors ingest (isAllItemsEqual && instantBuy) so these never stay in the queue.
-  if (getTradeIsAllItemsEqual(trade)) {
-    await applyInstantBuyUnitPrice(trade);
-    return true;
-  }
 
   const items = trade.items.map((item) =>
     itemDataCache.get(item.item_iid!.toString())

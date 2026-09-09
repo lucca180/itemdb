@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../utils/prisma';
-import { FeedbackParsed, TradeData } from '../../../types';
-import { CheckAuth } from '../../../utils/googleCloud';
+import prisma from '@utils/prisma';
+import { FeedbackParsed, TradeData } from '@types';
+import { CheckAuth } from '@utils/googleCloud';
 import requestIp from 'request-ip';
 import { Feedbacks } from '@prisma/generated/client';
 
@@ -94,7 +94,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     feedbacks.push(fixTrade(feedback, itemData));
   }
 
-  res.json(feedbackRaw);
+  res.json(feedbacks);
 }
 
 const getTradeFeedback = async (

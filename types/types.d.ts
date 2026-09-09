@@ -621,7 +621,6 @@ export type FeedbackParsed = {
   ip: string;
   pageRef: string;
   content: any;
-  autoPriceList?: number[];
   auto_ref?: number;
 };
 

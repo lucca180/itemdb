@@ -12,7 +12,6 @@ import { autoPriceTrades2 } from './autoPrice2';
 import { newCreatePriceProcessFlow } from '../prices';
 import { TradeItems, Trades } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
-import { processSimilarTrades } from '../../feedback/send';
 import { isValidOptionalOwnerHash, omitOwnerHash, withoutOwnerData } from '@utils/ownerHash';
 import { validateExtractorHash } from '@utils/api/hashValidator';
 
@@ -276,10 +275,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
-  await Promise.all([
-    processTradePrice(trade, req),
-    processSimilarTrades(trade, trade.trade_id, user.id),
-  ]);
+  await processTradePrice(trade, req);
 
   return res.status(200).json({ success: true, message: false });
 };

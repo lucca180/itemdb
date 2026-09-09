@@ -46,10 +46,6 @@ const ReportFeedbackModal = dynamic(() => import('@components/Modal/ReportFeedba
   ssr: false,
 });
 
-const CanonicalTradeModal = dynamic(() => import('@components/Modal/CanonicalTradeModal'), {
-  ssr: false,
-});
-
 const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
 
 type FeedbackVotePageClientProps = {
@@ -110,11 +106,6 @@ export function FeedbackVotePageClient({
   const [votedCount, setVotedCount] = useState(0);
   const [lastVotedTradeId, setLastVotedTradeId] = useState<number>();
   const skippedFeedbacks = useRef<number[]>([]);
-  const {
-    open: isCanonicalOpen,
-    // onOpen: onCanonicalOpen,
-    onClose: onCanonicalClose,
-  } = useDisclosure();
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -254,14 +245,6 @@ export function FeedbackVotePageClient({
     <>
       {isOpen && currentFeedback && (
         <ReportFeedbackModal feedback={currentFeedback} isOpen={isOpen} onClose={onClose} />
-      )}
-      {isCanonicalOpen && currentFeedback && (
-        <CanonicalTradeModal
-          trade={currentFeedback.parsed?.content.trade}
-          isOpen={isCanonicalOpen}
-          onClose={onCanonicalClose}
-          refresh={init}
-        />
       )}
       <Flex
         mt={8}
@@ -541,11 +524,6 @@ export function FeedbackVotePageClient({
                       S
                     </Kbd>
                   </Button>
-                  {/* {isAdmin && (
-                    <Button onClick={onCanonicalOpen} size="lg" variant="subtle">
-                      🏷️
-                    </Button>
-                  )} */}
                   <Button
                     colorPalette="green"
                     variant="solid"

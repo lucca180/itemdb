@@ -102,7 +102,7 @@ const TradeTable = (props: Props) => {
               })}
             </Text>
           </Box>
-          {(!!props.onReport && !props.isAuto) || (props.showAdminEdit && user?.isAdmin) ? (
+          {!!props.onReport || (props.showAdminEdit && user?.isAdmin) ? (
             <Flex gap={1} pr={2}>
               {props.showAdminEdit && user?.isAdmin && (
                 <IconButton
@@ -117,7 +117,7 @@ const TradeTable = (props: Props) => {
                   <FaPen />
                 </IconButton>
               )}
-              {!!props.onReport && !props.isAuto && (
+              {!!props.onReport && (
                 <IconButton
                   aria-label="Report Trade"
                   onClick={props.onReport}

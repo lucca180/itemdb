@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../utils/prisma';
-import { FeedbackParsed, TradeData } from '../../../types';
-import { CheckAuth } from '../../../utils/googleCloud';
+import prisma from '@utils/prisma';
+import { FeedbackParsed, TradeData } from '@types';
+import { CheckAuth } from '@utils/googleCloud';
 import { Feedbacks } from '@prisma/generated/client';
-import { processTags } from '../v1/items/[id_name]/index';
-import { processTradePrice } from '../v1/trades';
+import { processTags } from '@pages/api/v1/items/[id_name]/index';
+import { processTradePrice } from '@pages/api/v1/trades';
 
 export const FEEDBACK_VOTE_TARGET = 7;
 export const MAX_VOTE_MULTIPLIER = 3;
@@ -257,6 +257,15 @@ const commitTradePrice = async (feedback: Feedbacks, approved: boolean, req?: Ne
       },
     });
   }
+
+  await prisma.tradeItems.updateMany({
+    where: {
+      trade_id: trade.trade_id,
+    },
+    data: {
+      price: null,
+    },
+  });
 
   return prisma.trades.update({
     where: {

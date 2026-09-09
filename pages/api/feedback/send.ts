@@ -9,8 +9,6 @@ import { Webhook, EmbedBuilder } from '@tycrek/discord-hookr';
 import { getItem } from '../v1/items/[id_name]';
 import { User } from '@prisma/generated/client';
 
-const SKIP_AUTO_TRADE_FEEDBACK = process.env.SKIP_AUTO_TRADE_FEEDBACK == 'true';
-
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -34,7 +32,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     ip: ip,
     pageRef: pageInfo,
     content: parsed,
-    autoPriceList: [],
   };
 
   let shoudContinue = true;
@@ -77,15 +74,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       user_id,
       voteMultiplier >= MAX_VOTE_MULTIPLIER
     );
-
-    // const autopriced = await processSimilarTrades(
-    //   parsed.trade as TradeData,
-    //   parseInt(subject_id),
-    //   user_id
-    // );
-    // obj.autoPriceList = autopriced;
-
-    obj.autoPriceList = [];
   }
 
   if (type === 'feedback') {
@@ -172,14 +160,9 @@ const processTradeFeedback = async (
 
   if (tradeFeedback) {
     if (tradeFeedback.user_id === user_id) {
-      const parsed = JSON.parse(tradeFeedback.json?.toString() ?? '{}');
-      const feedbackList = parsed.autoPriceList ?? [];
-      await prisma.feedbacks.deleteMany({
+      await prisma.feedbacks.delete({
         where: {
-          OR: [
-            { feedback_id: tradeFeedback.feedback_id },
-            { subject_id: { in: feedbackList }, processed: false },
-          ],
+          feedback_id: tradeFeedback.feedback_id,
         },
       });
 
@@ -205,109 +188,6 @@ const processTradeFeedback = async (
   }
 
   return true;
-};
-
-export const processSimilarTrades = async (trade: TradeData, trade_id: number, user_id: string) => {
-  const currentTrade = {
-    isAllItemsTheSame: trade.items.every(
-      (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
-    ),
-    isAllSamePrice: trade.items.every((i) => i.price === trade.items[0].price && !!i.price),
-    isAllEmpty: trade.items.every((item) => !item.price),
-  };
-
-  if (currentTrade.isAllEmpty || SKIP_AUTO_TRADE_FEEDBACK) return [];
-
-  const similarTrades = await prisma.trades.findMany({
-    where: {
-      wishlist: trade.wishlist,
-      trade_id: {
-        not: trade_id,
-      },
-      processed: false,
-      priced: false,
-    },
-    include: {
-      items: {
-        include: {
-          item: true,
-        },
-        orderBy: {
-          order: 'asc',
-        },
-      },
-    },
-  });
-
-  if (!similarTrades.length) return [];
-
-  const feedbackCreate: any = [];
-  const updatedTrades: number[] = [];
-
-  for (const t of similarTrades) {
-    if (t.items.length !== trade.items.length) continue;
-
-    const similarTradeData: TradeData = {
-      trade_id: t.trade_id,
-      owner: t.owner,
-      wishlist: t.wishlist,
-      addedAt: t.addedAt.toJSON(),
-      processed: t.processed,
-      priced: t.priced,
-      hash: t.hash,
-      instantBuy: t.instantBuy,
-      createdAt: t.createdAt?.toJSON() || null,
-      items: t.items.map((i) => {
-        return {
-          internal_id: i.internal_id,
-          trade_id: i.trade_id,
-          name: i.item?.name || '',
-          image: i.item?.image || '',
-          image_id: i.item?.image_id || '',
-          item_iid: i.item_iid || null,
-          price: i.price?.toNumber() || null,
-          order: i.order,
-          addedAt: i.addedAt.toJSON(),
-          amount: i.amount,
-        };
-      }),
-    };
-
-    trade.items.forEach((item) => {
-      if (!similarTradeData.items[item.order]) return;
-
-      similarTradeData.items[item.order].price = item.price;
-    });
-
-    const obj = {
-      ip: 'auto',
-      pageRef: 'auto-pricing',
-      refTrade: trade_id,
-      content: similarTradeData,
-    };
-
-    processTradeFeedback(similarTradeData, similarTradeData.trade_id, user_id, false).then((x) => {
-      if (!x) return;
-
-      const createFeedback = prisma.feedbacks.create({
-        data: {
-          subject_id: similarTradeData.trade_id,
-          json: JSON.stringify(obj),
-          type: 'tradePrice',
-          votes: 0,
-          ip_address: 'auto',
-          user_id: 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1',
-        },
-      });
-
-      feedbackCreate.push(createFeedback);
-      updatedTrades.push(similarTradeData.trade_id);
-    });
-  }
-
-  await Promise.all(feedbackCreate);
-
-  return updatedTrades;
 };
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
