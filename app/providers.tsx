@@ -7,7 +7,7 @@ import { Provider } from 'jotai';
 import type { ReactNode } from 'react';
 import { system } from '@utils/theme/theme';
 import { AuthProvider } from '@utils/auth';
-import { installProofInterceptor } from '@utils/api/proofInterceptor';
+import { installApiSessionInterceptor } from '@utils/api/apiSessionInterceptor';
 import { ProgressProvider } from '@bprogress/next/app';
 
 type ProvidersProps = {
@@ -15,7 +15,7 @@ type ProvidersProps = {
 };
 
 if (typeof window !== 'undefined') {
-  installProofInterceptor();
+  installApiSessionInterceptor();
 }
 
 export function Providers({ children }: ProvidersProps) {

@@ -1,118 +1,41 @@
-import { generateSiteProof, getSiteProofInput, verifySessionToken } from '@utils/api/api-utils';
-import { expect, test, describe } from 'vitest';
+import { verifySessionToken } from '@utils/api/api-utils';
+import { expect, test, describe, vi, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { apiMiddleware } from '../proxy';
 import { createSession, redis_setItemCount } from '@utils/api/redis';
 import { generateAPIToken } from '../pages/api/auth/token';
-import { createHash } from 'crypto';
+import { verifyTurnstileToken } from '@utils/api/turnstile';
 
 describe.concurrent('API Access tests', () => {
-  test('Access API with valid proof is blocked', async () => {
-    const proof = generateSiteProof();
-
-    expect(proof).toBeDefined();
-
-    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/items');
-
-    const request = new NextRequest('http://localhost/api/v1/items', {
+  test('GET getSession is not a bootstrap skip', async () => {
+    const request = new NextRequest('http://localhost/api/v1/users/getSession', {
       method: 'GET',
-      headers: {
-        'x-itemdb-proof': solvedProof,
-      },
     });
 
     const response = await apiMiddleware(request);
     expect(response.status).toBe(401);
   });
 
-  test('getSession accepts valid site proof', async () => {
-    const proof = generateSiteProof();
-    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/users/getSession');
-
+  test('POST getSession is a skip route', async () => {
     const request = new NextRequest('http://localhost/api/v1/users/getSession', {
-      method: 'GET',
-      headers: {
-        'x-itemdb-proof': solvedProof,
-      },
+      method: 'POST',
     });
 
     const response = await apiMiddleware(request);
+    expect(response.headers.get('x-itemdb-skip')).toBe('true');
     expect(response.status).toBe(200);
   });
 
-  test('getSession rejects proof solved for another path', async () => {
-    const proof = generateSiteProof();
-    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/items');
-
-    const request = new NextRequest('http://localhost/api/v1/users/getSession', {
-      method: 'GET',
-      headers: {
-        'x-itemdb-proof': solvedProof,
-      },
-    });
-
-    const response = await apiMiddleware(request);
-    expect(response.status).toBe(401);
-  });
-
-  test('Access API with invalid proof', async () => {
-    const proof =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJpdGVtZGIuY29tLmJyIiwiaXAiOm51bGwsImN0eCI6ImJyb3dzZXIiLCJpYXQiOjE3NzEyNzc4ODYsImV4cCI6MTc3MTI3Nzg4N30.S9-LuUII_4lym69xiSH5ZcFCIOm-qzWBDwGwmsNXHO4';
-
+  test('x-itemdb-proof does not grant API access', async () => {
     const request = new NextRequest('http://localhost/api/v1/items', {
       method: 'GET',
       headers: {
-        'x-itemdb-proof': proof,
+        'x-itemdb-proof': 'forged-proof',
       },
     });
 
     const response = await apiMiddleware(request);
     expect(response.status).toBe(401);
-  });
-
-  test('Access API with proof solved for another path', async () => {
-    const proof = generateSiteProof();
-    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/search');
-
-    const request = new NextRequest('http://localhost/api/v1/items', {
-      method: 'GET',
-      headers: {
-        'x-itemdb-proof': solvedProof,
-      },
-    });
-
-    const response = await apiMiddleware(request);
-    expect(response.status).toBe(401);
-  });
-
-  test('Valid proof does not skip item quota', async () => {
-    const proof = generateSiteProof();
-    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/items');
-    const ip = `proof-quota-${Date.now()}`;
-
-    const countRequest = {
-      method: 'GET',
-      url: '/api/v1/items',
-      headers: {
-        'x-itemdb-proof': solvedProof,
-      },
-      cookies: {},
-    } as any;
-
-    // Quota still applies even when a valid site proof header is present.
-    await redis_setItemCount(ip, 5000, countRequest);
-
-    const response = await apiMiddleware(
-      new NextRequest('http://localhost/api/v1/items', {
-        method: 'GET',
-        headers: {
-          'X-Forwarded-For': ip,
-          'x-itemdb-proof': solvedProof,
-        },
-      })
-    );
-    expect(response.status).toBe(429);
-    expect(response.headers.get('Retry-After')).toBeDefined();
   });
 
   test('Access Skip API route', async () => {
@@ -145,13 +68,13 @@ describe.concurrent('API Access tests', () => {
     expect(response.status).toBe(200);
   });
 
-  test('Access API without proof, key or session', async () => {
+  test('Access API without token or session', async () => {
     const request = new NextRequest('http://localhost/api/v1/items', {
       method: 'GET',
     });
 
     const response = await apiMiddleware(request);
-    expect(response.status).toBe(401); // change this after block is effective
+    expect(response.status).toBe(401);
   });
 
   describe.concurrent('Session Token tests', async () => {
@@ -221,7 +144,7 @@ describe.concurrent('API Access tests', () => {
       request.cookies.set('idb-session-id', 'invalid-session');
 
       const response = await apiMiddleware(request);
-      expect(response.status).toBe(401); // change this after block is effective
+      expect(response.status).toBe(401);
     });
   });
 
@@ -273,40 +196,77 @@ describe.concurrent('API Access tests', () => {
       request.headers.set('x-itemdb-token', 'c441522904be4c4795221afea59a628f');
 
       const response = await apiMiddleware(request);
-      expect(response.status).toBe(401); // change this after block is effective
+      expect(response.status).toBe(401);
     });
   });
 });
 
-function solveSiteProof(challenge: string, method: string, pathname: string) {
-  const payload = JSON.parse(Buffer.from(challenge.split('.')[1], 'base64url').toString('utf8'));
-  const difficulty = Number(payload.difficulty);
+describe('Turnstile siteverify', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
 
-  for (let counter = 0; counter < 10_000_000; counter++) {
-    const input = getSiteProofInput(challenge, counter, { method, pathname });
-    const hash = createHash('sha256').update(input).digest();
+  test('skips verification in non-production when secret is unset', async () => {
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '');
+    await expect(verifyTurnstileToken(undefined)).resolves.toBe(true);
+  });
 
-    if (hasLeadingZeroBits(hash, difficulty)) {
-      return `${challenge}:${counter}`;
-    }
-  }
+  test('fails closed in production without a secret', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '');
+    await expect(verifyTurnstileToken('token')).resolves.toBe(false);
+  });
 
-  throw new Error('Unable to solve site proof');
-}
+  test('accepts a successful siteverify with matching action', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'test-secret');
 
-function hasLeadingZeroBits(hash: Uint8Array, bits: number) {
-  let remaining = bits;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          success: true,
+          action: 'get-session',
+        }),
+      }))
+    );
 
-  for (const byte of hash) {
-    if (remaining <= 0) return true;
-    if (remaining >= 8) {
-      if (byte !== 0) return false;
-      remaining -= 8;
-      continue;
-    }
+    await expect(verifyTurnstileToken('ok-token', '1.1.1.1')).resolves.toBe(true);
+  });
 
-    return byte >> (8 - remaining) === 0;
-  }
+  test('rejects an invalid or mismatched action token', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'test-secret');
 
-  return true;
-}
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          success: true,
+          action: 'other',
+        }),
+      }))
+    );
+
+    await expect(verifyTurnstileToken('ok-token')).resolves.toBe(false);
+  });
+
+  test('rejects a non-OK siteverify response', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'test-secret');
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: false,
+        json: async () => ({ success: false }),
+      }))
+    );
+
+    await expect(verifyTurnstileToken('ok-token')).resolves.toBe(false);
+  });
+});

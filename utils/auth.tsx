@@ -3,8 +3,8 @@ import { atom, useAtom } from 'jotai';
 import { atomWithStorage, useHydrateAtoms } from 'jotai/utils';
 import { User, UserPreferences } from '@types';
 import axios from 'axios';
-import { getCookie } from 'cookies-next/client';
 import { notifyApiSessionSettled, waitForApiSession } from '@utils/api/apiSessionGate';
+import { bootstrapApiSession } from '@utils/api/turnstileSession';
 
 type AuthContextType = {
   user: User | null;
@@ -57,19 +57,6 @@ export function AuthProvider({ children, initialUser, clientAuthSync = true }: A
   );
   const [apiSessionReady, setApiSessionReady] = useState(false);
 
-  const checkProof = () => {
-    const proof = getCookie('itemdb-proof');
-    const hasReloaded = sessionStorage.getItem('reloaded-for-proof');
-
-    if (navigator.cookieEnabled && document.cookie && !proof && !hasReloaded) {
-      console.warn('Site proof cookie is missing, refreshing');
-      sessionStorage.setItem('reloaded-for-proof', 'true');
-      location.reload();
-    } else if (proof && hasReloaded) {
-      sessionStorage.removeItem('reloaded-for-proof');
-    }
-  };
-
   const signout = async () => {
     await axios.post('/api/auth/logout');
     await resetUser();
@@ -91,12 +78,7 @@ export function AuthProvider({ children, initialUser, clientAuthSync = true }: A
     // so this must not be gated on auth sync).
     const ensureApiSession = async () => {
       try {
-        checkProof();
-
-        const sessionExp = getCookie('idb-session-exp');
-        if (!navigator.cookieEnabled || (document.cookie && sessionExp)) return;
-
-        await axios.get('/api/v1/users/getSession');
+        await bootstrapApiSession();
       } catch (e) {
         console.error('getSession error', e);
       } finally {

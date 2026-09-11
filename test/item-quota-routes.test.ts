@@ -9,6 +9,7 @@ const NON_QUOTA_ROUTES: { method: string; path: string }[] = [
   { method: 'PUT', path: '/api/v1/lists/user/1' },
   { method: 'POST', path: '/api/v1/lists/user/1' },
   { method: 'GET', path: '/api/v1/users/getSession' },
+  { method: 'POST', path: '/api/v1/users/getSession' },
   { method: 'POST', path: '/api/v1/trades' },
   { method: 'GET', path: '/api/v1/lists/user/1/stats' },
 ];

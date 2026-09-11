@@ -12,13 +12,13 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import type { NextPage } from 'next';
 import { onIntlError } from '../utils/intlHandler';
-import { installProofInterceptor } from '@utils/api/proofInterceptor';
+import { installApiSessionInterceptor } from '@utils/api/apiSessionInterceptor';
 import { getLocalizedHref, VALID_LOCALES, type AppLocale } from '@utils/locales';
 import { system } from '@utils/theme/theme';
 import { Toaster } from '@components/ui/toaster';
 
 if (typeof window !== 'undefined') {
-  installProofInterceptor();
+  installApiSessionInterceptor();
 }
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {

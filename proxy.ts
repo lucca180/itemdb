@@ -2,14 +2,7 @@ import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
 import * as Redis from '@utils/api/redis';
-import {
-  generateSiteProof,
-  isLikelyBrowser,
-  normalizeIP,
-  verifyApiToken,
-  verifySiteChallenge,
-  verifySiteProof,
-} from '@utils/api/api-utils';
+import { isLikelyBrowser, normalizeIP, verifyApiToken } from '@utils/api/api-utils';
 import * as Sentry from '@sentry/nextjs';
 import createIntlMiddleware from 'next-intl/middleware';
 import { getCurrentPath } from '@utils/locales';
@@ -43,6 +36,7 @@ const API_SKIPS = {
     /^\/api\/v1\/items\/open$/,
     /^\/api\/v1\/lists\/import-session$/,
     /^\/api\/internal\/revalidate$/,
+    /^\/api\/v1\/users\/getSession$/,
   ],
 } as const;
 
@@ -73,8 +67,6 @@ export function proxy(request: NextRequest) {
   }
 
   const startTime = Date.now();
-  const proofCookie = request.cookies.get('itemdb-proof')?.value || '';
-  const isDevRscRequest = isDev && request.nextUrl.searchParams.has('_rsc');
   const currentPath = getCurrentPath(request.nextUrl.pathname, request.nextUrl.search);
   const pageRequestHeaders = new Headers(request.headers);
   pageRequestHeaders.set('x-itemdb-current-path', currentPath);
@@ -86,11 +78,7 @@ export function proxy(request: NextRequest) {
 
   const intlResponse = handleI18nRouting(intlRequest);
 
-  return finalizePageResponse(intlResponse, {
-    startTime,
-    proofCookie,
-    skipSideEffects: isDevRscRequest,
-  });
+  return finalizePageResponse(intlResponse, { startTime });
 }
 
 // ---------- API Middleware ---------- //
@@ -123,6 +111,8 @@ export const apiMiddleware = async (request: NextRequest) => {
     return finalizeApiResponse(request, response, startTime);
   }
 
+  const pathname = request.nextUrl.pathname;
+
   let ip =
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
   ip = ip ? normalizeIP(ip) : undefined;
@@ -131,43 +121,6 @@ export const apiMiddleware = async (request: NextRequest) => {
   requestHeaders.set('x-itemdb-score', score.toString());
   requestHeaders.set('x-itemdb-likely', isBrowser ? 'true' : 'false');
   Sentry.setTag('x-itemdb-score', score);
-
-  // Site proof only bootstraps the API session — it no longer bypasses other /api routes.
-  const itemdb_proof = request.headers.get('x-itemdb-proof');
-  const pathname = request.nextUrl.pathname;
-  const isSessionBootstrap = request.method === 'GET' && pathname === '/api/v1/users/getSession';
-
-  const proofContext = {
-    method: request.method,
-    pathname,
-  };
-
-  const hasValidProof = !!(itemdb_proof && verifySiteProof(itemdb_proof, 0, proofContext));
-
-  if (isSessionBootstrap && hasValidProof && itemdb_proof) {
-    const challenge = itemdb_proof.slice(0, itemdb_proof.lastIndexOf(':'));
-    if (!verifySiteChallenge(challenge, 300) && isBrowser) {
-      const proof = generateSiteProof('long');
-      response.cookies.set({
-        name: 'itemdb-proof',
-        value: proof.token,
-        maxAge: proof.expiresIn,
-        secure: true,
-        sameSite: 'lax',
-        httpOnly: false,
-      });
-    }
-
-    Sentry.metrics.count('api.requests', 1, {
-      attributes: {
-        type: 'site-proof',
-      },
-    });
-    Sentry.setTag('api_type', 'site-proof');
-    return finalizeApiResponse(request, response, startTime);
-  } else if (itemdb_proof && !hasValidProof) {
-    response.cookies.set({ name: 'itemdb-proof', value: '', maxAge: 0 });
-  }
 
   // check ip ban — only for routes that feed the item quota (blocklist)
   if (ip && isItemQuotaRoute(request.method, pathname)) {
