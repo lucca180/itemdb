@@ -1,11 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Axios from 'axios';
 import type { WP_REST_API_Post } from 'wp-types';
-import { getImagePalette } from '../../v1/lists/[username]';
 import { WP_Article } from '../../../../types';
-
-// @ts-ignore
-import he from 'he';
+import { getWpThumbnail, mapWpPost } from '@utils/wp/mapWpPost';
 
 export const wp = Axios.create({
   baseURL: process.env.WORDPRESS_URL + '/',
@@ -45,29 +42,9 @@ export const wp_getLatestPosts = async (
     },
   });
 
-  const posts = posts_res.data.map(async (post: WP_REST_API_Post) => {
-    const thumburl: string | null =
-      ((post._embedded?.['wp:featuredmedia']?.[0] as any)?.source_url || '').replace(
-        'https://',
-        'https://i0.wp.com/'
-      ) || null;
-
-    const terms: any[] = post._embedded?.['wp:term']?.flat() || [];
-    const categories = terms.filter((t) => t?.taxonomy === 'category');
-
-    return {
-      id: post.id,
-      title: he.decode(post.title.rendered),
-      content: post.content.rendered,
-      excerpt: he.decode(post.excerpt.rendered.replace(/<[^>]+>/g, '')),
-      slug: post.slug,
-      date: post.date_gmt,
-      updated: post.modified_gmt,
-      thumbnail: thumburl || null,
-      category: categories.length > 0 ? categories[0].name : 'Uncategorized',
-      palette: thumburl ? await getImagePalette(thumburl, true) : null,
-    };
-  });
+  const posts = posts_res.data.map((post: WP_REST_API_Post) =>
+    mapWpPost(post, getWpThumbnail(post))
+  );
 
   const posts_data = await Promise.all(posts);
 

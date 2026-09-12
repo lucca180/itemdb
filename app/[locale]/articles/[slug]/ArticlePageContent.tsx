@@ -151,6 +151,7 @@ type ArticlePageContentProps = {
   post: WP_Article;
   recommendations: WP_Article[];
   labels: ArticlePageLabels;
+  isPreview?: boolean;
 };
 
 export function ArticlePageContent({
@@ -158,6 +159,7 @@ export function ArticlePageContent({
   post,
   recommendations,
   labels,
+  isPreview,
 }: ArticlePageContentProps) {
   const color = Color(post.palette?.vibrant.hex ?? '#05B7E8');
   const publishedAt = toIso8601Utc(post.date);
@@ -216,6 +218,25 @@ export function ArticlePageContent({
           '& ul li, & ol li': { my: 1 },
         }}
       >
+        {isPreview && (
+          <Alert.Root
+            status="error"
+            justifyContent="center"
+            borderRadius="0"
+            maxW="900px"
+            mx="auto"
+            mb={3}
+          >
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>Draft Preview</Alert.Title>
+              <Alert.Description>
+                This is a preview of an unpublished draft. This link expires and should not be
+                shared.
+              </Alert.Description>
+            </Alert.Content>
+          </Alert.Root>
+        )}
         <Flex flexFlow="column" gap={3} px={3} maxW="900px" w="100%" fontSize="md" mx="auto">
           {parse(processShortcodes(post.content), articleParserOptions)}
         </Flex>

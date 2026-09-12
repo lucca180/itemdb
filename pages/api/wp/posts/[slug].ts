@@ -1,11 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import type { WP_REST_API_Post } from 'wp-types';
-import { getImagePalette } from '../../v1/lists/[username]';
 import { wp } from '.';
 import { WP_Article } from '../../../../types';
-
-// @ts-ignore
-import he from 'he';
+import { getWpThumbnail, mapWpPost } from '@utils/wp/mapWpPost';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
@@ -29,29 +26,9 @@ export const wp_getBySlug = async (slug: string): Promise<WP_Article | null> => 
     },
   });
 
-  const posts: Promise<WP_Article>[] = posts_res.data.map(async (post: WP_REST_API_Post) => {
-    const thumbUrl: string | null =
-      ((post._embedded?.['wp:featuredmedia']?.[0] as any)?.source_url || '').replace(
-        'https://',
-        'https://i0.wp.com/'
-      ) || null;
-
-    const palette = thumbUrl ? await getImagePalette(isLebron(post.slug, thumbUrl), true) : null;
-    const terms: any[] = post._embedded?.['wp:term']?.flat() || [];
-    const categories = terms.filter((t) => t?.taxonomy === 'category');
-
-    return {
-      id: post.id,
-      title: he.decode(post.title.rendered),
-      content: post.content.rendered,
-      excerpt: he.decode(post.excerpt.rendered.replace(/<[^>]+>/g, '')),
-      slug: post.slug,
-      date: post.date_gmt,
-      updated: post.modified_gmt,
-      category: categories.length > 0 ? categories[0].name : 'Uncategorized',
-      thumbnail: thumbUrl || null,
-      palette: palette,
-    };
+  const posts: Promise<WP_Article>[] = posts_res.data.map((post: WP_REST_API_Post) => {
+    const thumbUrl = getWpThumbnail(post);
+    return mapWpPost(post, thumbUrl ? isLebron(post.slug, thumbUrl) : null);
   });
 
   const posts_data = await Promise.all(posts);
