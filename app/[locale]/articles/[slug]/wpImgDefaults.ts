@@ -1,9 +1,14 @@
 import type { SystemStyleObject } from '@chakra-ui/react';
 
 export const wpImgDefaults: SystemStyleObject = {
+  '& img': {
+    maxWidth: '100%',
+    height: 'auto',
+  },
   '& .aligncenter, & .alignleft, & .alignright': {
     display: 'block',
     padding: 0,
+    maxWidth: '100%',
   },
   '& .aligncenter': {
     float: 'none',
@@ -23,10 +28,13 @@ export const wpImgDefaults: SystemStyleObject = {
     borderRadius: 'lg',
     textAlign: 'center',
     fontSize: 'sm',
+    maxWidth: '100%',
   },
   '& .wp-caption img': {
     display: 'inline',
     borderRadius: 'md',
+    maxWidth: '100%',
+    height: 'auto',
   },
   // '& .wp-caption p.wp-caption-text': {
   //   margin: '5px 0 0',
