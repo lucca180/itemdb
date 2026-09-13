@@ -62,6 +62,13 @@ function StepBody({ step, bodyKey }: { step: StepKey; bodyKey: `PriceChecker.${S
         </Text>
       </MainLink>
     ),
+    SellGuideLink: (chunks) => (
+      <MainLink viaNextLink prefetch={false} href="/articles/how-to-sell-expensive-items">
+        <Text as="span" fontWeight="semibold">
+          {chunks}
+        </Text>
+      </MainLink>
+    ),
     Small: (chunks) => (
       <Text as="span" display="block" fontSize="xs" color="gray.500" mt={1}>
         {chunks}

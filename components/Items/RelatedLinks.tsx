@@ -207,6 +207,7 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
   const checklistLinks: RelatedLinkProps[] = [];
   const petpetLinks: RelatedLinkProps[] = [];
   const ncLinks: RelatedLinkProps[] = [];
+  const sellingLinks: RelatedLinkProps[] = [];
   const speciesName = getSpeciesFromString(item.name);
   const colorSpeciesEffects = (itemEffects ?? []).filter(
     (effect) =>
@@ -545,6 +546,23 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     });
   }
 
+  if (!item.isNC && (item.price?.value ?? 0) >= 999999) {
+    sellingLinks.push({
+      id: 'selling-guide:expensive-items',
+      href: '/articles/how-to-sell-expensive-items',
+      family: 'selling-guide',
+      source: 'item-price',
+      specificity: 'guide',
+      priority: 0,
+      imageUrl: '/icons/auction.png',
+      trackEvent: 'related-link',
+      trackEventLabel: 'how-to-sell-expensive-items',
+      children: t.rich('ItemPage.related-how-to-sell-expensive-items', {
+        b: (chunk) => <b>{chunk}</b>,
+      }),
+    });
+  }
+
   return resolveRelatedLinkCandidates([
     ...rainbowLinks,
     ...outfitLinks,
@@ -552,5 +570,6 @@ function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
     ...checklistLinks,
     ...petpetLinks,
     ...ncLinks,
+    ...sellingLinks,
   ]);
 }

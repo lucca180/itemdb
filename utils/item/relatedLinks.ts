@@ -4,7 +4,8 @@ export type RelatedLinkFamily =
   | 'pet-styles'
   | 'checklist'
   | 'petpet'
-  | 'nc';
+  | 'nc'
+  | 'selling-guide';
 
 export type RelatedLinkSpecificity = 'hub' | 'browse' | 'combo' | 'guide';
 
@@ -24,6 +25,7 @@ const FAMILY_ORDER: Record<RelatedLinkFamily, number> = {
   checklist: 3,
   petpet: 4,
   nc: 5,
+  'selling-guide': 6,
 };
 
 function semanticIdentity(candidate: RelatedLinkCandidate): string {

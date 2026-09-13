@@ -49,6 +49,11 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           trackEventLabel: 'advanced-search-queries',
         },
         {
+          label: t('Layout.how-to-sell-expensive-items'),
+          href: '/articles/how-to-sell-expensive-items',
+          trackEventLabel: 'how-to-sell-expensive-items',
+        },
+        {
           label: t('Articles.all-articles'),
           href: '/articles',
           trackEventLabel: 'all-articles',

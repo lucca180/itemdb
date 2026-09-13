@@ -13,6 +13,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { SaleStatus } from '../../types';
 import { useState } from 'react';
 import axios from 'axios';
+import { Link } from '@i18n/navigation';
 export type SaleStatusModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -114,6 +115,16 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
                   </Text>
                 </Alert.Content>
               </Alert.Root>
+
+              <Text textAlign={'center'} fontSize={'xs'} color="gray.400">
+                {t.rich('ItemPage.saleStatus-learn-more', {
+                  Link: (chunks) => (
+                    <Link href="/articles/how-to-sell-expensive-items" prefetch={false}>
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </Text>
 
               {!voted && (
                 <Flex
