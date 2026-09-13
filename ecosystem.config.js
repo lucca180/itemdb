@@ -10,6 +10,10 @@ module.exports = {
       merge_logs: true,
       max_memory_restart: '3200M',
       kill_timeout: 15_000,
+      env: {
+        NODE_ENV: 'production',
+        LD_PRELOAD: '/lib/aarch64-linux-gnu/libjemalloc.so.2',
+      },
     },
     {
       name: 'itemdb-green',
@@ -21,6 +25,10 @@ module.exports = {
       merge_logs: true,
       max_memory_restart: '3200M',
       kill_timeout: 15_000,
+      env: {
+        NODE_ENV: 'production',
+        LD_PRELOAD: '/lib/aarch64-linux-gnu/libjemalloc.so.2',
+      },
     },
   ],
 };
