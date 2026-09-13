@@ -9,6 +9,7 @@ type IconLinkProps = LinkProps & {
   iconHeight?: number | `${number}`;
   iconStyle?: React.CSSProperties;
   isExternal?: boolean;
+  hideIcon?: boolean;
 };
 
 function isInternalHref(href: string) {
@@ -18,7 +19,7 @@ function isInternalHref(href: string) {
 export const IconLink = (props: IconLinkProps) => {
   if (!props.href) return null;
 
-  const { isExternal, href, children, iconWidth, iconHeight, iconStyle, ...rest } = props;
+  const { isExternal, href, children, iconWidth, iconHeight, iconStyle, hideIcon, ...rest } = props;
   const hrefString = String(href);
   const external = isExternal ?? !isInternalHref(hrefString);
 
@@ -26,15 +27,16 @@ export const IconLink = (props: IconLinkProps) => {
     Object.entries(rest).filter(([key]) => !ignoreProps.includes(key) && key !== 'isExternal')
   );
 
-  const icon = getIcon(hrefString) ? (
-    <Image
-      src={getIcon(hrefString)}
-      width={iconWidth || 18}
-      height={iconHeight || 18}
-      style={iconStyle ?? { display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
-      alt="link icon"
-    />
-  ) : null;
+  const icon =
+    !hideIcon && getIcon(hrefString) ? (
+      <Image
+        src={getIcon(hrefString)}
+        width={iconWidth || 18}
+        height={iconHeight || 18}
+        style={iconStyle ?? { display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+        alt="link icon"
+      />
+    ) : null;
 
   if (external) {
     return (

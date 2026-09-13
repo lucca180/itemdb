@@ -1,5 +1,5 @@
 import type { WP_REST_API_Post } from 'wp-types';
-import { getImagePalette } from '@pages/api/v1/lists/[username]';
+import { getArticlePalette } from './getArticlePalette';
 import { WP_Article } from '@types';
 
 // @ts-ignore
@@ -19,7 +19,7 @@ export async function mapWpPost(
   paletteSource: string | null
 ): Promise<WP_Article> {
   const thumbUrl = getWpThumbnail(post);
-  const palette = paletteSource ? await getImagePalette(paletteSource, true) : null;
+  const palette = paletteSource ? await getArticlePalette(paletteSource) : null;
   const terms: any[] = post._embedded?.['wp:term']?.flat() || [];
   const categories = terms.filter((t) => t?.taxonomy === 'category');
 

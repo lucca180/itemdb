@@ -38,5 +38,5 @@ export async function buildArticlePageProps(post: WP_Article): Promise<ArticlePa
 }
 
 export function getArticleMainColor(post: WP_Article) {
-  return `${post.palette?.vibrant.hex ?? '#05B7E8'}6b`;
+  return `${post.palette?.main.hex ?? '#05B7E8'}6b`;
 }

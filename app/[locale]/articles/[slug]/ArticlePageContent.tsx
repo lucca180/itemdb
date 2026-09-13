@@ -1,10 +1,10 @@
-import { Alert, Box, Code, Flex, Heading, Link, List, Table, Text } from '@chakra-ui/react';
+import { Alert, Box, Code, Flex, Heading, List, Table, Text } from '@chakra-ui/react';
 import { ArticleCard } from '@components/Articles/ArticlesCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
 import HeaderCard from '@components/Card/HeaderCard';
+import { IconLink } from '@components/Utils/IconLink';
 import { toIso8601Utc } from '@utils/isoDate';
 import { processShortcodes } from '@utils/shortcodes';
-import Color from 'color';
 import parse, {
   domToReact,
   Element,
@@ -14,6 +14,15 @@ import parse, {
 import type { WP_Article } from '@types';
 import type { ArticlePageLabels } from './buildArticlePageProps';
 import { wpImgDefaults } from './wpImgDefaults';
+import { ARTICLE_FALLBACK_COLOR, getNormalizedColor } from '@utils/wp/articleAccentColor';
+
+function containsImage(nodes: DOMNode[]): boolean {
+  return nodes.some((node) => {
+    if (!(node instanceof Element)) return false;
+    if (node.name === 'img') return true;
+    return containsImage((node.children as DOMNode[]) ?? []);
+  });
+}
 
 const articleParserOptions: HTMLReactParserOptions = {
   replace: (domChildren) => {
@@ -41,16 +50,20 @@ const articleParserOptions: HTMLReactParserOptions = {
         </Heading>
       );
 
-    if (domChildren instanceof Element && domChildren.name === 'a')
+    if (domChildren instanceof Element && domChildren.name === 'a') {
+      if (!domChildren.attribs.href) return <>{domToReact(children, articleParserOptions)}</>;
+
       return (
-        <Link
+        <IconLink
           href={domChildren.attribs.href}
-          target={domChildren.attribs.target === '_blank' ? '_blank' : undefined}
-          rel={domChildren.attribs.target === '_blank' ? 'noreferrer' : undefined}
+          iconHeight={16}
+          iconWidth={16}
+          hideIcon={containsImage(children)}
         >
           {domToReact(children, articleParserOptions)}
-        </Link>
+        </IconLink>
       );
+    }
 
     if (domChildren instanceof Element && (domChildren.name === 'ul' || domChildren.name === 'ol'))
       return (
@@ -161,7 +174,9 @@ export function ArticlePageContent({
   labels,
   isPreview,
 }: ArticlePageContentProps) {
-  const color = Color(post.palette?.vibrant.hex ?? '#05B7E8');
+  const mainHex = post.palette?.main.hex ?? ARTICLE_FALLBACK_COLOR;
+  const secondaryHex = post.palette?.secondary.hex ?? mainHex;
+  const headerColor = getNormalizedColor(mainHex, 'background');
   const publishedAt = toIso8601Utc(post.date);
   const updatedAt = toIso8601Utc(post.updated);
 
@@ -176,7 +191,7 @@ export function ArticlePageContent({
               }
             : undefined
         }
-        color={color.lightness(55).hex()}
+        color={headerColor.hex()}
         breadcrumb={
           <BreadcrumbsView breadcrumbList={labels.breadcrumbList} locale={locale} useAppDir />
         }
@@ -205,9 +220,9 @@ export function ArticlePageContent({
         gap={3}
         css={{
           ...wpImgDefaults,
-          '& a': { color: color.lightness(65).hex() ?? 'cyan.300' },
+          '& a': { color: getNormalizedColor(mainHex, 'link').hex() },
           '& b,& strong': {
-            color: Color(post.palette?.lightvibrant.hex).lightness(60).hex() ?? 'blue.300',
+            color: getNormalizedColor(secondaryHex, 'bold').hex(),
           },
           '& i,& em': {
             fontStyle: 'italic',

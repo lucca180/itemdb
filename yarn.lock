@@ -8345,6 +8345,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"colorthief@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "colorthief@npm:3.5.0"
+  peerDependencies:
+    sharp: ">=0.33.0"
+  peerDependenciesMeta:
+    sharp:
+      optional: true
+  bin:
+    colorthief: dist/cli.js
+  checksum: 10c0/c6c0ef9ffe14faf90729544d1d5d3e28d9d26f9ebc1be1a23a5f1295c3a2da44c53297b074ca360bf27928c160c03173e03dbfcde6ed701378f4fe918364486a
+  languageName: node
+  linkType: hard
+
 "combined-stream@npm:^1.0.8":
   version: 1.0.8
   resolution: "combined-stream@npm:1.0.8"
@@ -11920,6 +11934,7 @@ __metadata:
     chance: "npm:^1.1.13"
     cheerio: "npm:^1.2.0"
     color: "npm:^5.0.3"
+    colorthief: "npm:^3.5.0"
     cookies-next: "npm:^6.1.1"
     date-fns: "npm:^4.4.0"
     eslint: "npm:^9.39.1"

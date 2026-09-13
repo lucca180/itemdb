@@ -3,6 +3,7 @@ import NextImage from 'next/image';
 import type { CSSProperties } from 'react';
 import type { WP_Article } from '@types';
 import { Box, Flex, Heading, Text } from '@chakra-ui/react';
+import { ARTICLE_FALLBACK_COLOR, getNormalizedColor } from '@utils/wp/articleAccentColor';
 
 type LatestArticleCardProps = {
   article: WP_Article;
@@ -10,8 +11,11 @@ type LatestArticleCardProps = {
 };
 
 export function LatestArticleCard({ article, isNew }: LatestArticleCardProps) {
-  const rgb = article.palette?.lightvibrant.rgb ?? [0, 0, 0];
-  const baseBackground = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)`;
+  const rgb = getNormalizedColor(article.palette?.main.hex ?? ARTICLE_FALLBACK_COLOR, 'background')
+    .rgb()
+    .round()
+    .array();
+  const baseBackground = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.2)`;
   const hoverBackground = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.5)`;
 
   const cardStyle = {

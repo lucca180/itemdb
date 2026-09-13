@@ -11,6 +11,7 @@ utils/hash.ts
 utils/views/*
 *.md
 package.json
+Claude outputs
 *.lock
 prisma/generated/**
 next-env.d.ts

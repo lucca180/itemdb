@@ -348,7 +348,7 @@ export type WP_Article = {
   updated: string;
   thumbnail: string | null;
   category: string | null;
-  palette: Record<ColorType, Pallete> | null;
+  palette: { main: Pallete; secondary: Pallete } | null;
 };
 
 export type ItemOpenable = {

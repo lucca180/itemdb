@@ -6,6 +6,7 @@ import type { WP_Article } from '@types';
 import MainLink from '@components/Utils/MainLink';
 import Image from '@components/Utils/Image';
 import { toIso8601Utc } from '@utils/isoDate';
+import { ARTICLE_FALLBACK_COLOR, getNormalizedColor } from '@utils/wp/articleAccentColor';
 
 type Props = {
   article: WP_Article;
@@ -32,7 +33,10 @@ function ArticlePublishTime({ date }: { date: string }) {
 
 export const ArticleCard = (props: Props) => {
   const { article, vertical } = props;
-  const rgb = article.palette?.lightvibrant.rgb ?? [0, 0, 0];
+  const rgb = getNormalizedColor(article.palette?.main.hex ?? ARTICLE_FALLBACK_COLOR, 'background')
+    .rgb()
+    .round()
+    .array();
 
   const isNew = new Date(article.date) > new Date(new Date().setDate(new Date().getDate() - 7));
 
@@ -45,7 +49,7 @@ export const ArticleCard = (props: Props) => {
         borderRadius="md"
         _hover={{
           textDecoration: 'none',
-          bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.5)`,
+          bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.2)`,
         }}
       >
         <MainLink viaNextLink prefetch={false} href={`/articles/${article.slug}`}>
@@ -55,7 +59,7 @@ export const ArticleCard = (props: Props) => {
             overflow="visible"
             display="flex"
             flexDirection="column"
-            bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.3)`}
+            bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.25)`}
           >
             <Card.Body overflow="visible" display="flex" flexDirection="column" flex="1">
               <Image
@@ -92,10 +96,10 @@ export const ArticleCard = (props: Props) => {
       w="100%"
       alignItems="center"
       borderRadius="md"
-      bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},0.15)`}
+      bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},0.1)`}
       _hover={{
         textDecoration: 'none',
-        bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},0.5)`,
+        bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},0.3)`,
       }}
     >
       <MainLink viaNextLink prefetch={false} href={`/articles/${article.slug}`}>
