@@ -7,7 +7,7 @@ import { AiFillEyeInvisible } from 'react-icons/ai';
 import { BiCopy, BiSearch } from 'react-icons/bi';
 import Color from 'color';
 import { useRouter } from '@i18n/navigation';
-import type { ItemColorKey, ItemColorMap } from '@types';
+import type { ColorType, ItemColorKey, ItemColorMap } from '@types';
 
 // `main`/`secondary` come first — they're the accent pair cards/pages actually use — followed
 // by the 6 legacy named swatches. Any key without data (older items, or a source that only
@@ -15,6 +15,20 @@ import type { ItemColorKey, ItemColorMap } from '@types';
 const colorKeysOrder: ItemColorKey[] = [
   'main',
   'secondary',
+  'vibrant',
+  'lightvibrant',
+  'darkvibrant',
+  'muted',
+  'lightmuted',
+  'darkmuted',
+];
+
+// Only the 6 legacy swatches carry "invisible item" meaning (a role colorthief/node-vibrant
+// couldn't confidently match falls back to white/population-0 — see buildSwatchRows). `main`/
+// `secondary` are always a real color derived from the image and, on top of that, `main`'s
+// lightness is clamped away from pure white by design — so they'd never read as invisible and
+// must stay out of this check, or every item with a `main` row would show as visible.
+const SWATCH_KEYS: ColorType[] = [
   'vibrant',
   'lightvibrant',
   'darkvibrant',
@@ -40,9 +54,10 @@ export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPalettePro
 
   const availableKeys = colorKeysOrder.filter((key) => !!colors[key]);
 
-  const isInvisible = Object.values(colors).every(
-    (color) => color.population === 0 && color.hex === '#FFFFFF'
-  );
+  const isInvisible = SWATCH_KEYS.every((key) => {
+    const color = colors[key];
+    return !color || (color.population === 0 && color.hex === '#FFFFFF');
+  });
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);

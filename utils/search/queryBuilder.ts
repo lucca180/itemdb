@@ -440,15 +440,25 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       : Prisma.sql`b.type = ${colorType}`;
 
   let searchColorDistance = Prisma.empty;
-  let searchColorItemDistance = Prisma.empty;
+  let searchColorCandidateDistance = Prisma.empty;
   let searchColorJoin = Prisma.empty;
-  // Search-by-color first finds the nearest palette color per image, then joins that exact
-  // color row so sorting and item serialization can use the winning color.
+  // Search-by-color first finds the nearest palette color per image (unchanged — same single
+  // full-table aggregation the original query always did), then joins that exact color row so
+  // sorting and item serialization can use the winning color.
+  //
+  // An item now has up to 8 ItemColor rows (main/secondary + 6 named swatches) instead of the
+  // old 6, and several of those can legitimately share the exact same LAB value (e.g. multiple
+  // "no good match" swatches all fall back to plain white, or `main` happens to compute to the
+  // same color as `vibrant`). Picking the winner by `distance = min(distance)` alone in the
+  // outer join can then match more than one row per image, fanning a single item out into
+  // duplicate result rows — fixed below via a correlated subquery scoped to `a.image_id`
+  // (indexed), so it only ever looks at that one item's handful of rows to break the tie,
+  // instead of a window function or self-join over the whole (now much bigger) table.
   if (isColorSearch) {
     const parsedColor = Color(query);
     const [l, a, b] = parsedColor.lab().array();
     searchColorDistance = Prisma.sql`(POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))`;
-    searchColorItemDistance = Prisma.sql`(POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2))`;
+    searchColorCandidateDistance = Prisma.sql`(POWER(c.lab_l-${l},2)+POWER(c.lab_a-${a},2)+POWER(c.lab_b-${b},2))`;
     searchColorJoin = Prisma.sql`
       LEFT JOIN (
         SELECT image_id, min(${searchColorDistance}) as dist
@@ -579,7 +589,15 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   const itemColorJoin = includeItemColor
     ? Prisma.sql`LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${
         isColorSearch
-          ? Prisma.sql`${searchColorItemDistance} = f.dist`
+          ? // Join the single deterministic winning row by PK — see searchColorJoin above for
+            // why matching on distance alone can hit more than one row per image. Scoped by
+            // a.image_id (indexed), so this only ever scans that one item's own rows.
+            Prisma.sql`b.internal_id = (
+                SELECT c.internal_id FROM ItemColor c
+                WHERE c.image_id = a.image_id AND (${searchColorCandidateDistance}) = f.dist
+                ORDER BY c.internal_id ASC
+                LIMIT 1
+              )`
           : Prisma.sql`${colorTypeSQL} ${colorSqlInside ? Prisma.sql`and b.population > 0` : Prisma.empty}`
       }`
     : Prisma.empty;
