@@ -363,10 +363,14 @@ const SearchFilters = (props: Props) => {
               disabled={isColorSearch}
             >
               <NativeSelect.Field
-                value={filters.colorType}
+                // Unset (no explicit choice yet) still displays as "Vibrant" — the value only
+                // becomes real once the user actually picks something from this dropdown.
+                value={filters.colorType || 'vibrant'}
                 onChange={(e) => handleSelectChange(e.target.value, 'colorType')}
               >
                 <option value="population">{t('Search.most-prominent')}</option>
+                <option value="main">Main</option>
+                <option value="secondary">Secondary</option>
                 <option value="vibrant">Vibrant</option>
                 <option value="darkvibrant">Dark Vibrant</option>
                 <option value="lightvibrant">Light Vibrant</option>

@@ -1,16 +1,17 @@
 import CardBase from '@components/Card/CardBase';
 import { getTranslations } from 'next-intl/server';
 import { ColorInfoCardPalette } from '@components/Items/ColorInfoCardPalette';
-import type { FullItemColors } from '@types';
+import type { ItemColorMap, ItemData } from '@types';
 
 type Props = {
-  colors: FullItemColors;
+  item: ItemData;
+  colors: ItemColorMap;
 };
 
 export default async function ColorInfoCard(props: Props) {
   const t = await getTranslations();
-  const { colors } = props;
-  const color = colors.vibrant.rgb;
+  const { item, colors } = props;
+  const color = item.color?.hex;
 
   return (
     <CardBase

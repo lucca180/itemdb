@@ -9,6 +9,8 @@ import { rawToItemData } from '@pages/api/v1/items/many';
 import { getSaleStats, getSaleStatsFreshnessCutoff } from '@pages/api/v1/items/[id_name]/saleStats';
 import { getNCValue } from '@pages/api/v1/mall/[iid]';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
+import { ITEM_COLOR_SOURCE, ITEM_COLOR_TYPE } from '@utils/item/itemColorSource';
+import { getOrCreateColorThiefColors } from '@utils/item/itemColorThief';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;
@@ -128,7 +130,7 @@ export async function getItemForPage(
       s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
-    LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
+    LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = ${ITEM_COLOR_TYPE}
     LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
     LEFT JOIN owlsPrice as o on o.item_iid = a.internal_id and o.isLatest = 1
     LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
@@ -142,6 +144,13 @@ export async function getItemForPage(
   const item = rawToItemData(resultRaw[0], { includeFlags });
   item.findAt = getItemFindAtLinks(item);
   item.isMissingInfo = isMissingInfo(item);
+
+  // Live safety net for images the backfill hasn't reached (or a new item that slipped in
+  // outside the ingest queue): generate and persist `main` on the fly if it's still missing.
+  if (ITEM_COLOR_SOURCE === 'colorthief' && !item.color?.hex) {
+    const generated = await getOrCreateColorThiefColors(item);
+    if (generated) item.color = generated;
+  }
 
   after(async () => {
     await refreshItemDerivedData(item);

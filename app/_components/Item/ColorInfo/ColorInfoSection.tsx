@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import ColorInfoCard from '@components/Items/ColorInfoCard';
 import { loadItemColors } from '@app/_components/Item/loadUtils';
 import { DeferredItemSection } from '@app/_components/Item/page/DeferredItemSection';
-import type { FullItemColors, ItemData } from '@types';
+import type { ItemData } from '@types';
 
 type Props = {
   item: ItemData;
@@ -21,7 +21,7 @@ async function ColorInfoSectionContent({ item }: Props) {
   if (!colors?.vibrant) return null;
   return (
     <DeferredItemSection intrinsicSize="240px">
-      <ColorInfoCard colors={colors as FullItemColors} />
+      <ColorInfoCard item={item} colors={colors} />
     </DeferredItemSection>
   );
 }

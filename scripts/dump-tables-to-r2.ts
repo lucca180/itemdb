@@ -6,7 +6,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createGzip } from 'node:zlib';
-import { S3, DUMPS_BUCKET } from '../utils/googleCloud.js';
+import { S3, DUMPS_BUCKET } from '../utils/r2Storage.js';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 
 const TEMP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../.dump-temp');

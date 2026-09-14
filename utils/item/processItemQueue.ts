@@ -3,7 +3,7 @@ import pMap from 'p-map';
 import prisma from '@utils/prisma';
 import { allBooksCats, allFoodsCats, allPlayCats, genItemKey, slugify } from '@utils/utils';
 import { revalidateAppCache, HomeRevalidateTags } from '@utils/item/revalidateItem';
-import { getPalette } from '@utils/item/itemPalette';
+import { getColorThiefItemColors } from '@utils/item/itemColorThief';
 import { detectWearable } from '@utils/item/detectWearable';
 import { processOpenableItems } from '@pages/api/v1/items/open';
 import { sendNewItemsHook } from '@utils/discord-hooks';
@@ -104,7 +104,9 @@ export async function processItemProcessQueue(
   ).filter((x) => !!x) as Item[];
 
   const itemColorAddList = (
-    await pMap(itemAddList, getPalette, { concurrency: ITEM_PROCESS_PALETTE_CONCURRENCY })
+    await pMap(itemAddList, getColorThiefItemColors, {
+      concurrency: ITEM_PROCESS_PALETTE_CONCURRENCY,
+    })
   )
     .flat()
     .filter((x) => !!x) as ItemColor[];

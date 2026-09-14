@@ -55,7 +55,7 @@ export type ColorData = {
   hsv: [number, number, number] | number[];
   hex: string;
   population: number;
-  type: ColorType;
+  type: ItemColorKey;
 };
 
 export type ItemColorData = {
@@ -63,7 +63,7 @@ export type ItemColorData = {
   rgb: [number, number, number] | number[];
   hsv: [number, number, number] | number[];
   hex: string;
-  type: 'vibrant';
+  type: 'vibrant' | 'main';
   population: number;
 };
 
@@ -97,7 +97,16 @@ export type ColorType =
   | 'darkmuted'
   | 'lightmuted';
 
+// The colorthief accent pair (card/page wash), separate from the 6 named swatches above.
+export type AccentColorType = 'main' | 'secondary';
+
+export type ItemColorKey = ColorType | AccentColorType;
+
 export type FullItemColors = Record<ColorType, ColorData>;
+
+// Everything `ItemColor` may hold for an image_id — the 6 named swatches plus, when present,
+// the `main`/`secondary` accent pair. Not every key is guaranteed to exist.
+export type ItemColorMap = Partial<Record<ItemColorKey, ColorData>>;
 
 export type PriceData = {
   price_id: number;

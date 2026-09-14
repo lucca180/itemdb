@@ -2,6 +2,7 @@ import Color from 'color';
 import { Prisma } from '@prisma/generated/client';
 import { SearchFilters } from '../../types';
 import { parseFilters } from '../parseFilters';
+import { ITEM_COLOR_TYPE } from '../item/itemColorSource';
 import {
   faerielandShops,
   getDateNST,
@@ -11,6 +12,8 @@ import {
 } from '../utils';
 
 const validColorTypes = [
+  'main',
+  'secondary',
   'vibrant',
   'darkvibrant',
   'lightvibrant',
@@ -74,10 +77,13 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   const colorTolerance = isNaN(Number(filters.colorTolerance as string))
     ? 750
     : Number(filters.colorTolerance);
+  // No explicit colorType filter (the common case — plain listing, not "search by color X")
+  // falls back to whichever type is the item's own accent color right now, so search result
+  // cards match every other card/page instead of always showing the `vibrant` swatch.
   const colorType =
     (filters.colorType as string) && validColorTypes.includes(filters.colorType.toLowerCase())
       ? filters.colorType
-      : 'vibrant';
+      : ITEM_COLOR_TYPE;
 
   let categoryFilters = (filters.category as string[]) ?? [];
   let typeFilters = (filters.type as string[]) ?? [];

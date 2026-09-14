@@ -18,7 +18,10 @@ export const defaultFilters: SearchFilters = {
   restockProfit: '',
   restockIncludeUnpriced: false,
   colorTolerance: '750',
-  colorType: 'vibrant',
+  // Empty = "no explicit choice": queryBuilder.ts falls back to the item's own accent color
+  // (ITEM_COLOR_TYPE, following ITEM_COLOR_SOURCE) instead of a hardcoded named swatch. A
+  // real value here (e.g. 'vibrant') only happens when the user picks one from the dropdown.
+  colorType: '',
   sortBy: 'name',
   sortDir: 'asc',
   mode: 'name',

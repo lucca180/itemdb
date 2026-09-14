@@ -2,8 +2,12 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '.';
 import { getItemColor } from '../colors';
 import prisma from '../../../../../utils/prisma';
-import { getPalette } from '@utils/item/itemPalette';
+import { getColorThiefSwatchRows } from '@utils/item/itemColorThief';
 import { ItemData } from '../../../../../types';
+
+// The 6 named swatch types this endpoint manages — scoped so a force-refresh here never
+// touches the `main`/`secondary` accent pair used by cards/pages.
+const SWATCH_TYPES = ['vibrant', 'darkvibrant', 'lightvibrant', 'muted', 'darkmuted', 'lightmuted'];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -29,26 +33,29 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 export const getSingleItemColor = async (item: ItemData, force = false) => {
-  if (!force && item.color?.hex) {
+  // Checked against the swatch family specifically, not `item.color`/`main` — those are now
+  // generated independently (accent color vs. full palette), so `main` existing doesn't mean
+  // the swatches do.
+  if (!force) {
     const itemColor = await getItemColor([item.image_id]);
-
-    if (itemColor[item.image_id]) return itemColor[item.image_id];
-    else force = true;
+    if (itemColor[item.image_id]?.vibrant) return itemColor[item.image_id];
   }
 
-  if (force && item.color.hex) {
-    await prisma.itemColor.deleteMany({
-      where: {
-        image_id: item.image_id,
-      },
-    });
-  }
+  await prisma.itemColor.deleteMany({
+    where: {
+      image_id: item.image_id,
+      type: { in: SWATCH_TYPES },
+    },
+  });
 
-  let palette = await getPalette(item);
+  let palette = await getColorThiefSwatchRows(item);
   if (!palette) {
     console.error('Invalid Pallete for item ' + item.internal_id + ', using fallback image');
 
-    palette = await getPalette({ ...item, image: 'https://itemdb.com.br/item-error.png' });
+    palette = await getColorThiefSwatchRows({
+      ...item,
+      image: 'https://itemdb.com.br/item-error.png',
+    });
     if (!palette) throw new Error('Could not get fallback palette');
   }
 

@@ -13,6 +13,8 @@ import { rawToItemData } from '../many';
 // import { getNCValue } from '../../mall/[iid]';
 import { UTCDate } from '@date-fns/utc';
 import { LogService } from '@services/ActionLogService';
+import { ITEM_COLOR_SOURCE, ITEM_COLOR_TYPE } from '@utils/item/itemColorSource';
+import { getOrCreateColorThiefColors } from '@utils/item/itemColorThief';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 // const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE; // 'itemdb' or 'lebron'
@@ -219,7 +221,7 @@ export const getItem = async (id_name: number | string, includeFlags = false) =>
       o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin, o.isVolatile as owlsIsVolatile,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
-    LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
+    LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = ${ITEM_COLOR_TYPE}
     LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
     LEFT JOIN owlsPrice as o on o.item_iid = a.internal_id and o.isLatest = 1
     LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
@@ -234,6 +236,13 @@ export const getItem = async (id_name: number | string, includeFlags = false) =>
   const item: ItemData = rawToItemData(result, {
     includeFlags: includeFlags,
   });
+
+  // Live safety net for images the backfill hasn't reached (or a new item that slipped in
+  // outside the ingest queue): generate and persist `main` on the fly if it's still missing.
+  if (ITEM_COLOR_SOURCE === 'colorthief' && !item.color?.hex) {
+    const generated = await getOrCreateColorThiefColors(item);
+    if (generated) item.color = generated;
+  }
 
   // TODO: restore itemdb NC value refresh when NC_VALUES_TYPE itemdb is re-enabled.
   // if (

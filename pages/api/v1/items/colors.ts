@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { ColorType, FullItemColors } from '../../../../types';
+import { ItemColorKey, ItemColorMap } from '../../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   let image_ids;
@@ -29,9 +29,9 @@ export const getItemColor = async (image_ids: string[]) => {
     },
   });
 
-  const colorsData: { [image_id: string]: Partial<FullItemColors> } = {};
+  const colorsData: { [image_id: string]: ItemColorMap } = {};
   for (const color of result) {
-    const type = color.type.toLowerCase() as ColorType;
+    const type = color.type.toLowerCase() as ItemColorKey;
 
     const colorData = colorsData[color.image_id] ?? {};
 

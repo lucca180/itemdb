@@ -7,9 +7,14 @@ import { AiFillEyeInvisible } from 'react-icons/ai';
 import { BiCopy, BiSearch } from 'react-icons/bi';
 import Color from 'color';
 import { useRouter } from '@i18n/navigation';
-import type { FullItemColors } from '@types';
+import type { ItemColorKey, ItemColorMap } from '@types';
 
-const colorKeysOrder: (keyof FullItemColors)[] = [
+// `main`/`secondary` come first — they're the accent pair cards/pages actually use — followed
+// by the 6 legacy named swatches. Any key without data (older items, or a source that only
+// wrote some of these) is filtered out before rendering.
+const colorKeysOrder: ItemColorKey[] = [
+  'main',
+  'secondary',
   'vibrant',
   'lightvibrant',
   'darkvibrant',
@@ -19,7 +24,7 @@ const colorKeysOrder: (keyof FullItemColors)[] = [
 ];
 
 type ColorInfoCardPaletteProps = {
-  colors: FullItemColors;
+  colors: ItemColorMap;
   labels: {
     invisibleItem: string;
     showMore: string;
@@ -32,6 +37,8 @@ export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPalettePro
   const toast = useToast();
   const router = useRouter();
   const [showMore, setShowMore] = useState(false);
+
+  const availableKeys = colorKeysOrder.filter((key) => !!colors[key]);
 
   const isInvisible = Object.values(colors).every(
     (color) => color.population === 0 && color.hex === '#FFFFFF'
@@ -79,8 +86,9 @@ export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPalettePro
   return (
     <>
       <Flex flexFlow={'column'} w="100%" gap={2} alignItems={'center'}>
-        {[...colorKeysOrder].splice(0, showMore ? colorKeysOrder.length : 3).map((key) => {
-          const isLight = Color(colors[key].hex).isLight();
+        {availableKeys.slice(0, showMore ? availableKeys.length : 3).map((key) => {
+          const colorData = colors[key]!;
+          const isLight = Color(colorData.hex).isLight();
           return (
             <Flex
               h="40px"
@@ -89,16 +97,16 @@ export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPalettePro
               py={1}
               px={3}
               key={key}
-              bg={colors[key].hex}
+              bg={colorData.hex}
               borderRadius="md"
               justifyContent="space-between"
               color={isLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
             >
               <Flex flexFlow={'column'}>
                 <Text fontSize="xs" fontWeight="bold">
-                  {colors[key].type}
+                  {colorData.type}
                 </Text>
-                <Text fontSize="0.6rem">{colors[key].hex}</Text>
+                <Text fontSize="0.6rem">{colorData.hex}</Text>
               </Flex>
               <Flex justifyContent={'center'} alignItems="center" gap={2}>
                 <IconButton
@@ -107,7 +115,7 @@ export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPalettePro
                   size="xs"
                   color={isLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
                   colorPalette={isLight ? 'blackAlpha' : 'whiteAlpha'}
-                  onClick={() => handleSearch(colors[key].hex)}
+                  onClick={() => handleSearch(colorData.hex)}
                   minW={6}
                   h={6}
                   css={{
@@ -125,7 +133,7 @@ export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPalettePro
                   color={isLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
                   colorPalette={isLight ? 'blackAlpha' : 'whiteAlpha'}
                   variant="subtle"
-                  onClick={() => handleCopy(colors[key].hex)}
+                  onClick={() => handleCopy(colorData.hex)}
                   minW={6}
                   h={6}
                   fontSize="1em"

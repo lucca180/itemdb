@@ -5,6 +5,7 @@ import { ItemData } from '../../../../types';
 import { Prisma } from '@prisma/generated/client';
 import queryString from 'query-string';
 import { redis_setDataCount } from '@utils/api/redis';
+import { ITEM_COLOR_SOURCE, ITEM_COLOR_TYPE } from '@utils/item/itemColorSource';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;
@@ -110,7 +111,7 @@ export const getManyItems = async (
       s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
-    LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
+    LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = ${ITEM_COLOR_TYPE}
     LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
     LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
     LEFT JOIN owlsPrice as o on o.item_iid = a.internal_id and o.isLatest = 1
@@ -184,7 +185,7 @@ export const rawToItemData = (raw: any, options: RawToItemOptions = {}): ItemDat
       rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
       lab: [result.lab_l, result.lab_a, result.lab_b],
       hex: result.hex,
-      type: 'vibrant',
+      type: ITEM_COLOR_SOURCE === 'colorthief' ? 'main' : 'vibrant',
       population: result.population,
     },
     findAt: getItemFindAtLinks(result), // doesnt have all the info we need :(

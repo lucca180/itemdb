@@ -15,6 +15,7 @@ import {
   type MapItemV2Options,
 } from '@app/server/items/itemV2Price';
 import { asJsonDate, asNumber, asString, type RawItemV2Row } from '@app/server/items/itemV2Raw';
+import { ITEM_COLOR_TYPE } from '@utils/item/itemColorSource';
 
 export type { MapItemV2Options } from '@app/server/items/itemV2Price';
 export type { RawItemV2Row } from '@app/server/items/itemV2Raw';
@@ -163,7 +164,7 @@ export const NC_VALUE_COLUMNS: readonly ColumnName[] = [
 const JOINS: Record<JoinName, Prisma.Sql> = {
   color: Prisma.sql`
     LEFT JOIN ItemColor AS color
-      ON color.image_id = a.image_id AND color.type = 'Vibrant'
+      ON color.image_id = a.image_id AND color.type = ${ITEM_COLOR_TYPE}
   `,
   npPrice: Prisma.sql`
     LEFT JOIN ItemPrices AS npPrice
