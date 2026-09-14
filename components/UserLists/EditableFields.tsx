@@ -118,6 +118,11 @@ const EditableFields = (props: EditableFieldsProps) => {
           <Text fontSize="xs">{t('Lists.highlight')}?</Text>
         </Checkbox.Label>
       </Checkbox.Root>
+      {list?.purpose && list.purpose !== 'none' && (
+        <Text fontSize="2xs" color="gray.400" fontStyle="italic">
+          {t('Lists.highlight-purpose-hint', { purpose: t(`Lists.${list.purpose}`) })}
+        </Text>
+      )}
       <Checkbox.Root
         checked={!!itemInfo?.isHidden}
         size="sm"
