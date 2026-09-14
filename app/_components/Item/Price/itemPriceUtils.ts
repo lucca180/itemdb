@@ -198,19 +198,49 @@ function resolveMarkerBadgeText(
   return t(hasEnding ? 'ItemPage.available-at' : 'ItemPage.added-to');
 }
 
+/** Inclusive min/max timestamps covered by a set of price rows. */
+function getPriceDateRange(data: PriceData[]): { min: number; max: number } | null {
+  if (!data.length) return null;
+
+  let min = Infinity;
+  let max = -Infinity;
+  for (const price of data) {
+    const time = new Date(price.addedAt).getTime();
+    if (time < min) min = time;
+    if (time > max) max = time;
+  }
+
+  return { min, max };
+}
+
+/** Whether a single marker edge date (start or end) falls inside the price date range. */
+function isDateWithinRange(date: string, range: { min: number; max: number }): boolean {
+  const time = new Date(date).getTime();
+  return time >= range.min && time <= range.max;
+}
+
 /**
  * Interleaves price rows with presentation-ready markers.
  * Clamping / date validation already happened in the price-markers engine.
  * Official-list badge copy is resolved via i18n here into `badgeText`.
  * Manual markers: `null` = same auto i18n; `""` = no badge; other = custom.
  * Adjacent start+end of the same series (no rows between) collapse into one range row.
+ * When `truncated` is true, `data` is a partial (e.g. summary) slice of the full price
+ * history, so a marker edge (start/end) whose date falls outside that range is dropped —
+ * otherwise markers older than the slice pile up at the end of the table. If only one edge
+ * survives (e.g. a range marker that started before the truncated window but ended inside
+ * it), only that edge's row is rendered instead of both. Full/untruncated callers keep every
+ * edge, even ones that predate the earliest recorded price.
  */
 export function buildPriceTableData(
   data: PriceData[],
   markers: PriceMarker[] = [],
-  t: TranslateFn = (key) => key
+  t: TranslateFn = (key) => key,
+  truncated = false
 ): PriceOrMarker[] {
   const sorted: PriceOrMarker[] = [...data];
+
+  const dateRange = truncated ? getPriceDateRange(data) : null;
 
   markers.forEach((marker) => {
     if (marker.title == null && marker.description == null && marker.badgeText == null) {
@@ -219,8 +249,10 @@ export function buildPriceTableData(
 
     const hasEnding = !!marker.endAt;
     const slug = marker.type === 'officialList' ? marker.slug : null;
+    const endInRange = !dateRange || (!!marker.endAt && isDateWithinRange(marker.endAt, dateRange));
+    const startInRange = !dateRange || isDateWithinRange(marker.startAt, dateRange);
 
-    if (marker.endAt) {
+    if (marker.endAt && endInRange) {
       sorted.push({
         marker: true,
         markerId: marker.id,
@@ -237,18 +269,23 @@ export function buildPriceTableData(
       });
     }
 
-    sorted.push({
-      marker: true,
-      markerId: marker.id,
-      markerEdge: 'start',
-      badgeText: resolveMarkerBadgeText(marker, 'start', hasEnding, t),
-      title: marker.title ?? undefined,
-      description: marker.description,
-      slug,
-      addedAt: marker.startAt,
-      color: marker.color,
-      hasEnding,
-    });
+    if (startInRange) {
+      sorted.push({
+        marker: true,
+        markerId: marker.id,
+        markerEdge: 'start',
+        badgeText: resolveMarkerBadgeText(marker, 'start', hasEnding, t),
+        title: marker.title ?? undefined,
+        description: marker.description,
+        slug,
+        addedAt: marker.startAt,
+        color: marker.color,
+        // Only pair with the color toggle below when its end row is also rendered —
+        // otherwise (end excluded, still "open" past the truncated window) this lone
+        // start row would flip coloring on with no matching row left to flip it off.
+        hasEnding: hasEnding && endInRange,
+      });
+    }
   });
 
   sorted.sort((a, b) => {

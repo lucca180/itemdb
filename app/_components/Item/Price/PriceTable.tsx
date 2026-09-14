@@ -24,6 +24,8 @@ type PriceTableViewProps = {
   markers?: PriceMarker[];
   /** Precomputed rows; when omitted, builds sync (e.g. client previews). */
   sortedData?: PriceOrMarker[];
+  /** True when `data` is a partial slice (e.g. summary) of the full price history. */
+  truncated?: boolean;
   isAdmin?: boolean;
   /** Item accent color used for price-row borders and context link tint. */
   itemColor: string;
@@ -240,6 +242,7 @@ export function PriceTableView({
   data,
   markers = [],
   sortedData: sortedDataProp,
+  truncated = false,
   isAdmin,
   itemColor,
   t,
@@ -248,7 +251,7 @@ export function PriceTableView({
   maxH = { base: 200, md: 300 },
   footer,
 }: PriceTableViewProps) {
-  const sortedData = sortedDataProp ?? buildPriceTableData(data, markers, t);
+  const sortedData = sortedDataProp ?? buildPriceTableData(data, markers, t, truncated);
   const linkColor = Color(itemColor).alpha(0.8).lightness(70).hexa();
 
   return (

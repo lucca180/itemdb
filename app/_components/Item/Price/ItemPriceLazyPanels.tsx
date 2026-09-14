@@ -52,6 +52,7 @@ export function PriceHistoryTable({
         itemColor={item.color.hex}
         data={prices}
         markers={markers}
+        truncated={hasMore && !expanded}
         isAdmin={isAdmin}
         t={t}
         format={format}

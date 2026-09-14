@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ListItemInfo, PriceData, UserList } from '@types';
+import type { ListItemInfo, PriceData, PriceMarker, UserList } from '@types';
 
 vi.mock('server-only', () => ({}));
 
@@ -501,6 +501,78 @@ describe('buildPriceTableData', () => {
     expect(rows).toHaveLength(2);
     expect(rows.every((row) => row.description === 'Only context')).toBe(true);
     expect(new Set(rows.map((row) => `${row.markerId}-${row.markerEdge}`)).size).toBe(2);
+  });
+
+  it('drops markers entirely outside the price window when data is truncated', () => {
+    const oldMarker: PriceMarker = {
+      id: 'officialList-old',
+      type: 'officialList',
+      title: 'Old Event',
+      description: null,
+      slug: 'old-event',
+      color: '#abc',
+      startAt: '2020-01-01T00:00:00.000Z',
+      endAt: null,
+      isPoint: true,
+    };
+    const recentMarker: PriceMarker = {
+      id: 'officialList-recent',
+      type: 'officialList',
+      title: 'Recent Event',
+      description: null,
+      slug: 'recent-event',
+      color: '#def',
+      startAt: '2024-04-15T00:00:00.000Z',
+      endAt: null,
+      isPoint: true,
+    };
+    const data = [priceOn('2024-05-01T00:00:00.000Z'), priceOn('2024-04-01T00:00:00.000Z', 2)];
+
+    const truncatedRows = buildPriceTableData(data, [oldMarker, recentMarker], tableT, true);
+    expect(truncatedRows.filter((row) => row.marker).map((row) => row.markerId)).toEqual([
+      'officialList-recent',
+    ]);
+
+    const fullRows = buildPriceTableData(data, [oldMarker, recentMarker], tableT, false);
+    expect(fullRows.filter((row) => row.marker)).toHaveLength(2);
+  });
+
+  it('renders only the in-range edge for a range marker that straddles a truncated window', () => {
+    const data = [priceOn('2024-04-20T00:00:00.000Z'), priceOn('2024-04-10T00:00:00.000Z', 2)];
+
+    const startedBeforeWindow: PriceMarker = {
+      id: 'range-started-before',
+      type: 'officialList',
+      title: 'Older Event',
+      description: null,
+      slug: 'older-event',
+      color: '#abc',
+      startAt: '2024-03-01T00:00:00.000Z',
+      endAt: '2024-04-15T00:00:00.000Z',
+      isPoint: false,
+    };
+    const endingAfterWindow: PriceMarker = {
+      id: 'range-ending-after',
+      type: 'officialList',
+      title: 'Ongoing Event',
+      description: null,
+      slug: 'ongoing-event',
+      color: '#def',
+      startAt: '2024-04-12T00:00:00.000Z',
+      endAt: '2024-05-01T00:00:00.000Z',
+      isPoint: false,
+    };
+
+    const rows = buildPriceTableData(data, [startedBeforeWindow, endingAfterWindow], tableT, true);
+    const markerRows = rows.filter((row) => row.marker);
+
+    expect(markerRows).toHaveLength(2);
+
+    const beforeRow = markerRows.find((row) => row.markerId === 'range-started-before');
+    expect(beforeRow).toMatchObject({ markerEdge: 'end', addedAt: '2024-04-15T00:00:00.000Z' });
+
+    const afterRow = markerRows.find((row) => row.markerId === 'range-ending-after');
+    expect(afterRow).toMatchObject({ markerEdge: 'start', addedAt: '2024-04-12T00:00:00.000Z' });
   });
 });
 
