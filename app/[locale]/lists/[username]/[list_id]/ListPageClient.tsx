@@ -454,11 +454,7 @@ export function ListPageClient({
             <Flex px={[1, 3]} flexFlow="column">
               <ItemList
                 onClick={state.selectItem}
-                ids={highlightIds.sort((a, b) =>
-                  state.items[state.itemInfo[a].item_iid]?.name?.localeCompare(
-                    state.items[state.itemInfo[b].item_iid]?.name ?? ''
-                  )
-                )}
+                ids={highlightIds}
                 list={state.list}
                 itemInfo={state.itemInfo}
                 items={state.items}
