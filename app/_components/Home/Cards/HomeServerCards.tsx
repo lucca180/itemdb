@@ -157,7 +157,7 @@ export function FaerieFestivalHomeCard() {
 }
 
 async function FaerieFestivalHomeCardContent() {
-  const lists = await loadFaerieFestivalLists();
+  const lists = (await loadFaerieFestivalLists()).slice(0, 3);
 
   return (
     <FFHomeCard>
