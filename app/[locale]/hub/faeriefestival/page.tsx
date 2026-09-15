@@ -1,31 +1,36 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { cacheLife, cacheTag } from 'next/cache';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
-import { getTrendingCatLists } from '@pages/api/v1/beta/trending';
-
-import type { UserList } from '@types';
+import { loadFaerieFestivalLists } from './_data';
+import { ogImageUrl, seoDescription, seoTitle } from './_event';
 import { FaerieFestivalPageContent } from './FaerieFestivalPageContent';
 
-const EVENT_YEAR = 2025;
-const mainColor = '#9b65c0c7';
-const ogImage = 'https://images.neopets.com/homepage/marquee/icons/faeriefestival_event_icon.png';
+const mainColor = '#e85fb0c7';
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getStaticAppMetadata({
-    title: 'Faerie Festival Guide',
-    description: 'Find the best items to recycle for the Faerie Festival event!',
+    title: seoTitle,
+    description: seoDescription,
     pathname: '/hub/faeriefestival',
   });
 
   return {
     ...metadata,
+    title: { absolute: seoTitle },
+    twitter: {
+      ...metadata.twitter,
+      card: 'summary_large_image',
+      title: seoTitle,
+      description: seoDescription,
+    },
     openGraph: {
       ...metadata.openGraph,
-      images: [{ url: ogImage, width: 300, height: 300, alt: 'Faeries Festival' }],
+      title: seoTitle,
+      description: seoDescription,
+      images: [{ url: ogImageUrl, alt: seoTitle }],
     },
   };
 }
@@ -38,6 +43,10 @@ export default function FaerieFestivalPage() {
   );
 }
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 async function FaerieFestivalPageContentWrapper() {
   const lists = await loadFaerieFestivalLists();
 
@@ -47,22 +56,4 @@ async function FaerieFestivalPageContentWrapper() {
       <FaerieFestivalPageContent lists={lists} />
     </>
   );
-}
-
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
-
-async function loadFaerieFestivalLists(): Promise<UserList[]> {
-  'use cache';
-  cacheTag('hub-faeriefestival');
-  cacheLife({ stale: 300, revalidate: 300, expire: 3600 });
-
-  try {
-    return (await getTrendingCatLists('Faerie Festival', 100)).filter(
-      (list) => new Date(list.createdAt).getFullYear() === EVENT_YEAR
-    );
-  } catch {
-    return [];
-  }
 }

@@ -27,10 +27,10 @@ export async function NeggsCard(props: EventCardProps) {
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
-        '.card-icon': {
+        '& .card-icon': {
           filter: 'drop-shadow(0 0 5px rgb(70, 221, 120))',
         },
-        '::before': {
+        '&::before': {
           content: "''",
           position: 'absolute',
           top: 0,

@@ -3,7 +3,7 @@
 import { Box, Flex, Heading, Text, SimpleGrid, HStack, Icon, Badge } from '@chakra-ui/react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { AiFillWarning } from 'react-icons/ai';
-import { LuBoxes, LuCoins, LuLayers, LuSparkles } from 'react-icons/lu';
+import { LuBoxes, LuCoins, LuLayers, LuSparkles, LuTicket } from 'react-icons/lu';
 import type { ImportSummary } from '@utils/list/computeImportSummary';
 
 export type ImportSummaryBarProps = {
@@ -18,7 +18,7 @@ export function ImportSummaryBar({ summary, totalCount, notFoundCount }: ImportS
 
   return (
     <Flex direction="column" gap={3} w="100%">
-      <SimpleGrid columns={{ base: 2, md: 4 }} gap={3}>
+      <SimpleGrid columns={{ base: 2, md: 5 }} gap={3}>
         <Box bg="gray.800" borderWidth="1px" borderColor="whiteAlpha.200" borderRadius="lg" p={3.5}>
           <Flex align="center" gap={2} mb={1}>
             <Icon as={LuBoxes} color="teal.400" />
@@ -94,6 +94,23 @@ export function ImportSummaryBar({ summary, totalCount, notFoundCount }: ImportS
           </Flex>
           <Heading size="md" color="purple.300">
             {summary.ncCount}
+          </Heading>
+        </Box>
+
+        <Box bg="gray.800" borderWidth="1px" borderColor="whiteAlpha.200" borderRadius="lg" p={3.5}>
+          <Flex align="center" gap={2} mb={1}>
+            <Icon as={LuTicket} color="pink.400" />
+            <Text
+              fontSize="xs"
+              fontWeight="semibold"
+              color="whiteAlpha.700"
+              textTransform="uppercase"
+            >
+              {t('Lists.importV2-summary-ff-points')}
+            </Text>
+          </Flex>
+          <Heading size="md" color="pink.300">
+            {format.number(summary.totalFaerieFestivalPoints)}
           </Heading>
         </Box>
       </SimpleGrid>

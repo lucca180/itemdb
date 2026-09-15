@@ -1,6 +1,6 @@
 import type { ImportPreviewItem } from '@app/[locale]/lists/import/importShared';
 import type { ItemV2For } from '@types';
-import { getSortPriceV2 } from '@utils/item/v2';
+import { getSortPriceV2, rarityToCCPointsV2 } from '@utils/item/v2';
 
 export type ImportSortKey =
   | 'name'
@@ -9,7 +9,8 @@ export type ImportSortKey =
   | 'price_qty'
   | 'rarity'
   | 'item_id'
-  | 'type';
+  | 'type'
+  | 'ffPoints';
 
 export type ImportSortDir = 'asc' | 'desc';
 
@@ -21,6 +22,7 @@ export const IMPORT_SORT_KEYS: ImportSortKey[] = [
   'rarity',
   'item_id',
   'type',
+  'ffPoints',
 ];
 
 export function isImportSortKey(value: unknown): value is ImportSortKey {
@@ -78,6 +80,9 @@ export function sortImportPreviewItems(
       const typeCmp = compareStrings(itemA.type, itemB.type, sortDir);
       if (typeCmp !== 0) return typeCmp;
       return compareStrings(itemA.name, itemB.name, 'asc');
+    }
+    if (sortBy === 'ffPoints') {
+      return compareNumbers(rarityToCCPointsV2(itemA), rarityToCCPointsV2(itemB), sortDir);
     }
     return 0;
   });

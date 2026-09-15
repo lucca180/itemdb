@@ -1,5 +1,5 @@
 import type { ImportPreviewItem } from '@app/[locale]/lists/import/importShared';
-import { getNpPriceValue } from '@utils/item/v2';
+import { getNpPriceValue, rarityToCCPointsV2 } from '@utils/item/v2';
 
 export type ImportSummary = {
   resolvedCount: number;
@@ -11,6 +11,8 @@ export type ImportSummary = {
   totalNpUnitValue: number;
   totalNpValueWithQty: number;
   totalNcTradeMinValue: number;
+  /** Faerie Festival recycling points across all (non-NC) items, accounting for quantity. */
+  totalFaerieFestivalPoints: number;
 };
 
 export function computeImportSummary(items: ImportPreviewItem[]): ImportSummary {
@@ -22,9 +24,14 @@ export function computeImportSummary(items: ImportPreviewItem[]): ImportSummary 
   let totalNpUnitValue = 0;
   let totalNpValueWithQty = 0;
   let totalNcTradeMinValue = 0;
+  let totalFaerieFestivalPoints = 0;
 
   for (const { item, quantity } of items) {
     totalQuantity += quantity;
+
+    if (item.type !== 'nc') {
+      totalFaerieFestivalPoints += rarityToCCPointsV2(item) * quantity;
+    }
 
     if (item.type === 'nc') {
       ncCount += 1;
@@ -54,5 +61,6 @@ export function computeImportSummary(items: ImportPreviewItem[]): ImportSummary 
     totalNpUnitValue,
     totalNpValueWithQty,
     totalNcTradeMinValue,
+    totalFaerieFestivalPoints,
   };
 }

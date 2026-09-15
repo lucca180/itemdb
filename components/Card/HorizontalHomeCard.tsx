@@ -107,10 +107,10 @@ export async function FFHomeCard({ children }: { children: ReactNode }) {
   const t = await getTranslations();
   return (
     <HorizontalHomeCard
-      color="#5436ab"
+      color="#e85fb0"
       h={50}
       w={50}
-      image="https://images.neopets.com/faeriefestival/2025/np/prizeshop-icon.png"
+      image="/hub/faerie-icon.png"
       viewAllLink="/hub/faeriefestival"
       title={'Faerie Festival'}
       isSmall
@@ -120,20 +120,20 @@ export async function FFHomeCard({ children }: { children: ReactNode }) {
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
-        img: {
-          filter: 'drop-shadow(0 0 5px #f3a4ff)',
+        '& img': {
+          filter: 'drop-shadow(0 0 5px #e85fb0)',
         },
-        h2: {
-          textShadow: '0 0 10px #f3a4ff',
+        '& h2': {
+          textShadow: '0 0 10px #e85fb0',
         },
-        '::before': {
+        '&::before': {
           content: "''",
           position: 'absolute',
           top: 0,
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundImage: "url('https://images.neopets.com/faeriefestival/2025/np/bg.png')",
+          backgroundImage: "url('/hub/faeriefest2023.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           opacity: 0.5,
@@ -142,7 +142,7 @@ export async function FFHomeCard({ children }: { children: ReactNode }) {
         },
       }}
       innerStyle={{
-        border: '2px solid #f3a4ff7d',
+        border: '2px solid #e85fb07d',
       }}
     >
       {children}
@@ -164,13 +164,13 @@ export function HalloweenHomeCard({ children }: { children: ReactNode }) {
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
-        img: {
+        '& img': {
           filter: 'drop-shadow(0 0 5px #54ACB4)',
         },
-        h2: {
+        '& h2': {
           textShadow: '0 0 10px #54ACB4',
         },
-        '::before': {
+        '&::before': {
           content: "''",
           position: 'absolute',
           top: 0,
@@ -211,13 +211,13 @@ export async function WinterStarlightCard({ children }: { children: ReactNode })
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
-        img: {
+        '& img': {
           filter: 'drop-shadow(0 0 5px #b45454ff)',
         },
-        h2: {
+        '& h2': {
           textShadow: '0 0 10px #b45454ff',
         },
-        '::before': {
+        '&::before': {
           content: "''",
           position: 'absolute',
           top: 0,
@@ -258,10 +258,10 @@ export async function NeopiesCard({ children }: { children: ReactNode }) {
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
-        '.card-icon': {
+        '& .card-icon': {
           filter: 'drop-shadow(0 0 5px #ddc146ff)',
         },
-        '::before': {
+        '&::before': {
           content: "''",
           position: 'absolute',
           top: 0,

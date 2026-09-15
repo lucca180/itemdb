@@ -466,21 +466,39 @@ export function getShopRestockSpecialDay(
   }
 }
 
+export type FaerieFestivalPointTier = {
+  points: number;
+  minRarity: number;
+  maxRarity: number;
+};
+
+/**
+ * Faerie Festival "recycle for Prize Shop points" tiers, by rarity band.
+ * Carried over from the 2025 event — update when TNT publishes this year's values.
+ * Single source of truth: item badges (rarityToCCPoints), the "Recycling Points" list
+ * sort, and the Faerie Festival hub page (app/[locale]/hub/faeriefestival) all derive
+ * their rarity ranges and links from this table.
+ */
+export const FAERIE_FESTIVAL_POINT_TIERS: FaerieFestivalPointTier[] = [
+  { points: 3, minRarity: 1, maxRarity: 79 },
+  { points: 5, minRarity: 80, maxRarity: 89 },
+  { points: 8, minRarity: 90, maxRarity: 97 },
+  { points: 6, minRarity: 98, maxRarity: 100 },
+  { points: 1, minRarity: 101, maxRarity: 101 },
+  { points: 10, minRarity: 102, maxRarity: 179 },
+];
+
 export function rarityToCCPoints(item: Pick<ItemData, 'internal_id' | 'rarity'>) {
   if (item.internal_id === 289) return 1;
 
   if (!item.rarity) return 0;
 
   const rarity = item.rarity;
+  const tier = FAERIE_FESTIVAL_POINT_TIERS.find(
+    (t) => rarity >= t.minRarity && rarity <= t.maxRarity
+  );
 
-  if (rarity <= 79) return 3;
-  if (rarity <= 89) return 5;
-  if (rarity <= 97) return 8;
-  if (rarity <= 100) return 6;
-  if (rarity === 101) return 1;
-  if (rarity <= 179) return 10;
-
-  return 0;
+  return tier?.points ?? 0;
 }
 
 export function stripMarkdown(markdownText: string) {

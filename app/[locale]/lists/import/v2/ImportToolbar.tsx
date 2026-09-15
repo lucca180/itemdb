@@ -41,6 +41,7 @@ const SORT_TYPES = {
   price_qty: 'price-quantity',
   rarity: 'rarity',
   item_id: 'item-id',
+  ffPoints: 'recycling-points',
 };
 
 export function ImportToolbar({

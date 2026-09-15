@@ -7,6 +7,7 @@ import { SetMainColor } from '@components/Layout/SetMainColor';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@app/utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import {
+  FaerieFestivalHomeCard,
   FeaturedListsHomeCard,
   LeavingNcMallHomeCard,
   LatestItemsHomeCard,
@@ -114,6 +115,7 @@ async function HomePageSections() {
   return (
     <Flex mt={8} gap={8} flexDirection="column">
       <LatestPricesSection title={t('HomePage.latest-prices')} />
+      <FaerieFestivalHomeCard />
       <NewItemsCountSection />
       <Grid
         templateColumns={{ base: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}
