@@ -36,6 +36,13 @@ function legibleAccent(hex: string) {
   return color.lightness() < 58 ? color.lightness(58).hex() : hex;
 }
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 export function FaerieFestivalPageContent({ lists }: Props) {
   return (
     <>
@@ -103,14 +110,33 @@ export function FaerieFestivalPageContent({ lists }: Props) {
             </Text>
             <Flex gap={3} flexWrap="wrap" fontSize="sm" mt={1} align="center">
               <Link asChild color="pink.200">
-                <MainLink href="/tools/price-checker">Check points on items you own</MainLink>
+                <MainLink
+                  href="/tools/price-checker"
+                  trackEvent="faeriefestival-hub-hero"
+                  trackEventLabel="price-checker"
+                >
+                  Check points on items you own
+                </MainLink>
               </Link>
               <Text color="whiteAlpha.500">·</Text>
               <Link asChild color="pink.200">
-                <MainLink href="#prizes">Check event prizes</MainLink>
+                <MainLink
+                  href="#prizes"
+                  trackEvent="faeriefestival-hub-hero"
+                  trackEventLabel="prizes-anchor"
+                >
+                  Check event prizes
+                </MainLink>
               </Link>
               <Text color="whiteAlpha.500">·</Text>
-              <Link href={officialEventUrl} target="_blank" rel="noreferrer" color="pink.200">
+              <Link
+                href={officialEventUrl}
+                target="_blank"
+                rel="noreferrer"
+                color="pink.200"
+                data-umami-event="faeriefestival-hub-hero"
+                data-umami-event-label="official-event"
+              >
                 Official event page ↗
               </Link>
             </Flex>
@@ -132,7 +158,12 @@ export function FaerieFestivalPageContent({ lists }: Props) {
                 minW="150px"
                 _hover={{ textDecoration: 'none' }}
               >
-                <MainLink href={tier.link} prefetch={false}>
+                <MainLink
+                  href={tier.link}
+                  prefetch={false}
+                  trackEvent="faeriefestival-hub-recycling"
+                  trackEventLabel={tier.rarityRange}
+                >
                   <Flex
                     flexFlow="column"
                     gap={1}
@@ -191,7 +222,12 @@ export function FaerieFestivalPageContent({ lists }: Props) {
                 minW="200px"
                 _hover={{ textDecoration: 'none' }}
               >
-                <MainLink href={tier.link} prefetch={false}>
+                <MainLink
+                  href={tier.link}
+                  prefetch={false}
+                  trackEvent="faeriefestival-hub-capsule"
+                  trackEventLabel={tier.rarityLabel}
+                >
                   <Flex
                     flexFlow="column"
                     gap={2}
@@ -235,7 +271,12 @@ export function FaerieFestivalPageContent({ lists }: Props) {
         >
           <Flex gap={3} flexWrap="wrap" justifyContent="center">
             {lists.map((list) => (
-              <UserListCard isSmall key={list.internal_id} list={list} />
+              <UserListCard
+                isSmall
+                key={list.internal_id}
+                list={list}
+                utm_content="faeriefestival-hub-lists"
+              />
             ))}
           </Flex>
         </GlassPanel>
@@ -255,7 +296,12 @@ export function FaerieFestivalPageContent({ lists }: Props) {
                 minW="200px"
                 _hover={{ textDecoration: 'none' }}
               >
-                <MainLink href={card.link} prefetch={false}>
+                <MainLink
+                  href={card.link}
+                  prefetch={false}
+                  trackEvent="faeriefestival-hub-utilities"
+                  trackEventLabel={slugify(card.title)}
+                >
                   <Flex
                     flexFlow="column"
                     gap={2}
@@ -305,12 +351,24 @@ export function FaerieFestivalPageContent({ lists }: Props) {
               >
                 Use the{' '}
                 <Link asChild color="pink.200" fontWeight="semibold">
-                  <MainLink href="/tools/price-checker">Price Checker</MainLink>
+                  <MainLink
+                    href="/tools/price-checker"
+                    trackEvent="faeriefestival-hub-faq"
+                    trackEventLabel="price-checker"
+                  >
+                    Price Checker
+                  </MainLink>
                 </Link>{' '}
                 to see Faerie Festival points for items from your SDB, inventory, or shops. You can
                 also{' '}
                 <Link asChild color="pink.200" fontWeight="semibold">
-                  <MainLink href="/lists/import">import your Safety Deposit Box</MainLink>
+                  <MainLink
+                    href="/lists/import"
+                    trackEvent="faeriefestival-hub-faq"
+                    trackEventLabel="import-sdb"
+                  >
+                    import your Safety Deposit Box
+                  </MainLink>
                 </Link>{' '}
                 and sort by recycling points.
               </Text>
@@ -361,7 +419,13 @@ export function FaerieFestivalPageContent({ lists }: Props) {
                 it are lost, though you still keep the points up to the limit and that day&apos;s
                 Donation Bonus Prize. Sort your{' '}
                 <Link asChild color="pink.200" fontWeight="semibold">
-                  <MainLink href="/lists/import">imported SDB</MainLink>
+                  <MainLink
+                    href="/lists/import"
+                    trackEvent="faeriefestival-hub-faq"
+                    trackEventLabel="import-sdb-daily-limit"
+                  >
+                    imported SDB
+                  </MainLink>
                 </Link>{' '}
                 by recycling points and donate in batches across multiple days instead of all at
                 once, so high-value items aren&apos;t wasted over the limit.
@@ -387,6 +451,8 @@ export function FaerieFestivalPageContent({ lists }: Props) {
                   rel="noreferrer"
                   color="pink.200"
                   fontWeight="semibold"
+                  data-umami-event="faeriefestival-hub-faq"
+                  data-umami-event-label="prizes-external"
                 >
                   Neopets event page
                 </Link>
@@ -427,6 +493,8 @@ export function FaerieFestivalPageContent({ lists }: Props) {
                   rel="noreferrer"
                   color="pink.200"
                   fontWeight="semibold"
+                  data-umami-event="faeriefestival-hub-faq"
+                  data-umami-event-label="voting-external"
                 >
                   official event page
                 </Link>{' '}
@@ -511,7 +579,12 @@ function RecyclingPointsTable() {
                 boxShadow={`inset 3px 0 0 ${tier.color}`}
               >
                 <Link asChild _hover={{ textDecoration: 'none' }}>
-                  <MainLink href={tier.link} prefetch={false}>
+                  <MainLink
+                    href={tier.link}
+                    prefetch={false}
+                    trackEvent="faeriefestival-hub-faq"
+                    trackEventLabel={`recycling-table-${tier.rarityRange}`}
+                  >
                     <Badge bg={tier.color} color={chipTextColor(tier.color)}>
                       {tier.rarityRange}
                     </Badge>
@@ -520,7 +593,12 @@ function RecyclingPointsTable() {
               </Table.Cell>
               <Table.Cell pe={4} py={3} textAlign="end" verticalAlign="middle">
                 <Link asChild _hover={{ textDecoration: 'none' }}>
-                  <MainLink href={tier.link} prefetch={false}>
+                  <MainLink
+                    href={tier.link}
+                    prefetch={false}
+                    trackEvent="faeriefestival-hub-faq"
+                    trackEventLabel={`recycling-table-${tier.rarityRange}`}
+                  >
                     <Text
                       as="span"
                       fontSize="2xl"
