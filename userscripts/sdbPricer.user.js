@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      2.0.2
+  // @version      2.1.0
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb
@@ -28,6 +28,27 @@ const script_info = {
 unsafeWindow.itemdb_sdbPricer = script_info;
 
 const itemInfo = {};
+
+// Keep in sync with FAERIE_FESTIVAL_POINT_TIERS in utils/utils.ts
+const FAERIE_FESTIVAL_POINT_TIERS = [
+  { points: 3, minRarity: 1, maxRarity: 79 },
+  { points: 5, minRarity: 80, maxRarity: 89 },
+  { points: 8, minRarity: 90, maxRarity: 97 },
+  { points: 6, minRarity: 98, maxRarity: 100 },
+  { points: 1, minRarity: 101, maxRarity: 101 },
+  { points: 10, minRarity: 102, maxRarity: 179 },
+];
+
+function getFaerieFestivalPoints(item) {
+  if (item.internal_id === 289) return 1; // Sticky Snowball
+  if (!item.rarity) return 0;
+
+  const tier = FAERIE_FESTIVAL_POINT_TIERS.find(
+    (t) => item.rarity >= t.minRarity && item.rarity <= t.maxRarity
+  );
+
+  return tier ? tier.points : 0;
+}
 
 async function fetchPriceData(IDs) {
   GM_xmlhttpRequest({
@@ -83,14 +104,6 @@ function getPriceStr(item, itemQty) {
     try {
       if(!item) throw 'no item';
 
-      // if(item.rarity) {
-      //   var color1 = setColor(item.rarity)
-
-      //   priceStr += `<small style='color:${color1}'><b>r${item.rarity}</b>`;
-      //   if(item.ff_points) priceStr += ` - <b>${item.ff_points} pts</b>`;
-      //   priceStr += `</small> `
-      // }
-
       const linkUrl = `https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer`;
 
       if(item.status === 'no trade'){
@@ -144,6 +157,8 @@ function getPriceStr(item, itemQty) {
         }
       }
 
+     
+
       if (item.flags?.includes('missingInfo')){
         priceStr += `<div><small><a href="https://itemdb.com.br/contribute?utm_content=sdbPricer" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small></div>`
       }
@@ -154,6 +169,16 @@ function getPriceStr(item, itemQty) {
     }
 
     priceStr += '</div>';
+
+    if(item.rarity) {
+      var ffPoints = getFaerieFestivalPoints(item);
+      if(!!ffPoints){
+        priceStr += `<small style="color: #f54683;">(<b>r${item.rarity}</b>`;
+        if(ffPoints) priceStr += ` - <b>${ffPoints} pt${ffPoints === 1 ? '' : 's'}</b>`;
+        priceStr += `)</small>`
+      }
+    }
+
     return priceStr;
 }
 
@@ -172,7 +197,7 @@ function priceSDB(itemData) {
     if(!item) return;
 
     const qty = itemInfo[item_id].amount || 1;
-    
+
     if(item.type === 'np')
       total += (item.price?.value || 0) * qty;
 
