@@ -604,8 +604,6 @@ const ListHeader = (props: ListHeaderProps) => {
                       </IconButton>
                     )}
                   </Text>
-
-                  {!!unpricedItems && <>{t('Lists.unpricedItems', { 0: unpricedItems })}</>}
                 </Flex>
               )}
             </SimpleGrid>
