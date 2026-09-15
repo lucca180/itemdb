@@ -1477,7 +1477,8 @@
     "apiChanges": "Userscripts not working? Please check our <Link>Troubleshooting Tool</Link>!",
     "newAuction": "New Auction House changes may affect auction price history. Check this <Link>important update</Link>.",
     "apiV2": "Check this <Link>quick update</Link> about API v2 and our recent outages",
-    "mallHub": "Check out our new <Link>NC Mall Hub</Link> with hottest items, deals, and more!"
+    "mallHub": "Check out our new <Link>NC Mall Hub</Link> with hottest items, deals, and more!",
+    "faerieFestivalHub": "Faerie Festival is here! Check our <Link>Faerie Festival Guide</Link> for recycling points, prizes, and more"
   },
   "Owls": {
     "items-you-offered": "Items You Offered",

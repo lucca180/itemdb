@@ -60,6 +60,17 @@ export const siteAlerts = {
     bg: 'purple.200',
     color: 'blackAlpha.900',
   },
+  faerieFestivalHub: {
+    message: 'faerieFestivalHub',
+    link: '/hub/faeriefestival',
+    img: {
+      src: 'https://images.neopets.com/homepage/marquee/icons/faeriefestival_event_icon.png',
+      h: 28,
+      w: 28,
+    },
+    bg: 'pink.200',
+    color: 'blackAlpha.900',
+  },
   halloween: {
     message: 'halloween',
     link: '/restock',
@@ -114,7 +125,7 @@ export function getCurrentSiteAlert() {
   if (todayNST.getMonth() === 7 && todayNST.getDate() === 20) return siteAlerts.usuki;
   if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) return siteAlerts.faerieFestival;
   if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) return siteAlerts.halloween;
-  if (todayNST.getTime() < 1788134399000) return siteAlerts.mallHub;
+  if (todayNST.getTime() < 1789775999000) return siteAlerts.faerieFestivalHub;
 
   return siteAlerts.default;
 }
