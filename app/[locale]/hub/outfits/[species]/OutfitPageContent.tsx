@@ -7,6 +7,7 @@ import type { ItemData } from '@types';
 import type { OutfitPageLabels } from './buildOutfitPageProps';
 import { OutfitCard } from './OutfitCard';
 import { OutfitSpeciesSelect } from './OutfitSpeciesSelect';
+import { OutfitExploreLinks } from './OutfitExploreLinks';
 
 const rgb = Color('#94aefa').rgb().array();
 
@@ -48,9 +49,7 @@ export function OutfitPageContent({ outfits, species, labels }: OutfitPageConten
         <Text maxW="900px" textAlign="center">
           {labels.description}
         </Text>
-        <Text maxW="900px" textAlign="center" color="whiteAlpha.800">
-          {labels.paintCta}
-        </Text>
+        <OutfitExploreLinks labels={labels} />
         <OutfitSpeciesSelect species={species} selectSpeciesLabel={labels.selectSpecies} />
       </Center>
       <Separator my={3} />
@@ -73,14 +72,24 @@ export function OutfitPageContent({ outfits, species, labels }: OutfitPageConten
             />
           ))}
         </SimpleGrid>
-        <Flex gap={3} flexWrap="wrap" fontSize="sm" justifyContent="center">
+        <Flex gap={3} flexWrap="wrap" fontSize="sm" justifyContent="center" align="center">
           <Link asChild color="teal.200">
             <MainLink
               href={labels.rainbowPoolHref}
-              trackEvent="related-link"
-              trackEventLabel="rainbow-pool"
+              trackEvent="outfits-hub"
+              trackEventLabel="rainbow-pool-footer"
             >
               {labels.allColoursOfSpecies}
+            </MainLink>
+          </Link>
+          <Separator orientation="vertical" h="14px" />
+          <Link asChild color="cyan.200">
+            <MainLink
+              href={labels.petStylesHref}
+              trackEvent="outfits-hub"
+              trackEventLabel="pet-styles-footer"
+            >
+              {labels.allStylesOfSpecies}
             </MainLink>
           </Link>
         </Flex>

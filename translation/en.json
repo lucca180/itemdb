@@ -1585,11 +1585,11 @@
   },
   "OutfitPage": {
     "description": "Find out every exclusive clothes for your {specie} Neopet! Discover rare wearable items to upgrade yourwardrobe and customize your {specie} in style.",
-    "paint-cta": "Want to paint your {species}? See the cheapest paths in the <RainbowPoolLink>Rainbow Pool Tool</RainbowPoolLink>.",
     "exclusive-species-clothes": "Exclusive {species} Clothes",
     "exclusive-clothes-guide": "Exclusive Clothes Guide",
     "show-items": "Show items",
-    "hide-items": "Hide items"
+    "hide-items": "Hide items",
+    "explore-links-cta": "Looking for more ways to style your {species}?"
   },
   "Effects": {
     "effects-disease": "This item {random, select, true {can cause} other{causes}} <Disease></Disease> {species, select, true {to <Neopet></Neopet>} other {}}",
