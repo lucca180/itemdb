@@ -17,6 +17,7 @@ import { ItemEffectsSection } from '@app/_components/Item/Effects/ItemEffectsSec
 import { ItemOfficialListsSection } from '@app/_components/Item/OfficialLists/ItemOfficialListsSection';
 import MissingInfoCard from '@components/Items/MissingInfoCard';
 import NCMallCardSection from '@app/_components/Item/NCMall/NCMallCardSection';
+import FaerieFestivalPointsCard from '@app/_components/Item/FaerieFestival/FaerieFestivalPointsCard';
 import ItemRestock from '@components/Items/ItemRestockInfo';
 import RelatedLinksCard from '@components/Items/RelatedLinks';
 import FindAtCard from '@components/Items/FindAtCard';
@@ -144,6 +145,7 @@ export async function ItemPage({ item }: ItemPageProps) {
             <SimilarItemsCard key={getKey('similar-items')} item={item} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
+            <FaerieFestivalPointsCard key={getKey('ff-points-card')} item={item} />
             {item.isNC && <NCMallCardSection key={getKey('nc-mall-card')} item={item} />}
             {item.findAt.restockShop && (
               <Suspense fallback={null}>

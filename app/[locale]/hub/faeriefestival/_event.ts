@@ -4,9 +4,9 @@ export const officialEventUrl = 'https://www.neopets.com/faeriefestival/index.ph
 export const eventStartLabel = 'September 15, 2026, 10 AM NST';
 export const eventEndLabel = 'September 28, 2026, 11:59 PM NST';
 
-export const seoTitle = 'Faerie Festival 2026 | Neopets Item Database';
+export const seoTitle = 'Faerie Festival 2026 Guide | Donation Points, Capsule & Prizes';
 export const seoDescription =
-  'Check how many Faerie Festival 2026 points your SDB and inventory items are worth, items from the Prize Shop, guides and more!';
+  'Your Faerie Festival 2026 donation guide: see how many points your SDB and inventory items are worth, Faerie Donation Capsule odds, Prize Shop items, and more.';
 
 // TODO(pre-launch): this is the full hero background art, not a purpose-made OG/share
 // image — reconsider using a square icon (the old page used

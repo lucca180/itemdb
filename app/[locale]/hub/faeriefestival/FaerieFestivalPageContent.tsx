@@ -105,8 +105,8 @@ export function FaerieFestivalPageContent({ lists }: Props) {
               </Box>
             </Heading>
             <Text fontSize={['md', 'xl']} color="whiteAlpha.900" maxW="620px" mt={2}>
-              Check how many Faerie Festival Prize Shop points the items in your SDB and inventory
-              are worth, the event prizes, and itemdb guides.
+              Check how many Faerie Festival donation points the items in your SDB and inventory are
+              worth, Faerie Donation Capsule odds, event prizes, and more.
             </Text>
             <Flex gap={3} flexWrap="wrap" fontSize="sm" mt={1} align="center">
               <Link asChild color="pink.200">
@@ -143,9 +143,138 @@ export function FaerieFestivalPageContent({ lists }: Props) {
           </Flex>
         </Box>
 
+        {/* How to donate */}
+        <GlassPanel
+          eyebrow="01 — Donation Guide"
+          title="How the Faerie Festival donation works"
+          description="From recycling items to your Faerie Donation Capsule, voting ballot, and daily Quests prize."
+        >
+          <Flex direction={{ base: 'column', lg: 'row' }} gap={4} align="stretch">
+            <Box
+              flex={{ lg: '0 0 320px' }}
+              borderWidth="1px"
+              borderColor="whiteAlpha.200"
+              borderRadius="xl"
+              bg="whiteAlpha.100"
+              p={[4, 5]}
+            >
+              <Text
+                fontSize="xs"
+                fontWeight="bold"
+                letterSpacing="0.12em"
+                textTransform="uppercase"
+                color="pink.200"
+                mb={4}
+              >
+                Before You Donate
+              </Text>
+              <DonationStep n={1} title="Find items to recycle" isLast>
+                Check each item&apos;s points with the{' '}
+                <Link asChild color="pink.200" fontWeight="semibold">
+                  <MainLink
+                    href="/tools/price-checker"
+                    trackEvent="faeriefestival-hub-howto"
+                    trackEventLabel="price-checker"
+                  >
+                    Price Checker
+                  </MainLink>
+                </Link>{' '}
+                or{' '}
+                <Link asChild color="pink.200" fontWeight="semibold">
+                  <MainLink
+                    href="/lists/import"
+                    trackEvent="faeriefestival-hub-howto"
+                    trackEventLabel="import-sdb"
+                  >
+                    SDB Importer
+                  </MainLink>
+                </Link>{' '}
+                before donating.
+              </DonationStep>
+            </Box>
+
+            <Box
+              flex="1"
+              borderWidth="1px"
+              borderColor="rgba(236, 72, 153, 0.4)"
+              borderRadius="xl"
+              bg="linear-gradient(160deg, rgba(236, 72, 153, 0.14), rgba(236, 72, 153, 0.03))"
+              p={[4, 5]}
+            >
+              <Text
+                fontSize="xs"
+                fontWeight="bold"
+                letterSpacing="0.12em"
+                textTransform="uppercase"
+                color="pink.200"
+                mb={4}
+              >
+                Every Day of the Festival
+              </Text>
+              <Flex direction={{ base: 'column', md: 'row' }} align="stretch">
+                <DonationStepRow n={2} title="Make your donation">
+                  You can donate up to 30 items at a time, up to a 300-point daily limit. Anything
+                  over that is lost, so pace yourself.
+                </DonationStepRow>
+                <DonationStepRow n={3} title="Collect the prizes">
+                  Premium subscribers get an extra{' '}
+                  <Link asChild color="pink.200" fontWeight="semibold">
+                    <MainLink
+                      href="#prizes"
+                      trackEvent="faeriefestival-hub-howto"
+                      trackEventLabel="prizes-anchor-donate"
+                    >
+                      prize
+                    </MainLink>
+                  </Link>{' '}
+                  for their first donation each day — and everyone gets a{' '}
+                  <Link asChild color="pink.200" fontWeight="semibold">
+                    <MainLink
+                      href="#donation-capsule"
+                      trackEvent="faeriefestival-hub-howto"
+                      trackEventLabel="capsule-anchor"
+                    >
+                      Faerie Donation Capsule
+                    </MainLink>
+                  </Link>{' '}
+                  once they hit 300 points.
+                </DonationStepRow>
+                <DonationStepRow n={4} title="Vote for the Council">
+                  Every donation earns a ballot to vote for which Faerie(s) join the Faerie Council.
+                </DonationStepRow>
+                <DonationStepRow n={5} title="Grab your daily Quests prize" isLast>
+                  Head to the{' '}
+                  <Link
+                    href="https://www.neopets.com/quests.phtml"
+                    target="_blank"
+                    rel="noreferrer"
+                    color="pink.200"
+                    fontWeight="semibold"
+                    data-umami-event="faeriefestival-hub-howto"
+                    data-umami-event-label="quests-external"
+                  >
+                    Quests page
+                  </Link>{' '}
+                  once a day for a free{' '}
+                  <Link asChild color="pink.200" fontWeight="semibold">
+                    <MainLink
+                      href="#prizes"
+                      trackEvent="faeriefestival-hub-howto"
+                      trackEventLabel="prizes-anchor-quests"
+                    >
+                      prize
+                    </MainLink>
+                  </Link>{' '}
+                  — completing the quest itself is entirely optional.
+                </DonationStepRow>
+              </Flex>
+            </Box>
+          </Flex>
+        </GlassPanel>
+
         {/* Recycling — giant stat numerals */}
         <GlassPanel
-          eyebrow="01 — Recycling"
+          eyebrow="02 — Recycling"
           title="How many points is it worth?"
           description="Every item you can recycle, and how many Prize Shop points it earns."
         >
@@ -209,8 +338,9 @@ export function FaerieFestivalPageContent({ lists }: Props) {
 
         {/* Capsule */}
         <GlassPanel
-          eyebrow="02 — Faerie Donation Capsule"
-          title="What might you get back?"
+          id="donation-capsule"
+          eyebrow="03 — Donation Capsule"
+          title="What's in the Faerie Donation Capsule?"
           description="Drop odds for what the capsule gifts you in return, by rarity tier."
         >
           <CardRow>
@@ -265,7 +395,7 @@ export function FaerieFestivalPageContent({ lists }: Props) {
         {/* Lists */}
         <GlassPanel
           id="prizes"
-          eyebrow="03 — Official Lists"
+          eyebrow="04 — Official Lists"
           title="This year's best prizes"
           description="itemdb's curated lists of the best Faerie Festival prizes — Prize Shop and other event rewards."
         >
@@ -283,7 +413,7 @@ export function FaerieFestivalPageContent({ lists }: Props) {
 
         {/* Utilities */}
         <GlassPanel
-          eyebrow="04 — Utilities"
+          eyebrow="05 — Utilities"
           title="Tools to make your life easier"
           description="itemdb tools and userscripts that help you recycle and collect faster."
         >
@@ -337,7 +467,7 @@ export function FaerieFestivalPageContent({ lists }: Props) {
           </CardRow>
         </GlassPanel>
 
-        <GlassPanel eyebrow="05 — FAQ" title="Frequently asked questions">
+        <GlassPanel eyebrow="06 — FAQ" title="Frequently asked questions">
           <Flex direction="column" gap={5}>
             <Box>
               <Heading as="h3" fontSize="md" mb={2} color="white">
@@ -663,6 +793,112 @@ function CardRow({ children }: { children: ReactNode }) {
   return (
     <Flex gap={3} flexWrap="wrap" alignItems="stretch">
       {children}
+    </Flex>
+  );
+}
+
+function StepCircle({ n }: { n: number }) {
+  return (
+    <Flex
+      boxSize="32px"
+      borderRadius="full"
+      align="center"
+      justify="center"
+      bg="pink.400"
+      color="blackAlpha.900"
+      fontSize="sm"
+      fontWeight="bold"
+      flexShrink={0}
+      position="relative"
+      zIndex={1}
+    >
+      {n}
+    </Flex>
+  );
+}
+
+function DonationStep({
+  n,
+  title,
+  isLast,
+  children,
+}: {
+  n: number;
+  title: string;
+  isLast?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Flex gap={3} align="stretch">
+      <Flex direction="column" align="center" flexShrink={0}>
+        <StepCircle n={n} />
+        {!isLast ? <Box flex="1" w="2px" bg="whiteAlpha.300" my={1} minH="18px" /> : null}
+      </Flex>
+      <Box pb={isLast ? 0 : 5} pt={0.5}>
+        <Heading as="h3" fontSize="md" mb={1} color="white">
+          {title}
+        </Heading>
+        <Text fontSize="sm" color={DESCRIPTION_COLOR} maxW="65ch" css={{ textWrap: 'pretty' }}>
+          {children}
+        </Text>
+      </Box>
+    </Flex>
+  );
+}
+
+/** Horizontal step used in a row of steps (desktop: numbers connected left-to-right; mobile: stacked, connected top-to-bottom). */
+function DonationStepRow({
+  n,
+  title,
+  isLast,
+  children,
+}: {
+  n: number;
+  title: string;
+  isLast?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Flex
+      direction={{ base: 'row', md: 'column' }}
+      flex="1"
+      gap={3}
+      position="relative"
+      pr={{ md: isLast ? 0 : 5 }}
+      pb={{ base: isLast ? 0 : 5, md: 0 }}
+    >
+      {!isLast ? (
+        <Box
+          display={{ base: 'none', md: 'block' }}
+          position="absolute"
+          top="15px"
+          left="40px"
+          right="8px"
+          h="2px"
+          bg="rgba(236, 72, 153, 0.4)"
+        />
+      ) : null}
+      <Flex direction={{ base: 'column', md: 'row' }} align="center" flexShrink={0}>
+        <StepCircle n={n} />
+        {!isLast ? (
+          <Box
+            display={{ base: 'block', md: 'none' }}
+            flex="1"
+            w="2px"
+            bg="rgba(236, 72, 153, 0.4)"
+            my={1}
+            minH="18px"
+          />
+        ) : null}
+      </Flex>
+      <Box pt={{ md: 1 }} flex="1">
+        <Heading as="h3" fontSize="md" mb={1} color="white">
+          {title}
+        </Heading>
+        <Text fontSize="sm" color={DESCRIPTION_COLOR} css={{ textWrap: 'pretty' }}>
+          {children}
+        </Text>
+      </Box>
     </Flex>
   );
 }
