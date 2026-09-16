@@ -2074,6 +2074,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@eloqnt/config@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@eloqnt/config@npm:0.1.0"
+  checksum: 10c0/e88e20f53d144eaa6a91fbd2be628d9871237f14ffc7da7c2dde30a7506517765a31ee7d600c667d1dee6b2ae9ee587e005a36c2f5cc8f4b1bc8754fffda8122
+  languageName: node
+  linkType: hard
+
+"@eloqnt/format-json@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@eloqnt/format-json@npm:0.1.0"
+  dependencies:
+    "@eloqnt/config": "npm:^0.1.0"
+  checksum: 10c0/aa373949527218a8e65d4df6e2a72448164b4337242ac99a763e79d850437110bc3167d998af410f4728e370a8c5c4d1621e1cdc57d3b33fc59d57c9ee540835
+  languageName: node
+  linkType: hard
+
+"@eloqnt/format-po@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@eloqnt/format-po@npm:0.1.0"
+  dependencies:
+    "@eloqnt/config": "npm:^0.1.0"
+    po-parser: "npm:^2.2.0"
+  checksum: 10c0/73bdfd205cc9d53bb0cfd33c2e0912a92ff07e3a745f2f9888565f4fd0e47a3273768c0a71b06766723999aa36f8c77617bd93a564696c57a4882b1a443d5eca
+  languageName: node
+  linkType: hard
+
 "@emnapi/core@npm:1.9.2":
   version: 1.9.2
   resolution: "@emnapi/core@npm:1.9.2"
@@ -3196,98 +3222,98 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-android-arm64@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-android-arm64@npm:1.0.8"
+"@napi-rs/canvas-android-arm64@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-android-arm64@npm:1.0.9"
   conditions: os=android & cpu=arm64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-darwin-arm64@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-darwin-arm64@npm:1.0.8"
+"@napi-rs/canvas-darwin-arm64@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-darwin-arm64@npm:1.0.9"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-darwin-x64@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-darwin-x64@npm:1.0.8"
+"@napi-rs/canvas-darwin-x64@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-darwin-x64@npm:1.0.9"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-arm-gnueabihf@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-linux-arm-gnueabihf@npm:1.0.8"
+"@napi-rs/canvas-linux-arm-gnueabihf@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-linux-arm-gnueabihf@npm:1.0.9"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-arm64-gnu@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-linux-arm64-gnu@npm:1.0.8"
+"@napi-rs/canvas-linux-arm64-gnu@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-linux-arm64-gnu@npm:1.0.9"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-arm64-musl@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-linux-arm64-musl@npm:1.0.8"
+"@napi-rs/canvas-linux-arm64-musl@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-linux-arm64-musl@npm:1.0.9"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-riscv64-gnu@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-linux-riscv64-gnu@npm:1.0.8"
+"@napi-rs/canvas-linux-riscv64-gnu@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-linux-riscv64-gnu@npm:1.0.9"
   conditions: os=linux & cpu=riscv64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-x64-gnu@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-linux-x64-gnu@npm:1.0.8"
+"@napi-rs/canvas-linux-x64-gnu@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-linux-x64-gnu@npm:1.0.9"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-x64-musl@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-linux-x64-musl@npm:1.0.8"
+"@napi-rs/canvas-linux-x64-musl@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-linux-x64-musl@npm:1.0.9"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-win32-arm64-msvc@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-win32-arm64-msvc@npm:1.0.8"
+"@napi-rs/canvas-win32-arm64-msvc@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-win32-arm64-msvc@npm:1.0.9"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-win32-x64-msvc@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas-win32-x64-msvc@npm:1.0.8"
+"@napi-rs/canvas-win32-x64-msvc@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas-win32-x64-msvc@npm:1.0.9"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas@npm:^1.0.8":
-  version: 1.0.8
-  resolution: "@napi-rs/canvas@npm:1.0.8"
+"@napi-rs/canvas@npm:^1.0.9":
+  version: 1.0.9
+  resolution: "@napi-rs/canvas@npm:1.0.9"
   dependencies:
-    "@napi-rs/canvas-android-arm64": "npm:1.0.8"
-    "@napi-rs/canvas-darwin-arm64": "npm:1.0.8"
-    "@napi-rs/canvas-darwin-x64": "npm:1.0.8"
-    "@napi-rs/canvas-linux-arm-gnueabihf": "npm:1.0.8"
-    "@napi-rs/canvas-linux-arm64-gnu": "npm:1.0.8"
-    "@napi-rs/canvas-linux-arm64-musl": "npm:1.0.8"
-    "@napi-rs/canvas-linux-riscv64-gnu": "npm:1.0.8"
-    "@napi-rs/canvas-linux-x64-gnu": "npm:1.0.8"
-    "@napi-rs/canvas-linux-x64-musl": "npm:1.0.8"
-    "@napi-rs/canvas-win32-arm64-msvc": "npm:1.0.8"
-    "@napi-rs/canvas-win32-x64-msvc": "npm:1.0.8"
+    "@napi-rs/canvas-android-arm64": "npm:1.0.9"
+    "@napi-rs/canvas-darwin-arm64": "npm:1.0.9"
+    "@napi-rs/canvas-darwin-x64": "npm:1.0.9"
+    "@napi-rs/canvas-linux-arm-gnueabihf": "npm:1.0.9"
+    "@napi-rs/canvas-linux-arm64-gnu": "npm:1.0.9"
+    "@napi-rs/canvas-linux-arm64-musl": "npm:1.0.9"
+    "@napi-rs/canvas-linux-riscv64-gnu": "npm:1.0.9"
+    "@napi-rs/canvas-linux-x64-gnu": "npm:1.0.9"
+    "@napi-rs/canvas-linux-x64-musl": "npm:1.0.9"
+    "@napi-rs/canvas-win32-arm64-msvc": "npm:1.0.9"
+    "@napi-rs/canvas-win32-x64-msvc": "npm:1.0.9"
   dependenciesMeta:
     "@napi-rs/canvas-android-arm64":
       optional: true
@@ -3315,7 +3341,7 @@ __metadata:
       built: true
     skia-canvas:
       built: true
-  checksum: 10c0/ebcff2dfbf8f7402aaf5af0f5163a39a84af61e656cf4d1a2d669ea770d15dc27c6dd7d83803daeca39fcdfb609ad548febedf883a9daac14008ecebb95e1ddf
+  checksum: 10c0/7f39cc977ef0bd0a765413b6cee32d1423a8db447ac76ead6df940135b02ad7ea74f3db7db175fa5a776b6fcf337bffc1458d4c0377154b58ec3cdebd6334946
   languageName: node
   linkType: hard
 
@@ -3340,10 +3366,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/env@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "@next/env@npm:16.4.0-canary.7"
-  checksum: 10c0/9e8cfd97be109f455cded4ea8259e0969c6f9b11d72f6c61e3ddbf442771460874ee34c28028844b408136a4b896a727e488f203c1e0addfbd8a10325aac2dfe
+"@next/env@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "@next/env@npm:16.4.0-canary.33"
+  checksum: 10c0/5c3a9fbc72083e8e5fb4165fb9cf4a4a464a455b5d0ef5ac62e9a193f64bf673d69076585e7158fbe77d7258a0b9858074c546342d49aaebd96b57dd6564e148
   languageName: node
   linkType: hard
 
@@ -3364,58 +3390,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-arm64@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "@next/swc-darwin-arm64@npm:16.4.0-canary.7"
+"@next/swc-darwin-arm64@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "@next/swc-darwin-arm64@npm:16.4.0-canary.33"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-x64@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "@next/swc-darwin-x64@npm:16.4.0-canary.7"
+"@next/swc-darwin-x64@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "@next/swc-darwin-x64@npm:16.4.0-canary.33"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-gnu@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "@next/swc-linux-arm64-gnu@npm:16.4.0-canary.7"
+"@next/swc-linux-arm64-gnu@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "@next/swc-linux-arm64-gnu@npm:16.4.0-canary.33"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-musl@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "@next/swc-linux-arm64-musl@npm:16.4.0-canary.7"
+"@next/swc-linux-arm64-musl@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "@next/swc-linux-arm64-musl@npm:16.4.0-canary.33"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-gnu@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "@next/swc-linux-x64-gnu@npm:16.4.0-canary.7"
+"@next/swc-linux-x64-gnu@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "@next/swc-linux-x64-gnu@npm:16.4.0-canary.33"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-musl@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "@next/swc-linux-x64-musl@npm:16.4.0-canary.7"
+"@next/swc-linux-x64-musl@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "@next/swc-linux-x64-musl@npm:16.4.0-canary.33"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-win32-arm64-msvc@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "@next/swc-win32-arm64-msvc@npm:16.4.0-canary.7"
+"@next/swc-win32-arm64-msvc@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "@next/swc-win32-arm64-msvc@npm:16.4.0-canary.33"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-win32-x64-msvc@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "@next/swc-win32-x64-msvc@npm:16.4.0-canary.7"
+"@next/swc-win32-x64-msvc@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "@next/swc-win32-x64-msvc@npm:16.4.0-canary.33"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -4439,27 +4465,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/browser-utils@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/browser-utils@npm:10.73.0"
+"@sentry/browser-utils@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/browser-utils@npm:10.75.0"
   dependencies:
     "@sentry/conventions": "npm:^0.16.0"
-    "@sentry/core": "npm:10.73.0"
-  checksum: 10c0/01ce6ee0f8b009560a6a05d073a244152011aea0fbdc4198f16308bace6ef80a0dd9dcf5d0dacc3bf2198da1d346159e67c17060ab6720b28f73e8766c0e784c
+    "@sentry/core": "npm:10.75.0"
+  checksum: 10c0/cbcfb0ba09a4b73496c7bca9469c98a620a48618f8d52f8925ea45bcced822ce07e21c3a6c4178402eae44d19e07d803143dbb62640f4ab7c4db1d555cebb912
   languageName: node
   linkType: hard
 
-"@sentry/browser@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/browser@npm:10.73.0"
+"@sentry/browser@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/browser@npm:10.75.0"
   dependencies:
-    "@sentry/browser-utils": "npm:10.73.0"
+    "@sentry/browser-utils": "npm:10.75.0"
     "@sentry/conventions": "npm:^0.16.0"
-    "@sentry/core": "npm:10.73.0"
-    "@sentry/feedback": "npm:10.73.0"
-    "@sentry/replay": "npm:10.73.0"
-    "@sentry/replay-canvas": "npm:10.73.0"
-  checksum: 10c0/5d6f9581ca8c142d6a4c409c9f34c6f3f5585c3006da12e952836ff83b9bf4fd6c0e0f650b245be4d5497ac4bb8f34d7c658a79300ecd2b165db262fd36c3544
+    "@sentry/core": "npm:10.75.0"
+    "@sentry/feedback": "npm:10.75.0"
+    "@sentry/replay": "npm:10.75.0"
+    "@sentry/replay-canvas": "npm:10.75.0"
+  checksum: 10c0/c78a82fbd70510d639002b6bffb8ef4b4de3a450a59739729be28481351e54fec089d929454f77e6e64cbf1f2032daf9ded97e74fed8994b61c4e52984d31e67
   languageName: node
   linkType: hard
 
@@ -4581,55 +4607,55 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/core@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/core@npm:10.73.0"
+"@sentry/core@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/core@npm:10.75.0"
   dependencies:
     "@sentry/conventions": "npm:^0.16.0"
-  checksum: 10c0/553469fd82ec11f5697ab4b2881b6f811834a1036e88afe24920940f131d59ad1dfcd008b99656661c49c7c9de51678719b884b0a6cfcb696312fd58bb911495
+  checksum: 10c0/520545b743dfeb6f4b16ba74485e4ea19ccb57934e4e5702daaf3ab479150ea9a16034604a36681ac933345490994193690c10831588f78693a740e2de6ee157
   languageName: node
   linkType: hard
 
-"@sentry/feedback@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/feedback@npm:10.73.0"
+"@sentry/feedback@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/feedback@npm:10.75.0"
   dependencies:
-    "@sentry/core": "npm:10.73.0"
-  checksum: 10c0/7dcb318f742a9d4aa5379be889df6f55fab9e5dcbaed0a0a1c90565f8ea6047c562435616c5bbe5a78bdb3a31dc3d023b16ff082c6c8c908aaec8255da801112
+    "@sentry/core": "npm:10.75.0"
+  checksum: 10c0/b49d84fd13506f82deca3b3103490394e103da420c1bc32145008761c7c7effaa3dcf5f3f869a2a3deb71e3b077d7a068eb995f317632335dfd8392c70a9a4b6
   languageName: node
   linkType: hard
 
-"@sentry/nextjs@npm:^10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/nextjs@npm:10.73.0"
+"@sentry/nextjs@npm:^10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/nextjs@npm:10.75.0"
   dependencies:
     "@opentelemetry/api": "npm:^1.9.1"
     "@rollup/plugin-commonjs": "npm:28.0.1"
-    "@sentry/browser-utils": "npm:10.73.0"
+    "@sentry/browser-utils": "npm:10.75.0"
     "@sentry/bundler-plugin-core": "npm:^5.3.0"
     "@sentry/conventions": "npm:^0.16.0"
-    "@sentry/core": "npm:10.73.0"
-    "@sentry/node": "npm:10.73.0"
-    "@sentry/opentelemetry": "npm:10.73.0"
-    "@sentry/react": "npm:10.73.0"
-    "@sentry/server-utils": "npm:10.73.0"
-    "@sentry/vercel-edge": "npm:10.73.0"
+    "@sentry/core": "npm:10.75.0"
+    "@sentry/node": "npm:10.75.0"
+    "@sentry/opentelemetry": "npm:10.75.0"
+    "@sentry/react": "npm:10.75.0"
+    "@sentry/server-utils": "npm:10.75.0"
+    "@sentry/vercel-edge": "npm:10.75.0"
     "@sentry/webpack-plugin": "npm:^5.3.0"
     rollup: "npm:^4.60.3"
     stacktrace-parser: "npm:^0.1.11"
   peerDependencies:
     next: ^13.2.0 || ^14.0 || ^15.0.0-rc.0 || ^16.0.0-0
-  checksum: 10c0/54e4e1d5933b9456fa3962344e00d5fc8d455a20469ff565b849036fe7b5f37a66f0f748a0ab52752d4fe27c9b896fd51e23a061e2cfaba05557171a905c765d
+  checksum: 10c0/5417acf972055a298657540d32af1ded0a7ef1c5bd68147f5b115b437ec40a185c5fecab91de07a3ce708a9d942c563fbbd0b7451042a0f4d6f02b0e4542e007
   languageName: node
   linkType: hard
 
-"@sentry/node-core@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/node-core@npm:10.73.0"
+"@sentry/node-core@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/node-core@npm:10.75.0"
   dependencies:
     "@sentry/conventions": "npm:^0.16.0"
-    "@sentry/core": "npm:10.73.0"
-    "@sentry/opentelemetry": "npm:10.73.0"
+    "@sentry/core": "npm:10.75.0"
+    "@sentry/opentelemetry": "npm:10.75.0"
     import-in-the-middle: "npm:^3.0.0"
   peerDependencies:
     "@opentelemetry/api": ^1.9.0
@@ -4648,91 +4674,91 @@ __metadata:
       optional: true
     "@opentelemetry/sdk-trace-base":
       optional: true
-  checksum: 10c0/4641120f7b0c2eb41db6134f86a5633ffa7c0a7411bf3526855065e1d8143ea4e5852f71f62bac456f3efbb691be201144a4db3e02d5b53328e65d4293d3ec3c
+  checksum: 10c0/0d72f6d3810924b31a6c2acad488d0906cf4e3c250f8ffceeef33eea86f882a24726aad2d57344a9d8f68f0fad20b9b5673587246cebc154bcfd4ba6c2eeffa7
   languageName: node
   linkType: hard
 
-"@sentry/node@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/node@npm:10.73.0"
+"@sentry/node@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/node@npm:10.75.0"
   dependencies:
     "@opentelemetry/api": "npm:^1.9.1"
     "@opentelemetry/instrumentation": "npm:^0.220.0"
     "@opentelemetry/sdk-trace-base": "npm:^2.9.0"
     "@sentry/conventions": "npm:^0.16.0"
-    "@sentry/core": "npm:10.73.0"
-    "@sentry/node-core": "npm:10.73.0"
-    "@sentry/opentelemetry": "npm:10.73.0"
-    "@sentry/server-utils": "npm:10.73.0"
+    "@sentry/core": "npm:10.75.0"
+    "@sentry/node-core": "npm:10.75.0"
+    "@sentry/opentelemetry": "npm:10.75.0"
+    "@sentry/server-utils": "npm:10.75.0"
     import-in-the-middle: "npm:^3.0.0"
-  checksum: 10c0/8ddb8a279bf9e2c383942c240ef47abc7dd5ebbb7b89f3058edfed9105dba07a97634dae38e0820167b330dcdf4e3113999856cd3423ead0aedc80872daa338a
+  checksum: 10c0/92a7d1b27da4d15b6e817e966b0723a43324cf95024b34dbc305f89fc67fdff24c481fdfd452cf066e50aab4283744870db9fe3f80c3b53db72e08a2b2f25bd7
   languageName: node
   linkType: hard
 
-"@sentry/opentelemetry@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/opentelemetry@npm:10.73.0"
+"@sentry/opentelemetry@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/opentelemetry@npm:10.75.0"
   dependencies:
     "@sentry/conventions": "npm:^0.16.0"
-    "@sentry/core": "npm:10.73.0"
+    "@sentry/core": "npm:10.75.0"
   peerDependencies:
     "@opentelemetry/api": ^1.9.0
     "@opentelemetry/core": ^1.30.1 || ^2.1.0
     "@opentelemetry/sdk-trace-base": ^1.30.1 || ^2.1.0
-  checksum: 10c0/d3d6204cb5a784c9d5572bc1143c1e0f150585fe038bed9924df904a75cb365f26bb2d3cb8f953f719085eceebfa0f3904d9ae7fee08818f5cb41eb1dbd9197c
+  checksum: 10c0/84441a7848eba18b26340d2bbc2582ce07c77f8aa03e944b38bbf6ab917bfe333cf9188777d3f22adb90d95a6b2116c77f2b165ec981101f9f6270de8de7f0d9
   languageName: node
   linkType: hard
 
-"@sentry/react@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/react@npm:10.73.0"
+"@sentry/react@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/react@npm:10.75.0"
   dependencies:
-    "@sentry/browser": "npm:10.73.0"
+    "@sentry/browser": "npm:10.75.0"
     "@sentry/conventions": "npm:^0.16.0"
-    "@sentry/core": "npm:10.73.0"
+    "@sentry/core": "npm:10.75.0"
   peerDependencies:
     react: ^16.14.0 || 17.x || 18.x || 19.x
-  checksum: 10c0/84afea9290b8a59486566abc011dfee353c0427cf9a22725444a762153a10c31d61eb7b2e5c8cc458bf245e9974b9a2993dadf066e976e5c429bf324559ecefc
+  checksum: 10c0/26f624c35be9bfd5f3ee824287996bd75a74e0b96adc6f54c9837ad8b6be41b57be3883a76274040289129b1aed249f79a91311e9efed7e4644fe8cffc86f2d2
   languageName: node
   linkType: hard
 
-"@sentry/replay-canvas@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/replay-canvas@npm:10.73.0"
+"@sentry/replay-canvas@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/replay-canvas@npm:10.75.0"
   dependencies:
-    "@sentry/core": "npm:10.73.0"
-    "@sentry/replay": "npm:10.73.0"
-  checksum: 10c0/1ba25555afaa65bfc731a2b997a73a24c0f502ef15514dca9e068bb44acb3538fafe317c6e7fb3fe58df9a6f1a7915245f61dd4ab1ee6e4ef2bb713280e2fe58
+    "@sentry/core": "npm:10.75.0"
+    "@sentry/replay": "npm:10.75.0"
+  checksum: 10c0/87988db6a7b47a737bb6311a81281f4e9e6bec12ca45e30dd0e96cd44fc4251e5a9984ff5951041ab8e362fb60609ed6a54cc3d05a691fe59046bb141d5ed4c3
   languageName: node
   linkType: hard
 
-"@sentry/replay@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/replay@npm:10.73.0"
+"@sentry/replay@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/replay@npm:10.75.0"
   dependencies:
-    "@sentry/browser-utils": "npm:10.73.0"
-    "@sentry/core": "npm:10.73.0"
-  checksum: 10c0/f0bfaa9d824afd2abc91d594b24c75d4509908c16761bb6a62e5aeb70c0a3665b40b07e75d4bfdebaa735a4fc29057783fd7465b08b22744221ca7a3d5913ca1
+    "@sentry/browser-utils": "npm:10.75.0"
+    "@sentry/core": "npm:10.75.0"
+  checksum: 10c0/a4572d8c890805bf97244aa8e4427b5110df49f47df98fc40c6799bed25eacdfcaa55078b7b5ea5c1d6a8c13f62c4a85d1ec4fba0cb1b01ca29c0b5b1654b75c
   languageName: node
   linkType: hard
 
-"@sentry/server-utils@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/server-utils@npm:10.73.0"
+"@sentry/server-utils@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/server-utils@npm:10.75.0"
   dependencies:
     "@sentry/conventions": "npm:^0.16.0"
-    "@sentry/core": "npm:10.73.0"
-  checksum: 10c0/58196c7fefa4ac1ecd5f560f6de1d5dd313774cc752871c0882f2bb6a06fd0097506f2f503b167c6851425644e0ddc405121d8538a6274addd33276d8db55f9b
+    "@sentry/core": "npm:10.75.0"
+  checksum: 10c0/8659961271a2192da1a169eac041826490bd84d34c29f7cfb7044ce8fd025323fcdae445413cbdfac62ac126dd73d9c69d0fe4b692fc59e6d1f30c06bfa4d05b
   languageName: node
   linkType: hard
 
-"@sentry/vercel-edge@npm:10.73.0":
-  version: 10.73.0
-  resolution: "@sentry/vercel-edge@npm:10.73.0"
+"@sentry/vercel-edge@npm:10.75.0":
+  version: 10.75.0
+  resolution: "@sentry/vercel-edge@npm:10.75.0"
   dependencies:
     "@opentelemetry/api": "npm:^1.9.1"
-    "@sentry/core": "npm:10.73.0"
-  checksum: 10c0/d1919f821e72a1b3d714cf593bf9d034d4fd2b174cbe567a2891b078a9174d15f834c8f9a7ac4cbb6f357f352085a0bbe20a084a43fa103af81b7b6c811f4e7d
+    "@sentry/core": "npm:10.75.0"
+  checksum: 10c0/5de4c01e59ac88bc0caa709611dd6f16a548b1e57d05687804311cf6f43a5d9b7834c56e7e1849b5bb441101635d591f7667629731ca404f5b97f993bc6ee7db
   languageName: node
   linkType: hard
 
@@ -4854,108 +4880,108 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-arm64@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-darwin-arm64@npm:1.15.47"
+"@swc/core-darwin-arm64@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-darwin-arm64@npm:1.16.2"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-x64@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-darwin-x64@npm:1.15.47"
+"@swc/core-darwin-x64@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-darwin-x64@npm:1.16.2"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm-gnueabihf@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.15.47"
+"@swc/core-linux-arm-gnueabihf@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.16.2"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-gnu@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-linux-arm64-gnu@npm:1.15.47"
+"@swc/core-linux-arm64-gnu@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-linux-arm64-gnu@npm:1.16.2"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-musl@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-linux-arm64-musl@npm:1.15.47"
+"@swc/core-linux-arm64-musl@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-linux-arm64-musl@npm:1.16.2"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-linux-ppc64-gnu@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-linux-ppc64-gnu@npm:1.15.47"
+"@swc/core-linux-ppc64-gnu@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-linux-ppc64-gnu@npm:1.16.2"
   conditions: os=linux & cpu=ppc64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-s390x-gnu@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-linux-s390x-gnu@npm:1.15.47"
+"@swc/core-linux-s390x-gnu@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-linux-s390x-gnu@npm:1.16.2"
   conditions: os=linux & cpu=s390x & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-gnu@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-linux-x64-gnu@npm:1.15.47"
+"@swc/core-linux-x64-gnu@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-linux-x64-gnu@npm:1.16.2"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-musl@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-linux-x64-musl@npm:1.15.47"
+"@swc/core-linux-x64-musl@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-linux-x64-musl@npm:1.16.2"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-win32-arm64-msvc@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-win32-arm64-msvc@npm:1.15.47"
+"@swc/core-win32-arm64-msvc@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-win32-arm64-msvc@npm:1.16.2"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-win32-ia32-msvc@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-win32-ia32-msvc@npm:1.15.47"
+"@swc/core-win32-ia32-msvc@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-win32-ia32-msvc@npm:1.16.2"
   conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
 
-"@swc/core-win32-x64-msvc@npm:1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core-win32-x64-msvc@npm:1.15.47"
+"@swc/core-win32-x64-msvc@npm:1.16.2":
+  version: 1.16.2
+  resolution: "@swc/core-win32-x64-msvc@npm:1.16.2"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core@npm:~1.15.47":
-  version: 1.15.47
-  resolution: "@swc/core@npm:1.15.47"
+"@swc/core@npm:~1.16.0":
+  version: 1.16.2
+  resolution: "@swc/core@npm:1.16.2"
   dependencies:
-    "@swc/core-darwin-arm64": "npm:1.15.47"
-    "@swc/core-darwin-x64": "npm:1.15.47"
-    "@swc/core-linux-arm-gnueabihf": "npm:1.15.47"
-    "@swc/core-linux-arm64-gnu": "npm:1.15.47"
-    "@swc/core-linux-arm64-musl": "npm:1.15.47"
-    "@swc/core-linux-ppc64-gnu": "npm:1.15.47"
-    "@swc/core-linux-s390x-gnu": "npm:1.15.47"
-    "@swc/core-linux-x64-gnu": "npm:1.15.47"
-    "@swc/core-linux-x64-musl": "npm:1.15.47"
-    "@swc/core-win32-arm64-msvc": "npm:1.15.47"
-    "@swc/core-win32-ia32-msvc": "npm:1.15.47"
-    "@swc/core-win32-x64-msvc": "npm:1.15.47"
+    "@swc/core-darwin-arm64": "npm:1.16.2"
+    "@swc/core-darwin-x64": "npm:1.16.2"
+    "@swc/core-linux-arm-gnueabihf": "npm:1.16.2"
+    "@swc/core-linux-arm64-gnu": "npm:1.16.2"
+    "@swc/core-linux-arm64-musl": "npm:1.16.2"
+    "@swc/core-linux-ppc64-gnu": "npm:1.16.2"
+    "@swc/core-linux-s390x-gnu": "npm:1.16.2"
+    "@swc/core-linux-x64-gnu": "npm:1.16.2"
+    "@swc/core-linux-x64-musl": "npm:1.16.2"
+    "@swc/core-win32-arm64-msvc": "npm:1.16.2"
+    "@swc/core-win32-ia32-msvc": "npm:1.16.2"
+    "@swc/core-win32-x64-msvc": "npm:1.16.2"
     "@swc/counter": "npm:^0.1.3"
-    "@swc/types": "npm:^0.1.27"
+    "@swc/types": "npm:^0.1.28"
   peerDependencies:
     "@swc/helpers": ">=0.5.17"
   dependenciesMeta:
@@ -4986,7 +5012,7 @@ __metadata:
   peerDependenciesMeta:
     "@swc/helpers":
       optional: true
-  checksum: 10c0/34ccbb3ae5db0af520934abfdf2505b8490128b48863d9a2e6db2d8787e2d7415318000c92fd32ebe351b24d93f36f52c58f35b9a98e60a4010b34a1af2c3d5e
+  checksum: 10c0/8019735e27852f03b0e09ae7f8c3f00e6a2e3f49b72127e09c20cffde335fe3b776afb20bfd3b3f5c540d42667f1b7467a4e10aa11c50ff59c6f86a9513544a8
   languageName: node
   linkType: hard
 
@@ -5015,12 +5041,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/types@npm:^0.1.27":
-  version: 0.1.27
-  resolution: "@swc/types@npm:0.1.27"
+"@swc/types@npm:^0.1.28":
+  version: 0.1.28
+  resolution: "@swc/types@npm:0.1.28"
   dependencies:
     "@swc/counter": "npm:^0.1.3"
-  checksum: 10c0/25f1bfa0ac34e9ac60aa7de91778f70906cd77a7abb3eb68c5da8d38d5202286b293300d4bb2792b3bb8840a7f5d5c4627c4ec34d2fae6533bfb3e14a70fd8fb
+  checksum: 10c0/7f2e959a7ee000ec4216acc6b7634e2d2fbe404b6ad3adf72bb91970a67359d7d429f60556342784dbe66912c7c987426683159e749332581a87e04de0524357
   languageName: node
   linkType: hard
 
@@ -5067,13 +5093,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@trieb.work/nextjs-turbo-redis-cache@npm:^1.17.0":
-  version: 1.17.0
-  resolution: "@trieb.work/nextjs-turbo-redis-cache@npm:1.17.0"
+"@trieb.work/nextjs-turbo-redis-cache@npm:^1.18.0":
+  version: 1.18.0
+  resolution: "@trieb.work/nextjs-turbo-redis-cache@npm:1.18.0"
   peerDependencies:
     next: ">=15.0.3 <17.0.0"
     redis: 4.7.0
-  checksum: 10c0/ec1d61f8c937bbb1fcca2ebdad5d45372ee1340a6ad625f1a7428edff64989a26d15852d3d50424e924e270fa928dc0ec68486aaa7b8af53f4a3b56aabf52862
+  checksum: 10c0/b6d462d00bd0745ab074e3adef480bf8b270b73b40a93c10c93b5b890da96d0fcfdb1f82d8c41851955be5cfb550c273e77480fe0359b03e7a9a94916961451b
   languageName: node
   linkType: hard
 
@@ -10214,10 +10240,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fakeout@npm:^1.0.88":
-  version: 1.0.88
-  resolution: "fakeout@npm:1.0.88"
-  checksum: 10c0/52db4cf62bda8b4be42edb4377007fdd5c6bfa52c2b26ed592e8127b9b62ab2872f3b630adc7272801dbcc7471dd40b6ee8525772e0dede340e68764f0c4f035
+"fakeout@npm:^1.0.99":
+  version: 1.0.99
+  resolution: "fakeout@npm:1.0.99"
+  checksum: 10c0/f82257dd8fbf03ad0c14036e5e41e16929081dfe0f9cc895d3393f004b1803b5028a9d286b45b10cfb01d72dbfd3a8393a7255efbc34068d205d89e3f6d6e5b8
   languageName: node
   linkType: hard
 
@@ -11226,12 +11252,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"icu-minify@npm:^4.13.7":
-  version: 4.13.7
-  resolution: "icu-minify@npm:4.13.7"
+"icu-minify@npm:^4.14.5":
+  version: 4.14.5
+  resolution: "icu-minify@npm:4.14.5"
   dependencies:
     "@formatjs/icu-messageformat-parser": "npm:^3.4.0"
-  checksum: 10c0/cbc02f38ac75d5b8758314a3e75bf00ae06e06b388c2481b904bd3047bf3016b281ab5725e0b9de1151ff5fad1e2789b36ef9b915d2309cccbdd99a99c0b35be
+  checksum: 10c0/ec21eecb4933c0e97803b3e4e3d5bffa7eb5332b962c73bb9f98fe9d55e49285327ef95b2665418dda4ff3567ca3637640c721b6b441ddbd7f40657c3d1a69b7
   languageName: node
   linkType: hard
 
@@ -11903,16 +11929,16 @@ __metadata:
     "@hello-pangea/color-picker": "npm:^3.2.2"
     "@hugocxl/react-to-image": "npm:^0.0.9"
     "@json2csv/node": "npm:^7.0.6"
-    "@napi-rs/canvas": "npm:^1.0.8"
+    "@napi-rs/canvas": "npm:^1.0.9"
     "@next/bundle-analyzer": "npm:16.3.0"
     "@next/eslint-plugin-next": "npm:16.3.0"
     "@prisma/adapter-mariadb": "npm:7.10.0"
     "@prisma/client": "npm:7.10.0"
-    "@sentry/nextjs": "npm:^10.73.0"
+    "@sentry/nextjs": "npm:^10.75.0"
     "@swc-jotai/react-refresh": "npm:^0.5.0"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/react": "npm:^16.3.2"
-    "@trieb.work/nextjs-turbo-redis-cache": "npm:^1.17.0"
+    "@trieb.work/nextjs-turbo-redis-cache": "npm:^1.18.0"
     "@tycrek/discord-hookr": "npm:^0.1.0"
     "@types/chance": "npm:^1.1.7"
     "@types/ejs": "npm:^3.1.5"
@@ -11940,7 +11966,7 @@ __metadata:
     eslint: "npm:^9.39.1"
     eslint-config-next: "npm:16.3.0"
     eslint-config-prettier: "npm:^10.1.8"
-    fakeout: "npm:^1.0.88"
+    fakeout: "npm:^1.0.99"
     fuse.js: "npm:^7.5.0"
     he: "npm:^1.2.0"
     html-react-parser: "npm:5.2.17"
@@ -11956,8 +11982,8 @@ __metadata:
     lint-staged: "npm:16.2.7"
     lodash: "npm:^4.18.1"
     mailgen: "npm:^2.0.36"
-    next: "npm:16.4.0-canary.7"
-    next-intl: "npm:^4.13.7"
+    next: "npm:16.4.0-canary.33"
+    next-intl: "npm:^4.14.5"
     next-seo: "npm:^6.8.0"
     next-sitemap: "npm:^4.2.3"
     nextjs-progressbar: "npm:^0.0.16"
@@ -13438,32 +13464,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-intl-swc-plugin-extractor@npm:4.13.7":
-  version: 4.13.7
-  resolution: "next-intl-swc-plugin-extractor@npm:4.13.7"
-  checksum: 10c0/1969f6ca280724d71ad84ddcb60374b189ceb8c287f1dad74ea105768ed07d7cf0adf359d38b8a97546f44933eda20a58e92c83355df62cefd97756a911edfc8
+"next-intl-swc-plugin-extractor@npm:4.14.5":
+  version: 4.14.5
+  resolution: "next-intl-swc-plugin-extractor@npm:4.14.5"
+  checksum: 10c0/e406f4f589783119ca7a6255d35f9cc0fcfab44a0a7ee0eceab8633a7c673e652a55fb38f8bf53045e9a0ab1ee1de0ad805aa16bd82f9e252aa212a0947a49a4
   languageName: node
   linkType: hard
 
-"next-intl@npm:^4.13.7":
-  version: 4.13.7
-  resolution: "next-intl@npm:4.13.7"
+"next-intl@npm:^4.14.5":
+  version: 4.14.5
+  resolution: "next-intl@npm:4.14.5"
   dependencies:
+    "@eloqnt/config": "npm:^0.1.0"
+    "@eloqnt/format-json": "npm:^0.1.0"
+    "@eloqnt/format-po": "npm:^0.1.0"
     "@formatjs/intl-localematcher": "npm:^0.8.1"
     "@parcel/watcher": "npm:^2.4.1"
-    "@swc/core": "npm:~1.15.47"
-    icu-minify: "npm:^4.13.7"
+    "@swc/core": "npm:~1.16.0"
+    icu-minify: "npm:^4.14.5"
     negotiator: "npm:^1.0.0"
-    next-intl-swc-plugin-extractor: "npm:4.13.7"
-    po-parser: "npm:^2.1.1"
-    use-intl: "npm:^4.13.7"
+    next-intl-swc-plugin-extractor: "npm:4.14.5"
+    use-intl: "npm:^4.14.5"
   peerDependencies:
     next: ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc <19.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 10c0/86a44f5557820c66cc460f5d2965179c7e4f319eac7af052ec3bae9dcebd45c8da6fb88ccc9ffd16ac46bdd256ee1f2ebfe042380c126b9bdb9ae5bfc76cc1ac
+  checksum: 10c0/daab6f82f6c849639ae6dd22502dd392a34ec4be22fa66b467c091a7359542cc36f80e5db659bb357ee0f3bf9c21ebb20f8200552b8a1567589d39ecc7cc5c50
   languageName: node
   linkType: hard
 
@@ -13505,24 +13530,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:16.4.0-canary.7":
-  version: 16.4.0-canary.7
-  resolution: "next@npm:16.4.0-canary.7"
+"next@npm:16.4.0-canary.33":
+  version: 16.4.0-canary.33
+  resolution: "next@npm:16.4.0-canary.33"
   dependencies:
-    "@next/env": "npm:16.4.0-canary.7"
-    "@next/swc-darwin-arm64": "npm:16.4.0-canary.7"
-    "@next/swc-darwin-x64": "npm:16.4.0-canary.7"
-    "@next/swc-linux-arm64-gnu": "npm:16.4.0-canary.7"
-    "@next/swc-linux-arm64-musl": "npm:16.4.0-canary.7"
-    "@next/swc-linux-x64-gnu": "npm:16.4.0-canary.7"
-    "@next/swc-linux-x64-musl": "npm:16.4.0-canary.7"
-    "@next/swc-win32-arm64-msvc": "npm:16.4.0-canary.7"
-    "@next/swc-win32-x64-msvc": "npm:16.4.0-canary.7"
+    "@next/env": "npm:16.4.0-canary.33"
+    "@next/swc-darwin-arm64": "npm:16.4.0-canary.33"
+    "@next/swc-darwin-x64": "npm:16.4.0-canary.33"
+    "@next/swc-linux-arm64-gnu": "npm:16.4.0-canary.33"
+    "@next/swc-linux-arm64-musl": "npm:16.4.0-canary.33"
+    "@next/swc-linux-x64-gnu": "npm:16.4.0-canary.33"
+    "@next/swc-linux-x64-musl": "npm:16.4.0-canary.33"
+    "@next/swc-win32-arm64-msvc": "npm:16.4.0-canary.33"
+    "@next/swc-win32-x64-msvc": "npm:16.4.0-canary.33"
     "@swc/helpers": "npm:0.5.23"
     baseline-browser-mapping: "npm:^2.9.19"
     caniuse-lite: "npm:^1.0.30001579"
     postcss: "npm:8.5.23"
-    sharp: "npm:^0.35.3"
+    sharp: "npm:^0.35.4"
     styled-jsx: "npm:5.1.6"
   peerDependencies:
     "@opentelemetry/api": ^1.1.0
@@ -13561,7 +13586,7 @@ __metadata:
       optional: true
   bin:
     next: dist/bin/next
-  checksum: 10c0/db21ec5be844f77bfae5c24dfeff4d5039631cf62efa1d8b2ffdf697e93bfd867f13d7fd1becd6e4549f8e5a60d64edac1f8c58fb3b2097f23ea3b3356263022
+  checksum: 10c0/4b67b28b451a86e9df811ba443e57843ae81eded443bd7a92b2ce4da91412bfa473ab7e582c0540bb4641b1c64c98e64025f63cc710c7d6e6ff58f5fa415afa1
   languageName: node
   linkType: hard
 
@@ -14203,10 +14228,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"po-parser@npm:^2.1.1":
-  version: 2.1.1
-  resolution: "po-parser@npm:2.1.1"
-  checksum: 10c0/dc57f74fc5b74576fe0290937691c54e7f6b36609027e25f5a40251e10d173c23305c2cca340a9497b0950cfe54e63fd3de9181048ba0e8acee56069c48dd5d0
+"po-parser@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "po-parser@npm:2.2.0"
+  checksum: 10c0/902501983b41bf816f8e5d358ff633134853b57df05cfaf1c5ed3eb7c7e8b668a547f2759e2149849b9d636119036d847283acfc4a15ff76d04ba7be8d391dec
   languageName: node
   linkType: hard
 
@@ -17343,17 +17368,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-intl@npm:^4.13.7":
-  version: 4.13.7
-  resolution: "use-intl@npm:4.13.7"
+"use-intl@npm:^4.14.5":
+  version: 4.14.5
+  resolution: "use-intl@npm:4.14.5"
   dependencies:
     "@formatjs/fast-memoize": "npm:^3.1.0"
     "@schummar/icu-type-parser": "npm:1.21.5"
-    icu-minify: "npm:^4.13.7"
+    icu-minify: "npm:^4.14.5"
     intl-messageformat: "npm:^11.1.0"
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || >=19.0.0-rc <19.0.0 || ^19.0.0
-  checksum: 10c0/69d6f8da4d18af9e55a7cd87efe8ee7cab4e3c7ffa9e8667640ef9b9429767ea47b7793c34edfb0ff110930098abd24d5961830b931be507e01d6c6c9222afd6
+  checksum: 10c0/e24835531e6d26ab08bfd44a08016cc1aa96abdabdd1d53b7e676bea9865d5c69d727de019ab715f044102b1fe33adbd56c839608300971a8f087aacef37168f
   languageName: node
   linkType: hard
 
