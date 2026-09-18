@@ -7,6 +7,9 @@ import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
 // import { ItemPageSkeleton } from '@app/_components/Item/page/ItemPageSkeleton';
 import { preloadItemPageData } from '@app/_components/Item/preloadItemPage';
 import { buildItemPageMetadata, resolveItemRoute } from '@app/utils/loadItemPage';
+import { getItemDbCanonical, normalizeItemDbLocale } from '@app/utils/appPage';
+import { buildItemDiscordEmbed } from '@app/_components/Item/seo/buildItemDiscordEmbed';
+import { DiscordComponentEmbedScript } from '@app/utils/discordComponentEmbed';
 
 export const instant = false;
 type ItemPageProps = {
@@ -38,8 +41,12 @@ export default async function ItemPage({ params }: ItemPageProps) {
 
   preloadItemPageData(result.item);
 
+  const canonical = getItemDbCanonical(`/item/${result.item.slug}`, normalizeItemDbLocale(locale));
+  const discordEmbed = await buildItemDiscordEmbed({ item: result.item, canonical });
+
   return (
     <div data-testid="item-page-content">
+      <DiscordComponentEmbedScript payload={discordEmbed} />
       <SetMainColor color={result.item.color.hex + '66'} />
       <ItemPageView item={result.item} />
     </div>
