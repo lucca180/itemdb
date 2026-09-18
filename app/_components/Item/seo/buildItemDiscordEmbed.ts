@@ -16,14 +16,18 @@ import { getRestockPrice } from '@utils/utils';
 /** itemdb's Discord application emoji, used on the "View on itemdb" link button. */
 const ITEMDB_EMOJI = { id: '1082484097856847872', name: 'itemdb' };
 
-/** Same icons/order as tarnumBot's `getItemButtons` (itemdbManager.ts) — no `name`, matching how those emoji have always been sent. */
-const FIND_AT_BUTTONS: { key: keyof ItemFindAt; emojiId: string }[] = [
-  { key: 'shopWizard', emojiId: '1088692135068446722' },
-  { key: 'trading', emojiId: '1088692308033155102' },
-  { key: 'auction', emojiId: '1088692277246963732' },
-  { key: 'safetyDeposit', emojiId: '1088692508856430662' },
-  { key: 'closet', emojiId: '1088692525822390352' },
-  { key: 'restockShop', emojiId: '1088692470365302804' },
+/**
+ * Same icons/order as tarnumBot's `getItemButtons` (itemdbManager.ts). Unlike bot messages,
+ * the component-embed validator requires `emoji.name` — the id still resolves the actual
+ * image, so these placeholder names just need to be non-empty, not the emoji's real name.
+ */
+const FIND_AT_BUTTONS: { key: keyof ItemFindAt; emojiId: string; emojiName: string }[] = [
+  { key: 'shopWizard', emojiId: '1088692135068446722', emojiName: 'shop_wizard' },
+  { key: 'trading', emojiId: '1088692308033155102', emojiName: 'trading_post' },
+  { key: 'auction', emojiId: '1088692277246963732', emojiName: 'auction' },
+  { key: 'safetyDeposit', emojiId: '1088692508856430662', emojiName: 'safety_deposit_box' },
+  { key: 'closet', emojiId: '1088692525822390352', emojiName: 'closet' },
+  { key: 'restockShop', emojiId: '1088692470365302804', emojiName: 'restock_shop' },
 ];
 
 /** Action rows hold at most 5 components. */
@@ -121,11 +125,11 @@ export async function buildItemDiscordEmbed({
 
   const findAtButtons: DiscordButtonComponent[] = FIND_AT_BUTTONS.filter(
     ({ key }) => item.findAt?.[key]
-  ).map(({ key, emojiId }) => ({
+  ).map(({ key, emojiId, emojiName }) => ({
     type: 2,
     style: 5,
     url: item.findAt[key]!,
-    emoji: { id: emojiId },
+    emoji: { id: emojiId, name: emojiName },
   }));
 
   const itemdbButton: DiscordButtonComponent = {
