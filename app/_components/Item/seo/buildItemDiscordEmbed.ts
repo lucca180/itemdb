@@ -65,7 +65,7 @@ async function buildPriceLines(item: ItemData): Promise<PriceLines> {
 
     if (item.ncValue) {
       const label = item.ncValue.source === 'lebron' ? 'Lebron Value' : 'itemdb Value';
-      return { price: null, ncEstimate: `**${label}:** ${item.ncValue.range}` };
+      return { price: null, ncEstimate: `**${label}**: ${item.ncValue.range}` };
     }
 
     return { price: null, ncEstimate: null };
@@ -80,8 +80,8 @@ async function buildPriceLines(item: ItemData): Promise<PriceLines> {
 
 /** "Easy to Sell" / "Hard to Sell" only — a "Normal" status isn't worth a line in a compact preview. */
 function saleStatusLine(item: ItemData): string | null {
-  if (item.saleStatus?.status === 'ets') return '**Sale Status:** Easy to Sell';
-  if (item.saleStatus?.status === 'hts') return '**Sale Status:** Hard to Sell';
+  if (item.saleStatus?.status === 'ets') return '**Sale Status**: Easy to Sell';
+  if (item.saleStatus?.status === 'hts') return '**Sale Status**: Hard to Sell';
   return null;
 }
 
@@ -97,7 +97,7 @@ function restockPriceLine(item: ItemData): string | null {
       ? `${numberFormatter.format(min)} - ${numberFormatter.format(max)} NP`
       : `${numberFormatter.format(min)} NP`;
 
-  return `**Restock Price:** ${range}`;
+  return `**Restock Price**: ${range}`;
 }
 
 /** Same DTI render + cache-busting hash used for the item's wearable Product JSON-LD (ItemBreadcrumb.tsx). */
@@ -140,27 +140,48 @@ export async function buildItemDiscordEmbed({
     emoji: ITEMDB_EMOJI,
   };
 
+  const infoLines = [
+    price ? `**Price**: ${price}` : null,
+    ncEstimate,
+    saleStatus,
+    restockPrice,
+    item.comment ? `**Notes**: ${item.comment}` : null,
+  ].filter((line): line is string => !!line);
+
+  const infoSectionTexts = [
+    descriptionLine ? `*${descriptionLine}*` : null,
+    infoLines.length ? infoLines.join('\n') : null,
+  ].filter((text): text is string => !!text);
+
   const components: DiscordEmbedComponent[] = [
     {
       type: 9,
       components: [
-        { type: 10, content: `# ${item.name}` },
-        ...(descriptionLine ? [{ type: 10 as const, content: `*${descriptionLine}*` }] : []),
+        {
+          type: 10,
+          content: `## ${item.name}${item.rarity ? ` (r${item.rarity})` : ''}`,
+        },
       ],
-      accessory: { type: 11, media: { url: item.image } },
+      accessory: { type: 2, style: 5, url: canonical, label: 'Open' },
     },
-    { type: 14, spacing: 1 },
-    ...(price ? [{ type: 10 as const, content: `**Price:** ${price}` }] : []),
-    ...(ncEstimate ? [{ type: 10 as const, content: ncEstimate }] : []),
-    ...(saleStatus ? [{ type: 10 as const, content: saleStatus }] : []),
-    ...(restockPrice ? [{ type: 10 as const, content: restockPrice }] : []),
-    ...(item.comment ? [{ type: 10 as const, content: `**Notes:** ${item.comment}` }] : []),
+    ...(infoSectionTexts.length
+      ? [
+          {
+            type: 9 as const,
+            components: infoSectionTexts.map((content) => ({ type: 10 as const, content })),
+            accessory: { type: 11 as const, media: { url: item.image } },
+          },
+        ]
+      : []),
+    { type: 14, spacing: 2 },
     ...(wearablePreview
       ? [
+          { type: 10 as const, content: '**Item Preview**' },
           {
             type: 12 as const,
             items: [{ media: { url: wearablePreview }, description: item.name }],
           },
+          { type: 10 as const, content: '-# Preview powered by Dress to Impress' },
         ]
       : []),
     ...chunkIntoRows([itemdbButton, ...findAtButtons]),
