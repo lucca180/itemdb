@@ -10,8 +10,15 @@ export const MANUAL_OPENING_ID = 'manual';
 /** Opening ID used for relationships synchronized from official NC Mall data. */
 export const NCMALL_SYNC_OPENING_ID = 'ncmall-sync';
 
+/** Opening ID used for capsule membership synchronized from the official capsule_contents API. */
+export const CAPSULE_CONTENTS_SYNC_OPENING_ID = 'capsule-contents-sync';
+
 /** Opening IDs whose rows are trusted without community evidence. */
-export const AUTHORITATIVE_OPENING_IDS = [MANUAL_OPENING_ID, NCMALL_SYNC_OPENING_ID] as const;
+export const AUTHORITATIVE_OPENING_IDS = [
+  MANUAL_OPENING_ID,
+  NCMALL_SYNC_OPENING_ID,
+  CAPSULE_CONTENTS_SYNC_OPENING_ID,
+] as const;
 
 /** Normalized notes marker used to keep gram options out of community evidence. */
 export const GRAM_OPTION_NOTE = 'gramoption';

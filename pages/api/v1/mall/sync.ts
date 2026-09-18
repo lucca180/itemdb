@@ -10,6 +10,9 @@ import {
 import { enqueueAndProcessItems } from '@utils/item/enqueueItemProcess';
 import { processItemProcessQueue } from '@utils/item/processItemQueue';
 import { markNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenableFromDrops';
+import { syncCapsuleContents } from '@utils/item/capsuleContentsSync';
+
+const CAPSULE_NAME_MATCH = /capsule/i;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 const TARNUM_SERVER = process.env.TARNUM_SERVER;
@@ -62,6 +65,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     select: itemSelect,
   });
 
+  const preExistingItemIds = new Set(allItems.map((item) => item.item_id));
   const existingById = new Map(allItems.map((item) => [item.item_id, item]));
 
   const itemData = Object.values(ncMallData)
@@ -109,6 +113,21 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       select: itemSelect,
     });
   }
+
+  const newCapsuleItems = allItems.filter(
+    (item) =>
+      item.item_id && !preExistingItemIds.has(item.item_id) && CAPSULE_NAME_MATCH.test(item.name)
+  );
+
+  await Promise.all(
+    newCapsuleItems.map(async (item) => {
+      try {
+        await syncCapsuleContents({ internal_id: item.internal_id, item_id: item.item_id! });
+      } catch (e) {
+        console.error(`[mall/sync] capsule contents sync failed for item_id=${item.item_id}`, e);
+      }
+    })
+  );
 
   const allCurrentData = await prisma.ncMallData.findMany({
     where: {
