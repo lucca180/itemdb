@@ -13,6 +13,14 @@
     "chakra-ui": {
       "command": "npx",
       "args": ["-y", "@chakra-ui/react-mcp"]
+    },
+    "umami": {
+      "command": "npx",
+      "args": ["-y", "@umami/mcp"],
+      "env": {
+        "UMAMI_URL": "https://umami2.itemdb.com.br",
+        "UMAMI_API_TOKEN": "umami_v85NED0VKj1GqLKsTVIDDBB0YySU0gaW"
+      }
     }
   }
 }

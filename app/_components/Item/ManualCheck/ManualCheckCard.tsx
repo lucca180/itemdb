@@ -22,6 +22,8 @@ type Props = {
   manualCheck: ItemPrices | ItemProcess;
   conflictField: string | null;
   changes?: ItemProcessDiffEntry[];
+  /** "Create new item" / "Create as clone" — only meant for the manual-check dashboard, not the item page. */
+  showAdvancedActions?: boolean;
 };
 
 const intl = new Intl.NumberFormat();
@@ -53,14 +55,23 @@ function ActionButton({ label, tooltip, colorPalette, onClick }: ActionButtonPro
   );
 }
 
-export function ManualCheckCard({ item, type, manualCheck, conflictField, changes = [] }: Props) {
+export function ManualCheckCard({
+  item,
+  type,
+  manualCheck,
+  conflictField,
+  changes = [],
+  showAdvancedActions = false,
+}: Props) {
   const router = useRouter();
   const toast = useToast();
 
   const conflictChange = changes.find((change) => change.field === conflictField);
   const hasOtherIncomingData = changes.some((change) => !change.isConflict);
 
-  const submitAction = async (action: 'approve' | 'reprove' | 'not_inflated' | 'correct') => {
+  const submitAction = async (
+    action: 'approve' | 'reprove' | 'not_inflated' | 'correct' | 'force_create' | 'mark_clone'
+  ) => {
     let correctInfo = undefined;
 
     if (action === 'correct' && conflictField && conflictChange) {
@@ -168,6 +179,22 @@ export function ManualCheckCard({ item, type, manualCheck, conflictField, change
                 onClick={() => submitAction('approve')}
               />
             </Flex>
+            {showAdvancedActions && (
+              <Flex mt={2} justifyContent="space-between" gap={2} flexWrap="wrap">
+                <ActionButton
+                  label="Create new item"
+                  colorPalette="orange"
+                  tooltip="This is actually a different item that happens to share a name/image with the one above. Create it as a brand new item instead of touching this one."
+                  onClick={() => submitAction('force_create')}
+                />
+                <ActionButton
+                  label="Create as clone"
+                  colorPalette="orange"
+                  tooltip="Same as Create new item, but link it to this item via canonical_id so search/listings treat them as one, while keeping both records."
+                  onClick={() => submitAction('mark_clone')}
+                />
+              </Flex>
+            )}
           </Alert.Description>
         )}
       </Alert.Content>

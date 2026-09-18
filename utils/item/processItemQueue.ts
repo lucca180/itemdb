@@ -32,7 +32,7 @@ export type ProcessItemQueueResult = {
   manualChecks: unknown[];
 };
 
-type ProcessContext = {
+export type ProcessContext = {
   usedSlugs: Set<string>;
   manualChecks: unknown[];
 };
@@ -156,7 +156,36 @@ export async function processItemProcessQueue(
   };
 }
 
-async function updateOrAddDB(
+/**
+ * Field mapping for a brand-new Items row from a queued ItemProcess entry.
+ * Shared by the normal ingest create-path and the admin "force create" manual-check action.
+ */
+export function buildNewItemFields(item: ItemProcess, itemSlug: string): Partial<Item> {
+  return {
+    name: item.name,
+    description: item.description,
+    image_id: item.image_id,
+    image: item.image,
+    item_id: item.item_id,
+    specialType: item.specialType,
+    category: item.category,
+    rarity: item.rarity,
+    weight: item.weight,
+    type: item.type,
+    isNC: item.isNC,
+    slug: itemSlug,
+    isWearable: item.isWearable,
+    isNeohome: !!item.specialType?.toLowerCase().includes('neohome'),
+    est_val: item.est_val,
+    isBD: item.isBD,
+    canEat: checkEat(item.category) && !item.isWearable ? 'true' : undefined,
+    canPlay: checkPlay(item.category) && !item.isWearable ? 'true' : undefined,
+    canRead: checkRead(item.category) && !item.isWearable ? 'true' : undefined,
+    status: item.status,
+  };
+}
+
+export async function updateOrAddDB(
   item: ItemProcess,
   ctx: ProcessContext
 ): Promise<Partial<Item> | undefined> {
@@ -219,34 +248,42 @@ async function updateOrAddDB(
       }
     }
 
-    if (
-      dbItemList.length === 0 ||
-      (item.item_id && dbItemList.every((x) => x.item_id && x.item_id !== item.item_id))
-    ) {
+    const noMatchAtAll = dbItemList.length === 0;
+    const itemIdVariation =
+      !!item.item_id &&
+      dbItemList.length > 0 &&
+      dbItemList.every((x) => x.item_id && x.item_id !== item.item_id);
+
+    if (noMatchAtAll) {
+      // Neither name+image_id nor item_id matched anything. Before creating a new row, check
+      // whether this is actually a rename or a re-art of an already-catalogued item (one with a
+      // confirmed item_id) rather than a genuinely new item — name+image_id alone silently misses
+      // renames (image matches, name doesn't) and re-arts (name matches, image doesn't).
+      const renameGuard = await prisma.items.findFirst({
+        where: {
+          image_id: item.image_id,
+          name: { not: item.name },
+          item_id: { not: null },
+        },
+        select: { internal_id: true },
+      });
+      if (renameGuard) throw `'name' Merge Conflict with (${renameGuard.internal_id})`;
+
+      const reArtGuard = await prisma.items.findFirst({
+        where: {
+          name: item.name,
+          image_id: { not: item.image_id },
+          item_id: { not: null },
+        },
+        select: { internal_id: true },
+      });
+      if (reArtGuard) throw `'image' Merge Conflict with (${reArtGuard.internal_id})`;
+    }
+
+    if (noMatchAtAll || itemIdVariation) {
       if (!item.isWearable) item.isWearable = await detectWearable(item.image).catch(() => false);
       ctx.usedSlugs.add(itemSlug);
-      return {
-        name: item.name,
-        description: item.description,
-        image_id: item.image_id,
-        image: item.image,
-        item_id: item.item_id,
-        specialType: item.specialType,
-        category: item.category,
-        rarity: item.rarity,
-        weight: item.weight,
-        type: item.type,
-        isNC: item.isNC,
-        slug: itemSlug,
-        isWearable: item.isWearable,
-        isNeohome: !!item.specialType?.toLowerCase().includes('neohome'),
-        est_val: item.est_val,
-        isBD: item.isBD,
-        canEat: checkEat(item.category) && !item.isWearable ? 'true' : undefined,
-        canPlay: checkPlay(item.category) && !item.isWearable ? 'true' : undefined,
-        canRead: checkRead(item.category) && !item.isWearable ? 'true' : undefined,
-        status: item.status,
-      };
+      return buildNewItemFields(item, itemSlug);
     }
 
     let dbItem = dbItemList[0];
