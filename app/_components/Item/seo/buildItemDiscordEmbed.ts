@@ -107,6 +107,29 @@ function wearablePreviewUrl(item: ItemData): string | null {
   return `https://itemdb.com.br/api/cache/preview/${item.image_id}.png${cacheHash}`;
 }
 
+/** Discord `<t:UNIX:D>` tag for the NP price's last-updated date, same field ItemCardBadge uses for staleness. */
+function priceTimestampTag(item: ItemData): string | null {
+  if (item.isNC || !item.price.addedAt) return null;
+  const seconds = Math.floor(new Date(item.price.addedAt).getTime() / 1000);
+  if (Number.isNaN(seconds)) return null;
+  return `<t:${seconds}:D>`;
+}
+
+/** Same badges/order as the item page header (ItemHeader.tsx), rendered as inline-code chips. */
+function tagChips(item: ItemData): string | null {
+  const chips: string[] = [item.category ?? '???'];
+  if (item.type === 'np') chips.push('NP');
+  if (item.type === 'nc') chips.push('NC');
+  if (item.type === 'pb') chips.push('PB');
+  if (item.isWearable) chips.push('Wearable');
+  if (item.isNeohome) chips.push('Neohome');
+  if (item.isBD) chips.push('Battledome');
+  if (item.useTypes.canEat === 'true') chips.push('Edible');
+  if (item.useTypes.canRead === 'true') chips.push('Readable');
+  if (item.useTypes.canPlay === 'true') chips.push('Playable');
+  return chips.map((chip) => `\`${chip}\``).join(' ');
+}
+
 type BuildItemDiscordEmbedInput = {
   item: ItemData;
   canonical: string;
@@ -140,15 +163,21 @@ export async function buildItemDiscordEmbed({
     emoji: ITEMDB_EMOJI,
   };
 
+  const priceTimestamp = priceTimestampTag(item);
   const infoLines = [
-    price ? `**Price**: ${price}` : null,
+    '',
+    price ? `**Price:** ${price}${priceTimestamp ? ` ${priceTimestamp}` : ''}` : null,
     ncEstimate,
     saleStatus,
     restockPrice,
     item.comment ? `**Notes**: ${item.comment}` : null,
+    tagChips(item),
   ].filter((line): line is string => !!line);
 
-  const infoSectionTexts = [
+  const titleLine = `### [${item.name}${item.rarity ? ` (r${item.rarity})` : ''}](${canonical})`;
+
+  const mainSectionTexts = [
+    titleLine,
     descriptionLine ? `*${descriptionLine}*` : null,
     infoLines.length ? infoLines.join('\n') : null,
   ].filter((text): text is string => !!text);
@@ -156,23 +185,9 @@ export async function buildItemDiscordEmbed({
   const components: DiscordEmbedComponent[] = [
     {
       type: 9,
-      components: [
-        {
-          type: 10,
-          content: `## ${item.name}${item.rarity ? ` (r${item.rarity})` : ''}`,
-        },
-      ],
-      accessory: { type: 2, style: 5, url: canonical, label: 'Open' },
+      components: mainSectionTexts.map((content) => ({ type: 10 as const, content })),
+      accessory: { type: 11, media: { url: item.image } },
     },
-    ...(infoSectionTexts.length
-      ? [
-          {
-            type: 9 as const,
-            components: infoSectionTexts.map((content) => ({ type: 10 as const, content })),
-            accessory: { type: 11 as const, media: { url: item.image } },
-          },
-        ]
-      : []),
     { type: 14, spacing: 2 },
     ...(wearablePreview
       ? [
