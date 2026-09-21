@@ -182,7 +182,7 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
   });
 
   const canonical = allPetpet.find((p) => p.isCanonical);
-  const targetPb = itemData[pb[0].item_iid.toString()];
+  const targetPb = pb[0] ? itemData[pb[0].item_iid.toString()] : undefined;
 
   if (!targetPb) {
     return {
@@ -223,7 +223,7 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
       },
     });
 
-    canonicalPb = await getItem(pbProm[0].item_iid.toString());
+    canonicalPb = pbProm[0] ? await getItem(pbProm[0].item_iid.toString()) : null;
   }
 
   if (!targetPb) {
