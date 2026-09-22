@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import * as Sentry from '@sentry/nextjs';
 
 const DEFAULT_TRACE_RATE = 0.12;
@@ -28,6 +29,16 @@ function tracesSampler({
 }
 
 export function register() {
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    // Next 16.3+ regression: internal rewrites (next-intl's locale rewrite runs on
+    // almost every page request) are proxied through `httpxy`, which adds extra
+    // `close` listeners to the per-request ServerResponse. Combined with Sentry's
+    // HTTP instrumentation this reaches 11 listeners per response, just above
+    // Node's default cap (10) — not an actual leak (scoped to a single request).
+    // Not fixed upstream yet: https://github.com/vercel/next.js/issues/97757
+    EventEmitter.defaultMaxListeners = 12;
+  }
+
   const SENTRY_DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
 
   const isProd = process.env.NODE_ENV === 'production';
