@@ -87,7 +87,8 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps): ShouldUpdateResult =
     forceMode = forceMode || isPendingCheck;
 
     if (latestDate < oldPriceRaw.addedAt) return SKIP('stale_data');
-    if (daysSinceLastUpdate <= 1) return SKIP('same_day_update');
+    if ((!forceMode && daysSinceLastUpdate <= 1) || !daysSinceLastUpdate)
+      return SKIP('same_day_update');
 
     if (!forceMode && daysSinceLastUpdate < minUpdate && zNewAbs < 2.5)
       return SKIP('awaiting_confirmation');
