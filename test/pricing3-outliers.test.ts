@@ -124,8 +124,9 @@ describe('processPrices3 replay (Drakaras-like junk)', () => {
     ];
 
     const result = processPrices3(rows);
-    expect(result).toBeDefined();
-    expect(result!.price).toBeGreaterThan(1_000_000_000);
-    expect(result!.price).not.toBe(705_000_000);
+    expect('reason' in result).toBe(false);
+    if ('reason' in result) throw new Error('expected a price decision');
+    expect(result.price).toBeGreaterThan(1_000_000_000);
+    expect(result.price).not.toBe(705_000_000);
   });
 });

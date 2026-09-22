@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
-import { processPrices3, type PriceSignals } from '@utils/prices/pricing3';
+import { processPrices3, type PriceSignals, type PriceSkipReason } from '@utils/prices/pricing3';
 import { handleInflation, PRICING, shouldUpdatePrice } from '@utils/prices/process-helpers';
 import pMap from 'p-map';
 
@@ -249,6 +249,9 @@ export const doProcessPrices = async (
   forceMode = false
 ) => {
   const processedIDs: number[] = [];
+  // per-item reason the algorithm produced no price row, additive — the bulk/cron
+  // caller ignores this field, only the admin force-run path reads it.
+  const reasons: Record<number, PriceSkipReason | 'error'> = {};
 
   // list of unique entries
   const priceAddResults = await pMap(
@@ -262,11 +265,17 @@ export const doProcessPrices = async (
         newPrice = processPrices3(allItemData, forceMode);
       } catch (e) {
         console.error(e, item);
-        if (e === 'NaN price') return undefined;
+        if (e === 'NaN price') {
+          reasons[itemId] = 'error';
+          return undefined;
+        }
         throw e;
       }
 
-      if (!newPrice) return undefined;
+      if ('reason' in newPrice) {
+        reasons[itemId] = newPrice.reason;
+        return undefined;
+      }
 
       const allIDs = allItemData
         .filter((x) => x.addedAt <= newPrice!.latestDate)
@@ -282,11 +291,17 @@ export const doProcessPrices = async (
           newPrice.signals
         );
 
-        if (result) processedIDs.push(...allIDs);
-        return result;
+        if ('reason' in result) {
+          reasons[itemId] = result.reason;
+          return undefined;
+        }
+
+        processedIDs.push(...allIDs);
+        return result.data;
       } catch (e) {
         // mirror the previous Promise.allSettled behavior: skip failed DB writes
         console.error(e, item);
+        reasons[itemId] = 'error';
         return undefined;
       }
     },
@@ -333,8 +348,14 @@ export const doProcessPrices = async (
     priceUpdate: result[0],
     priceProcessed: result[1],
     manualCheck: manualCheckList,
+    priceAddList,
+    reasons,
   };
 };
+
+type UpdateOrAddResult =
+  | { data: Prisma.ItemPricesUncheckedCreateInput }
+  | { reason: PriceSkipReason };
 
 async function updateOrAddDB(
   priceData: PriceProcess2,
@@ -343,7 +364,7 @@ async function updateOrAddDB(
   latestDate: Date,
   forceMode = false,
   signals?: PriceSignals
-): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
+): Promise<UpdateOrAddResult> {
   let newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
     item_iid: priceData.item_iid,
     price: priceValue,
@@ -377,12 +398,13 @@ async function updateOrAddDB(
       const item = await prisma.items.findFirst({ where: { internal_id: priceData.item_iid } });
 
       // do not add prices for new items
-      if (differenceInCalendarDays(latestDate, item!.addedAt) < 2) return undefined;
+      if (differenceInCalendarDays(latestDate, item!.addedAt) < 2) return { reason: 'new_item' };
 
-      return newPriceData;
+      return { data: newPriceData };
     }
 
-    if (!shouldUpdatePrice({ latestDate, priceHistory, priceValue, forceMode })) return undefined;
+    const decision = shouldUpdatePrice({ latestDate, priceHistory, priceValue, forceMode });
+    if (!decision.update) return { reason: decision.reason };
 
     const result = await handleInflation({
       latestDate,
@@ -399,7 +421,7 @@ async function updateOrAddDB(
       throw result.msg;
     }
 
-    return newPriceData;
+    return { data: newPriceData };
   } catch (e) {
     if (typeof e !== 'string') {
       console.error('PRICE PROCESS ERROR:', e);
@@ -409,9 +431,11 @@ async function updateOrAddDB(
     // if (e === 'inflation') return newPriceData;
 
     return {
-      ...newPriceData,
-      manual_check: e,
-      isLatest: null,
+      data: {
+        ...newPriceData,
+        manual_check: e,
+        isLatest: null,
+      },
     };
   }
 }

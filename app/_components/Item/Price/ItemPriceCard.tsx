@@ -21,10 +21,15 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useFormatter } from 'next-intl';
 import {
   prefetchItemPriceHistory,
   usePrefetchItemTradeLists,
 } from '@app/_components/Item/Price/itemPricePrefetch';
+import {
+  getForceUpdateToastContent,
+  requestForceUpdatePrices,
+} from '@app/_components/Item/Price/forceUpdatePrices';
 import Image from 'next/image';
 import axios from 'axios';
 import { MdHelp, MdOutlineAdd } from 'react-icons/md';
@@ -388,30 +393,27 @@ export function PriceStatActions({
   labels: ItemPriceStatLabels;
 }) {
   const toast = useToast();
+  const format = useFormatter();
   const { user } = useAuth();
   const { openWrongPrice, openSaleStatus, openCreatePrice } = useItemPriceModals();
 
   const forceUpdatePrices = async () => {
     if (!user?.isAdmin) return;
-    const resultProm = axios.patch('/api/admin/prices/', { item_iid: item.internal_id });
-    toast.promise(resultProm, {
-      loading: { id: 'force-update-prices-loading', title: 'Running Price Process Algorithm' },
-      success: {
-        id: 'force-update-prices-success',
-        title: 'Algorithm Completed',
-        description:
-          'Prices may have been updated - if not, please gather more data before trying again',
-      },
-      error: {
-        id: 'force-update-prices-error',
-        title: 'An error occurred',
-        description: 'Please DO NOT try again.',
-      },
-    });
+    const toastId = 'force-update-prices';
+    toast({ id: toastId, status: 'loading', title: 'Running Price Process Algorithm' });
+
     try {
-      await resultProm;
+      const data = await requestForceUpdatePrices(item.internal_id);
+      const content = getForceUpdateToastContent(data, format.number);
+      toast.update(toastId, { id: toastId, ...content });
     } catch (err) {
       console.error(err);
+      toast.update(toastId, {
+        id: toastId,
+        status: 'error',
+        title: 'An error occurred',
+        description: 'Something went wrong while running the price process.',
+      });
     }
   };
 

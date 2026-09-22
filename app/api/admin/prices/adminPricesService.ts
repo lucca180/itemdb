@@ -9,6 +9,7 @@ import { doProcessPrices, MAX_PAST_DAYS } from '@pages/api/v1/prices/process';
 import type { ItemPrices } from '@prisma/generated/client';
 import type { User } from '@types';
 import { LogService } from '@services/ActionLogService';
+import type { PriceSkipReason } from '@utils/prices/pricing3';
 
 export class AdminPricesInputError extends Error {
   constructor(message: string) {
@@ -100,7 +101,15 @@ export async function createAdminPrice(body: CreateAdminPriceRequest): Promise<I
   return newPrice;
 }
 
-export async function processAdminPrices(body: ProcessAdminPricesRequest) {
+export type ProcessAdminPricesResult =
+  | { status: 'no_queue' }
+  | { status: 'updated'; price: number }
+  | { status: 'manual_check'; price: number; reason: string | null }
+  | { status: 'skipped'; reason: PriceSkipReason | 'error' | null };
+
+export async function processAdminPrices(
+  body: ProcessAdminPricesRequest
+): Promise<ProcessAdminPricesResult> {
   const item_iid = parseNumber(body.item_iid);
 
   const lastPrice = await prisma.itemPrices.findFirst({
@@ -121,13 +130,25 @@ export async function processAdminPrices(body: ProcessAdminPricesRequest) {
     },
   });
 
+  // nothing queued yet is an expected, benign outcome — not an error
   if (!priceProcess.length) {
-    throw new AdminPricesInputError('Nothing to process');
+    return { status: 'no_queue' };
   }
 
   const result = await doProcessPrices(priceProcess, [item_iid], true);
   revalidateItemPrices(item_iid);
-  return result;
+
+  const created = result.priceAddList.find((x) => x.item_iid === item_iid);
+
+  if (!created) {
+    return { status: 'skipped', reason: result.reasons[item_iid] ?? null };
+  }
+
+  if (created.manual_check) {
+    return { status: 'manual_check', price: Number(created.price), reason: created.manual_check };
+  }
+
+  return { status: 'updated', price: Number(created.price) };
 }
 
 export async function editAdminPrice(

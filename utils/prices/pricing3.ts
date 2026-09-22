@@ -24,7 +24,34 @@ export type PriceSignals = {
   maxShare: number;
 };
 
-export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) => {
+/** Machine-readable reason the algorithm declined to produce or apply a price. */
+export type PriceSkipReason =
+  // no price could be computed from the queued data (processPrices3)
+  | 'not_enough_data'
+  | 'usershop_only'
+  | 'low_confidence'
+  | 'high_deviation'
+  // a price was computed but the algorithm chose not to apply it (shouldUpdatePrice)
+  | 'stale_data'
+  | 'same_day_update'
+  | 'insignificant_change'
+  | 'awaiting_confirmation'
+  // item is too new to trust a first price (updateOrAddDB)
+  | 'new_item';
+
+export type PriceDecision =
+  | {
+      price: number;
+      usedIds: number[];
+      latestDate: Date;
+      signals: PriceSignals;
+    }
+  | { reason: PriceSkipReason };
+
+// decision logic is unchanged from before — only the "no price" exits now carry a reason
+// instead of `undefined`, so callers (including the bulk/cron path) keep gating on the
+// exact same conditions, just checking `'reason' in result` instead of `!result`.
+export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false): PriceDecision => {
   // we're using ip_address field to add more info than we should
   // (adding a new column to PriceProcess2 is pain)
   const sorted = [...allItemData]
@@ -36,14 +63,17 @@ export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) 
 
   const filtered = filterMostRecent(sorted, forceMode);
 
-  if (!filtered) return undefined;
+  if ('reason' in filtered) return filtered;
 
   const { weightedVals, ownerMin } = filtered;
 
   const usedIds = new Set<number>(weightedVals.map(([x]) => x.internal_id));
 
-  const filteredPrices = weightedStdFilter(weightedVals, 1.6, 0.75)?.slice(0, 7);
-  if (!filteredPrices || !filteredPrices.length) return undefined;
+  const stdFiltered = weightedStdFilter(weightedVals, 1.6, 0.75);
+  if ('reason' in stdFiltered) return stdFiltered;
+
+  const filteredPrices = stdFiltered.slice(0, 7);
+  if (!filteredPrices.length) return { reason: 'high_deviation' };
 
   const latestDate = filteredPrices.reduce(
     (latest, [x]) => (x.addedAt > latest ? x.addedAt : latest),
@@ -84,7 +114,10 @@ function buildSignals(
   return { sourceScore, owners, ownerMin, maxShare };
 }
 
-function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) {
+function filterMostRecent(
+  priceProcessList: PriceProcess2[],
+  forceMode = false
+): { weightedVals: [PriceProcess2, number][]; ownerMin: number } | { reason: PriceSkipReason } {
   const EVENT_MODE = forceMode || process.env.EVENT_MODE === 'true';
 
   const daysThreshold: { [days: number]: number } = {
@@ -124,11 +157,11 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
       ownerMin = threshold;
       break;
     } else if (filteredRaw.length === priceProcessList.length) {
-      return undefined;
+      return { reason: 'not_enough_data' };
     }
   }
 
-  if (!filtered.length || !passed) return undefined;
+  if (!filtered.length || !passed) return { reason: 'not_enough_data' };
 
   let allPrices: number[] = [];
 
@@ -149,7 +182,8 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   // console.log(allPrices, noOutliers);
 
   // if all remaining data is from usershops, skip
-  if (filtered.length === filtered.filter((x) => x.type === 'usershop').length) return undefined;
+  if (filtered.length === filtered.filter((x) => x.type === 'usershop').length)
+    return { reason: 'usershop_only' };
 
   const result = filtered.map((x, i) => [x, getWeight(x, i)]) as [PriceProcess2, number][];
 
@@ -164,7 +198,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   // data is low confidence, skip
   if (meanWeight < 0.5 && differenceInCalendarDays(Date.now(), lastDate) <= 30) {
     // console.warn('processPrices3: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
-    return undefined;
+    return { reason: 'low_confidence' };
   }
 
   return { weightedVals: result, ownerMin };
@@ -287,8 +321,12 @@ function keepCheaperBimodalCluster(data: number[]): number[] | null {
   return high.length > low.length ? high : low;
 }
 
-function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1, kUpper = 1) {
-  if (!weightedPrices || !weightedPrices.length) return undefined;
+function weightedStdFilter(
+  weightedPrices: [PriceProcess2, number][],
+  kLower = 1,
+  kUpper = 1
+): [PriceProcess2, number][] | { reason: PriceSkipReason } {
+  if (!weightedPrices || !weightedPrices.length) return { reason: 'not_enough_data' };
   const meanWeighted = weightedMean(weightedPrices);
 
   const varianceWeighted =
@@ -306,7 +344,7 @@ function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1
       relativeSTD,
       weightedPrices.map(([p]) => p.price.toNumber())
     );
-    return undefined;
+    return { reason: 'high_deviation' };
   }
 
   const lowerLimitFactor = Math.ceil(Math.min(kLower, meanWeighted / stdWeighted) * 10) / 10;
@@ -318,7 +356,7 @@ function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1
       lowerLimitFactor
     );
 
-    return undefined;
+    return { reason: 'high_deviation' };
   }
 
   return weightedPrices.filter(([p]) => {

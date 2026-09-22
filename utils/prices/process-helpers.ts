@@ -5,7 +5,9 @@ import { differenceInCalendarDays, differenceInMonths } from 'date-fns';
 import { mean, standardDeviation } from 'simple-statistics';
 import prisma from '@utils/prisma';
 import { LogService } from '@services/ActionLogService';
-import type { PriceSignals } from '@utils/prices/pricing3';
+import type { PriceSignals, PriceSkipReason } from '@utils/prices/pricing3';
+
+export type { PriceSkipReason };
 
 const EVENT_MODE = process.env.EVENT_MODE === 'true';
 
@@ -51,7 +53,14 @@ type ShouldUpdateProps = {
   forceMode?: boolean;
 };
 
-export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
+export type ShouldUpdateResult = { update: true } | { update: false; reason: PriceSkipReason };
+
+const SKIP = (reason: PriceSkipReason): ShouldUpdateResult => ({ update: false, reason });
+const UPDATE: ShouldUpdateResult = { update: true };
+
+// decision logic is unchanged from before — only the false-branches now carry a reason
+// instead of a bare boolean, so callers keep gating on the exact same conditions.
+export const shouldUpdatePrice = (args: ShouldUpdateProps): ShouldUpdateResult => {
   const { latestDate, priceHistory, priceValue } = args;
   let { forceMode } = args;
 
@@ -77,24 +86,27 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
 
     forceMode = forceMode || isPendingCheck;
 
-    if (latestDate < oldPriceRaw.addedAt || daysSinceLastUpdate <= 1) return false;
+    if (latestDate < oldPriceRaw.addedAt) return SKIP('stale_data');
+    if (daysSinceLastUpdate <= 1) return SKIP('same_day_update');
 
-    if (!forceMode && daysSinceLastUpdate < minUpdate && zNewAbs < 2.5) return false;
+    if (!forceMode && daysSinceLastUpdate < minUpdate && zNewAbs < 2.5)
+      return SKIP('awaiting_confirmation');
 
     const specialMode = EVENT_MODE || isInflation || forceMode;
 
-    if (specialMode) return true;
+    if (specialMode) return UPDATE;
 
-    if (absDiff < 1000 && daysSinceLastUpdate <= minUpdate * 1.5) return false;
+    if (absDiff < 1000 && daysSinceLastUpdate <= minUpdate * 1.5)
+      return SKIP('insignificant_change');
 
     // clear outlier: wait for more data before pricing
-    if (zNew >= 3.2 && daysSinceLastUpdate <= minUpdate) return false;
+    if (zNew >= 3.2 && daysSinceLastUpdate <= minUpdate) return SKIP('awaiting_confirmation');
 
     // insignificant change: wait
     if (zNewAbs <= 2 && percentDiff < varThresholds(oldPrice) && daysSinceLastUpdate <= minUpdate)
-      return false;
+      return SKIP('insignificant_change');
 
-    return true;
+    return UPDATE;
   }
 
   // ---------- LEGACY VERSION ---------- //
@@ -104,13 +116,14 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
 
   forceMode = forceMode || isPendingCheck;
 
-  if (!forceMode && daysSinceLastUpdate <= 1) return false;
+  if (!forceMode && daysSinceLastUpdate <= 1) return SKIP('same_day_update');
 
   if (latestDate < oldPriceRaw.addedAt) {
-    return false;
+    return SKIP('stale_data');
   }
 
-  if (!forceMode && daysSinceLastUpdate < 3 && priceDiff < 100000) return false;
+  if (!forceMode && daysSinceLastUpdate < 3 && priceDiff < 100000)
+    return SKIP('awaiting_confirmation');
 
   if (
     !forceMode &&
@@ -118,7 +131,7 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     variation < 30 &&
     priceDiff < 25000
   )
-    return false;
+    return SKIP('awaiting_confirmation');
 
   /*
       ignore small variations
@@ -133,9 +146,9 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     !isInflation &&
     !forceMode
   )
-    return false;
+    return SKIP('insignificant_change');
 
-  return true;
+  return UPDATE;
 };
 
 export type handleInflationArgs = {

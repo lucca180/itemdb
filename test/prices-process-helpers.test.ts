@@ -76,7 +76,7 @@ describe('process price z-score rules', () => {
       historyEntry(3_580, 60),
     ] as any;
 
-    expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 5000 })).toBe(true);
+    expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 5000 }).update).toBe(true);
   });
 
   test('price when the old price was already abnormal but the new price is still unusual', () => {
@@ -88,7 +88,9 @@ describe('process price z-score rules', () => {
       historyEntry(35_800_000, 60),
     ] as any;
 
-    expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 3_500_000 })).toBe(true);
+    expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 3_500_000 }).update).toBe(
+      true
+    );
   });
 
   test('skip when the old price was already abnormal but the new price is still little unusual', () => {
@@ -100,7 +102,7 @@ describe('process price z-score rules', () => {
       historyEntry(101_000, 50),
     ] as any;
 
-    expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 104_000 })).toBe(false);
+    expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 104_000 }).update).toBe(false);
   });
 
   test('still ignores recent small changes near the historical normal', () => {
@@ -112,7 +114,7 @@ describe('process price z-score rules', () => {
       historyEntry(101_000, 50),
     ] as any;
 
-    expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 101_000 })).toBe(false);
+    expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 101_000 }).update).toBe(false);
   });
 
   test('skips inflation if its too close from previous outlier', async () => {
