@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { LOCALE_COOKIE_NAME } from '@utils/locales';
 
 const allowedOrigins = [
   'itemdb.com.br',
@@ -38,6 +39,28 @@ export const finalizePageResponse = (
   { startTime }: { startTime: number }
 ) => {
   updateServerTime('regular-middleware', startTime, response);
+  return response;
+};
+
+/**
+ * Removes the locale cookie set by the next-intl middleware, so the URL never changes the
+ * user's locale. The cookie is only written by explicit user actions (language switcher, login).
+ */
+export const stripLocaleSetCookie = (response: NextResponse) => {
+  const prefix = `${LOCALE_COOKIE_NAME}=`;
+  const setCookies = response.headers.getSetCookie();
+  if (!setCookies.some((cookie) => cookie.startsWith(prefix))) return response;
+
+  const keptCookies = setCookies.filter((cookie) => !cookie.startsWith(prefix));
+
+  response.headers.delete('set-cookie');
+  keptCookies.forEach((cookie) => response.headers.append('set-cookie', cookie));
+
+  // NextResponse mirrors its cookies into this internal header so the render sees them,
+  // and Next.js turns them back into a Set-Cookie on the page response.
+  if (keptCookies.length) response.headers.set('x-middleware-set-cookie', keptCookies.join(','));
+  else response.headers.delete('x-middleware-set-cookie');
+
   return response;
 };
 

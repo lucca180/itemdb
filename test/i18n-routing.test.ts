@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { NextRequest, NextResponse } from 'next/server';
+import createIntlMiddleware from 'next-intl/middleware';
+import { stripLocaleSetCookie } from '@utils/api/proxy';
 import { formatBreadcrumbJsonLd } from '@components/Breadcrumbs/formatBreadcrumbJsonLd';
 import {
   DEFAULT_LOCALE,
+  getCookieLocaleRedirect,
   getLocalizedHref,
   getLocalizedLoginRedirect,
   getLocalePrefix,
@@ -9,6 +13,7 @@ import {
   getPageRouterHref,
   getPageRouterLocale,
   isValidLocale,
+  routing,
   localizeInternalHref,
   resolvePageLocale,
   withLocalePrefix,
@@ -110,5 +115,56 @@ describe('i18n routing helpers', () => {
       { position: 1, name: 'Home', item: 'https://itemdb.com.br/' },
       { position: 2, name: 'Green Apple', item: 'https://itemdb.com.br/item/green-apple' },
     ]);
+  });
+
+  it('redirects to the cookie locale when it disagrees with the url', () => {
+    const redirect = (
+      pathname: string,
+      cookieLocale: string | undefined,
+      opts?: { search?: string; secFetchDest?: string | null }
+    ) =>
+      getCookieLocaleRedirect({
+        pathname,
+        search: opts?.search ?? '',
+        cookieLocale,
+        secFetchDest: opts?.secFetchDest === undefined ? 'document' : opts.secFetchDest,
+      });
+
+    expect(redirect('/pt/item/x', 'en', { search: '?a=1' })).toBe('/item/x?a=1');
+    expect(redirect('/item/x', 'pt')).toBe('/pt/item/x');
+    expect(redirect('/', 'pt')).toBe('/pt');
+    expect(redirect('/pt', 'en')).toBe('/');
+    expect(redirect('/pt/item/x', 'pt')).toBeNull();
+    expect(redirect('/item/x', 'en')).toBeNull();
+    expect(redirect('/pt/item/x', undefined)).toBeNull();
+    expect(redirect('/pt/item/x', 'de')).toBeNull();
+    expect(redirect('/pt/item/x', 'en', { secFetchDest: 'empty' })).toBeNull();
+    expect(redirect('/pt/item/x', 'en', { secFetchDest: null })).toBe('/item/x');
+    expect(redirect('/en/item/x', 'pt')).toBeNull();
+  });
+
+  it('strips only the locale cookie set by next-intl', () => {
+    const response = NextResponse.next();
+    response.cookies.set('NEXT_LOCALE', 'pt');
+    response.cookies.set('other', 'value');
+
+    stripLocaleSetCookie(response);
+
+    const setCookies = response.headers.getSetCookie();
+    expect(setCookies.some((cookie) => cookie.startsWith('NEXT_LOCALE='))).toBe(false);
+    expect(setCookies.some((cookie) => cookie.startsWith('other=value'))).toBe(true);
+    expect(response.headers.get('x-middleware-set-cookie')).toMatch(/^other=value/);
+  });
+
+  it('does not let the next-intl middleware write the locale cookie', () => {
+    const handleI18nRouting = createIntlMiddleware(routing);
+    const request = new NextRequest('http://localhost/pt/faq', {
+      headers: { 'accept-language': 'en', 'sec-fetch-dest': 'document' },
+    });
+
+    const response = stripLocaleSetCookie(handleI18nRouting(request));
+
+    expect(response.headers.getSetCookie()).toEqual([]);
+    expect(response.headers.get('x-middleware-set-cookie')).toBeNull();
   });
 });

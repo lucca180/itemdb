@@ -5,6 +5,10 @@ import { routing, type AppLocale } from '../i18n/routing';
 export { routing, type AppLocale };
 export const VALID_LOCALES = routing.locales;
 export const DEFAULT_LOCALE = routing.defaultLocale;
+export const LOCALE_COOKIE_NAME =
+  typeof routing.localeCookie === 'object'
+    ? (routing.localeCookie.name ?? 'NEXT_LOCALE')
+    : 'NEXT_LOCALE';
 
 export function isValidLocale(locale: string | undefined | null): locale is AppLocale {
   return hasLocale(routing.locales, locale);
@@ -45,6 +49,34 @@ export function getLocalizedHref(pathWithSearch: string, locale: AppLocale) {
   const internalPath = pathLocale ? stripLocalePrefix(pathname, pathLocale) : pathname;
 
   return `${withLocalePrefix(internalPath, locale)}${search}`;
+}
+
+/**
+ * The NEXT_LOCALE cookie is the source of truth for the locale: when it disagrees with the URL
+ * locale, returns the href of the same page in the cookie locale. Only document requests are
+ * redirected, background router requests (prefetch, RSC revalidation) are left untouched.
+ */
+export function getCookieLocaleRedirect({
+  pathname,
+  search,
+  cookieLocale,
+  secFetchDest,
+}: {
+  pathname: string;
+  search: string;
+  cookieLocale: string | undefined | null;
+  secFetchDest: string | null;
+}) {
+  if (secFetchDest != null && secFetchDest !== 'document') return null;
+  if (!isValidLocale(cookieLocale)) return null;
+
+  // explicit default locale prefix (/en/...) is normalized by next-intl first
+  if (pathname.split('/')[1] === DEFAULT_LOCALE) return null;
+
+  const urlLocale = getPathLocale(pathname) ?? DEFAULT_LOCALE;
+  if (urlLocale === cookieLocale) return null;
+
+  return getLocalizedHref(`${pathname}${search}`, cookieLocale);
 }
 
 export function getLocalizedLoginRedirect(locale: AppLocale, redirectPath: string) {

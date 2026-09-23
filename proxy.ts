@@ -5,11 +5,12 @@ import * as Redis from '@utils/api/redis';
 import { isLikelyBrowser, normalizeIP, verifyApiToken } from '@utils/api/api-utils';
 import * as Sentry from '@sentry/nextjs';
 import createIntlMiddleware from 'next-intl/middleware';
-import { getCurrentPath } from '@utils/locales';
+import { getCookieLocaleRedirect, getCurrentPath, LOCALE_COOKIE_NAME } from '@utils/locales';
 import {
   createForwardedContext,
   finalizeApiResponse,
   finalizePageResponse,
+  stripLocaleSetCookie,
 } from '@utils/api/proxy';
 import { checkSession } from '@utils/api/redis';
 import { isItemQuotaRoute } from '@utils/api/itemQuotaRoutes';
@@ -67,6 +68,20 @@ export function proxy(request: NextRequest) {
   }
 
   const startTime = Date.now();
+
+  const cookieLocaleRedirect = getCookieLocaleRedirect({
+    pathname: request.nextUrl.pathname,
+    search: request.nextUrl.search,
+    cookieLocale: request.cookies.get(LOCALE_COOKIE_NAME)?.value,
+    secFetchDest: request.headers.get('sec-fetch-dest'),
+  });
+
+  if (cookieLocaleRedirect) {
+    return finalizePageResponse(NextResponse.redirect(new URL(cookieLocaleRedirect, request.url)), {
+      startTime,
+    });
+  }
+
   const currentPath = getCurrentPath(request.nextUrl.pathname, request.nextUrl.search);
   const pageRequestHeaders = new Headers(request.headers);
   pageRequestHeaders.set('x-itemdb-current-path', currentPath);
@@ -76,7 +91,7 @@ export function proxy(request: NextRequest) {
     method: request.method,
   });
 
-  const intlResponse = handleI18nRouting(intlRequest);
+  const intlResponse = stripLocaleSetCookie(handleI18nRouting(intlRequest));
 
   return finalizePageResponse(intlResponse, { startTime });
 }
