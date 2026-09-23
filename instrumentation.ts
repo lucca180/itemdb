@@ -51,9 +51,9 @@ export function register() {
           SENTRY_DSN ||
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
         tracesSampler,
-        profilesSampleRate: DEFAULT_TRACE_RATE,
+        profileSessionSampleRate: DEFAULT_TRACE_RATE,
+        profileLifecycle: 'trace',
         ignoreSpans: IGNORE_CACHE_REDIS,
-        ignoreTransactions: IGNORE_CACHE_REDIS,
         ignoreErrors,
         integrations: [
           Sentry.prismaIntegration(),
@@ -70,9 +70,9 @@ export function register() {
           SENTRY_DSN ||
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
         tracesSampler,
-        profilesSampleRate: DEFAULT_TRACE_RATE,
+        profileSessionSampleRate: DEFAULT_TRACE_RATE,
+        profileLifecycle: 'trace',
         ignoreSpans: IGNORE_CACHE_REDIS,
-        ignoreTransactions: IGNORE_CACHE_REDIS,
         ignoreErrors,
         integrations: [
           Sentry.captureConsoleIntegration({

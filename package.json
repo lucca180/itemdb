@@ -41,7 +41,7 @@
     "@napi-rs/canvas": "^1.0.9",
     "@prisma/adapter-mariadb": "7.10.0",
     "@prisma/client": "7.10.0",
-    "@sentry/nextjs": "^10.75.2",
+    "@sentry/nextjs": "^11.0.0",
     "@trieb.work/nextjs-turbo-redis-cache": "^1.18.0",
     "@tycrek/discord-hookr": "^0.1.0",
     "@umami/api-client": "^0.80.0",

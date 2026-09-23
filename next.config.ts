@@ -1,7 +1,6 @@
 // next.config.js
 
-import { SentryBuildOptions } from '@sentry/nextjs';
-import { withSentryConfig } from '@sentry/nextjs/config';
+import { SentryBuildOptions, withSentryConfig } from '@sentry/nextjs/config';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
