@@ -209,9 +209,7 @@ export const productionComparisonCases: SearchCase[] = [
   { query: blumarooQuery, description: 'Blumaroo Fire Avatar Search' },
   { query: angelpussQuery, description: 'Angelpuss Avatar Search' },
   { query: alienQuery, description: 'Alien Petpet Search' },
-  // TODO: re-enable after deploy — color search now skips population = 0 swatches, so the total
-  // differs from the production API until it runs the same query.
-  // { query: colorSearchQuery, description: 'Color Search' },
+  { query: colorSearchQuery, description: 'Color Search' },
   { query: colorFilterQuery, description: 'Color Filter Search' },
   { query: negativeColorFilterQuery, description: 'Negative Color Filter Search' },
   { query: zoneFilterQuery, description: 'Wearable Zone Search' },
