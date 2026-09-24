@@ -20,6 +20,8 @@ type Props = {
   size?: 'sm' | 'md' | 'lg';
   searchThreshold?: number;
   portalRef?: RefObject<HTMLElement | null>;
+  /** Umami event name. Tracks menu open, user list selection and list creation. */
+  trackEvent?: string;
 };
 
 const LIST_SEARCH_THRESHOLD = 8;
@@ -111,6 +113,8 @@ const ListSelect = (props: Props) => {
           size={props.size}
           fontSize={{ base: 'xs', md: 'sm' }}
           loading={isLoading || authLoading}
+          data-umami-event={props.trackEvent}
+          data-umami-event-label={props.trackEvent ? 'open' : undefined}
         >
           {selectedList && (
             <>
@@ -189,7 +193,11 @@ const ListSelect = (props: Props) => {
                     <Menu.Item
                       key={list.internal_id}
                       value={String(list.internal_id)}
-                      onClick={() => handleSelect(list)}
+                      onClick={() => {
+                        if (props.trackEvent)
+                          window.umami?.track(props.trackEvent, { label: 'select' });
+                        handleSelect(list);
+                      }}
                       _hover={{ bg: 'whiteAlpha.100' }}
                       cursor="pointer"
                     >
@@ -283,7 +291,12 @@ const ListSelect = (props: Props) => {
             )}
 
             {user && !isLoading && props.createNew && (
-              <Menu.Item value="create-new" onClick={createNewList}>
+              <Menu.Item
+                value="create-new"
+                onClick={createNewList}
+                data-umami-event={props.trackEvent}
+                data-umami-event-label={props.trackEvent ? 'create-new' : undefined}
+              >
                 + {t('Lists.create-new-list')}
               </Menu.Item>
             )}

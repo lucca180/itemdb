@@ -30,11 +30,12 @@ export function ImportItemTable({
   const format = useFormatter();
 
   const handleHeaderClick = (columnKey: ImportSortKey) => {
-    if (sortBy === columnKey) {
-      onSortChange(columnKey, sortDir === 'asc' ? 'desc' : 'asc');
-    } else {
-      onSortChange(columnKey, columnKey === 'name' ? 'asc' : 'desc');
-    }
+    let nextDir: ImportSortDir;
+    if (sortBy === columnKey) nextDir = sortDir === 'asc' ? 'desc' : 'asc';
+    else nextDir = columnKey === 'name' ? 'asc' : 'desc';
+
+    window.umami?.track('import-v2-sort', { label: `${columnKey}-${nextDir}`, source: 'column' });
+    onSortChange(columnKey, nextDir);
   };
 
   const renderSortIndicator = (columnKey: ImportSortKey) => {

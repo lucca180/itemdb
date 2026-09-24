@@ -24,7 +24,12 @@ export function ImportSessionAlert({ variant }: ImportSessionAlertProps) {
           {isExpired ? t('Lists.import-error-expired') : t('Lists.importV2-need-token')}
         </Alert.Description>
         <Button asChild size="sm" mt={2} variant="outline" w="fit-content">
-          <MainLink href="/lists/import" prefetch={false}>
+          <MainLink
+            href="/lists/import"
+            prefetch={false}
+            trackEvent="import-v2-back"
+            trackEventLabel={variant}
+          >
             <LuArrowLeft />
             {t('Lists.importV2-back-to-import')}
           </MainLink>

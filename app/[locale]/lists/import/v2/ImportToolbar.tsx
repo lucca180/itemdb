@@ -110,13 +110,19 @@ export function ImportToolbar({
             sortTypes={SORT_TYPES}
             sortBy={sortBy in SORT_TYPES ? sortBy : 'price_qty'}
             sortDir={sortDir}
-            onClick={(key, dir) => onSortChange(key as ImportSortKey, dir)}
+            onClick={(key, dir) => {
+              window.umami?.track('import-v2-sort', { label: `${key}-${dir}`, source: 'select' });
+              onSortChange(key as ImportSortKey, dir);
+            }}
           />
           <IconButton
             size="sm"
             variant="outline"
             borderColor="whiteAlpha.200"
             aria-label={t('Lists.importV2-toggle-sort-dir')}
+            data-umami-event="import-v2-sort"
+            data-umami-event-label={`${sortBy}-${sortDir === 'asc' ? 'desc' : 'asc'}`}
+            data-umami-event-source="toggle"
             onClick={() => onSortChange(sortBy, sortDir === 'asc' ? 'desc' : 'asc')}
           >
             <Icon as={LuArrowUpDown} boxSize={3.5} />
@@ -142,6 +148,8 @@ export function ImportToolbar({
               colorPalette={filterType === key ? palette : 'gray'}
               onClick={() => onFilterChange(key)}
               borderRadius="full"
+              data-umami-event="import-v2-filter"
+              data-umami-event-label={key}
             >
               {t(`Lists.importV2-filter-${key}`)}{' '}
               <Badge size="xs" ml={1} colorPalette={palette}>
@@ -160,7 +168,14 @@ export function ImportToolbar({
             })}
           </Text>
           {hasActiveFilters && (
-            <Button size="2xs" variant="ghost" colorPalette="teal" onClick={onResetFilters}>
+            <Button
+              size="2xs"
+              variant="ghost"
+              colorPalette="teal"
+              onClick={onResetFilters}
+              data-umami-event="import-v2-reset-filters"
+              data-umami-event-label="toolbar"
+            >
               <Icon as={LuRotateCcw} mr={1} />
               {t('Lists.importV2-reset-filters')}
             </Button>

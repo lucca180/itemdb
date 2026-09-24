@@ -11,7 +11,7 @@ export function FaerieFestivalSidebarPromo() {
 
   return (
     <Box asChild borderRadius="lg" overflow="hidden" position="relative" h="110px" w="100%">
-      <MainLink href="/hub/faeriefestival" prefetch={false}>
+      <MainLink href="/hub/faeriefestival" prefetch={false} trackEvent="import-v2-ff-promo">
         <NextImage
           src={Background}
           alt=""

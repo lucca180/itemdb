@@ -63,6 +63,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
   const [ignore, setIgnore] = useState<ImportIgnore[]>([]);
 
   const requestId = useRef(0);
+  const hasTrackedSearch = useRef(false);
   const isTooLarge = itemCount > MAX_IMPORT_ITEMS;
   const canSubmit = Boolean(list) && !isTooLarge && !loadError && !isSubmitting;
 
@@ -90,6 +91,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
 
   const fetchPage = useCallback(async () => {
     if (isTooLarge) {
+      window.umami?.track('import-v2-error', { stage: 'load', code: IMPORT_ERROR.TOO_LARGE });
       setLoadError(IMPORT_ERROR.TOO_LARGE);
       setResult(null);
       setIsLoading(false);
@@ -116,6 +118,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
       if (id !== requestId.current) return;
       console.error(err);
       const code = getImportErrorCode(err) ?? 'UNKNOWN';
+      window.umami?.track('import-v2-error', { stage: 'load', code });
       setLoadError(code);
       setResult(null);
       toast({
@@ -138,6 +141,10 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
 
   useEffect(() => {
     const handle = window.setTimeout(() => {
+      if (searchInput.trim() && !hasTrackedSearch.current) {
+        hasTrackedSearch.current = true;
+        window.umami?.track('import-v2-search');
+      }
       setSearch((prev) => {
         if (prev === searchInput) return prev;
         setPage(1);
@@ -178,6 +185,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
   };
 
   const handleLinkedList = (next: UserList) => {
+    window.umami?.track('import-v2-checklist-created');
     setAction('hide');
     setList(next);
   };
@@ -224,6 +232,17 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
         ignore,
       });
 
+      window.umami?.track('import-v2-success', {
+        action,
+        processed: applyResult.processedCount,
+        notFound: applyResult.notFoundCount,
+        dynamic: list.dynamicType ?? 'none',
+        ignore: ignore.length ? ignore.join(',') : 'none',
+        hasRecommended: Boolean(recommended_list),
+        usedRecommended:
+          Boolean(recommended_list) && list.linkedListId === recommended_list?.internal_id,
+      });
+
       toast.update(toastInfo, {
         id: toastInfo,
         title: t('General.success'),
@@ -258,6 +277,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
     } catch (e) {
       console.error(e);
       const code = getImportErrorCode(e);
+      window.umami?.track('import-v2-error', { stage: 'apply', code: code ?? 'UNKNOWN', action });
       if (code === IMPORT_ERROR.EXPIRED || code === IMPORT_ERROR.TOO_LARGE) {
         setLoadError(code);
       }
@@ -356,7 +376,13 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
                   <Text fontSize="sm" color="whiteAlpha.600" mb={4}>
                     {t('Lists.importV2-empty-desc')}
                   </Text>
-                  <Button size="sm" colorPalette="teal" onClick={handleResetFilters}>
+                  <Button
+                    size="sm"
+                    colorPalette="teal"
+                    onClick={handleResetFilters}
+                    data-umami-event="import-v2-reset-filters"
+                    data-umami-event-label="empty-state"
+                  >
                     <Icon as={LuRotateCcw} mr={1} />
                     {t('Lists.importV2-reset-filters')}
                   </Button>

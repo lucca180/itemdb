@@ -112,6 +112,7 @@ export function ImportControlsSidebar({
                 onChange={onListChange}
                 createNew
                 recommended_id={recommended_list?.internal_id}
+                trackEvent="import-v2-list-select"
               />
               {recommended_list && (
                 <>
@@ -135,7 +136,13 @@ export function ImportControlsSidebar({
             <NativeSelect.Root size="sm" variant="subtle" w="100%">
               <NativeSelect.Field
                 value={action}
-                onChange={(e) => onActionChange(e.target.value as ImportAction)}
+                onChange={(e) => {
+                  window.umami?.track('import-v2-option', {
+                    label: 'action',
+                    value: e.target.value,
+                  });
+                  onActionChange(e.target.value as ImportAction);
+                }}
               >
                 <option value="add" disabled={!dynamicListCan(list, 'add')}>
                   {t('Lists.add-these-items')}
@@ -160,7 +167,14 @@ export function ImportControlsSidebar({
                   size="sm"
                   colorPalette="teal"
                   checked={ignore.includes(value)}
-                  onCheckedChange={() => onToggleIgnore(value)}
+                  onCheckedChange={({ checked }) => {
+                    window.umami?.track('import-v2-option', {
+                      label: 'ignore',
+                      value,
+                      checked: checked === true,
+                    });
+                    onToggleIgnore(value);
+                  }}
                 >
                   <Checkbox.HiddenInput value={value} />
                   <Checkbox.Control />
@@ -186,6 +200,9 @@ export function ImportControlsSidebar({
               disabled={!canSubmit}
               loading={isSubmitting}
               w="100%"
+              data-umami-event="import-v2-submit"
+              data-umami-event-label={action}
+              data-umami-event-ignore={ignore.length ? ignore.join(',') : 'none'}
             >
               <Icon as={LuCheck} mr={1} boxSize={4} />
               {t('General.submit')}
@@ -208,7 +225,11 @@ export function ImportControlsSidebar({
               {t.rich('Lists.adv-import-cta', {
                 b: (chunk) => <b>{chunk}</b>,
                 Link: (chunk) => (
-                  <MainLink href="/lists/import/advanced" prefetch={false}>
+                  <MainLink
+                    href="/lists/import/advanced"
+                    prefetch={false}
+                    trackEvent="import-v2-advanced-link"
+                  >
                     <Text as="span" color="teal.300" _hover={{ textDecoration: 'underline' }}>
                       {chunk}
                     </Text>
