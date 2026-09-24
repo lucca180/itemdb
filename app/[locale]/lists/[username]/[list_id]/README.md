@@ -139,6 +139,10 @@ Tags in `utils/appCacheTags.ts`:
 | `full` | `list-items:{user}:{id}:full` | Full list (visitor) |
 | `full-owner` | `list-items:{user}:{id}:full-owner` | Full list (owner or admin on official) |
 
+Cached loaders receive the `list` (plus an `includeHidden` flag), never the `viewer`: every argument is part of the shared Redis key.
+
+Lists above `LIST_FULL_SERVER_LOAD_THRESHOLD` (tier 3) **skip `'use cache'`** for the full load and always read from the DB. Their payload can reach several MB, and reading it from the shared Redis cache blocks the worker's event loop.
+
 Mutations on the API (`POST/PUT/DELETE` on `/api/v1/lists/...`) trigger immediate expiration for list tags (`revalidateTag(tag, { expire: 0 })`) and stale-while-revalidate (`'max'`) for everything else. `refreshListData` also calls `updateTag` before reading so the post-save refresh always sees fresh rows.
 
 ## Client merge: avoiding races

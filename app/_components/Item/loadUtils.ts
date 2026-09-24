@@ -336,13 +336,16 @@ export const loadPbOutfitComboForItem = cache(
     isWearable: boolean
   ): Promise<PbOutfitCombo | null> => {
     'use cache';
+    // Before the early return: without it the null entry falls back to the `default`
+    // profile (never expires) and piles up in Redis across deploys.
+    applyItemSectionCacheTags(internalId, 'wearable');
+    cacheLife('itemSection');
+
     // PB paint brushes and other non-wearable items cannot be outfit pieces. Keep this gate
     // before every fetch/query so ordinary item pages pay no PB-resolution cost.
     if (!isPbWearableItem({ type: itemType, isWearable })) return null;
 
-    applyItemSectionCacheTags(internalId, 'wearable');
     cacheTag(PET_COLORS_CACHE_TAG);
-    cacheLife('itemSection');
 
     const [wearableData, colors] = await Promise.all([
       loadItemWearableData(internalId),

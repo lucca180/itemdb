@@ -59,7 +59,15 @@ function getRedisCacheHandlerOptions() {
   };
 }
 
+/**
+ * Upper bound (3 days) for a Cache Components entry's `expire` (Redis TTL). Keys include
+ * the build ID, so each deploy orphans the previous keys; without a cap, scopes that fall
+ * back to the `default` profile (`expire: INFINITE_CACHE`) never leave Redis.
+ */
+const MAX_EXPIRE_SECONDS = 60 * 60 * 24 * 3;
+
 module.exports = {
   buildRedisUrl,
   getRedisCacheHandlerOptions,
+  MAX_EXPIRE_SECONDS,
 };

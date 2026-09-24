@@ -65,6 +65,8 @@ export async function buildItemPageMetadata(item: ItemData, locale: string): Pro
 
 async function resolveItemSlug(slugParam: string): Promise<ItemPageRouteMetadataResult> {
   'use cache';
+  // Set before any early return so no path falls back to the `default` (never-expiring) profile.
+  cacheLife('itemFast');
   if (!slugParam) return { type: 'notFound' };
 
   const isIdNumber = !isNaN(Number(slugParam));
@@ -81,8 +83,6 @@ async function resolveItemSlug(slugParam: string): Promise<ItemPageRouteMetadata
       return { type: 'redirect', href: `/item/${item.slug}`, item };
     }
   }
-
-  cacheLife('itemFast');
 
   return { type: 'ok', item };
 }

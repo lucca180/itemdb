@@ -10,7 +10,7 @@
  * otherwise open Redis (and reconnect forever if Redis is down).
  */
 const { getRedisCacheComponentsHandler } = require('@trieb.work/nextjs-turbo-redis-cache');
-const { getRedisCacheHandlerOptions } = require('./redis-cache-options.cjs');
+const { MAX_EXPIRE_SECONDS, getRedisCacheHandlerOptions } = require('./redis-cache-options.cjs');
 
 const options = getRedisCacheHandlerOptions();
 
@@ -34,12 +34,30 @@ const HANDLER_METHODS = new Set([
   'expireTags',
 ]);
 
+/**
+ * The handler stores `entry.expire` as the Redis TTL (EX) with no upper bound.
+ * Clamp it, but never below `revalidate` (Next expects expire >= revalidate).
+ *
+ * @param {string} cacheKey
+ * @param {Promise<import('next/dist/server/lib/cache-handlers/types').CacheEntry>} pendingEntry
+ */
+function setWithMaxExpire(cacheKey, pendingEntry) {
+  const cappedEntry = pendingEntry.then((entry) => ({
+    ...entry,
+    expire: Math.min(entry.expire, Math.max(MAX_EXPIRE_SECONDS, entry.revalidate)),
+  }));
+  return getHandler().set(cacheKey, cappedEntry);
+}
+
 module.exports = new Proxy(
   {},
   {
     get(_target, prop) {
       if (typeof prop === 'symbol') {
         return undefined;
+      }
+      if (prop === 'set') {
+        return setWithMaxExpire;
       }
       const value = getHandler()[prop];
       return typeof value === 'function' ? value.bind(getHandler()) : value;

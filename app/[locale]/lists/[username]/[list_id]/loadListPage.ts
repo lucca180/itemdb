@@ -1,19 +1,22 @@
 import 'server-only';
 
 import { cache } from 'react';
-import { cacheLife, cacheTag } from 'next/cache';
+import { cacheLife, cacheTag, io } from 'next/cache';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getSimilarLists } from '@pages/api/v1/lists/[username]/[list_id]/similar';
 import { getListMatchWithViewer } from '@pages/api/v1/lists/match/[...usernames]';
 import { getSearchStats } from '@pages/api/v1/search/stats';
 import { ItemService } from '@services/ItemService';
 import { ListService } from '@services/ListService';
+import { rawToListItems } from '@services/list/listMappers';
 import type { ItemV2For, ListItemInfo, SearchFilters, SearchStats, UserList } from '@types';
 import { listItemsTag } from '@utils/appCacheTags';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { withLocalePrefix, type AppLocale } from '@utils/locales';
+import prisma from '@utils/prisma';
 import {
   getSortedListItemInfo,
+  LIST_FULL_SERVER_LOAD_THRESHOLD,
   LIST_PRELOAD_LIMIT,
   type ListCore,
   type ListItemsData,
@@ -25,6 +28,10 @@ async function resolveListCore(
   list_id: string
 ): Promise<ListCore> {
   const { user: viewer } = await getServerCurrentUser();
+  // `getServerCurrentUser` only suspends for signed-in visitors. `getList` is an uncached
+  // Prisma read (reads the clock) that may also sync/write, so it must wait for the
+  // request instead of running in prerenders and runtime prefetches.
+  await io();
   const listService = ListService.initUser(viewer);
 
   const isNum = /^\d+$/.test(list_id);
@@ -95,45 +102,71 @@ async function fetchCardItemsByIids(
   );
 }
 
-async function fetchListPreload(core: ListCore): Promise<ListItemsData> {
+/**
+ * `'use cache'` loaders below take the list (+ a hidden-items flag), never `ListCore`:
+ * every argument becomes part of the shared Redis key, so passing `viewer` would store
+ * user data (email) in keys and duplicate multi-MB entries per viewer.
+ */
+async function fetchListPreload(list: UserList): Promise<ListItemsData> {
   'use cache';
-  const { list, viewer } = core;
   const username = list.official ? 'official' : (list.owner.username ?? '');
   cacheTag(listItemsTag(username, list.internal_id, 'preload'));
   cacheLife('homeSection');
 
-  const listService = ListService.initUser(viewer);
-  const preloadData = await listService.preloadListItemsV2({ list, limit: LIST_PRELOAD_LIMIT });
+  // Preload never includes hidden items, so it does not depend on the viewer.
+  const preloadData = await ListService.init().preloadListItemsV2({
+    list,
+    limit: LIST_PRELOAD_LIMIT,
+  });
 
   if (!preloadData) return emptyListItemsData();
 
   return buildListItemsData(preloadData.items, preloadData.itemData, list);
 }
 
-export const getListPreload = cache(fetchListPreload);
+export const getListPreload = cache((core: ListCore) => fetchListPreload(core.list));
 
-async function fetchListFullItems(core: ListCore): Promise<ListItemsData> {
-  'use cache';
-  const { list, viewer, isOwner } = core;
-  const username = list.official ? 'official' : (list.owner.username ?? '');
-  const scope = isOwner || viewer?.isAdmin ? 'full-owner' : 'full';
-  cacheTag(listItemsTag(username, list.internal_id, scope));
-  cacheLife('homeSection');
+/** Owner/admin see hidden items — same rule as `ListService.canViewHiddenListItems`. */
+function canViewHiddenItems(core: ListCore): boolean {
+  return core.isOwner || !!core.viewer?.isAdmin;
+}
 
-  const listService = ListService.initUser(viewer);
-  const itemInfoData = await listService.getListItemInfo({
-    list,
-    username,
-    list_id_or_slug: list.internal_id,
+async function loadListFullItems(list: UserList, includeHidden: boolean): Promise<ListItemsData> {
+  if (list.dynamicType === 'search') return emptyListItemsData();
+
+  // Mirrors `ListService.getListItemInfo` (unfiltered path); the list was already
+  // authorized for this viewer in `resolveListCore`.
+  const itemInfoRaw = await prisma.listItems.findMany({
+    where: { list_id: list.internal_id },
   });
-
-  if (!itemInfoData) return emptyListItemsData();
+  const itemInfoData = rawToListItems(itemInfoRaw).filter(
+    (item) => includeHidden || !item.isHidden
+  );
 
   const items = await fetchCardItemsByIids(itemInfoData);
   return buildListItemsData(itemInfoData, items, list);
 }
 
-export const getListFullItems = cache(fetchListFullItems);
+async function fetchListFullItems(list: UserList, includeHidden: boolean): Promise<ListItemsData> {
+  'use cache';
+  const username = list.official ? 'official' : (list.owner.username ?? '');
+  cacheTag(listItemsTag(username, list.internal_id, includeHidden ? 'full-owner' : 'full'));
+  cacheLife('homeSection');
+
+  return loadListFullItems(list, includeHidden);
+}
+
+export const getListFullItems = cache((core: ListCore) => {
+  const includeHidden = canViewHiddenItems(core);
+
+  // Large lists (tier 3, loaded by server action) skip `'use cache'`: their payload runs to
+  // several MB, and reading/parsing it from the shared Redis cache blocks the event loop.
+  if ((core.list.itemCount ?? 0) > LIST_FULL_SERVER_LOAD_THRESHOLD) {
+    return loadListFullItems(core.list, includeHidden);
+  }
+
+  return fetchListFullItems(core.list, includeHidden);
+});
 
 export async function getListMatches(core: ListCore): Promise<ListItemInfo[]> {
   const { list, viewer, isOwner } = core;

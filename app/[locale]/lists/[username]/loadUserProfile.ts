@@ -55,10 +55,15 @@ async function fetchUser(username: string) {
 
 const getUserCached = cache(fetchUser);
 
-async function fetchAchievements(username: string, owner: User) {
+async function fetchAchievements(username: string) {
   'use cache';
   cacheTag(userAchievementsTag(username));
   cacheLife('homeSlow');
+
+  // Resolve the owner inside: a `User` argument would put volatile fields (xp, lastLogin)
+  // in the cache key and create a new entry on every change.
+  const owner = await getUserCached(username);
+  if (!owner) return [];
 
   return (await getUserAchievements(owner)) ?? [];
 }
@@ -127,10 +132,7 @@ async function resolveProfileCore(username: string): Promise<ProfileCore> {
 export const getProfileCore = cache(resolveProfileCore);
 
 async function resolveAchievements(username: string): Promise<UserAchievement[]> {
-  const owner = await getUserCached(username);
-  if (!owner) return [];
-
-  return getAchievementsCached(username, owner);
+  return getAchievementsCached(username);
 }
 
 export const getAchievements = cache(resolveAchievements);
