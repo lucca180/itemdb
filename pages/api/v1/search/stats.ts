@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { Prisma } from '@prisma/generated/client';
 import { verifyListJWT } from '@utils/api/api-utils';
 import { buildSearchQueryParts } from '../../../../utils/search/queryBuilder';
 
@@ -52,63 +51,68 @@ export const getSearchStats = async (resQuery: string, params?: SearchStatsParam
     mode: 'facets',
   });
 
-  const groups: { key: string; column: Prisma.Sql }[] = [
-    { key: 'category', column: Prisma.sql`filtered.category` },
-    { key: 'isWearable', column: Prisma.sql`filtered.isWearable` },
-    { key: 'status', column: Prisma.sql`filtered.status` },
-    { key: 'type', column: Prisma.sql`filtered.type` },
-    { key: 'isNeohome', column: Prisma.sql`filtered.isNeohome` },
-    { key: 'isBD', column: Prisma.sql`filtered.isBD` },
-    { key: 'canEat', column: Prisma.sql`filtered.canEat` },
-    { key: 'canRead', column: Prisma.sql`filtered.canRead` },
-    { key: 'canPlay', column: Prisma.sql`filtered.canPlay` },
-    { key: 'zone_label', column: Prisma.sql`filtered.zone_label` },
-    { key: 'saleStatus', column: Prisma.sql`filtered.stats` },
+  // Facet key -> column of the filtered rows. zone_label comes from the WearableData join below.
+  const groups: { key: string; column: string }[] = [
+    { key: 'category', column: 'category' },
+    { key: 'isWearable', column: 'isWearable' },
+    { key: 'status', column: 'status' },
+    { key: 'type', column: 'type' },
+    { key: 'isNeohome', column: 'isNeohome' },
+    { key: 'isBD', column: 'isBD' },
+    { key: 'canEat', column: 'canEat' },
+    { key: 'canRead', column: 'canRead' },
+    { key: 'canPlay', column: 'canPlay' },
+    { key: 'zone_label', column: 'zone_label' },
+    { key: 'saleStatus', column: 'stats' },
   ];
 
-  const statsQueries = groups
-    .filter((group) => group.key !== 'zone_label')
-    .map((group) => {
-      return Prisma.sql`
-      SELECT ${group.key} as facet, ${group.column} as value, count(DISTINCT filtered.internal_id) as count
-      FROM filtered
-      group by ${group.column}
-    `;
-    });
-
-  const zoneStatsQuery = Prisma.sql`
-    SELECT 'zone_label' as facet, w.zone_label as value, count(*) as count
-    FROM filtered f
-    INNER JOIN WearableData w ON w.item_iid = f.internal_id AND w.isCanonical = 1
-    GROUP BY w.zone_label
-  `;
-
+  // Reads the filtered rows once and aggregates in JS. A CTE referenced by one UNION ALL
+  // branch per facet is re-evaluated for each reference in MariaDB, which made this ~7× slower
+  // (benchmarked with scripts/bench-color-search.ts).
   const resultRaw = (await prisma.$queryRaw`
-    WITH filtered AS (
-      SELECT *
-      FROM (
-        ${queryParts.tempQuery}
-      ) as temp
-      ${queryParts.whereQuery}
-    )
-    ${Prisma.join([...statsQueries, zoneStatsQuery], ' UNION ALL ')}
+    SELECT temp.internal_id, temp.category, temp.isWearable, temp.status, temp.type,
+      temp.isNeohome, temp.isBD, temp.canEat, temp.canRead, temp.canPlay, temp.stats,
+      w.item_iid as zone_item_iid, w.zone_label as zone_label
+    FROM (
+      ${queryParts.tempQuery}
+    ) as temp
+    LEFT JOIN WearableData w ON w.item_iid = temp.internal_id AND w.isCanonical = 1
+    ${queryParts.whereQuery}
   `) as any[];
 
   const result: { [id: string]: { [id: string]: number } | number } = {};
+  // Items already counted per facet value — the zone join can repeat an item's row.
+  const counted = new Map<string, Set<number>>();
 
   for (const group of groups) result[group.key] = {};
 
-  for (const data of resultRaw) {
-    const group = data.facet?.toString();
-    const groupResult = result[group] as { [id: string]: number } | undefined;
-
-    if (!groupResult) continue;
-
-    let name = data.value?.toString() || 'Unknown';
+  const addCount = (groupKey: string, value: unknown) => {
+    const groupResult = result[groupKey] as { [id: string]: number };
+    let name = value?.toString() || 'Unknown';
     name = name === '0' ? 'false' : name === '1' ? 'true' : name;
-    groupResult[name] = groupResult[name]
-      ? groupResult[name] + Number(data.count)
-      : Number(data.count);
+    groupResult[name] = (groupResult[name] ?? 0) + 1;
+  };
+
+  for (const data of resultRaw) {
+    const internalId = Number(data.internal_id);
+
+    for (const group of groups) {
+      // Zone counts every canonical wearable row, like the INNER JOIN count(*) it replaces.
+      if (group.key === 'zone_label') {
+        if (data.zone_item_iid != null) addCount(group.key, data.zone_label);
+        continue;
+      }
+
+      // Other facets count distinct items per value.
+      const value = data[group.column];
+      const dedupeKey = `${group.key}\u0000${value}`;
+      const ids = counted.get(dedupeKey) ?? new Set<number>();
+      if (ids.has(internalId)) continue;
+
+      ids.add(internalId);
+      counted.set(dedupeKey, ids);
+      addCount(group.key, value);
+    }
   }
 
   return result;

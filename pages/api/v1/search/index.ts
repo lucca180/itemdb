@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { ItemData, SearchFilters } from '../../../../types';
-import { Prisma } from '@prisma/generated/client';
 import queryString from 'query-string';
 import { defaultFilters, parseFilters } from '../../../../utils/parseFilters';
 import { redis_setDataCount } from '@utils/api/redis';
@@ -79,17 +78,7 @@ export async function doSearch(
     };
   }
 
-  const statsQuery = includeStats ? Prisma.sql`,count(*) OVER() AS full_count` : Prisma.sql``;
-
-  const resultRaw = (await prisma.$queryRaw`
-    SELECT * ${statsQuery} FROM (
-      ${queryParts.tempQuery}
-    ) as temp
-    ${queryParts.whereQuery}
-    ${queryParts.sortQuery}
-    ${queryParts.sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
-    LIMIT ${queryParts.limit} OFFSET ${queryParts.page * queryParts.limit}
-  `) as any[];
+  const resultRaw = (await prisma.$queryRaw(queryParts.itemsQuery(includeStats))) as any[];
 
   const itemList: ItemData[] = resultRaw.map((result: any) => rawToItemData(result));
 

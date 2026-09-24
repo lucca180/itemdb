@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/generated/client';
 import { SearchFilters } from '../../types';
 import { parseFilters } from '../parseFilters';
 import { ITEM_COLOR_TYPE } from '../item/itemColorSource';
+import { getLabCellsForBox } from '@utils/item/labCell';
 import {
   faerielandShops,
   getDateNST,
@@ -10,6 +11,10 @@ import {
   NORMAL_SHOP_RESTOCK_RARITY_MAX,
   tyrannianShops,
 } from '../utils';
+
+// Above this many grid cells (only with very large color tolerances) search-by-color falls back
+// to the LAB box alone.
+const MAX_LAB_CELLS = 512;
 
 const validColorTypes = [
   'main',
@@ -51,6 +56,8 @@ export type SearchQueryParts = {
   tempQuery: Prisma.Sql;
   whereQuery: Prisma.Sql;
   sortQuery: Prisma.Sql;
+  /** Full paginated items query (items mode), optionally with `full_count`. */
+  itemsQuery: (includeStats: boolean) => Prisma.Sql;
 };
 
 export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQueryParts {
@@ -442,27 +449,72 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   let searchColorDistance = Prisma.empty;
   let searchColorCandidateDistance = Prisma.empty;
   let searchColorJoin = Prisma.empty;
-  // Search-by-color first finds the nearest palette color per image (unchanged — same single
-  // full-table aggregation the original query always did), then joins that exact color row so
-  // sorting and item serialization can use the winning color.
+  let searchColorWinners = Prisma.empty;
+  // Search-by-color finds the nearest palette color per image, then joins that exact color row
+  // so sorting and item serialization can use the winning color.
   //
-  // An item now has up to 8 ItemColor rows (main/secondary + 6 named swatches) instead of the
-  // old 6, and several of those can legitimately share the exact same LAB value (e.g. multiple
-  // "no good match" swatches all fall back to plain white, or `main` happens to compute to the
-  // same color as `vibrant`). Picking the winner by `distance = min(distance)` alone in the
-  // outer join can then match more than one row per image, fanning a single item out into
-  // duplicate result rows — fixed below via a correlated subquery scoped to `a.image_id`
-  // (indexed), so it only ever looks at that one item's handful of rows to break the tie,
-  // instead of a window function or self-join over the whole (now much bigger) table.
+  // An item has up to 8 ItemColor rows (main/secondary + 6 named swatches), and several of
+  // those can legitimately share the exact same LAB value (e.g. multiple "no good match"
+  // swatches all fall back to plain white). Picking the winner by `distance = min(distance)`
+  // alone would then fan a single item out into duplicate result rows, so ties are broken by
+  // the lowest ItemColor.internal_id.
+  //
+  // Swatches absent from the image (population = 0) are skipped, same as the secondary color
+  // filter does. The legacy palette stores them as a plain-white fallback, which made white-ish
+  // searches match ~70% of the catalog.
+  //
+  // Candidate rows are narrowed before any distance is computed (scripts/bench-color-search.ts
+  // measured 2–5× faster, same results):
+  //   - lab_cell grid (utils/item/labCell.ts): only the cells around the target color are read,
+  //     through the (lab_cell, population, lab_l, lab_a, lab_b, image_id) covering index.
+  //     `lab_cell IS NULL` keeps rows written without it searchable.
+  //   - LAB box: dist <= tolerance implies every component is within sqrt(tolerance), so this
+  //     skips the POWER() math for rows that can't match.
+  //
+  // Items mode picks the winning row inside `f` with ROW_NUMBER() and joins it back by primary
+  // key — benchmarked at ~2× faster than a correlated subquery per item. Count/facets mode keep
+  // the plain MIN aggregation: they don't need the winning row, and the window is slower there
+  // for colors with many matches (e.g. white).
+  const colorWinnerInF = isColorSearch && options.mode !== 'count' && options.mode !== 'facets';
   if (isColorSearch) {
     const parsedColor = Color(query);
     const [l, a, b] = parsedColor.lab().array();
     searchColorDistance = Prisma.sql`(POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))`;
     searchColorCandidateDistance = Prisma.sql`(POWER(c.lab_l-${l},2)+POWER(c.lab_a-${a},2)+POWER(c.lab_b-${b},2))`;
-    searchColorJoin = Prisma.sql`
+
+    const radius = Math.sqrt(colorTolerance);
+    const candidateFilters = [Prisma.sql`population > 0`];
+    if (Number.isFinite(radius)) {
+      candidateFilters.push(Prisma.sql`lab_l BETWEEN ${l - radius} AND ${l + radius}
+        AND lab_a BETWEEN ${a - radius} AND ${a + radius}
+        AND lab_b BETWEEN ${b - radius} AND ${b + radius}`);
+
+      // Very large tolerances would need hundreds of cells; the box alone is used then.
+      const cells = getLabCellsForBox(l, a, b, radius);
+      if (cells.length > 0 && cells.length <= MAX_LAB_CELLS)
+        candidateFilters.push(
+          Prisma.sql`(lab_cell IN (${Prisma.join(cells)}) OR lab_cell IS NULL)`
+        );
+    }
+    const candidateWhere = Prisma.join(candidateFilters, ' AND ');
+
+    // Rows above the tolerance can never win, so they are dropped before ranking.
+    searchColorWinners = Prisma.sql`(
+        SELECT image_id, dist, color_id FROM (
+          SELECT image_id, internal_id as color_id, ${searchColorDistance} as dist,
+            ROW_NUMBER() OVER (PARTITION BY image_id ORDER BY ${searchColorDistance}, internal_id) as rn
+          FROM ItemColor
+          WHERE ${candidateWhere} AND ${searchColorDistance} <= ${colorTolerance}
+        ) ranked
+        WHERE rn = 1
+      )`;
+    searchColorJoin = colorWinnerInF
+      ? Prisma.sql`LEFT JOIN ${searchColorWinners} as f on a.image_id = f.image_id`
+      : Prisma.sql`
       LEFT JOIN (
         SELECT image_id, min(${searchColorDistance}) as dist
         FROM ItemColor
+        WHERE ${candidateWhere}
         GROUP BY image_id
         having dist <= ${colorTolerance}
       ) as f on a.image_id = f.image_id
@@ -483,7 +535,9 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
 
   const needsPrices = priceFilter.length > 0 || restockProfit !== '' || sortBy === 'price';
   const needsOwlsPrice = ncValueFilter.length > 0 || sortBy === 'ncValue';
-  const needsItemColor = isColorSearch || !!colorSqlInside || sortBy === 'color';
+  // Color search only needs the winning ItemColor row to render items (items mode) or when the
+  // secondary color filter compares against it; count/facets otherwise skip the join.
+  const needsItemColor = !!colorSqlInside || (sortBy === 'color' && !isColorSearch);
 
   let includePrices: boolean;
   let includeNcValues: boolean;
@@ -586,21 +640,24 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
     ? Prisma.sql`SELECT ${facetsItemsSelect}${itemColorSelect}`
     : Prisma.sql`SELECT a.*${itemColorSelect}`;
 
-  const itemColorJoin = includeItemColor
-    ? Prisma.sql`LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${
-        isColorSearch
-          ? // Join the single deterministic winning row by PK — see searchColorJoin above for
-            // why matching on distance alone can hit more than one row per image. Scoped by
-            // a.image_id (indexed), so this only ever scans that one item's own rows.
-            Prisma.sql`b.internal_id = (
+  const itemColorJoin = !includeItemColor
+    ? Prisma.empty
+    : colorWinnerInF
+      ? Prisma.sql`LEFT JOIN ItemColor as b on b.internal_id = f.color_id`
+      : Prisma.sql`LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${
+          isColorSearch
+            ? // Join the single deterministic winning row by PK — see searchColorJoin above for
+              // why matching on distance alone can hit more than one row per image. Scoped by
+              // a.image_id (indexed), so this only ever scans that one item's own rows.
+              Prisma.sql`b.internal_id = (
                 SELECT c.internal_id FROM ItemColor c
-                WHERE c.image_id = a.image_id AND (${searchColorCandidateDistance}) = f.dist
+                WHERE c.image_id = a.image_id AND c.population > 0
+                  AND (${searchColorCandidateDistance}) = f.dist
                 ORDER BY c.internal_id ASC
                 LIMIT 1
               )`
-          : Prisma.sql`${colorTypeSQL} ${colorSqlInside ? Prisma.sql`and b.population > 0` : Prisma.empty}`
-      }`
-    : Prisma.empty;
+            : Prisma.sql`${colorTypeSQL} ${colorSqlInside ? Prisma.sql`and b.population > 0` : Prisma.empty}`
+        }`;
 
   // Base SELECT: this is intentionally a derived table. Outer WHERE/SORT clauses can then be
   // assembled once and reused by normal search, count mode, and search stats.
@@ -629,14 +686,17 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
 
   // ORDER BY is also emitted as a fragment so callers can omit it for pure count queries.
   let sortQuery;
+  let sortByDist = false;
 
   if (sortBy === 'name') sortQuery = Prisma.sql`ORDER BY temp.name`;
   else if (sortBy === 'price') sortQuery = Prisma.sql`ORDER BY temp.price`;
   else if (sortBy === 'added') sortQuery = Prisma.sql`ORDER BY temp.addedAt`;
   else if (sortBy === 'ncValue')
     sortQuery = Prisma.sql`ORDER BY (temp.owlsValue IS NULL OR temp.owlsValue = 'null'), temp.owlsValueMin`;
-  else if (sortBy === 'color' && isColorSearch) sortQuery = Prisma.sql`ORDER BY dist`;
-  else if (sortBy === 'color')
+  else if (sortBy === 'color' && isColorSearch) {
+    sortQuery = Prisma.sql`ORDER BY dist`;
+    sortByDist = true;
+  } else if (sortBy === 'color')
     sortQuery = Prisma.sql`ORDER BY temp.hsv_h ${
       sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`
     }, temp.hsv_s ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}, temp.hsv_v`;
@@ -646,7 +706,10 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   else if (sortBy === 'rarity') sortQuery = Prisma.sql`ORDER BY temp.rarity`;
   else if (sortBy === 'match')
     sortQuery = Prisma.sql`ORDER BY temp.name = ${originalQuery} DESC, MATCH (temp.name) AGAINST (${originalQuery} IN NATURAL LANGUAGE MODE) desc, temp.name`;
-  else sortQuery = isColorSearch ? Prisma.sql`ORDER BY dist` : Prisma.sql`ORDER BY temp.name`;
+  else {
+    sortQuery = isColorSearch ? Prisma.sql`ORDER BY dist` : Prisma.sql`ORDER BY temp.name`;
+    sortByDist = isColorSearch;
+  }
 
   // Text search predicate. Color search bypasses fulltext because the query has already been
   // interpreted as a color target.
@@ -697,6 +760,63 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   if (options.forceCategory) whereSQL.push(Prisma.sql`temp.category = ${options.forceCategory}`);
   if (options.isRestock) whereSQL.push(Prisma.sql`temp.rarity < ${NORMAL_SHOP_RESTOCK_RARITY_MAX}`);
 
+  const whereQuery = Prisma.sql`WHERE ${Prisma.join(whereSQL, ' AND ')}`;
+  const sortDirSQL = sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`;
+
+  // Plain color search (no extra filters, sorted by distance) is the common case: rank and
+  // paginate on the slim Items ⨝ winners join first, then run the payload joins only for the
+  // page's rows instead of for every match before the sort.
+  const canLateJoinColor =
+    colorWinnerInF &&
+    sortByDist &&
+    whereSQL.length === 3 &&
+    !shouldJoinZone &&
+    petpetSQL.length === 0;
+
+  const itemsQuery = (includeStats: boolean) => {
+    const statsQuery = includeStats ? Prisma.sql`,count(*) OVER() AS full_count` : Prisma.empty;
+
+    if (!canLateJoinColor)
+      return Prisma.sql`
+        SELECT * ${statsQuery} FROM (
+          ${tempQuery}
+        ) as temp
+        ${whereQuery}
+        ${sortQuery}
+        ${sortDirSQL}
+        LIMIT ${limit} OFFSET ${page * limit}
+      `;
+
+    return Prisma.sql`
+      ${itemsSelect}
+        ${priceSelect}
+        ${ncValueSelect}
+        ${saleStatsSelect}
+        ${owlsPriceSelect}
+        ${ncMallSelect}
+        , top.dist
+        ${includeStats ? Prisma.sql`, top.full_count` : Prisma.empty}
+      FROM (
+        SELECT a.internal_id, f.dist, f.color_id ${statsQuery}
+        FROM ${searchColorWinners} as f
+        -- Drive from the (few) matching colors into Items by image_id; the internal_id
+        -- tie-breaker below otherwise makes the optimizer scan Items first.
+        STRAIGHT_JOIN Items as a on a.image_id = f.image_id
+        WHERE a.canonical_id is null
+        ORDER BY f.dist ${sortDirSQL}, a.internal_id
+        LIMIT ${limit} OFFSET ${page * limit}
+      ) as top
+      JOIN Items as a on a.internal_id = top.internal_id
+      LEFT JOIN ItemColor as b on b.internal_id = top.color_id
+      ${priceJoin}
+      ${ncValueJoin}
+      ${saleStatsJoin}
+      ${owlsPriceJoin}
+      ${ncMallJoin}
+      ORDER BY top.dist ${sortDirSQL}, top.internal_id
+    `;
+  };
+
   return {
     originalQuery,
     query,
@@ -706,8 +826,9 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
     isColorSearch,
     sortDir,
     tempQuery,
-    whereQuery: Prisma.sql`WHERE ${Prisma.join(whereSQL, ' AND ')}`,
+    whereQuery,
     sortQuery,
+    itemsQuery,
   };
 }
 

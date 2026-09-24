@@ -191,7 +191,12 @@ model ItemColor {
 
   isMaxPopulation Boolean @default(false)
 
+  // LAB grid cell (see utils/item/labCell.ts) — lets color search read only the cells around
+  // the target color instead of scanning the whole table.
+  lab_cell Int?
+
   @@unique([image_id, type])
+  @@index([lab_cell, population, lab_l, lab_a, lab_b, image_id])
   @@index([image_id, isMaxPopulation])
   @@index([lab_l, lab_a, lab_b])
   @@index([image_id, lab_l, lab_a, lab_b])

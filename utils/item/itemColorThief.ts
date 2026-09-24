@@ -8,6 +8,7 @@ import {
 import type { Items } from '@prisma/generated/client';
 import type { ColorType, ItemData } from '@types';
 import prisma from '@utils/prisma';
+import { getLabCell } from '@utils/item/labCell';
 
 // Same heuristic as utils/wp/getArticlePalette.ts: only treat a candidate as a distinct
 // secondary color when it's actually different enough from the dominant one; otherwise a
@@ -49,6 +50,7 @@ function toColorRow(
     lab_l: lab[0],
     lab_a: lab[1],
     lab_b: lab[2],
+    lab_cell: getLabCell(lab[0], lab[1], lab[2]),
 
     hsv_h: hsv[0],
     hsv_s: hsv[1],
