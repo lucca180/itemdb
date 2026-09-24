@@ -14,6 +14,7 @@ import {
   filterImportPreviewItems,
   isImportFilterType,
 } from '@utils/list/filterImportPreviewItems';
+import { getImportItemBadges } from '@utils/list/importItemBadges';
 import { getListImportSession, type ListImportSession } from '@utils/list/importSession';
 import {
   isImportSortKey,
@@ -146,9 +147,14 @@ export async function loadImportItemsPage(
   const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
   const safePage = Math.min(page, totalPages);
   const start = (safePage - 1) * pageSize;
+  const pageItems = sorted.slice(start, start + pageSize);
+  const badges = await getImportItemBadges(pageItems);
 
   return {
-    items: sorted.slice(start, start + pageSize),
+    items: pageItems.map((entry) => ({
+      ...entry,
+      badges: badges.get(entry.item.internal_id) ?? [],
+    })),
     page: safePage,
     pageSize,
     totalFiltered,

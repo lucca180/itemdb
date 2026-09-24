@@ -11,6 +11,7 @@ import { truncateItemOgDescription } from '@app/_components/Item/seo/buildItemMe
 import { loadNCMallData } from '@app/_components/Item/loadUtils';
 import { isMallDiscounted } from '@components/Items/NCMallCard';
 import { getCachedNow } from '@utils/getCachedNow';
+import { capitalizeWords } from '@utils/item/itemInfo';
 import { getRestockPrice } from '@utils/utils';
 
 /** itemdb's Discord application emoji, used on the "View on itemdb" link button. */
@@ -117,7 +118,7 @@ function priceTimestampTag(item: ItemData): string | null {
 
 /** Same badges/order as the item page header (ItemHeader.tsx), rendered as inline-code chips. */
 function tagChips(item: ItemData): string | null {
-  const chips: string[] = [item.category ?? '???'];
+  const chips: string[] = [capitalizeWords(item.category ?? '???')];
   if (item.type === 'np') chips.push('NP');
   if (item.type === 'nc') chips.push('NC');
   if (item.type === 'pb') chips.push('PB');

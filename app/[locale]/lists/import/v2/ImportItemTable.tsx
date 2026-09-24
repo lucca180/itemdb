@@ -7,12 +7,26 @@ import { LuExternalLink } from 'react-icons/lu';
 import MainLink from '@components/Utils/MainLink';
 import { ItemCardBadgeV2 } from '@components/Items/v2/ItemCardBadgeV2';
 import { ItemImageV2 } from '@components/Items/v2/ItemImageV2';
-import type { ImportPreviewItem } from '@app/[locale]/lists/import/importShared';
+import type {
+  ImportItemBadge,
+  ImportPreviewItemV2,
+} from '@app/[locale]/lists/import/v2/importV2Shared';
 import type { ImportSortDir, ImportSortKey } from '@utils/list/sortImportPreviewItems';
+import { capitalizeWords } from '@utils/item/itemInfo';
 import { rarityToCCPointsV2 } from '@utils/item/v2';
 
+/** Colors match ItemHeader.tsx and SearchFilters.tsx (album item = yellow). */
+const BADGE_CONFIG: Record<ImportItemBadge, { labelKey: string; colorPalette: string }> = {
+  gourmet: { labelKey: 'Lists.importV2-badge-gourmet', colorPalette: 'orange' },
+  book: { labelKey: 'Lists.importV2-badge-book', colorPalette: 'orange' },
+  booktastic: { labelKey: 'Lists.importV2-badge-booktastic', colorPalette: 'orange' },
+  stamp: { labelKey: 'Lists.importV2-badge-stamp', colorPalette: 'yellow' },
+  wearable: { labelKey: 'Lists.importV2-badge-wearable', colorPalette: 'blue' },
+  bd: { labelKey: 'Lists.importV2-badge-bd', colorPalette: 'red' },
+};
+
 export type ImportItemTableProps = {
-  items: ImportPreviewItem[];
+  items: ImportPreviewItemV2[];
   sortBy: ImportSortKey;
   sortDir: ImportSortDir;
   onSortChange: (key: ImportSortKey, dir: ImportSortDir) => void;
@@ -95,7 +109,7 @@ export function ImportItemTable({
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {items.map(({ key, item, quantity }, index) => {
+          {items.map(({ key, item, quantity, badges }, index) => {
             const npUnit = item.price?.type === 'np' ? item.price.value : null;
             const totalNp = typeof npUnit === 'number' && npUnit > 0 ? npUnit * quantity : null;
             const isNc = item.type === 'nc';
@@ -145,17 +159,22 @@ export function ImportItemTable({
                           <Icon as={LuExternalLink} boxSize={2.5} color="whiteAlpha.400" />
                         </HStack>
                       </MainLink>
-                      <HStack gap={1.5}>
+                      <HStack gap={1.5} flexWrap="wrap">
                         {item.category && (
                           <Text fontSize="2xs" color="whiteAlpha.600">
-                            {item.category}
+                            {capitalizeWords(item.category)}
                           </Text>
                         )}
-                        {item.item_id != null && (
-                          <Text fontSize="2xs" color="whiteAlpha.400">
-                            #{item.item_id}
-                          </Text>
-                        )}
+                        {badges.map((badge) => (
+                          <Badge
+                            key={badge}
+                            size="xs"
+                            variant="subtle"
+                            colorPalette={BADGE_CONFIG[badge].colorPalette}
+                          >
+                            {t(BADGE_CONFIG[badge].labelKey)}
+                          </Badge>
+                        ))}
                       </HStack>
                     </Flex>
                   </Flex>
@@ -165,6 +184,7 @@ export function ImportItemTable({
                     size="sm"
                     colorPalette={quantity > 1 ? 'teal' : 'gray'}
                     variant={quantity > 1 ? 'solid' : 'subtle'}
+                    textTransform="none"
                   >
                     {quantity}x
                   </Badge>

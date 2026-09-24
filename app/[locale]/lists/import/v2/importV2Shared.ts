@@ -11,8 +11,11 @@ import {
 import type { ImportFilterCounts, ImportFilterType } from '@utils/list/filterImportPreviewItems';
 import type { ImportSortDir, ImportSortKey } from '@utils/list/sortImportPreviewItems';
 import type { ImportSummary } from '@utils/list/computeImportSummary';
+import type { ImportItemBadge } from '@utils/list/importItemBadges';
 
 export const IMPORT_V2_PAGE_SIZE = 30;
+
+export type ImportPreviewItemV2 = ImportPreviewItem & { badges: ImportItemBadge[] };
 
 export type LoadImportItemsPageInput = {
   importToken: string;
@@ -25,7 +28,7 @@ export type LoadImportItemsPageInput = {
 };
 
 export type ImportItemsPageResult = {
-  items: ImportPreviewItem[];
+  items: ImportPreviewItemV2[];
   page: number;
   pageSize: number;
   totalFiltered: number;
@@ -50,6 +53,7 @@ export type {
   ImportErrorCode,
   ImportIgnore,
   ImportPreviewItem,
+  ImportItemBadge,
   ImportFilterType,
   ImportSortDir,
   ImportSortKey,
