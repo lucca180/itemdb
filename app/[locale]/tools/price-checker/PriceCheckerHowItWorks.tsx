@@ -51,19 +51,39 @@ function StepBody({ step, bodyKey }: { step: StepKey; bodyKey: `PriceChecker.${S
 
   return t.rich(bodyKey, {
     Link: (chunks) => (
-      <Link href={stepHref(step)} target="_blank" rel="noopener noreferrer" fontWeight="semibold">
+      <Link
+        href={stepHref(step)}
+        target="_blank"
+        rel="noopener noreferrer"
+        fontWeight="semibold"
+        data-umami-event="price-checker-setup"
+        data-umami-event-label={step === 'step-1' ? 'tampermonkey' : 'install-script'}
+        data-umami-event-step={step}
+      >
         {chunks}
       </Link>
     ),
     HelpLink: (chunks) => (
-      <MainLink viaNextLink prefetch={false} href="/articles/help-my-scripts-are-not-working">
+      <MainLink
+        viaNextLink
+        prefetch={false}
+        href="/articles/help-my-scripts-are-not-working"
+        trackEvent="price-checker-guide"
+        trackEventLabel="scripts-not-working"
+      >
         <Text as="span" fontWeight="semibold">
           {chunks}
         </Text>
       </MainLink>
     ),
     SellGuideLink: (chunks) => (
-      <MainLink viaNextLink prefetch={false} href="/articles/how-to-sell-expensive-items">
+      <MainLink
+        viaNextLink
+        prefetch={false}
+        href="/articles/how-to-sell-expensive-items"
+        trackEvent="price-checker-guide"
+        trackEventLabel="sell-expensive-items"
+      >
         <Text as="span" fontWeight="semibold">
           {chunks}
         </Text>

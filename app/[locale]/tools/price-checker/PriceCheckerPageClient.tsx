@@ -81,7 +81,9 @@ export function PriceCheckerPageClient() {
               {t('PriceChecker.ff-promo-description')}
             </Text>
             <Link asChild fontSize="sm" fontWeight="semibold" color="pink.200" mt={1}>
-              <MainLink href="/hub/faeriefestival">{t('PriceChecker.ff-promo-cta')} →</MainLink>
+              <MainLink href="/hub/faeriefestival" trackEvent="price-checker-ff-promo">
+                {t('PriceChecker.ff-promo-cta')} →
+              </MainLink>
             </Link>
           </Flex>
         </Box>

@@ -34,28 +34,12 @@ export type PriceCheckerPage = {
 
 export const PRICE_CHECKER_PAGES: PriceCheckerPage[] = [
   {
-    id: 'closet',
-    labelKey: 'General.closet',
-    descriptionKey: 'PriceChecker.page-description-closet',
-    href: 'https://www.neopets.com/closet.phtml',
-    isChecklist: false,
-    imageSrc: 'https://images.neopets.com/themes/h5/grey/images/customise-icon.png',
-  },
-  {
     id: 'sdb',
     labelKey: 'PriceChecker.sdb',
     descriptionKey: 'PriceChecker.page-description-sdb',
     href: 'https://www.neopets.com/safetydeposit.phtml',
     isChecklist: false,
     imageSrc: 'https://images.neopets.com/themes/h5/grey/images/safetydeposit-icon.png',
-  },
-  {
-    id: 'gallery-quick-remove',
-    labelKey: 'PriceChecker.your-gallery',
-    descriptionKey: 'PriceChecker.page-description-gallery-quick-remove',
-    href: 'https://www.neopets.com/gallery/quickremove.phtml',
-    isChecklist: false,
-    imageSrc: 'https://images.neopets.com/themes/h5/grey/images/gallery-icon.png',
   },
   {
     id: 'quickstock',
@@ -72,6 +56,22 @@ export const PRICE_CHECKER_PAGES: PriceCheckerPage[] = [
     href: 'https://www.neopets.com/market.phtml?type=your',
     isChecklist: false,
     imageSrc: 'https://images.neopets.com/premium/portal/images/shoptill-icon.png',
+  },
+  {
+    id: 'closet',
+    labelKey: 'General.closet',
+    descriptionKey: 'PriceChecker.page-description-closet',
+    href: 'https://www.neopets.com/closet.phtml',
+    isChecklist: false,
+    imageSrc: 'https://images.neopets.com/themes/h5/grey/images/customise-icon.png',
+  },
+  {
+    id: 'gallery-quick-remove',
+    labelKey: 'PriceChecker.your-gallery',
+    descriptionKey: 'PriceChecker.page-description-gallery-quick-remove',
+    href: 'https://www.neopets.com/gallery/quickremove.phtml',
+    isChecklist: false,
+    imageSrc: 'https://images.neopets.com/themes/h5/grey/images/gallery-icon.png',
   },
   {
     id: 'storage-shed',

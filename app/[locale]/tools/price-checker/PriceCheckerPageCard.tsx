@@ -38,6 +38,9 @@ export function PriceCheckerPageCard({ page }: PriceCheckerPageCardProps) {
         href={page.href}
         target="_blank"
         rel="noopener noreferrer"
+        data-umami-event="price-checker-page"
+        data-umami-event-label={page.id}
+        data-umami-event-type={isChecklist ? 'checklist' : 'inventory'}
         color={isChecklist ? 'inherit' : 'white'}
         w="full"
         _hover={{ color: isChecklist ? 'inherit' : 'white', textDecoration: 'none' }}
