@@ -153,7 +153,8 @@ export function getPriceDiff(prices: PriceData[]) {
 
 export function getHelpNeededData(
   priceStatus: PricingInfo | null,
-  price: PriceData | undefined
+  price: PriceData | undefined,
+  now: number
 ): { needPricing: number; needVoting: number } | null {
   if (!priceStatus) return null;
   if (priceStatus.dataStatus.fresh >= 10) return null;
@@ -163,7 +164,7 @@ export function getHelpNeededData(
   if (!hasTrades) return null;
 
   const shouldShow =
-    !price || (differenceInCalendarDays(new Date(), new Date(price.addedAt)) > 15 && hasTrades);
+    !price || (differenceInCalendarDays(now, new Date(price.addedAt)) > 15 && hasTrades);
 
   if (!shouldShow) return null;
 

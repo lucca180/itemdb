@@ -1,7 +1,3 @@
-import { cacheLife } from 'next/cache';
-import { UTCDate } from '@date-fns/utc';
-
-/** Primitive inputs only — full objects make `'use cache'` keys non-deterministic across prerender phases. */
 export type NCMallDataDatesInput = {
   saleBegin: string | null;
   saleEnd: string | null;
@@ -12,41 +8,38 @@ export type NCMallDataDatesInput = {
   firstSeen: string | null;
 };
 
-/** Caches so UTCDate's constructor may use `new Date()` during prerender. */
-export async function getNCMallDataDates(input: NCMallDataDatesInput) {
-  'use cache';
-  cacheLife('hours');
+const FAR_FUTURE_SALE_END = Date.parse('2099-01-01');
+const FAR_FUTURE_DISCOUNT_END = Date.UTC(9999, 11, 31);
 
+/**
+ * Pure timestamp math (no `new Date()` without args), so it is safe during prerender
+ * without `'use cache'`. Deep `'use cache'` calls here were missed by the cache warming phase.
+ */
+export function getNCMallDataDates(input: NCMallDataDatesInput) {
   const startDate = input.saleBegin
-    ? maxDate(new UTCDate(input.saleBegin), new UTCDate(input.firstSeen ?? 0))
+    ? Math.max(Date.parse(input.saleBegin), toTime(input.firstSeen))
     : null;
 
   const endDate = !input.active
-    ? minDate(new UTCDate(input.saleEnd ?? '2099-01-01'), new UTCDate(input.updatedAt))
+    ? Math.min(
+        input.saleEnd ? Date.parse(input.saleEnd) : FAR_FUTURE_SALE_END,
+        Date.parse(input.updatedAt)
+      )
     : input.saleEnd
-      ? new UTCDate(input.saleEnd)
+      ? Date.parse(input.saleEnd)
       : null;
 
   const discountBegin = input.discountBegin
-    ? maxDate(startDate ?? new UTCDate(0), new UTCDate(input.discountBegin ?? 0))
+    ? Math.max(startDate ?? 0, Date.parse(input.discountBegin))
     : null;
 
   const discountEnd = input.discountEnd
-    ? minDate(endDate ?? new UTCDate(9999, 11, 31), new UTCDate(input.discountEnd ?? 0))
+    ? Math.min(endDate ?? FAR_FUTURE_DISCOUNT_END, Date.parse(input.discountEnd))
     : null;
 
-  return {
-    startDate: startDate?.getTime() ?? null,
-    endDate: endDate?.getTime() ?? null,
-    discountBegin: discountBegin?.getTime() ?? null,
-    discountEnd: discountEnd?.getTime() ?? null,
-  };
+  return { startDate, endDate, discountBegin, discountEnd };
 }
 
-function maxDate(...dates: Date[]): Date {
-  return new UTCDate(Math.max(...dates.map((d) => d.getTime())));
-}
-
-function minDate(...dates: Date[]): Date {
-  return new UTCDate(Math.min(...dates.map((d) => d.getTime())));
+function toTime(value: string | null) {
+  return value ? Date.parse(value) : 0;
 }

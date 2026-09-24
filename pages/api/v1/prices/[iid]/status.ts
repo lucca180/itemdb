@@ -15,70 +15,58 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(405).json({ error: 'Method not allowed' });
 }
 
-export async function getPriceStatus(
-  itemIid: number | string,
-  userId?: string
-): Promise<PricingInfo | null> {
-  const item = await getItem(itemIid);
-  if (!item) return null;
+const DAY_MS = 1000 * 60 * 60 * 24;
 
-  const GTE = new Date(
-    Math.max(Date.now() - 1000 * 60 * 60 * 24 * 30, new Date(item.price.addedAt ?? 0).getTime())
-  );
+type PriceStatusItemRef = {
+  internal_id: number;
+  priceAddedAt: string | null;
+};
 
-  const waitingTrades = await prisma.trades.findMany({
-    where: {
-      priced: false,
-      addedAt: {
-        gte: GTE,
-      },
-      items: {
-        some: {
-          item_iid: item.internal_id,
-        },
-      },
-    },
-    select: {
-      processed: true,
-      trade_id: true,
-    },
-  });
+/** Viewer-independent status; `waitingVoteTradeIds` lets callers subtract a user's own votes. */
+export type PriceStatusBase = PricingInfo & {
+  waitingVoteTradeIds: number[];
+};
 
-  const trades = {
-    waitingVote: waitingTrades.filter((x) => x.processed === true),
-    waitingPrice: waitingTrades.filter((x) => x.processed === false),
-  };
+/** Shared by every viewer, so it can be `'use cache'`d. `now` is passed in for prerender safety. */
+export async function getPriceStatusBase(
+  item: PriceStatusItemRef,
+  now: number
+): Promise<PriceStatusBase> {
+  const GTE = new Date(Math.max(now - DAY_MS * 30, new Date(item.priceAddedAt ?? 0).getTime()));
 
-  const count = {
-    waitingVote: trades.waitingVote.length,
-    waitingPrice: trades.waitingPrice.length,
-  };
-
-  if (userId) {
-    const feedbackVotes = await prisma.feedbackVotes.count({
+  const [waitingTrades, priceData] = await Promise.all([
+    prisma.trades.findMany({
       where: {
-        user_id: userId,
-        feedback: {
-          subject_id: {
-            in: trades.waitingVote.map((x) => x.trade_id),
+        priced: false,
+        addedAt: {
+          gte: GTE,
+        },
+        items: {
+          some: {
+            item_iid: item.internal_id,
           },
         },
       },
-    });
-
-    count.waitingVote -= feedbackVotes;
-  }
-
-  const priceData = await prisma.priceProcess2.findMany({
-    where: {
-      item_iid: item.internal_id,
-      processed: false,
-      addedAt: {
-        gte: GTE,
+      select: {
+        processed: true,
+        trade_id: true,
       },
-    },
-  });
+    }),
+    prisma.priceProcess2.findMany({
+      where: {
+        item_iid: item.internal_id,
+        processed: false,
+        addedAt: {
+          gte: GTE,
+        },
+      },
+    }),
+  ]);
 
+  const waitingVoteTradeIds = waitingTrades.filter((x) => x.processed).map((x) => x.trade_id);
+  const waitingPriceCount = waitingTrades.filter((x) => !x.processed).length;
+
+  const freshSince = new Date(now - DAY_MS * 4);
   const dataStatus = {
     fresh: 0,
     old: 0,
@@ -93,7 +81,7 @@ export async function getPriceStatus(
       } else return;
     }
 
-    if (price.addedAt >= new Date(Date.now() - 1000 * 60 * 60 * 24 * 4)) {
+    if (price.addedAt >= freshSince) {
       dataStatus.fresh++;
     } else {
       dataStatus.old++;
@@ -102,11 +90,55 @@ export async function getPriceStatus(
 
   return {
     waitingTrades: {
-      needPricing: count.waitingPrice ?? 0,
-      needVoting: count.waitingVote ?? 0,
+      needPricing: waitingPriceCount,
+      needVoting: waitingVoteTradeIds.length,
     },
     dataStatus,
+    waitingVoteTradeIds,
   };
+}
+
+/** How many of the waiting-vote trades this user already voted on. */
+export async function countUserTradeVotes(userId: string, tradeIds: number[]): Promise<number> {
+  if (!tradeIds.length) return 0;
+
+  return prisma.feedbackVotes.count({
+    where: {
+      user_id: userId,
+      feedback: {
+        subject_id: {
+          in: tradeIds,
+        },
+      },
+    },
+  });
+}
+
+/** Strips internal fields and discounts the viewer's own votes. */
+export function toPricingInfo(base: PriceStatusBase, userVotes = 0): PricingInfo {
+  return {
+    waitingTrades: {
+      needPricing: base.waitingTrades.needPricing,
+      needVoting: base.waitingTrades.needVoting - userVotes,
+    },
+    dataStatus: base.dataStatus,
+  };
+}
+
+export async function getPriceStatus(
+  itemIid: number | string,
+  userId?: string
+): Promise<PricingInfo | null> {
+  const item = await getItem(itemIid);
+  if (!item) return null;
+
+  const base = await getPriceStatusBase(
+    { internal_id: item.internal_id, priceAddedAt: item.price.addedAt },
+    Date.now()
+  );
+  const userVotes = userId ? await countUserTradeVotes(userId, base.waitingVoteTradeIds) : 0;
+
+  return toPricingInfo(base, userVotes);
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {

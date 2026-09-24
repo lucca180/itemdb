@@ -1,9 +1,8 @@
 import { isSameDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
-import { cacheLife } from 'next/cache';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { getCachedNow } from '@utils/getCachedNow';
-import { resolvePageLocale, type AppLocale } from '@utils/locales';
+import { resolvePageLocale } from '@utils/locales';
 import type { UserList } from '@types';
 
 export type MatchTableRow = {
@@ -39,21 +38,16 @@ export function toMatchCounts(
   );
 }
 
-/** Formats last-seen with a cached wall-clock. Invalid locales collapse to the default. */
+/**
+ * Formats last-seen with a cached wall-clock. Invalid locales collapse to the default.
+ * Not `'use cache'`: it runs deep in the tree (after user/match lookups), so the prerender
+ * warming phase missed it. `getCachedNow()` is already warmed higher up the page.
+ */
 export async function labelMatchTableLastSeen(
   data: MatchTableRow[],
-  locale: string
+  rawLocale: string
 ): Promise<MatchTableLabeledRow[]> {
-  return labelMatchTableLastSeenCached(data, resolvePageLocale(locale));
-}
-
-async function labelMatchTableLastSeenCached(
-  data: MatchTableRow[],
-  locale: AppLocale
-): Promise<MatchTableLabeledRow[]> {
-  'use cache';
-  cacheLife('itemFast');
-
+  const locale = resolvePageLocale(rawLocale);
   const [t, format, now] = await Promise.all([
     getTranslations({ locale }),
     getFormatter({ locale }),

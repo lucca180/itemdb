@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { io } from 'next/cache';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { getBetaStats } from '@pages/api/v1/beta';
 import {
@@ -9,6 +10,10 @@ import {
 } from '@components/Home/StatsCard';
 
 const StatsCard = async () => {
+  // Stats are uncached DB reads (and read the clock), so they wait for the request instead of
+  // aborting runtime prefetches once cookies resolve.
+  await io();
+
   const t = await getTranslations();
   const format = await getFormatter();
   const cookieStore = await cookies();

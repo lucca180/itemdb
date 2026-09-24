@@ -142,7 +142,7 @@ async function MallReleaseCard({ release, parentData, itemData, item, now }: Mal
     release.discountEnd
   );
 
-  const { startDate, endDate, discountBegin, discountEnd } = await getNCMallDataDates({
+  const { startDate, endDate, discountBegin, discountEnd } = getNCMallDataDates({
     saleBegin: release.saleBegin,
     saleEnd: release.saleEnd,
     discountBegin: release.discountBegin,

@@ -28,6 +28,7 @@ import {
   loadItemRecipes,
   loadItemAuctions,
   loadItemTrades,
+  loadItemPriceMarkers,
   loadItemWearableData,
   loadLastSeen,
   loadLebronTradeHistory,
@@ -60,6 +61,10 @@ export async function preloadItemPageData(item: ItemData): Promise<void> {
 
   if (needsNPPrices(item)) {
     preload(() => loadNPPricesSummary(item.internal_id));
+    // Read deep inside ItemPriceSection; starting them here keeps them in the prerender
+    // cache warming phase (otherwise "Unexpected cache miss after cache warming phase").
+    preload(() => loadItemPriceMarkers(item.internal_id, item.firstSeen, includeTrade));
+    preload(() => loadLastSeen(item.internal_id));
   }
 
   if (needsNCMall(item)) {
@@ -89,7 +94,9 @@ export async function preloadItemPageData(item: ItemData): Promise<void> {
   if (needsDye(item)) preload(() => loadDyeData(item.internal_id));
   if (needsMME(item)) preload(() => loadMMEData(item.internal_id));
 
-  if (needsRestockLastSeen(item)) preload(() => loadLastSeen(item.internal_id));
+  if (!needsNPPrices(item) && needsRestockLastSeen(item)) {
+    preload(() => loadLastSeen(item.internal_id));
+  }
   if (needsWearableData(item)) preload(() => loadItemWearableData(item.internal_id));
 
   if (needsDrops(item) || needsOutfitSection(item)) {

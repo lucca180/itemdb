@@ -9,7 +9,6 @@ import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';
 import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
 import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
 import { getLastSeen } from '@pages/api/v1/prices/stats';
-import { getPriceStatus } from '@pages/api/v1/prices/[iid]/status';
 import { applyItemSectionCacheTags } from '@utils/item/applyItemCacheTags';
 import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
@@ -157,10 +156,6 @@ export const loadLastSeen = cache(async (internalId: number) => {
   cacheLife({ stale: 30, revalidate: 60, expire: 300 });
   return getLastSeen({ item_iid: internalId });
 });
-
-export const loadPriceStatus = cache((internalId: number, userId?: string) =>
-  getPriceStatus(internalId, userId)
-);
 
 export const loadTradeLists = cache(async (internalId: number) => {
   'use cache';

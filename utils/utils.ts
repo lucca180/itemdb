@@ -582,7 +582,7 @@ export const getRestockPrice = (
   if (ignoreSpecialDays) return [minPrice, maxPrice];
 
   if (item.rarity === 200) {
-    if (isThirdWednesday()) {
+    if (isThirdWednesday(todayNST)) {
       return [minPrice * 0.97, maxPrice * 0.97].map((x) => Math.round(x));
     }
 

@@ -87,9 +87,9 @@ function saleStatusLine(item: ItemData): string | null {
 }
 
 /** Same [min, max] range and "Restock Price" label as ItemRestockInfo.tsx, including live special-day discounts. */
-function restockPriceLine(item: ItemData): string | null {
+function restockPriceLine(item: ItemData, now: number): string | null {
   if (!item.findAt?.restockShop) return null;
-  const prices = getRestockPrice(item);
+  const prices = getRestockPrice(item, false, now);
   if (!prices) return null;
 
   const [min, max] = prices;
@@ -141,10 +141,10 @@ export async function buildItemDiscordEmbed({
   canonical,
 }: BuildItemDiscordEmbedInput): Promise<DiscordComponentEmbedPayload> {
   const accent_color = hexToDiscordColor(item.color.hex);
-  const { price, ncEstimate } = await buildPriceLines(item);
+  const [{ price, ncEstimate }, now] = await Promise.all([buildPriceLines(item), getCachedNow()]);
   const descriptionLine = truncateItemOgDescription(item.description);
   const saleStatus = saleStatusLine(item);
-  const restockPrice = restockPriceLine(item);
+  const restockPrice = restockPriceLine(item, now);
   const wearablePreview = wearablePreviewUrl(item);
 
   const findAtButtons: DiscordButtonComponent[] = FIND_AT_BUTTONS.filter(

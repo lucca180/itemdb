@@ -6,6 +6,7 @@
  * Client shell: ItemPriceCard.tsx
  */
 import { Suspense, type ReactNode } from 'react';
+import { io } from 'next/cache';
 import { Center, Flex, Text } from '@chakra-ui/react';
 import { MdMoneyOff } from 'react-icons/md';
 import { getFormatter, getTranslations } from 'next-intl/server';
@@ -14,8 +15,12 @@ import {
   loadLastSeen,
   loadItemPriceMarkers,
   loadNPPricesSummary,
-  loadPriceStatus,
 } from '@app/_components/Item/loadUtils';
+import {
+  countUserTradeVotes,
+  getPriceStatusBase,
+  toPricingInfo,
+} from '@pages/api/v1/prices/[iid]/status';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
@@ -104,9 +109,21 @@ async function PriceHelpBannerAsync({
   item,
   prices,
 }: ItemProps & Pick<ItemPriceShellProps, 'prices'>) {
-  const [{ user }, t] = await Promise.all([getServerCurrentUser(), getTranslations()]);
-  const priceStatus = await loadPriceStatus(item.internal_id, user?.id);
-  const helpData = getHelpNeededData(priceStatus, getLatestPrice(prices));
+  // Pending trades change on every price/vote, so the banner must be fresh per request (not
+  // cached). `io()` also keeps these uncached queries out of prerenders and runtime prefetches.
+  await io();
+
+  const [{ user }, t, now] = await Promise.all([
+    getServerCurrentUser(),
+    getTranslations(),
+    getCachedNow(),
+  ]);
+  const base = await getPriceStatusBase(
+    { internal_id: item.internal_id, priceAddedAt: item.price.addedAt },
+    now
+  );
+  const userVotes = user ? await countUserTradeVotes(user.id, base.waitingVoteTradeIds) : 0;
+  const helpData = getHelpNeededData(toPricingInfo(base, userVotes), getLatestPrice(prices), now);
   if (!helpData) return null;
 
   return (
