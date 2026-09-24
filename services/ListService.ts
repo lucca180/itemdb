@@ -264,11 +264,7 @@ export class ListService {
     if (!list || list.dynamicType === 'search') return null;
     const canViewHidden = this.canViewHiddenListItems(list);
 
-    const itemInfoRaw = await prisma.listItems.findMany({
-      where: { list_id: list.internal_id },
-    });
-
-    const itemInfo = rawToListItems(itemInfoRaw);
+    const itemInfo = await ListService.fetchListItemInfo(list.internal_id);
 
     if (!query && Object.keys(searchFilters || {}).length === 0) {
       const result = itemInfo.filter((item) => !item.isHidden || canViewHidden);
@@ -291,6 +287,26 @@ export class ListService {
     );
 
     return result;
+  }
+
+  /**
+   * Every item row of an already-authorized list, without the viewer. For `'use cache'`
+   * loaders, whose arguments become the cache key: the caller decides `includeHidden`
+   * (owner/admin, same rule as `canViewHiddenListItems`). Returns `null` for search lists.
+   */
+  static async getAllListItemInfo(list: UserList, includeHidden: boolean) {
+    if (list.dynamicType === 'search') return null;
+
+    const itemInfo = await ListService.fetchListItemInfo(list.internal_id);
+    return itemInfo.filter((item) => includeHidden || !item.isHidden);
+  }
+
+  private static async fetchListItemInfo(listId: number) {
+    const itemInfoRaw = await prisma.listItems.findMany({
+      where: { list_id: listId },
+    });
+
+    return rawToListItems(itemInfoRaw);
   }
 
   /**

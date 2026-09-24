@@ -8,12 +8,10 @@ import { getListMatchWithViewer } from '@pages/api/v1/lists/match/[...usernames]
 import { getSearchStats } from '@pages/api/v1/search/stats';
 import { ItemService } from '@services/ItemService';
 import { ListService } from '@services/ListService';
-import { rawToListItems } from '@services/list/listMappers';
 import type { ItemV2For, ListItemInfo, SearchFilters, SearchStats, UserList } from '@types';
 import { listItemsTag } from '@utils/appCacheTags';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { withLocalePrefix, type AppLocale } from '@utils/locales';
-import prisma from '@utils/prisma';
 import {
   getSortedListItemInfo,
   LIST_FULL_SERVER_LOAD_THRESHOLD,
@@ -132,16 +130,9 @@ function canViewHiddenItems(core: ListCore): boolean {
 }
 
 async function loadListFullItems(list: UserList, includeHidden: boolean): Promise<ListItemsData> {
-  if (list.dynamicType === 'search') return emptyListItemsData();
-
-  // Mirrors `ListService.getListItemInfo` (unfiltered path); the list was already
-  // authorized for this viewer in `resolveListCore`.
-  const itemInfoRaw = await prisma.listItems.findMany({
-    where: { list_id: list.internal_id },
-  });
-  const itemInfoData = rawToListItems(itemInfoRaw).filter(
-    (item) => includeHidden || !item.isHidden
-  );
+  // The list was already authorized for this viewer in `resolveListCore`.
+  const itemInfoData = await ListService.getAllListItemInfo(list, includeHidden);
+  if (!itemInfoData) return emptyListItemsData();
 
   const items = await fetchCardItemsByIids(itemInfoData);
   return buildListItemsData(itemInfoData, items, list);
