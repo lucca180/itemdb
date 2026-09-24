@@ -25,7 +25,8 @@ export function getItemFindAtLinksV2(item: FindAtItemV2Input): ItemFindAt {
 
 export function getRestockProfitV2(
   item: Pick<ItemV2For<'card'>, 'category' | 'rarity' | 'estVal' | 'price'>,
-  ignoreSpecialDays = false
+  ignoreSpecialDays = false,
+  date?: number
 ): number | null {
   if (!item.price || item.price.type !== 'np' || !item.price.value) return null;
 
@@ -35,7 +36,8 @@ export function getRestockProfitV2(
       rarity: item.rarity,
       estVal: item.estVal,
     },
-    ignoreSpecialDays
+    ignoreSpecialDays,
+    date
   );
 
   if (!prices) return null;

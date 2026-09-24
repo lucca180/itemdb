@@ -9,6 +9,7 @@ import { colorHexWithAlpha, getRestockProfitV2, rarityToCCPointsV2 } from '@util
 import { ItemCardBadgeV2 } from '@components/Items/v2/ItemCardBadgeV2';
 import { ItemImageV2 } from '@components/Items/v2/ItemImageV2';
 import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
+import { useClientNow } from '@utils/useClientNow';
 
 const ItemCtxMenuV2 = dynamic(() => import('@components/Menus/ItemCtxMenuV2'), { ssr: false });
 
@@ -49,6 +50,7 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
   } = props;
   const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
   const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
+  const now = useClientNow();
 
   if (!item || isLoading) {
     return (
@@ -81,7 +83,8 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
     );
   }
 
-  const profit = getRestockProfitV2(item);
+  // Restock prices depend on the NST day, so compute only once the client clock is available.
+  const profit = now !== null ? getRestockProfitV2(item, false, now) : null;
   const colorWash = colorHexWithAlpha(item.colorHex ?? '#4A5568');
   const npValue = item.price?.type === 'np' ? item.price.value : null;
   const ccPoints = rarityToCCPointsV2(item);

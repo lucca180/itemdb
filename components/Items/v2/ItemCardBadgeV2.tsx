@@ -7,6 +7,7 @@ import { MdHelp, MdOutlineHourglassBottom } from 'react-icons/md';
 import { useFormatter, useTranslations } from 'next-intl';
 import type { ItemV2For } from '@types';
 import { isMallDiscounted } from '@components/Items/NCMallCard';
+import { useClientNow } from '@utils/useClientNow';
 
 export type ItemCardBadgeV2Props = {
   item?: ItemV2For<'card'>;
@@ -20,6 +21,8 @@ export type ItemCardBadgeV2Props = {
 export const ItemCardBadgeV2 = (props: ItemCardBadgeV2Props) => {
   const t = useTranslations();
   const format = useFormatter();
+  // `null` during SSR/hydration: clock-based badges appear right after hydration.
+  const now = useClientNow();
   const { item, capValue, odds, profit, isLE, sortType } = props;
 
   if (!item) return null;
@@ -28,10 +31,9 @@ export const ItemCardBadgeV2 = (props: ItemCardBadgeV2Props) => {
   const ncMall = item.price?.type === 'ncMall' ? item.price : null;
   const ncValue = item.ncValue ?? null;
   const isNc = item.type === 'nc';
-  const isDiscounted = isMallDiscounted(ncMall);
-  const priceAgeInMonths = npPrice?.addedAt
-    ? differenceInMonths(new Date(), new Date(npPrice.addedAt))
-    : 0;
+  const isDiscounted = now !== null && isMallDiscounted(ncMall, now);
+  const priceAgeInMonths =
+    now !== null && npPrice?.addedAt ? differenceInMonths(now, new Date(npPrice.addedAt)) : 0;
   const hasStalePriceBadge = !!npPrice?.flags.includes('outdated') || priceAgeInMonths >= 6;
   const isInflated = !!npPrice?.flags.includes('inflation');
 
