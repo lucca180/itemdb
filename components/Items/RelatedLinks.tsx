@@ -13,8 +13,6 @@ import {
   loadPetStyleForItem,
   type PetStyleLinkData,
 } from '@app/_components/Item/loadUtils';
-import { getCachedNow } from '@utils/getCachedNow';
-import { shouldShowTradeLists } from '@utils/utils';
 import { browseColorTitle, browseSpeciesTitle, indefiniteArticle } from '@utils/petColorCopy';
 import { getSpeciesFromString, petColorSlug } from '@utils/pet-utils';
 import {
@@ -61,7 +59,7 @@ async function RelatedLinksCardContent({ item }: Props) {
   ] = await Promise.all([
     getTranslations(),
     loadItemEffects(item.internal_id),
-    getOfficialItemLists(item.internal_id, shouldShowTradeLists(item, await getCachedNow())),
+    getOfficialItemLists(item.internal_id),
     loadPetpetData(item.internal_id),
     loadPetStyleForItem(item.internal_id),
     getPetpetSpeciesMaps(),
