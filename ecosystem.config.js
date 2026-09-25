@@ -11,6 +11,9 @@ module.exports = {
       node_args: '--max-old-space-size=1536',
       max_memory_restart: '2800M',
       kill_timeout: 15_000,
+      // PM2 7 calls process.setSourceMapsEnabled(true) by default, which makes Node keep every
+      // server chunk's .map in the heap (~460MB/worker) → heap near limit → GC-bound CPU + restarts.
+      disable_source_map_support: true,
     },
     {
       name: 'itemdb-green',
@@ -23,6 +26,7 @@ module.exports = {
       node_args: '--max-old-space-size=1536',
       max_memory_restart: '2800M',
       kill_timeout: 15_000,
+      disable_source_map_support: true,
     },
   ],
 };
