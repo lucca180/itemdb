@@ -799,6 +799,15 @@ model DataCollecting {
   user    User?   @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   addedAt DateTime @default(now())
+
+  // officialListSuggestion: subject_id = UserList.internal_id
+  subject_id  Int?
+  note        String?   @db.Text
+  processed   Boolean   @default(false)
+  approved    Boolean?
+  processedAt DateTime?
+
+  @@index([type, processed, subject_id])
 }
 
 model RestockWrapped {

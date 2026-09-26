@@ -777,7 +777,18 @@
     "importV2-select-list-hint": "Choose a list to import.",
     "importV2-guest-body": "You can price check, search, and filter without an account. To create lists, checklists, and wishlists — and to import — you need an <b>itemdb account</b>.",
     "importV2-empty-title": "No items match your filters",
-    "importV2-empty-desc": "Try a different search or filter."
+    "importV2-empty-desc": "Try a different search or filter.",
+    "suggest-missing-item": "Missing Items?",
+    "suggest-missing-title": "Suggest missing items",
+    "suggest-missing-description": "Is an item missing from <b>{list}</b>? Add it below and our team will review your suggestion.",
+    "suggest-missing-note": "Note",
+    "suggest-missing-note-placeholder": "Where did you find this item? Any context helps.",
+    "suggest-missing-limit": "You can suggest up to {max} items at once",
+    "suggest-missing-success": "Thanks! Your suggestion will be reviewed by our team.",
+    "suggest-missing-partial": "{count, plural, one {# item was} other {# items were}} skipped because {count, plural, one {it is} other {they are}} already in the list or already suggested by you.",
+    "suggest-missing-error-already-in-list": "These items are already in this list.",
+    "suggest-missing-error-already-suggested": "You have already suggested these items.",
+    "suggest-missing-error-note-too-long": "Your note is too long (max {max} characters)."
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

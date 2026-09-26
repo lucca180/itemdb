@@ -960,7 +960,18 @@
     "importV2-select-list-hint": "Escolha uma lista para importar.",
     "importV2-guest-body": "Você pode fazer o price check, buscar e filtrar sem uma conta. Para criar listas, checklists e wishlists — e para importar — você precisa de uma <b>conta itemdb</b>.",
     "importV2-empty-title": "Nenhum item corresponde aos filtros",
-    "importV2-empty-desc": "Tente outra busca ou outro filtro."
+    "importV2-empty-desc": "Tente outra busca ou outro filtro.",
+    "suggest-missing-item": "Itens Faltando?",
+    "suggest-missing-title": "Sugerir itens faltantes",
+    "suggest-missing-description": "Está faltando algum item em <b>{list}</b>? Adicione abaixo e nossa equipe vai revisar sua sugestão.",
+    "suggest-missing-note": "Nota",
+    "suggest-missing-note-placeholder": "Onde você encontrou esse item? Qualquer contexto ajuda.",
+    "suggest-missing-limit": "Você pode sugerir até {max} itens por vez",
+    "suggest-missing-success": "Obrigado! Sua sugestão será revisada pela nossa equipe.",
+    "suggest-missing-partial": "{count, plural, one {# item foi ignorado porque já está} other {# itens foram ignorados porque já estão}} na lista ou já foram sugeridos por você.",
+    "suggest-missing-error-already-in-list": "Esses itens já estão nesta lista.",
+    "suggest-missing-error-already-suggested": "Você já sugeriu esses itens.",
+    "suggest-missing-error-note-too-long": "Sua nota é muito longa (máx. {max} caracteres)."
   },
   "Restock": {
     "est-profit": "Lucro Est.",
