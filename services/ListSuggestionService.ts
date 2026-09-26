@@ -21,13 +21,13 @@ import prisma from '@utils/prisma';
 import { revalidateListMutationCaches } from '@utils/revalidateAppCacheTags';
 import { LogService } from '@services/ActionLogService';
 import { ItemService } from '@services/ItemService';
-import { upsertItems } from '@services/list/listItemsWrite';
+import { ListService } from '@services/ListService';
 import type { ItemV2For, User } from '@types';
 import {
   LIST_SUGGESTION_TYPE,
   MAX_SUGGESTION_ITEMS,
   MAX_SUGGESTION_NOTE_LENGTH,
-} from '@services/list/listSuggestionsConstants';
+} from '@utils/list/listSuggestionsConstants';
 
 /** Expected validation failures; returned to the client as-is so it can show a message. */
 export type ListSuggestionErrorCode =
@@ -317,7 +317,7 @@ export async function resolveSuggestions({
 
   if (action === 'approve') {
     // same write path as the list PUT endpoint: refreshes visibleItemCount + v2 item-id cache
-    await upsertItems(
+    await ListService.upsertItems(
       list.internal_id,
       uniqueIids.map((iid) => ({
         item_iid: String(iid),

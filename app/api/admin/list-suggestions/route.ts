@@ -1,5 +1,5 @@
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
-import { resolveSuggestions, SuggestionInputError } from '@services/list/listSuggestions';
+import { resolveSuggestions, SuggestionInputError } from '@services/ListSuggestionService';
 
 /**
  * Admin-only: approve/reject pending official list suggestions (ListSuggestionsDashboardClient).

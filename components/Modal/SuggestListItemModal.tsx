@@ -20,7 +20,7 @@ import { suggestMissingListItems } from '@app/[locale]/lists/[username]/[list_id
 import {
   MAX_SUGGESTION_ITEMS,
   MAX_SUGGESTION_NOTE_LENGTH,
-} from '@services/list/listSuggestionsConstants';
+} from '@utils/list/listSuggestionsConstants';
 
 /**
  * "Suggest missing item" modal for official lists (opened from the list page toolbar).

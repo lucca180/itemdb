@@ -12,7 +12,7 @@ import {
   SuggestionInputError,
   type ListSuggestionErrorCode,
   type SubmitListSuggestionResult,
-} from '@services/list/listSuggestions';
+} from '@services/ListSuggestionService';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { normalizeIP } from '@utils/api/api-utils';
 import { getFilteredListItems, getListCore, getListFullItems, getListStats } from './loadListPage';

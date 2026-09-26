@@ -36,8 +36,8 @@ vi.mock('@services/ItemService', () => ({
   ItemService: { getManyItems: getManyItemsMock },
 }));
 
-vi.mock('@services/list/listItemsWrite', () => ({
-  upsertItems: upsertItemsMock,
+vi.mock('@services/ListService', () => ({
+  ListService: { upsertItems: upsertItemsMock },
 }));
 
 vi.mock('@services/ActionLogService', () => ({
@@ -82,8 +82,8 @@ import {
   resolveSuggestions,
   submitListSuggestion,
   SuggestionInputError,
-} from '@services/list/listSuggestions';
-import { LIST_SUGGESTION_TYPE } from '@services/list/listSuggestionsConstants';
+} from '@services/ListSuggestionService';
+import { LIST_SUGGESTION_TYPE } from '@utils/list/listSuggestionsConstants';
 import { POST as resolvePOST } from '@app/api/admin/list-suggestions/route';
 import type { User } from '@types';
 

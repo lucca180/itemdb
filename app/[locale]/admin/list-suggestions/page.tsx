@@ -7,7 +7,7 @@ import HeaderCard from '@components/Card/HeaderCard';
 import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
-import { listPendingSuggestions } from '@services/list/listSuggestions';
+import { listPendingSuggestions } from '@services/ListSuggestionService';
 import { ListSuggestionsDashboardClient } from './ListSuggestionsDashboardClient';
 
 /**

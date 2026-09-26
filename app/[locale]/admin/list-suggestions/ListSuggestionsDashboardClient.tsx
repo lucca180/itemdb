@@ -16,7 +16,7 @@ import {
 import axios from 'axios';
 import { Link, useRouter } from '@i18n/navigation';
 import { useToast } from '@utils/theme/toast';
-import type { ListSuggestionGroup, ListSuggestionItem } from '@services/list/listSuggestions';
+import type { ListSuggestionGroup, ListSuggestionItem } from '@services/ListSuggestionService';
 
 /**
  * Client side of /admin/list-suggestions: one section per official list, one row per suggested
