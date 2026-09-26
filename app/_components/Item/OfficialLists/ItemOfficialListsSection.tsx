@@ -23,7 +23,7 @@ async function ItemOfficialListsSectionContent({ item }: Props) {
     item.internal_id,
     shouldShowTradeLists(item, await getCachedNow())
   );
-  if (!lists.length) return null;
+  // an empty list still renders: the card becomes a "make your list official" CTA
   return (
     <DeferredItemSection>
       <ItemOfficialLists item={item} lists={lists} />

@@ -8,6 +8,7 @@ import { getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
 import { getListLink } from '@utils/list/listLink';
 import Markdown from '@components/Utils/Markdown';
+import ItemOfficialListCTA from '@components/Items/ItemOfficialListCTA';
 
 type Props = {
   item: ItemData;
@@ -20,23 +21,35 @@ export default async function ItemOfficialLists(props: Props) {
   const officialLists = lists.filter((list) => list.official && list.visibility === 'public');
   const color = Color(item.color.hex);
 
-  if (!officialLists.length) return null;
+  const title = (
+    <Link asChild>
+      <I18nLink href="/lists/official">{t('General.official-lists')}</I18nLink>
+    </Link>
+  );
+
+  const linkColor = color.lightness(70).hex();
+
+  if (!officialLists.length) {
+    return (
+      <CardBase title={title} color={item.color.hex}>
+        <Flex flexFlow="column" alignItems="center" gap={2}>
+          <Text fontSize="sm" color="whiteAlpha.700">
+            {t('ItemPage.no-official-list')}
+          </Text>
+          <ItemOfficialListCTA linkColor={linkColor} placement="empty" />
+        </Flex>
+      </CardBase>
+    );
+  }
 
   return (
-    <CardBase
-      title={
-        <Link asChild>
-          <I18nLink href="/lists/official">{t('General.official-lists')}</I18nLink>
-        </Link>
-      }
-      color={item.color.hex}
-    >
+    <CardBase title={title} color={item.color.hex}>
       <Flex
         gap={3}
         flexFlow="row"
         justifyContent="center"
         flexWrap={'wrap'}
-        css={{ '& a': { color: color.lightness(70).hex() } }}
+        css={{ '& a': { color: linkColor } }}
       >
         {officialLists.map((list) => (
           <Flex
@@ -110,6 +123,7 @@ export default async function ItemOfficialLists(props: Props) {
             )}
           </Flex>
         ))}
+        <ItemOfficialListCTA linkColor={linkColor} placement="grid" />
       </Flex>
     </CardBase>
   );

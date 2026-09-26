@@ -63,13 +63,25 @@ function useOfficialListsPage() {
 
 type PageProps = {
   initialCat?: string;
+  /** Opens the apply modal on load (`?apply`). */
+  initialApplyOpen?: boolean;
   children: ReactNode;
 };
 
-export function OfficialListsPageClient({ initialCat, children }: PageProps) {
+export function OfficialListsPageClient({ initialCat, initialApplyOpen, children }: PageProps) {
   const t = useTranslations();
-  const { user, authLoading } = useAuth();
-  const { open: isOpen, onOpen, onClose } = useDisclosure();
+  const { authLoading } = useAuth();
+  const { open: isOpen, onOpen, onClose } = useDisclosure({ defaultOpen: initialApplyOpen });
+
+  // drop ?apply once the modal is closed, so a refresh doesn't open it again
+  const handleCloseApply = () => {
+    onClose();
+
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('apply')) return;
+    url.searchParams.delete('apply');
+    window.history.replaceState(null, '', url);
+  };
   const [selectedCategory, setSelectedCategory] = useState(initialCat || 'all');
   const [isSearch, setIsSearch] = useState(false);
   const [listsData, setListsData] = useState<ListsData | null>(null);
@@ -137,7 +149,7 @@ export function OfficialListsPageClient({ initialCat, children }: PageProps) {
 
   return (
     <OfficialListsPageContext.Provider value={contextValue}>
-      <ApplyListModal isOpen={isOpen} onClose={onClose} />
+      <ApplyListModal isOpen={isOpen} onClose={handleCloseApply} />
       <Flex flexFlow="column" gap={3}>
         <Flex
           flexFlow={{ base: 'column', sm: 'row' }}
@@ -147,7 +159,12 @@ export function OfficialListsPageClient({ initialCat, children }: PageProps) {
           alignItems="center"
         >
           <Flex alignItems="center" gap={3}>
-            <Button variant="subtle" loading={authLoading} onClick={onOpen} disabled={!user}>
+            <Button
+              colorPalette="blue"
+              loading={authLoading}
+              onClick={onOpen}
+              data-umami-event="official-apply-open"
+            >
               + {t('Lists.official-apply-list')}
             </Button>
             {!listsData ? (

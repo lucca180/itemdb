@@ -73,7 +73,7 @@ async function SearchPageContent({ searchParams }: Pick<SearchPageProps, 'search
   const userList = await getSearchList(firstSearchParam(listIdParam));
   const listJWT = userList ? signListJWT(userList.internal_id) : null;
 
-  const searchTip = new Date().getMinutes() % 4;
+  const searchTip = new Date().getMinutes() % 5;
 
   return (
     <>
