@@ -7,18 +7,41 @@ import { OFFICIAL_CRITERIA_URL } from '@utils/list/officialListLinks';
 type Props = {
   /** Link color derived from the item color (same as the list links in the card). */
   linkColor: string;
-  /** `empty`: the item has no official list; `grid`: last tile after the item's official lists. */
-  placement: 'empty' | 'grid';
+  /**
+   * `empty`: the item has no official list (dashed tile);
+   * `footer`: small centered line at the end of the card, after the item's official lists.
+   */
+  placement: 'empty' | 'footer';
 };
 
 /**
- * "Make your list official" CTA on the item page official lists card: a dashed "empty slot"
- * shaped like the official list tiles. Links to the criteria (not straight to the apply modal),
- * since only lists that are truly useful to the community qualify.
+ * "Make your list official" CTA on the item page official lists card. Links to the criteria
+ * (not straight to the apply modal), since only lists that are truly useful to the community qualify.
  */
 export default async function ItemOfficialListCTA({ linkColor, placement }: Props) {
   const t = await getTranslations();
 
+  if (placement === 'footer') {
+    return (
+      <Text mt={3} textAlign="center" fontSize="xs" color="whiteAlpha.700">
+        {t.rich('ItemPage.official-cta-footer', {
+          Link: (chunk) => (
+            <Link asChild color={linkColor}>
+              <I18nLink
+                href={OFFICIAL_CRITERIA_URL}
+                data-umami-event="official-criteria-cta"
+                data-umami-event-label="item-footer"
+              >
+                {chunk}
+              </I18nLink>
+            </Link>
+          ),
+        })}
+      </Text>
+    );
+  }
+
+  // empty: a dashed "empty slot" shaped like the official list tiles
   return (
     <Link asChild _hover={{ textDecoration: 'none' }}>
       <I18nLink

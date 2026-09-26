@@ -151,6 +151,7 @@
     "official-cta-tile-title": "Is a list missing here?",
     "official-cta-tile-text": "If it helps everyone, it can become official.",
     "official-cta-tile-link": "Learn how →",
+    "official-cta-footer": "Is a list missing here? <Link>Learn how to help →</Link>",
     "suggestion": "Our Meepits think you might also be interested",
     "suggestion-fail": "Well that must be a very unique item, because we couldn't find anything like it.",
     "item-preview": "Item Preview",

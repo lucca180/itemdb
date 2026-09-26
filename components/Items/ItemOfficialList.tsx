@@ -123,8 +123,8 @@ export default async function ItemOfficialLists(props: Props) {
             )}
           </Flex>
         ))}
-        <ItemOfficialListCTA linkColor={linkColor} placement="grid" />
       </Flex>
+      <ItemOfficialListCTA linkColor={linkColor} placement="footer" />
     </CardBase>
   );
 }
