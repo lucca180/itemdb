@@ -23,6 +23,8 @@ import { useAuth } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
 import { useTranslations } from 'next-intl';
 import { useLists } from '../../utils/useLists';
+import MainLink from '@components/Utils/MainLink';
+import { canEditListInfo } from '@utils/list/listPermissions';
 
 export type CreateListModalProps = {
   list?: UserList;
@@ -83,6 +85,10 @@ const CreateListModal = (props: CreateListModalProps) => {
   const [list, setList] = useState<EditableList>(props.list ?? defaultList);
   const { revalidate } = useLists();
   const [colorPalette, setColorPalette] = useState<string[]>(defaultColors);
+  // official lists: curators see a notice instead of the form (only admins edit the list info)
+  const isLocked =
+    !!props.list &&
+    !canEditListInfo({ official: props.list.official, ownerId: props.list.owner.id }, user);
 
   useEffect(() => {
     if (!isOpen || !user?.isAdmin || !props.list?.internal_id) return;
@@ -106,7 +112,7 @@ const CreateListModal = (props: CreateListModalProps) => {
   const saveChanges = async () => {
     setLoading(true);
     try {
-      if (!user) return;
+      if (!user || isLocked) return;
 
       const data = {
         list_id: list.internal_id,
@@ -227,7 +233,20 @@ const CreateListModal = (props: CreateListModalProps) => {
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>
             <Dialog.Body>
-              {!isLoading && !error && (
+              {isLocked && (
+                <Text fontSize="sm" textAlign="center">
+                  {t.rich('Lists.official-curator-locked', {
+                    Feedback: (chunk) => (
+                      <Link asChild color="green.200" fontWeight="bold">
+                        <MainLink href="/feedback" trackEvent="official-curator-feedback">
+                          {chunk}
+                        </MainLink>
+                      </Link>
+                    ),
+                  })}
+                </Text>
+              )}
+              {!isLoading && !error && !isLocked && (
                 <Stack gap={3}>
                   {props.list && user?.id !== props.list?.owner.id && user?.isAdmin && (
                     <Text textAlign="center" color="red.300">
@@ -560,7 +579,12 @@ const CreateListModal = (props: CreateListModalProps) => {
               )}
             </Dialog.Body>
             <Dialog.Footer>
-              {!isLoading && !error && (
+              {isLocked && (
+                <Button variant="ghost" onClick={handleCancel}>
+                  {t('General.close')}
+                </Button>
+              )}
+              {!isLoading && !error && !isLocked && (
                 <>
                   <Button variant="ghost" onClick={handleCancel} mr={3}>
                     {t('General.cancel')}

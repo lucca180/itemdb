@@ -101,7 +101,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(400).json({ error: 'List name cannot be a number' });
     }
 
-    const slug = await createListSlug(listName, user.id, official);
+    // official-only fields are admin-only
+    const isOfficial = !!user.isAdmin && !!official;
+    const slug = await createListSlug(listName, user.id, isOfficial);
 
     const list = await prisma.userList.create({
       data: {
@@ -110,7 +112,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         cover_url: coverURL,
         colorHex: colorHexVar,
         official: user.isAdmin ? official : undefined,
-        official_tag: officialTag,
+        official_tag: user.isAdmin ? officialTag : undefined,
         canBeLinked: canBeLinked ?? true, // create as true by default
         listUserTag: listUserTag ?? null,
         purpose: purpose as 'none' | 'trading' | 'seeking',
@@ -148,6 +150,16 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     if (user.username !== username && !user.isAdmin)
       return res.status(403).json({ error: 'Forbidden' });
 
+    // official lists can only be deleted by admins
+    if (!user.isAdmin) {
+      const officialCount = await prisma.userList.count({
+        where: { internal_id: { in: listsIds }, official: true },
+      });
+
+      if (officialCount > 0)
+        return res.status(403).json({ error: 'Official lists can only be deleted by admins' });
+    }
+
     const result = await prisma.userList.deleteMany({
       where: {
         internal_id: {
@@ -182,6 +194,17 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
     if (user.username !== username && !user.isAdmin)
       return res.status(403).json({ error: 'Forbidden' });
 
+    // `order` only sorts the owner's profile, so curators may reorder their official lists too,
+    // but without bumping `updatedAt` (shown publicly as the official list "last updated" date)
+    const officialIds = new Set(
+      (
+        await prisma.userList.findMany({
+          where: { internal_id: { in: lists.map((list) => list.internal_id) }, official: true },
+          select: { internal_id: true },
+        })
+      ).map((list) => list.internal_id)
+    );
+
     const updateLists = lists.map((list) =>
       prisma.userList.update({
         where: {
@@ -190,7 +213,7 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
         },
         data: {
           order: list.order,
-          updatedAt: new Date(),
+          updatedAt: officialIds.has(list.internal_id) ? undefined : new Date(),
         },
       })
     );

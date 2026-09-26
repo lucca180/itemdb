@@ -810,6 +810,7 @@
     "official-see-criteria": "Ver todos os critérios",
     "official-login-required": "Você precisa estar logado para candidatar sua lista.",
     "official-already-official": "Essa lista já é oficial!",
+    "official-curator-locked": "Só a equipe do itemdb pode alterar ou excluir listas oficiais. Para pedir uma mudança, <Feedback>envie um feedback</Feedback>.",
     "official-apply-list-success": "Sua lista foi enviada. <br></br><br></br>Iremos analisá-la e, se for aprovada, receberá o selo oficial e estará disponível para todos \\o/",
     "select-your-list": "Selecione sua lista",
     "official-what-your-list-is-about": "Qual o assunto da lista?",

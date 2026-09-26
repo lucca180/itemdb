@@ -630,6 +630,7 @@
     "official-see-criteria": "See the full criteria",
     "official-login-required": "You need to be logged in to apply your list.",
     "official-already-official": "This list is already official!",
+    "official-curator-locked": "Only the itemdb team can change or delete official lists. To request a change, <Feedback>send us a feedback</Feedback>.",
     "official-agree-terms": "By applying your list, you agree to the <Link>Terms of Service</Link>",
     "Lists": "Lists",
     "edit-profile": "Edit Profile",
