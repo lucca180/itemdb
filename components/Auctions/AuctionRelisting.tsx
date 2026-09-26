@@ -18,12 +18,15 @@ const NST_DATE_FORMAT = {
 const PRICE_CHANGE_WIDTH = '56px';
 
 /** Makes a whole auction row toggle its relisting history when it has one. */
-export function useAuctionRelistingToggle(hasRelisting: boolean) {
+export function useAuctionRelistingToggle(relisting: ListingRelisting | undefined) {
   const [open, setOpen] = useState(false);
 
-  if (!hasRelisting) return { open: false, rowProps: {} };
+  if (!relisting) return { open: false, rowProps: {} };
 
-  const toggle = () => setOpen((value) => !value);
+  const toggle = () => {
+    if (!open) window.umami?.track('relisting-open', { type: 'auction', count: relisting.count });
+    setOpen(!open);
+  };
 
   return {
     open,

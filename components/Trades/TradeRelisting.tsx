@@ -23,6 +23,10 @@ export const TradeRelisting = ({ disclaimer, history, label }: TradeRelistingBad
       variant="subtle"
       size="sm"
       width="full"
+      onValueChange={({ value }) => {
+        if (value.length)
+          window.umami?.track('relisting-open', { type: 'trade', count: history.length });
+      }}
     >
       <Accordion.Item value={label} border="none" bg={'gray.600'}>
         <Accordion.ItemTrigger px={2} py={1} borderRadius="sm" gap={2} cursor="pointer">

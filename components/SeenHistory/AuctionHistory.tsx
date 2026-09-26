@@ -192,7 +192,7 @@ const AuctionItem = (props: { auction: ItemAuctionData; index: number }) => {
   const { relisting } = auction;
   const format = useFormatter();
   const t = useTranslations();
-  const { open, rowProps } = useAuctionRelistingToggle(!!relisting);
+  const { open, rowProps } = useAuctionRelistingToggle(relisting);
 
   return (
     <>
