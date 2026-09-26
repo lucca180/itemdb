@@ -33,7 +33,8 @@ const nextConfig: NextConfig = {
     return process.env.BUILD_ID || 'dev';
   },
   // Keep in-process ISR/fetch LRU (no custom cacheHandler). Redis only backs `'use cache'`.
-  cacheMaxMemorySize: 256 * 1024 * 1024,
+  // Per worker and counted in string length, so keep it well below the 1536MB heap; entries also live on disk.
+  cacheMaxMemorySize: 64 * 1024 * 1024,
   ...(redisCacheHandlerEnabled
     ? {
         cacheHandlers: {
