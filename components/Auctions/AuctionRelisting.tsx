@@ -123,37 +123,45 @@ export const AuctionRelistingHistory = ({ relisting }: { relisting: ListingRelis
           date: format.dateTime(new Date(relisting.since), NST_DATE_FORMAT),
         })}
       </Text>
-      <Box borderRadius="md" overflow="hidden">
+      {/* Rows use subgrid so the price / change / bids / date columns line up across rows. */}
+      <Box
+        display="grid"
+        gridTemplateColumns={`max-content ${PRICE_CHANGE_WIDTH} max-content 1fr`}
+        borderRadius="md"
+        overflow="hidden"
+      >
         {history.map((entry, i) => (
-          <Flex
+          <Box
             key={`${i}-${entry.date}`}
+            display="grid"
+            gridTemplateColumns="subgrid"
+            gridColumn="1 / -1"
+            columnGap={3}
+            alignItems="center"
             px={2}
             py={1.5}
-            gap={3}
             fontSize="xs"
-            alignItems="center"
-            justifyContent="space-between"
             bg={i % 2 === 0 ? 'blackAlpha.300' : 'blackAlpha.500'}
           >
-            <Text color="whiteAlpha.700">
+            <Text fontWeight="semibold" textAlign="right">
+              {entry.price !== null && `${format.number(entry.price)} NP`}
+            </Text>
+            {entry.price !== null ? (
+              <AuctionPriceChange
+                price={entry.price}
+                previousPrice={history[i + 1]?.price}
+                reserveSpace
+              />
+            ) : (
+              <Box />
+            )}
+            <Badge colorPalette="gray" size="xs" justifySelf="start">
+              {t('ItemPage.no-bids')}
+            </Badge>
+            <Text color="whiteAlpha.700" textAlign="right">
               {format.dateTime(new Date(entry.date), NST_DATE_FORMAT)} NST
             </Text>
-            <Flex alignItems="center" gap={2}>
-              {entry.price !== null && (
-                <Flex alignItems="center" gap={1}>
-                  <Text fontWeight="semibold">{format.number(entry.price)} NP</Text>
-                  <AuctionPriceChange
-                    price={entry.price}
-                    previousPrice={history[i + 1]?.price}
-                    reserveSpace
-                  />
-                </Flex>
-              )}
-              <Badge colorPalette="gray" size="xs">
-                {t('ItemPage.no-bids')}
-              </Badge>
-            </Flex>
-          </Flex>
+          </Box>
         ))}
       </Box>
       <Text fontSize="2xs" color="whiteAlpha.600" textAlign="center">
