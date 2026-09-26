@@ -19,7 +19,7 @@ import MainLink from '@components/Utils/MainLink';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaFlag, FaPen } from 'react-icons/fa';
-import { TradeRelisting } from '@components/Trades/TradeRelisting';
+import { ListingRelistingBadge } from '@components/Trades/TradeRelisting';
 import {
   TRADE_LOT_VISIBLE_LIMIT,
   isFeaturedTradeItem,
@@ -191,30 +191,7 @@ const TradeTable = (props: Props) => {
                       {t('ItemPage.unspecified-price')}
                     </Text>
                   )}
-                  {item.relisting && (
-                    <TradeRelisting
-                      disclaimer={t('ItemPage.relisting-disclaimer')}
-                      history={item.relisting.history.map((entry) => ({
-                        date: format.dateTime(new Date(entry.date), {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        }),
-                        price:
-                          entry.price === null
-                            ? t('ItemPage.unspecified-price')
-                            : `${format.number(entry.price)} NP`,
-                      }))}
-                      label={t('ItemPage.relisting-history', {
-                        count: item.relisting.history.length,
-                        date: format.dateTime(new Date(item.relisting.since), {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        }),
-                      })}
-                    />
-                  )}
+                  {item.relisting && <ListingRelistingBadge relisting={item.relisting} />}
                 </Flex>
               </Flex>
             </Fragment>

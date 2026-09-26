@@ -79,9 +79,9 @@ export async function getTradeHistory(
 /** Auctions — `onlySold` requires a passing contribute gate. */
 export async function getAuctionHistory(
   itemName: string,
-  options: { onlySold?: boolean; userId?: string | null } = {}
+  options: { onlySold?: boolean; userId?: string | null; collapseRelistings?: boolean } = {}
 ): Promise<SeenHistoryResult<AuctionHistoryData>> {
-  const { onlySold = false, userId } = options;
+  const { onlySold = false, userId, collapseRelistings = false } = options;
 
   if (!itemName || typeof itemName !== 'string') {
     throw new Error('Invalid item');
@@ -92,7 +92,7 @@ export async function getAuctionHistory(
     if (wall) return { ok: false, wall };
   }
 
-  const data = await getAuctionData(itemName, onlySold);
+  const data = await getAuctionData(itemName, onlySold, collapseRelistings);
   return { ok: true, data };
 }
 

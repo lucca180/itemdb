@@ -1,6 +1,8 @@
 'use client';
 
 import { Accordion, Box, Flex, Text } from '@chakra-ui/react';
+import { useFormatter, useTranslations } from 'next-intl';
+import type { ListingRelisting } from '@types';
 
 type TradeRelistingBadgeProps = {
   disclaimer: string;
@@ -34,7 +36,7 @@ export const TradeRelisting = ({ disclaimer, history, label }: TradeRelistingBad
             <Flex flexDirection="column">
               {history.map((entry, i) => (
                 <Flex
-                  key={`${entry.date}-${entry.price}`}
+                  key={`${i}-${entry.date}-${entry.price}`}
                   gap={3}
                   fontSize="xs"
                   justifyContent="space-between"
@@ -63,5 +65,29 @@ export const TradeRelisting = ({ disclaimer, history, label }: TradeRelistingBad
         </Accordion.ItemContent>
       </Accordion.Item>
     </Accordion.Root>
+  );
+};
+
+const RELISTING_DATE_FORMAT = { month: 'short', day: 'numeric', year: 'numeric' } as const;
+
+export const ListingRelistingBadge = ({ relisting }: { relisting: ListingRelisting }) => {
+  const t = useTranslations();
+  const format = useFormatter();
+
+  return (
+    <TradeRelisting
+      disclaimer={t('ItemPage.relisting-disclaimer')}
+      history={relisting.history.map((entry) => ({
+        date: format.dateTime(new Date(entry.date), RELISTING_DATE_FORMAT),
+        price:
+          entry.price === null
+            ? t('ItemPage.unspecified-price')
+            : `${format.number(entry.price)} NP`,
+      }))}
+      label={t('ItemPage.relisting-history', {
+        count: relisting.history.length,
+        date: format.dateTime(new Date(relisting.since), RELISTING_DATE_FORMAT),
+      })}
+    />
   );
 };

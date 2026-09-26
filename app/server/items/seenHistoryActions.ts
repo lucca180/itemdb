@@ -33,7 +33,7 @@ export async function loadAuctionHistory(
   onlySold = false
 ): Promise<SeenHistoryResult<AuctionHistoryData>> {
   const { user } = await getServerCurrentUser();
-  return getAuctionHistory(itemName, { onlySold, userId: user?.id });
+  return getAuctionHistory(itemName, { onlySold, userId: user?.id, collapseRelistings: true });
 }
 
 /** Site adapter for restock history (no auth). */

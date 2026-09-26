@@ -5,6 +5,7 @@ import prisma from '@utils/prisma';
 import { getItem } from '@pages/api/v1/items/[id_name]';
 import { medianSorted } from 'simple-statistics';
 import { removeOutliersCombined } from '@utils/prices/pricing3';
+import { collapseAuctionRelistings } from '@utils/item/auctionRelisting';
 import { addTradeRelistingHistory, findTradeTargetItem } from '@utils/item/tradeRelisting';
 
 const MAX_DAYS = 180;
@@ -123,7 +124,11 @@ export const getTradeData = async (
   };
 };
 
-export const getAuctionData = async (name: string | number, onlySold = false) => {
+export const getAuctionData = async (
+  name: string | number,
+  onlySold = false,
+  collapseRelistings = false
+) => {
   let auctionRaw = await prisma.restockAuctionHistory.findMany({
     where: {
       item:
@@ -189,16 +194,24 @@ export const getAuctionData = async (name: string | number, onlySold = false) =>
     };
   });
 
-  const recentAuctions = auctions
+  // ownerHash stays server-side: it is only used as the relisting identity key.
+  const ownerHashes = new Map(auctionRaw.map((p) => [p.internal_id, p.ownerHash]));
+  const listings = collapseAuctionRelistings(auctions, ownerHashes);
+
+  // Each relisting chain counts once in the median, using its most recent price.
+  const recentAuctions = listings
     .slice(0, 40)
     .map((p) => p.price)
     .sort((a, b) => a - b);
 
+  // medianSorted averages the two middle values on even counts; prices are whole NP.
   const median =
-    recentAuctions.length >= 5 ? medianSorted(removeOutliersCombined(recentAuctions)) : null;
+    recentAuctions.length >= 5
+      ? Math.round(medianSorted(removeOutliersCombined(recentAuctions)))
+      : null;
 
   return {
-    recent: auctions.slice(0, 40),
+    recent: (collapseRelistings ? listings : auctions).slice(0, 40),
     item: item,
     total: totalAuctions,
     sold: soldAuctions,

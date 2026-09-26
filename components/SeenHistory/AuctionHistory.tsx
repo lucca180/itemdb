@@ -8,6 +8,12 @@ import useSWRImmutable from 'swr/immutable';
 import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
 import { ContributeWall } from '../Utils/ContributeWall';
 import { loadAuctionHistory } from '@app/server/items/seenHistoryActions';
+import {
+  AuctionPriceChange,
+  AuctionRelistedTag,
+  AuctionRelistingHistory,
+  useAuctionRelistingToggle,
+} from '@components/Auctions/AuctionRelisting';
 
 /** Re-check contribute gate / sold auctions periodically while the modal is open. */
 const GATED_REFRESH_MS = 60_000;
@@ -183,42 +189,62 @@ const AuctionHistoryTable = (props: Props) => {
 
 const AuctionItem = (props: { auction: ItemAuctionData; index: number }) => {
   const { auction } = props;
+  const { relisting } = auction;
   const format = useFormatter();
   const t = useTranslations();
+  const { open, rowProps } = useAuctionRelistingToggle(!!relisting);
 
   return (
-    <Table.Row>
-      <Table.Cell>
-        <Text>{format.number(auction.price)} NP</Text>
-      </Table.Cell>
-      <Table.Cell>
-        <Text>
-          {auction.flag && `[${auction.flag}] `}
-          {auction.timeLeft}
-        </Text>
-      </Table.Cell>
-      <Table.Cell>
-        <Badge colorPalette={auction.hasBuyer ? 'green' : 'gray'} size="xs">
-          {auction.bidCount != null
-            ? t('ItemPage.bids-count', { x: auction.bidCount })
-            : auction.hasBuyer
-              ? t('ItemPage.has-bids')
-              : t('ItemPage.no-bids')}
-        </Badge>
-      </Table.Cell>
-      <Table.Cell>
-        <Text>{auction.owner}</Text>
-      </Table.Cell>
-      <Table.Cell>
-        <Text>
-          {format.dateTime(new Date(auction.addedAt), {
-            dateStyle: 'short',
-            timeStyle: 'short',
-            timeZone: 'america/los_angeles',
-          })}{' '}
-          NST
-        </Text>
-      </Table.Cell>
-    </Table.Row>
+    <>
+      <Table.Row {...rowProps}>
+        <Table.Cell>
+          <Flex alignItems="center" gap={1}>
+            <Text>{format.number(auction.price)} NP</Text>
+            {relisting && (
+              <AuctionPriceChange
+                price={auction.price}
+                previousPrice={relisting.history[0]?.price}
+              />
+            )}
+          </Flex>
+          {relisting && <AuctionRelistedTag count={relisting.count} open={open} />}
+        </Table.Cell>
+        <Table.Cell>
+          <Text>
+            {auction.flag && `[${auction.flag}] `}
+            {auction.timeLeft}
+          </Text>
+        </Table.Cell>
+        <Table.Cell>
+          <Badge colorPalette={auction.hasBuyer ? 'green' : 'gray'} size="xs">
+            {auction.bidCount != null
+              ? t('ItemPage.bids-count', { x: auction.bidCount })
+              : auction.hasBuyer
+                ? t('ItemPage.has-bids')
+                : t('ItemPage.no-bids')}
+          </Badge>
+        </Table.Cell>
+        <Table.Cell>
+          <Text>{auction.owner}</Text>
+        </Table.Cell>
+        <Table.Cell>
+          <Text>
+            {format.dateTime(new Date(auction.addedAt), {
+              dateStyle: 'short',
+              timeStyle: 'short',
+              timeZone: 'america/los_angeles',
+            })}{' '}
+            NST
+          </Text>
+        </Table.Cell>
+      </Table.Row>
+      {relisting && open && (
+        <Table.Row>
+          <Table.Cell colSpan={5} bg="blackAlpha.300">
+            <AuctionRelistingHistory relisting={relisting} />
+          </Table.Cell>
+        </Table.Row>
+      )}
+    </>
   );
 };

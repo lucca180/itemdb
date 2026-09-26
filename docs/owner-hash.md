@@ -19,9 +19,15 @@ migrated from the masked `owner` string one at a time (see below).
 | Behavior | Location | Rows without `ownerHash` |
 | --- | --- | --- |
 | Trade relisting history | `utils/item/tradeRelisting.ts` | Ignored (no relisting badge) |
+| Auction relisting history | `utils/item/auctionRelisting.ts` | Ignored (never chained) |
 
-`ownerHash` is passed to the relisting logic as a server-side `trade_id → hash`
-map and never added to `TradeData`, so it is not exposed to the client.
+`ownerHash` is passed to the relisting logic as a server-side id → hash map
+(`trade_id` for trades, `internal_id` for auctions) and never added to `TradeData`
+or `ItemAuctionData`, so it is not exposed to the client.
+
+Auction relisting chains are collapsed only in the seen history modal (the item
+page auction card shows every auction). The public `/api/v1/items/[id_name]/auction` endpoint still returns
+every auction in `recent`; only its `priceMedian` counts each chain once.
 
 ## Future identity migration
 

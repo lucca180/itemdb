@@ -154,14 +154,16 @@ export type TradeData = {
     amount: number;
     addedAt: string;
     price: number | null;
-    relisting?: {
-      count: number;
-      since: string;
-      history: {
-        price: number | null;
-        date: string;
-      }[];
-    };
+    relisting?: ListingRelisting;
+  }[];
+};
+
+export type ListingRelisting = {
+  count: number;
+  since: string;
+  history: {
+    price: number | null;
+    date: string;
   }[];
 };
 
@@ -177,6 +179,7 @@ export type ItemAuctionData = {
   hasBuyer: boolean;
   timeLeft: string | null;
   bidCount: number | null;
+  relisting?: ListingRelisting;
 };
 
 export type SearchResults = {
