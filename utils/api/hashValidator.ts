@@ -3,9 +3,8 @@ import { timingSafeEqual } from 'crypto';
 import objectHash from 'object-hash';
 import * as Sentry from '@sentry/nextjs';
 import prisma from '@utils/prisma';
-import { checkHash } from '@utils/hash';
 
-export type HashValidationMode = 'new' | 'legacy' | 'invalid' | 'bypass' | 'dev-skip' | 'revoked';
+export type HashValidationMode = 'new' | 'invalid' | 'bypass' | 'dev-skip' | 'revoked';
 
 type ValidationArgs = {
   req: NextApiRequest;
@@ -57,15 +56,6 @@ export async function validateExtractorHash(args: ValidationArgs): Promise<Valid
   if (hashValue && key?.secret && isValidExtractorHash(hashValue, payload, key.secret)) {
     recordMetric('new', endpoint, versionCode);
     return { valid: true, mode: 'new', versionCode };
-  }
-
-  if (
-    process.env.ITEMDB_ACCEPT_LEGACY_EXTRACTOR_HASH !== 'false' &&
-    hashValue &&
-    checkHash(hashValue, payload)
-  ) {
-    recordMetric('legacy', endpoint, versionCode);
-    return { valid: true, mode: 'legacy', versionCode };
   }
 
   recordMetric('invalid', endpoint, versionCode);
