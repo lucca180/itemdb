@@ -6,13 +6,22 @@ value and is not returned by public APIs.
 
 ## Current phase
 
-The current phase only collects and propagates the hash. Existing behavior must
-continue using the masked `owner` string until the review date.
+The hash is collected and propagated everywhere. Identity behaviors are being
+migrated from the masked `owner` string one at a time (see below).
 
 - Review date: 2026-12-11
 - Active tables: `Trades`, `PriceProcess2`, `RestockAuctionHistory`
 - Legacy rows are not backfilled.
 - Synthetic owners such as `restock` and `restock-haggle` do not receive a hash.
+
+## Migrated
+
+| Behavior | Location | Rows without `ownerHash` |
+| --- | --- | --- |
+| Trade relisting history | `utils/item/tradeRelisting.ts` | Ignored (no relisting badge) |
+
+`ownerHash` is passed to the relisting logic as a server-side `trade_id → hash`
+map and never added to `TradeData`, so it is not exposed to the client.
 
 ## Future identity migration
 
@@ -21,7 +30,6 @@ The following uses treat `owner` as an identity and are candidates to use
 
 | Behavior | Current location |
 | --- | --- |
-| Trade relisting history | `utils/tradeRelisting.ts` |
 | Similar trade suppression | `pages/api/v1/trades/index.ts` |
 | Duplicate owner filtering during pricing | `utils/prices/pricing.ts`, `utils/prices/pricing3.ts` |
 | Unique owner counts | `pages/api/v1/items/[id_name]/[tradings].ts`, `pages/api/v1/prices/[iid]/status.ts` |

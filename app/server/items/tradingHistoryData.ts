@@ -102,8 +102,11 @@ export const getTradeData = async (
     };
   });
 
+  // ownerHash stays server-side: it is only used as the relisting identity key.
+  const ownerHashes = new Map(tradeRaw.map((p) => [p.trade_id, p.ownerHash]));
+
   const tradeList = (
-    includeRelisting ? addTradeRelistingHistory(allTrades, target) : allTrades
+    includeRelisting ? addTradeRelistingHistory(allTrades, target, ownerHashes) : allTrades
   ).filter((trade) => !onlyPriced || !!findTradeTargetItem(trade, target)?.price);
   const uniqueOwners = new Set(tradeList.map((trade) => trade.owner));
   const priced = tradeList.filter((trade) => {

@@ -5,6 +5,8 @@ type TradeRelistingTarget = {
   itemName?: string;
 };
 
+type TradeOwnerHashes = ReadonlyMap<number, string | null>;
+
 const normalize = (value: string) => value.trim().toLowerCase();
 
 export const shouldShowTradeRelisting = (item: Pick<ItemData, 'saleStatus' | 'price'>) =>
@@ -21,7 +23,8 @@ const isTargetItem = (item: TradeData['items'][number], target: TradeRelistingTa
 
 export const addTradeRelistingHistory = (
   trades: TradeData[],
-  target: TradeRelistingTarget
+  target: TradeRelistingTarget,
+  ownerHashes: TradeOwnerHashes
 ): TradeData[] => {
   const ownerHistory = new Map<
     string,
@@ -48,7 +51,10 @@ export const addTradeRelistingHistory = (
     const item = trade.items.find((tradeItem) => isTargetItem(tradeItem, target));
     if (!item) return;
 
-    const ownerKey = normalize(trade.owner);
+    // Trades without ownerHash have no reliable owner identity, so they are not tracked.
+    const ownerKey = ownerHashes.get(trade.trade_id);
+    if (!ownerKey) return;
+
     const history = ownerHistory.get(ownerKey);
 
     if (!history) {
