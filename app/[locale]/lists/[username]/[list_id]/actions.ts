@@ -1,10 +1,20 @@
 'use server';
 
 import { updateTag } from 'next/cache';
+import { headers } from 'next/headers';
+import requestIp from 'request-ip';
 import type { SearchFilters, SearchStats, UserList } from '@types';
 import { defaultFilters, getFiltersDiff } from '@utils/parseFilters';
 import { listMutationCacheTags } from '@utils/appCacheTags';
 import { ListService } from '@services/ListService';
+import {
+  submitListSuggestion,
+  SuggestionInputError,
+  type ListSuggestionErrorCode,
+  type SubmitListSuggestionResult,
+} from '@services/ListSuggestionService';
+import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { normalizeIP } from '@utils/api/api-utils';
 import { getFilteredListItems, getListCore, getListFullItems, getListStats } from './loadListPage';
 import type { ListCore, ListItemsData } from './listPage';
 
@@ -68,4 +78,41 @@ export async function refreshListData(
   const items = await getListFullItems({ ...core, list });
 
   return { list, items };
+}
+
+/**
+ * Submits a "missing item" suggestion for an official list (SuggestListItemModal).
+ * Never throws for expected errors: returns `{ success: false, error }` so the modal can
+ * show a translated message.
+ */
+export async function suggestMissingListItems(
+  listId: number,
+  itemIids: number[],
+  note?: string
+): Promise<
+  | ({ success: true } & SubmitListSuggestionResult)
+  | { success: false; error: ListSuggestionErrorCode | 'unknown' }
+> {
+  try {
+    const { user } = await getServerCurrentUser();
+    // server actions have no req object: build a req-like one so request-ip can read the headers
+    const headerStore = await headers();
+    const reqLike = { headers: Object.fromEntries(headerStore.entries()) };
+    const ip = requestIp.getClientIp(reqLike as Parameters<typeof requestIp.getClientIp>[0]);
+
+    const result = await submitListSuggestion({
+      listId,
+      itemIids,
+      note,
+      user,
+      ip: ip ? normalizeIP(ip) : null,
+    });
+
+    return { success: true, ...result };
+  } catch (error) {
+    if (error instanceof SuggestionInputError) return { success: false, error: error.code };
+
+    console.error(error);
+    return { success: false, error: 'unknown' };
+  }
 }

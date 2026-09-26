@@ -1,5 +1,7 @@
 import { Suspense } from 'react';
-import { Flex, Heading, Separator, Skeleton, Text } from '@chakra-ui/react';
+import { Flex, Heading, Link, Separator, Skeleton, Text } from '@chakra-ui/react';
+import { Link as I18nLink } from '@i18n/navigation';
+import { OFFICIAL_CRITERIA_URL } from '@utils/list/officialListLinks';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
 import { getTranslations } from 'next-intl/server';
@@ -50,6 +52,17 @@ async function OfficialListsHeader({ locale }: OfficialListsHeaderProps) {
       <Text fontSize={{ base: 'sm', md: undefined }}>
         {t.rich('Lists.officialList-subheader', {
           br: () => <br />,
+          Link: (chunk) => (
+            <Link asChild color="whiteAlpha.900" fontWeight="bold">
+              <I18nLink
+                href={OFFICIAL_CRITERIA_URL}
+                data-umami-event="official-criteria-cta"
+                data-umami-event-label="official-header"
+              >
+                {chunk}
+              </I18nLink>
+            </Link>
+          ),
         })}
       </Text>
     </HeaderCard>
@@ -96,18 +109,21 @@ type OfficialListsPageBodyProps = {
   locale: string;
   initialCat?: string;
   canEdit: boolean;
+  /** `?apply` opens the apply modal on load (linked from the "make your list official" CTAs). */
+  initialApplyOpen?: boolean;
 };
 
 export async function OfficialListsPageBody({
   locale,
   initialCat,
   canEdit,
+  initialApplyOpen,
 }: OfficialListsPageBodyProps) {
   return (
     <>
       <OfficialListsHeader locale={locale} />
       <Separator />
-      <OfficialListsPageClient initialCat={initialCat}>
+      <OfficialListsPageClient initialCat={initialCat} initialApplyOpen={initialApplyOpen}>
         <Suspense fallback={<OfficialTrendingListsSkeleton />}>
           <OfficialTrendingLists canEdit={canEdit} />
         </Suspense>

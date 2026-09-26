@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { Link as I18nLink } from '@i18n/navigation';
-import { Link, List, Text, Alert, Flex, Heading } from '@chakra-ui/react';
+import { Link, List, Text, Alert, Flex, Heading, Button } from '@chakra-ui/react';
 import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
+import OfficialListCriteria from '@components/UserLists/OfficialListCriteria';
+import { OFFICIAL_APPLY_URL } from '@utils/list/officialListLinks';
 import { getTranslations } from 'next-intl/server';
 import { MobileDeviceWarning } from './MobileDeviceWarning';
 import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
@@ -258,21 +260,26 @@ function buildOfficialTab(t: T) {
       <Heading size="lg">{t('Feedback.creating-official-lists')}</Heading>
       <Text>
         {t.rich('Feedback.ol-1', {
-          Link: (chunk) => <I18nLink href="/lists/official">{chunk}</I18nLink>,
+          Link: (chunk) => <I18nLink href={OFFICIAL_APPLY_URL}>{chunk}</I18nLink>,
           b: (chunk) => <b>{chunk}</b>,
         })}
       </Text>
-      <Text>
-        {t.rich('Feedback.ol-2', {
-          b: (chunk) => <b>{chunk}</b>,
-        })}
-      </Text>
+      <OfficialListCriteria />
       <Text>
         {t.rich('Feedback.ol-3', {
           Link1: (chunk) => <I18nLink href="/lists/official">{chunk}</I18nLink>,
           Link2: (chunk) => <I18nLink href="/terms">{chunk}</I18nLink>,
         })}
       </Text>
+      <Button asChild colorPalette="blue" variant="subtle" alignSelf="flex-start">
+        <I18nLink
+          href={OFFICIAL_APPLY_URL}
+          data-umami-event="official-apply-cta"
+          data-umami-event-label="contribute"
+        >
+          {t('Lists.official-apply-list')}
+        </I18nLink>
+      </Button>
     </Flex>
   );
 }

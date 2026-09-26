@@ -17,7 +17,7 @@ const ogImage = {
 
 type OfficialListsPageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ cat?: string }>;
+  searchParams: Promise<{ cat?: string; apply?: string }>;
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,14 +47,19 @@ export default function OfficialListsPage({ params, searchParams }: OfficialList
 
 async function OfficialListsPageContent({ params, searchParams }: OfficialListsPageProps) {
   const { locale } = await params;
-  const { cat } = await searchParams;
+  const { cat, apply } = await searchParams;
   const { user } = await getServerCurrentUser();
   const canEdit = user?.isAdmin ?? false;
 
   return (
     <>
       <SetMainColor color={mainColor} />
-      <OfficialListsPageBody locale={locale} initialCat={cat} canEdit={canEdit} />
+      <OfficialListsPageBody
+        locale={locale}
+        initialCat={cat}
+        canEdit={canEdit}
+        initialApplyOpen={apply !== undefined}
+      />
     </>
   );
 }

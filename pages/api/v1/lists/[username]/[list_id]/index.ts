@@ -9,6 +9,7 @@ import { slugify } from '@utils/utils';
 import { ListService, type PutListItemInput } from '@services/ListService';
 import { listMutationCacheTags } from '@utils/appCacheTags';
 import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
+import { canEditListInfo } from '@utils/list/listPermissions';
 
 export const config = {
   api: {
@@ -195,7 +196,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       highlightText?: string;
     };
 
-    if (
+    const hasInfoUpdate =
       name ||
       description ||
       coverURL ||
@@ -212,8 +213,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       listUserTag ||
       canBeLinked ||
       highlight ||
-      highlightText
-    ) {
+      highlightText;
+
+    if (hasInfoUpdate) {
+      // official lists: curators can manage items (handled above), but not the list itself
+      if (!canEditListInfo({ official: list.official, ownerId: list.user_id }, user))
+        return res.status(403).json({ error: 'Official lists can only be edited by admins' });
+
+      // official-only fields are admin-only on any list
+      const isAdmin = !!user.isAdmin;
+      const nextOfficial = isAdmin && typeof official !== 'undefined' ? official : list.official;
+
       let colorHexVar = colorHex;
 
       if ((!colorHexVar || colorHexVar === '#000000') && coverURL) {
@@ -223,15 +233,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       let slug = list.slug;
       // update slug
-      if (
-        (name && slugify(name) !== list.slug) ||
-        (typeof official !== 'undefined' && list.official !== official)
-      ) {
+      if ((name && slugify(name) !== list.slug) || list.official !== nextOfficial) {
         if (/^\d+$/.test(name ?? list.name)) {
           return res.status(400).json({ error: 'List name cannot be a number' });
         }
 
-        slug = await createListSlug(name ?? list.name, user.id, !!official);
+        slug = await createListSlug(name ?? list.name, list.user_id, nextOfficial);
       }
 
       await prisma.userList.update({
@@ -244,22 +251,28 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           updatedAt: new Date(),
           cover_url: coverURL,
           colorHex: colorHexVar,
-          official: user.isAdmin ? official : undefined,
+          official: isAdmin ? official : undefined,
           order: order ? Number(order) : undefined,
           purpose: purpose,
           visibility: visibility,
-          official_tag: officialTag,
+          official_tag: isAdmin ? officialTag : undefined,
           sortBy: sortInfo?.sortBy,
           sortDir: sortInfo?.sortDir,
           listUserTag: listUserTag ?? null,
           canBeLinked: canBeLinked ?? undefined,
-          seriesType: seriesType === 'none' ? null : (seriesType as SeriesType),
-          seriesStart: seriesStart ? new UTCDate(new UTCDate(seriesStart).setHours(18)) : null,
-          seriesEnd: seriesEnd ? new UTCDate(new UTCDate(seriesEnd).setHours(18)) : null,
+          ...(isAdmin
+            ? {
+                seriesType: seriesType === 'none' ? null : (seriesType as SeriesType),
+                seriesStart: seriesStart
+                  ? new UTCDate(new UTCDate(seriesStart).setHours(18))
+                  : null,
+                seriesEnd: seriesEnd ? new UTCDate(new UTCDate(seriesEnd).setHours(18)) : null,
+              }
+            : {}),
           slug: slug,
           highlight: highlight?.trim() ?? undefined,
           highlightText: highlightText?.trim() ?? undefined,
-          ...ListService.adminListSeoWriteData(req.body, user.isAdmin),
+          ...ListService.adminListSeoWriteData(req.body, isAdmin),
         },
       });
     }

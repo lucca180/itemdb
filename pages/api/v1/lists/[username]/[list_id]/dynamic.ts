@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ExtendedSearchQuery } from '../../../../../../types';
+import { ExtendedSearchQuery, User } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { doSearch } from '../../../search';
@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/generated/client';
 import { isSameHour, startOfHour } from 'date-fns';
 import { ListService } from '@services/ListService';
 import { LogService } from '@services/ActionLogService';
+import { canEditListInfo } from '@utils/list/listPermissions';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   // return res.status(405).json({ error: 'Method not allowed' });
@@ -95,8 +96,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!['addOnly', 'removeOnly', 'fullSync', 'search'].includes(dynamicType))
     return res.status(400).json({ error: 'Invalid dynamic type' });
 
+  let user: User | null = null;
+
   try {
-    const { user } = await CheckAuth(req);
+    user = (await CheckAuth(req)).user;
 
     if (!user || user.username !== username || user.banned)
       return res.status(401).json({ error: 'Unauthorized' });
@@ -114,6 +117,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   });
 
   if (!targetList) return res.status(404).json({ error: 'List not found' });
+
+  if (!canEditListInfo({ official: targetList.official, ownerId: targetList.user_id }, user))
+    return res.status(403).json({ error: 'Official lists can only be edited by admins' });
 
   if (targetList.dynamicQuery || targetList.linkedListId)
     return res.status(400).json({ error: 'List is already dynamic' });

@@ -35,10 +35,12 @@ import { BsFilter } from 'react-icons/bs';
 import { SearchFilterModalProps } from '@components/Search/SearchFiltersModal';
 import { defaultFilters } from '@utils/parseFilters';
 import { AddListItemsModalProps } from '@components/Modal/AddListItemsModal';
+import { SuggestListItemModalProps } from '@components/Modal/SuggestListItemModal';
 import { ItemList } from '@components/UserLists/ItemList';
 import { BiHelpCircle } from 'react-icons/bi';
 import A11yTooltip from '@components/Utils/Tooltip';
 import { useKeyboardShortcut } from '@utils/useKeyboardShortcut';
+import { useAuth } from '@utils/auth';
 import type { ListItemsData, ListPageClientCore } from './listPage';
 import { useListPageState } from './useListPageState';
 import { ListFullItemsMergeProvider } from './listPageSuspenseMerge';
@@ -58,6 +60,10 @@ const SearchFilterModal = dynamic<SearchFilterModalProps>(
 );
 const AddListItemsModal = dynamic<AddListItemsModalProps>(
   () => import('@components/Modal/AddListItemsModal'),
+  { ssr: false }
+);
+const SuggestListItemModal = dynamic<SuggestListItemModalProps>(
+  () => import('@components/Modal/SuggestListItemModal'),
   { ssr: false }
 );
 const SelectedItemsActionBar = dynamic(
@@ -115,6 +121,8 @@ export function ListPageClient({
   const t = useTranslations();
   const { open, onOpen, onClose } = useDisclosure();
   const { open: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
+  const { open: isOpenSuggest, onOpen: onOpenSuggest, onClose: onCloseSuggest } = useDisclosure();
+  const { user } = useAuth();
 
   const state = useListPageState({ locale, username, listId, core, initialPreload });
 
@@ -144,6 +152,10 @@ export function ListPageClient({
   const highlightIds = state.displayedItemInfoIds.filter(
     (id) => state.itemInfo[id].isHighlight && (!state.itemInfo[id].isHidden || state.isEdit)
   );
+
+  // "Suggest missing item" button: logged-in non-editors on official, non-dynamic lists
+  const canSuggestItems =
+    !!user && state.list.official && !state.canEdit && !state.list.dynamicType;
 
   // Keep Suspense children mounted during filter loads so the full-load receiver is not remounted.
   const showMainItemGrid = !state.isLoading || !!state.itemInfoIds.length || useSuspenseFullLoad;
@@ -184,6 +196,9 @@ export function ListPageClient({
       {isOpenInsert && (
         <AddListItemsModal isOpen={isOpenInsert} onClose={onCloseInsert} list={state.list} />
       )}
+      {isOpenSuggest && (
+        <SuggestListItemModal isOpen={isOpenSuggest} onClose={onCloseSuggest} list={state.list} />
+      )}
 
       <ListHeader
         list={state.list}
@@ -211,6 +226,17 @@ export function ListPageClient({
                   <Kbd ml={2} fontSize="xs">
                     A
                   </Kbd>
+                </Button>
+              )}
+              {canSuggestItems && (
+                <Button
+                  onClick={onOpenSuggest}
+                  loading={state.isLoading}
+                  variant="ghost"
+                  colorPalette="red"
+                  data-umami-event="suggest-missing-item"
+                >
+                  {t('Lists.suggest-missing-item')}
                 </Button>
               )}
               {(state.isOwner || state.list.official || state.list.canBeLinked) && (

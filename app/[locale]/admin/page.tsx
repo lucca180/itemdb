@@ -2,7 +2,13 @@ import type { Metadata } from 'next';
 import type { ReactElement } from 'react';
 import { Suspense } from 'react';
 import { Center, Grid, Heading, Link, Text } from '@chakra-ui/react';
-import { MdAddCircle, MdOutlineEditNote, MdOutlineFactCheck, MdShowChart } from 'react-icons/md';
+import {
+  MdAddCircle,
+  MdOutlineEditNote,
+  MdOutlineFactCheck,
+  MdPlaylistAdd,
+  MdShowChart,
+} from 'react-icons/md';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
@@ -30,6 +36,13 @@ const adminTools: AdminTool[] = [
       "Triage pending item merge-conflict submissions (renames and re-arts) that couldn't be merged automatically.",
     icon: <MdOutlineFactCheck />,
     color: '#8f5573',
+  },
+  {
+    href: '/admin/list-suggestions',
+    title: 'Official List Suggestions',
+    description: 'Review items users suggested as missing from official lists.',
+    icon: <MdPlaylistAdd />,
+    color: '#557f8f',
   },
   {
     href: '/admin/price-markers',

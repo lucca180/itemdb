@@ -1,11 +1,10 @@
-import { revalidateTag } from 'next/cache';
 import {
   assertTagsMatchInternalId,
   isAppCacheTag,
-  requiresImmediateRevalidation,
   type AppCacheTag,
   type ItemScopedCacheTag,
 } from '@utils/appCacheTags';
+import { revalidateAppCacheTags } from '@utils/revalidateAppCacheTags';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 
 function getRevalidateSecret(): string | undefined {
@@ -72,13 +71,7 @@ export async function POST(request: Request) {
     }
   }
 
-  for (const tag of tags) {
-    if (requiresImmediateRevalidation(tag)) {
-      revalidateTag(tag, { expire: 0 });
-    } else {
-      revalidateTag(tag, 'max');
-    }
-  }
+  revalidateAppCacheTags(tags);
 
   return Response.json({
     revalidated: tags,

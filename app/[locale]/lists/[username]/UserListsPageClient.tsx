@@ -27,6 +27,8 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
+import MainLink from '@components/Utils/MainLink';
+import { canDeleteList } from '@utils/list/listPermissions';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('@components/Modal/CreateListModal'),
@@ -142,8 +144,39 @@ export function UserListsPageClient({
     router.refresh();
   };
 
+  // official lists can only be deleted by admins, so curators can't select them
+  const deletableIds = useMemo(
+    () =>
+      listsIds.filter((id) =>
+        canDeleteList({ official: lists[id].official, ownerId: lists[id].owner.id }, viewer)
+      ),
+    [listsIds, lists, viewer]
+  );
+
   const selectItem = (id: number) => {
     if (!isEdit) return;
+
+    if (!deletableIds.includes(id)) {
+      if (toast.isActive('official-list-locked')) return;
+
+      toast({
+        id: 'official-list-locked',
+        description: t.rich('Lists.official-curator-locked', {
+          Feedback: (chunk) => (
+            <MainLink href="/feedback" trackEvent="official-curator-feedback">
+              <b>
+                <u>{chunk}</u>
+              </b>
+            </MainLink>
+          ),
+        }),
+        status: 'info',
+        duration: 6000,
+        isClosable: true,
+      });
+      return;
+    }
+
     if (selectedLists.includes(id)) {
       setSelectedLists(selectedLists.filter((list) => list !== id));
     } else {
@@ -152,7 +185,7 @@ export function UserListsPageClient({
   };
 
   const handleSelectCheckbox = (checkAll: boolean) => {
-    if (checkAll) setSelectedLists(listsIds);
+    if (checkAll) setSelectedLists(deletableIds);
     else setSelectedLists([]);
   };
 
@@ -292,7 +325,7 @@ export function UserListsPageClient({
               <Box bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.35)`} p={2} borderRadius="md">
                 <SelectItemsCheckbox
                   checked={selectedLists}
-                  allChecked={selectedLists.length === listsIds.length}
+                  allChecked={!!deletableIds.length && selectedLists.length === deletableIds.length}
                   onClick={handleSelectCheckbox}
                 />
               </Box>

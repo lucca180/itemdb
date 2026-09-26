@@ -30,6 +30,7 @@ import { defaultFilters, getFiltersDiff } from '@utils/parseFilters';
 import { CreateDynamicListButton } from '@components/DynamicLists/CreateButton';
 import Color from 'color';
 import MainLink from '@components/Utils/MainLink';
+import { OFFICIAL_CRITERIA_URL } from '@utils/list/officialListLinks';
 import { useFormatter, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useLists } from '@utils/useLists';
@@ -611,6 +612,22 @@ const SearchTips = (props: { searchTip: number }) => {
           Link: (chunk) => (
             <Link asChild color="whiteAlpha.800">
               <MainLink viaNextLink href="/lists/import/advanced" prefetch={false}>
+                {chunk}
+              </MainLink>
+            </Link>
+          ),
+        })}
+      {searchTip === 4 &&
+        t.rich('Search.tip-official-lists', {
+          Link: (chunk) => (
+            <Link asChild color="whiteAlpha.800">
+              <MainLink
+                viaNextLink
+                href={OFFICIAL_CRITERIA_URL}
+                prefetch={false}
+                trackEvent="official-criteria-cta"
+                trackEventLabel="search-tip"
+              >
                 {chunk}
               </MainLink>
             </Link>
