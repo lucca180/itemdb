@@ -1,18 +1,35 @@
 'use client';
 
-import { Box, Flex, Heading, Text, SimpleGrid, HStack, Icon, Badge } from '@chakra-ui/react';
+import {
+  Badge,
+  Box,
+  Code,
+  Collapsible,
+  Flex,
+  Heading,
+  HStack,
+  Icon,
+  SimpleGrid,
+  Text,
+} from '@chakra-ui/react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { AiFillWarning } from 'react-icons/ai';
-import { LuBoxes, LuCoins, LuLayers, LuSparkles, LuTicket } from 'react-icons/lu';
+import { LuBoxes, LuChevronDown, LuCoins, LuLayers, LuSparkles, LuTicket } from 'react-icons/lu';
 import type { ImportSummary } from '@utils/list/computeImportSummary';
 
 export type ImportSummaryBarProps = {
   summary: ImportSummary;
   totalCount: number;
   notFoundCount: number;
+  notFoundKeys: string[];
 };
 
-export function ImportSummaryBar({ summary, totalCount, notFoundCount }: ImportSummaryBarProps) {
+export function ImportSummaryBar({
+  summary,
+  totalCount,
+  notFoundCount,
+  notFoundKeys,
+}: ImportSummaryBarProps) {
   const t = useTranslations();
   const format = useFormatter();
 
@@ -116,7 +133,14 @@ export function ImportSummaryBar({ summary, totalCount, notFoundCount }: ImportS
       </SimpleGrid>
 
       {notFoundCount > 0 && (
-        <Box bg="orange.950" borderWidth="1px" borderColor="orange.800" borderRadius="md" p={3}>
+        <Box
+          bg="orange.950"
+          borderWidth="1px"
+          borderColor="orange.800"
+          borderRadius="md"
+          p={3}
+          maxW="750px"
+        >
           <HStack gap={2}>
             <Icon as={AiFillWarning} color="orange.400" boxSize={4} />
             <Text fontSize="sm" fontWeight="medium" color="orange.200">
@@ -126,6 +150,44 @@ export function ImportSummaryBar({ summary, totalCount, notFoundCount }: ImportS
               {t('Lists.importV2-unresolved')}
             </Badge>
           </HStack>
+          {notFoundKeys.length > 0 && (
+            <Collapsible.Root>
+              <Collapsible.Trigger
+                display="flex"
+                alignItems="center"
+                gap={1}
+                mt={2}
+                fontSize="sm"
+                fontWeight="semibold"
+                color="orange.200"
+                cursor="pointer"
+                onClick={() => window.umami?.track('import-v2-not-found-toggle')}
+              >
+                <Collapsible.Indicator
+                  transition="transform 0.15s"
+                  _open={{ transform: 'rotate(180deg)' }}
+                >
+                  <LuChevronDown />
+                </Collapsible.Indicator>
+                {t('Lists.importV2-not-found-show-keys', { count: notFoundKeys.length })}
+              </Collapsible.Trigger>
+              <Collapsible.Content>
+                <Flex gap={1.5} flexWrap="wrap" pt={2} maxH="240px" overflowY="auto">
+                  {notFoundKeys.map((key) => (
+                    <Code
+                      key={key}
+                      size="sm"
+                      variant="subtle"
+                      colorPalette="orange"
+                      wordBreak="break-all"
+                    >
+                      {key}
+                    </Code>
+                  ))}
+                </Flex>
+              </Collapsible.Content>
+            </Collapsible.Root>
+          )}
         </Box>
       )}
     </Flex>

@@ -15,13 +15,20 @@ import {
   isImportFilterType,
 } from '@utils/list/filterImportPreviewItems';
 import { getImportItemBadges } from '@utils/list/importItemBadges';
+import { resolveImportRecommendedListId } from '@utils/list/importMeta';
 import { getListImportSession, type ListImportSession } from '@utils/list/importSession';
 import {
   isImportSortKey,
   sortImportPreviewItems,
   type ImportSortDir,
 } from '@utils/list/sortImportPreviewItems';
+import {
+  isAmbiguousImportLookupType,
+  resolveImportItems,
+  type ImportAmbiguity,
+} from '@utils/list/resolveImportItems';
 import prisma from '@utils/prisma';
+import type { ItemV2For } from '@types';
 import { dynamicListCan } from '@utils/utils';
 import {
   IMPORT_ERROR,
@@ -88,19 +95,56 @@ async function requireImportSession(importToken: string) {
   return session;
 }
 
+/**
+ * Resolves every session key to items. Keys that can match several items
+ * (image / name) go through {@link resolveImportItems} so shared keys are either
+ * disambiguated or reported as ambiguous instead of silently collapsing to one item.
+ */
+async function lookupImportItems<I extends 'card' | 'full'>(
+  session: ListImportSession,
+  intent: I,
+  withAmbiguousItems = false
+): Promise<{
+  data: Record<string, ItemV2For<I>>;
+  ambiguous: ImportAmbiguity[];
+  notFoundKeys: string[];
+}> {
+  const query = buildImportQuery(session);
+  const keys = Object.keys(session.items);
+
+  if (!isAmbiguousImportLookupType(query.type)) {
+    const data = await ItemService.getManyItems(query, { intent, limit: MAX_IMPORT_ITEMS });
+    // Unique lookups key the response by the looked-up value.
+    const found = new Set(Object.keys(data).map((key) => key.toLowerCase()));
+    const notFoundKeys = keys.filter((key) => !found.has(key.toLowerCase()));
+    return { data, ambiguous: [], notFoundKeys };
+  }
+
+  const recommendedListId = await resolveImportRecommendedListId({
+    meta: session.meta,
+    list_id: session.list_id,
+  });
+
+  return resolveImportItems({
+    indexType: query.type,
+    keys,
+    keyCounts: session.meta?.keyCounts,
+    recommendedListId,
+    intent,
+    withAmbiguousItems,
+  });
+}
+
 async function resolveImportPreviewItems(session: ListImportSession): Promise<{
   items: ImportPreviewItem[];
   totalCount: number;
-  notFoundCount: number;
+  notFoundKeys: string[];
+  ambiguous: ImportAmbiguity[];
 }> {
   const totalCount = Object.keys(session.items).length;
   if (totalCount > MAX_IMPORT_ITEMS) throwImportError(IMPORT_ERROR.TOO_LARGE);
 
-  const query = buildImportQuery(session, MAX_IMPORT_ITEMS);
-  const data = await ItemService.getManyItems(query, {
-    intent: 'card',
-    limit: MAX_IMPORT_ITEMS,
-  });
+  const { data, ambiguous, notFoundKeys } = await lookupImportItems(session, 'card', true);
 
   const items = Object.entries(data).map(([key, item]) => ({
     key,
@@ -108,11 +152,7 @@ async function resolveImportPreviewItems(session: ListImportSession): Promise<{
     quantity: importQuantity(session.items, item, key),
   }));
 
-  return {
-    items,
-    totalCount,
-    notFoundCount: totalCount - Object.keys(data).length,
-  };
+  return { items, totalCount, notFoundKeys, ambiguous };
 }
 
 function clampPageSize(pageSize: number | undefined): number {
@@ -160,7 +200,9 @@ export async function loadImportItemsPage(
     totalFiltered,
     totalPages,
     totalCount: resolved.totalCount,
-    notFoundCount: resolved.notFoundCount,
+    notFoundCount: resolved.notFoundKeys.length,
+    notFoundKeys: resolved.notFoundKeys,
+    ambiguous: resolved.ambiguous,
     summary,
     filteredSummary,
     filterCounts,
@@ -206,11 +248,7 @@ export async function applyListImportV2(
     throwImportError(IMPORT_ERROR.FORBIDDEN_ACTION);
   }
 
-  const query = buildImportQuery(session);
-  const data = await ItemService.getManyItems(query, {
-    intent: 'full',
-    limit: MAX_IMPORT_ITEMS,
-  });
+  const { data, ambiguous, notFoundKeys } = await lookupImportItems(session, 'full');
   const ignore = new Set(input.ignore);
   const entries = Object.entries(data).filter(([, item]) => {
     if (ignore.has('np') && item.type === 'np') return false;
@@ -239,6 +277,7 @@ export async function applyListImportV2(
   return {
     listPath: `/lists/${username}/${list.internal_id}`,
     processedCount: importData.length,
-    notFoundCount: Object.keys(session.items).length - Object.keys(data).length,
+    notFoundCount: notFoundKeys.length,
+    ambiguousCount: ambiguous.length,
   };
 }

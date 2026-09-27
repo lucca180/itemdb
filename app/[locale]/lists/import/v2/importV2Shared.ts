@@ -12,6 +12,7 @@ import type { ImportFilterCounts, ImportFilterType } from '@utils/list/filterImp
 import type { ImportSortDir, ImportSortKey } from '@utils/list/sortImportPreviewItems';
 import type { ImportSummary } from '@utils/list/computeImportSummary';
 import type { ImportItemBadge } from '@utils/list/importItemBadges';
+import type { ImportAmbiguity } from '@utils/list/resolveImportItems';
 
 export const IMPORT_V2_PAGE_SIZE = 30;
 
@@ -37,6 +38,10 @@ export type ImportItemsPageResult = {
   totalCount: number;
   /** Session keys that did not resolve to an item. */
   notFoundCount: number;
+  /** The session keys behind `notFoundCount`. */
+  notFoundKeys: string[];
+  /** Session keys matching several items we could not tell apart (not applied). */
+  ambiguous: ImportAmbiguity[];
   /** Summary over all resolved items (ignores current filter). */
   summary: ImportSummary;
   /** Summary over the filtered set (before pagination). */
@@ -46,9 +51,13 @@ export type ImportItemsPageResult = {
 };
 
 export type ApplyListImportV2Input = ApplyListImportInput;
-export type ApplyListImportV2Result = ApplyListImportResult;
+export type ApplyListImportV2Result = ApplyListImportResult & {
+  /** Session keys skipped because they matched several items. */
+  ambiguousCount: number;
+};
 
 export type {
+  ImportAmbiguity,
   ImportAction,
   ImportErrorCode,
   ImportIgnore,

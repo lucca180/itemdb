@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Price Checker & List Importer
-// @version      2.0.0
+// @version      2.1.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Price check your items, filter, sort and import to your wishlists
@@ -137,10 +137,15 @@ const itemdb_importer = function() {
   }
 
   function handleGourmet(){
+    const images = $(".content p img").filter(function () {
+      return ($(this).attr('src') ?? '').includes('/items/');
+    });
+
     return {
-      items: collectImageItems($(".content p img")),
+      items: collectImageItems(images),
       indexType: 'image_id',
-      meta: { list_id: 72 },
+      // food variants may share one image (e.g. the 4 Pinannas) - the page shows it once per food eaten
+      meta: { list_id: 72, keyCounts: countRepeatedImages(images) },
     };
   }
 
@@ -153,10 +158,17 @@ const itemdb_importer = function() {
   }
 
   function handleBooks(){
+    const meta = { list_id: URLHas('moon') ? 663 : 664 };
+    // some books share the same image - use the name too when the page shows it (english only)
+    const namedItems = !URLHas('moon') && nl === 'en' ? collectNamedBookItems() : null;
+
+    if (namedItems)
+      return { items: namedItems, indexType: 'name_image_id', meta };
+
     return {
       items: collectImageItems($(".content table img")),
       indexType: 'image_id',
-      meta: { list_id: URLHas('moon') ? 663 : 664 },
+      meta,
     };
   }
 
@@ -210,6 +222,48 @@ const itemdb_importer = function() {
     });
 
     return items;
+  }
+
+  function countRepeatedImages(images) {
+    const counts = {};
+
+    images.each(function () {
+      const image_id = getImageID($(this).attr('src'));
+      counts[image_id] = (counts[image_id] ?? 0) + 1;
+    });
+
+    for (const image_id in counts) {
+      if (counts[image_id] < 2) delete counts[image_id];
+    }
+
+    return counts;
+  }
+
+  // returns null if any book row is missing its name
+  function collectNamedBookItems() {
+    const items = {};
+    let isComplete = true;
+
+    $(".content table tr").each(function () {
+      const tds = $(this).children('td');
+      const src = tds.eq(0).find('img').attr('src') ?? '';
+      if (tds.length !== 2 || !src.includes('/items/')) return;
+
+      const name = tds.eq(1).clone().children('i').remove().end().text()
+        .replace(/ /g, ' ')
+        .trim()
+        .replace(/:$/, '')
+        .trim();
+
+      if (!name) {
+        isComplete = false;
+        return false;
+      }
+
+      items[`${name},${getImageID(src)}`] = 1;
+    });
+
+    return isComplete && Object.keys(items).length ? items : null;
   }
 
   function collectNeoDeckItems() {

@@ -22,6 +22,7 @@ import {
   type ImportSortKey,
 } from './importV2Shared';
 import { FaerieFestivalSidebarPromo } from './FaerieFestivalSidebarPromo';
+import { ImportAmbiguityAlert } from './ImportAmbiguityAlert';
 import { ImportControlsSidebar } from './ImportControlsSidebar';
 import { ImportItemTable } from './ImportItemTable';
 import { ImportItemsLoadingSkeleton } from './ImportItemsLoadingSkeleton';
@@ -236,6 +237,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
         action,
         processed: applyResult.processedCount,
         notFound: applyResult.notFoundCount,
+        ambiguous: applyResult.ambiguousCount,
         dynamic: list.dynamicType ?? 'none',
         ignore: ignore.length ? ignore.join(',') : 'none',
         hasRecommended: Boolean(recommended_list),
@@ -266,6 +268,19 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
           description: t.rich('Lists.import-notFound', {
             notFound: applyResult.notFoundCount,
             b: (chunk) => <b>{chunk}</b>,
+          }),
+          status: 'warning',
+          duration: 12000,
+          isClosable: true,
+        });
+      }
+
+      if (applyResult.ambiguousCount > 0) {
+        toast({
+          id: 'import-v2-ambiguous',
+          title: t('General.tip'),
+          description: t('Lists.importV2-ambiguous-skipped', {
+            count: applyResult.ambiguousCount,
           }),
           status: 'warning',
           duration: 12000,
@@ -338,8 +353,11 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
               summary={result.summary}
               totalCount={result.totalCount}
               notFoundCount={result.notFoundCount}
+              notFoundKeys={result.notFoundKeys}
             />
           )}
+
+          {result && <ImportAmbiguityAlert ambiguous={result.ambiguous} />}
 
           {result && (
             <ImportToolbar
