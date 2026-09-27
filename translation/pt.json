@@ -996,7 +996,8 @@
     "suggest-missing-partial": "{count, plural, one {# item foi ignorado porque já está} other {# itens foram ignorados porque já estão}} na lista ou já foram sugeridos por você.",
     "suggest-missing-error-already-in-list": "Esses itens já estão nesta lista.",
     "suggest-missing-error-already-suggested": "Você já sugeriu esses itens.",
-    "suggest-missing-error-note-too-long": "Sua nota é muito longa (máx. {max} caracteres)."
+    "suggest-missing-error-note-too-long": "Sua nota é muito longa (máx. {max} caracteres).",
+    "suggest-missing-login-required": "Faça login para enviar sua sugestão. É rapidinho e ajuda a gente a manter as listas certinhas!"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

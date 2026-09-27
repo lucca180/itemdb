@@ -15,7 +15,10 @@ import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 import { LuX } from 'react-icons/lu';
 import ItemSelect from '@components/Input/ItemSelect';
+import MainLink from '@components/Utils/MainLink';
 import type { ItemData, UserList } from '@types';
+import { useAuth } from '@utils/auth';
+import { getListLink } from '@utils/list/listLink';
 import { suggestMissingListItems } from '@app/[locale]/lists/[username]/[list_id]/actions';
 import {
   MAX_SUGGESTION_ITEMS,
@@ -42,6 +45,7 @@ type Status =
 export default function SuggestListItemModal(props: SuggestListItemModalProps) {
   const t = useTranslations();
   const { isOpen, onClose, list } = props;
+  const { user, authLoading } = useAuth();
   const [items, setItems] = useState<ItemData[]>([]);
   const [note, setNote] = useState('');
   const [warning, setWarning] = useState<string | null>(null);
@@ -92,6 +96,8 @@ export default function SuggestListItemModal(props: SuggestListItemModalProps) {
   const handleSubmit = () => {
     if (!items.length) return;
 
+    window.umami?.track('suggest-missing-submit', { list: list.slug, count: items.length });
+
     startTransition(async () => {
       const res = await suggestMissingListItems(
         list.internal_id,
@@ -100,14 +106,25 @@ export default function SuggestListItemModal(props: SuggestListItemModalProps) {
       );
 
       if (!res.success) {
+        window.umami?.track('suggest-missing-error', { list: list.slug, code: res.error });
         setStatus({ type: 'error', message: getErrorMessage(res.error) });
         return;
       }
+
+      window.umami?.track('suggest-missing-success', {
+        list: list.slug,
+        count: items.length,
+        skipped: res.skipped.length,
+      });
 
       // some items may have been skipped server-side (already in list / already suggested)
       setStatus({ type: 'success', skipped: res.skipped.length });
     });
   };
+
+  const isLoggedOut = !user && !authLoading;
+  // back to this list with the modal reopened (`?suggest`, handled by the list page)
+  const loginUrl = `/login?redirect=${encodeURIComponent(`${getListLink(list)}?suggest=true`)}`;
 
   return (
     <Dialog.Root
@@ -148,6 +165,15 @@ export default function SuggestListItemModal(props: SuggestListItemModalProps) {
                       b: (chunk) => <b>{chunk}</b>,
                     })}
                   </Text>
+                  {isLoggedOut && (
+                    <Text fontSize="sm" textAlign="center" color="whiteAlpha.800">
+                      {t('Lists.suggest-missing-login-required')}
+                    </Text>
+                  )}
+                </Stack>
+              )}
+              {status.type !== 'success' && !isLoggedOut && (
+                <Stack gap={4} mt={4}>
                   <Stack gap={2}>
                     <ItemSelect onChange={addItem} isDisabled={isPending} />
                     {warning && (
@@ -215,9 +241,22 @@ export default function SuggestListItemModal(props: SuggestListItemModalProps) {
                   <Button variant="ghost" mr={3} onClick={handleClose} disabled={isPending}>
                     {t('General.cancel')}
                   </Button>
-                  <Button onClick={handleSubmit} loading={isPending} disabled={!items.length}>
-                    {t('General.send')}
-                  </Button>
+                  {isLoggedOut && (
+                    <Button asChild>
+                      <MainLink href={loginUrl} trackEvent="suggest-missing-login">
+                        {t('Layout.login')}
+                      </MainLink>
+                    </Button>
+                  )}
+                  {!isLoggedOut && (
+                    <Button
+                      onClick={handleSubmit}
+                      loading={isPending || authLoading}
+                      disabled={!items.length}
+                    >
+                      {t('General.send')}
+                    </Button>
+                  )}
                 </>
               )}
             </Dialog.Footer>

@@ -16,7 +16,7 @@ import {
   Link,
   Kbd,
 } from '@chakra-ui/react';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import type { ListItemInfo, UserList } from '@types';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import Color from 'color';
@@ -153,9 +153,25 @@ export function ListPageClient({
     (id) => state.itemInfo[id].isHighlight && (!state.itemInfo[id].isHidden || state.isEdit)
   );
 
-  // "Suggest missing item" button: logged-in non-editors on official, non-dynamic lists
-  const canSuggestItems =
-    !!user && state.list.official && !state.canEdit && !state.list.dynamicType;
+  // "Suggest missing item" button: non-editors on official, non-dynamic lists
+  // (logged-out users get a login prompt inside the modal)
+  const canSuggestItems = state.list.official && !state.canEdit && !state.list.dynamicType;
+
+  // reopen the suggest modal after the login redirect (`?suggest`)
+  useEffect(() => {
+    if (!canSuggestItems) return;
+    if (new URL(window.location.href).searchParams.has('suggest')) onOpenSuggest();
+  }, [canSuggestItems, onOpenSuggest]);
+
+  // drop ?suggest once the modal is closed, so a refresh doesn't open it again
+  const handleCloseSuggest = () => {
+    onCloseSuggest();
+
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('suggest')) return;
+    url.searchParams.delete('suggest');
+    window.history.replaceState(null, '', url);
+  };
 
   // Keep Suspense children mounted during filter loads so the full-load receiver is not remounted.
   const showMainItemGrid = !state.isLoading || !!state.itemInfoIds.length || useSuspenseFullLoad;
@@ -197,7 +213,11 @@ export function ListPageClient({
         <AddListItemsModal isOpen={isOpenInsert} onClose={onCloseInsert} list={state.list} />
       )}
       {isOpenSuggest && (
-        <SuggestListItemModal isOpen={isOpenSuggest} onClose={onCloseSuggest} list={state.list} />
+        <SuggestListItemModal
+          isOpen={isOpenSuggest}
+          onClose={handleCloseSuggest}
+          list={state.list}
+        />
       )}
 
       <ListHeader
@@ -235,6 +255,7 @@ export function ListPageClient({
                   variant="ghost"
                   colorPalette="red"
                   data-umami-event="suggest-missing-item"
+                  data-umami-event-auth={user ? 'logged-in' : 'logged-out'}
                 >
                   {t('Lists.suggest-missing-item')}
                 </Button>

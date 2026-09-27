@@ -814,7 +814,8 @@
     "suggest-missing-partial": "{count, plural, one {# item was} other {# items were}} skipped because {count, plural, one {it is} other {they are}} already in the list or already suggested by you.",
     "suggest-missing-error-already-in-list": "These items are already in this list.",
     "suggest-missing-error-already-suggested": "You have already suggested these items.",
-    "suggest-missing-error-note-too-long": "Your note is too long (max {max} characters)."
+    "suggest-missing-error-note-too-long": "Your note is too long (max {max} characters).",
+    "suggest-missing-login-required": "Log in to send your suggestion. It only takes a moment, and it helps us keep the lists accurate!"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

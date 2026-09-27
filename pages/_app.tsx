@@ -69,6 +69,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID_2}
               data-host-url={process.env.NEXT_PUBLIC_UMAMI_URL_2}
               data-before-send="beforeSendHandler"
+              data-domains="itemdb.com.br"
               data-performance="true"
               defer
             />
