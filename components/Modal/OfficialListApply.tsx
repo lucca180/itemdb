@@ -106,7 +106,7 @@ const ApplyListModal = (props: ApplyListModalProps) => {
               {status !== 'success' && (
                 <Stack gap={3}>
                   <Text fontSize="sm">{t('Lists.official-apply-intro')}</Text>
-                  <OfficialListCriteria size="sm" />
+                  <OfficialListCriteria compact />
                   <Link asChild fontSize="sm" color="green.200" alignSelf="flex-start">
                     <MainLink
                       href={OFFICIAL_CRITERIA_URL}
@@ -114,7 +114,7 @@ const ApplyListModal = (props: ApplyListModalProps) => {
                       trackEvent="official-criteria-cta"
                       trackEventLabel="apply-modal"
                     >
-                      {t('Lists.official-see-criteria')}
+                      {t('General.learn-more')}
                     </MainLink>
                   </Link>
                   <Separator />
