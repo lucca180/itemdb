@@ -65,7 +65,7 @@
     "lightweight-charts": "^5.2.0",
     "lodash": "^4.18.1",
     "mailgen": "^2.0.36",
-    "next": "16.4.0-canary.50",
+    "next": "16.4.0-canary.33",
     "next-intl": "^4.14.6",
     "next-seo": "^6.8.0",
     "next-sitemap": "^4.2.3",
