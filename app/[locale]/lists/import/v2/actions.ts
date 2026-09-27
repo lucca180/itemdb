@@ -36,14 +36,36 @@ import {
   MAX_IMPORT_ITEMS,
   type ApplyListImportV2Input,
   type ApplyListImportV2Result,
+  type ImportActionResult,
   type ImportErrorCode,
   type ImportItemsPageResult,
   type ImportPreviewItem,
   type LoadImportItemsPageInput,
 } from './importV2Shared';
 
+/** Expected import failure; turned into `{ success: false, error }` by {@link toImportResult}. */
+class ImportError extends Error {
+  code: ImportErrorCode;
+
+  constructor(code: ImportErrorCode) {
+    super(code);
+    this.name = 'ImportError';
+    this.code = code;
+  }
+}
+
 function throwImportError(code: ImportErrorCode): never {
-  throw new Error(code);
+  throw new ImportError(code);
+}
+
+/** Returns expected failures as codes; unexpected errors are rethrown (logged server-side). */
+async function toImportResult<T>(run: () => Promise<T>): Promise<ImportActionResult<T>> {
+  try {
+    return { success: true, data: await run() };
+  } catch (error) {
+    if (error instanceof ImportError) return { success: false, error: error.code };
+    throw error;
+  }
 }
 
 function isLookupType(value: unknown): value is FindManyItemsV2Type {
@@ -162,6 +184,19 @@ function clampPageSize(pageSize: number | undefined): number {
 
 export async function loadImportItemsPage(
   input: LoadImportItemsPageInput
+): Promise<ImportActionResult<ImportItemsPageResult>> {
+  return toImportResult(() => loadImportItemsPageData(input));
+}
+
+/** Parallel copy of applyListImport for v2 — consolidate on switch. */
+export async function applyListImportV2(
+  input: ApplyListImportV2Input
+): Promise<ImportActionResult<ApplyListImportV2Result>> {
+  return toImportResult(() => applyImport(input));
+}
+
+async function loadImportItemsPageData(
+  input: LoadImportItemsPageInput
 ): Promise<ImportItemsPageResult> {
   if (!input?.importToken) throwImportError(IMPORT_ERROR.INVALID_TYPE);
   if (!isImportSortKey(input.sortBy)) throwImportError(IMPORT_ERROR.INVALID_TYPE);
@@ -209,10 +244,7 @@ export async function loadImportItemsPage(
   };
 }
 
-/** Parallel copy of applyListImport for v2 — consolidate on switch. */
-export async function applyListImportV2(
-  input: ApplyListImportV2Input
-): Promise<ApplyListImportV2Result> {
+async function applyImport(input: ApplyListImportV2Input): Promise<ApplyListImportV2Result> {
   const { user } = await getServerCurrentUser();
   if (!user || user.banned) throwImportError(IMPORT_ERROR.UNAUTHORIZED);
 

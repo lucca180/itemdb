@@ -14,6 +14,7 @@ import {
   IMPORT_V2_PAGE_SIZE,
   MAX_IMPORT_ITEMS,
   type ImportAction,
+  type ImportActionResult,
   type ImportErrorCode,
   type ImportFilterType,
   type ImportIgnore,
@@ -36,11 +37,25 @@ type ImportItemsV2Props = {
   recommended_list?: UserList | null;
 };
 
-const IMPORT_ERROR_CODES = new Set<string>(Object.values(IMPORT_ERROR));
+/** Carries an expected error code returned by an import action into the catch blocks below. */
+class ImportActionError extends Error {
+  code: ImportErrorCode;
 
+  constructor(code: ImportErrorCode) {
+    super(code);
+    this.name = 'ImportActionError';
+    this.code = code;
+  }
+}
+
+function unwrapImportResult<T>(res: ImportActionResult<T>): T {
+  if (!res.success) throw new ImportActionError(res.error);
+  return res.data;
+}
+
+/** Unexpected errors (thrown server-side, network) have no code and map to UNKNOWN. */
 function getImportErrorCode(err: unknown): ImportErrorCode | null {
-  if (!(err instanceof Error)) return null;
-  return IMPORT_ERROR_CODES.has(err.message) ? (err.message as ImportErrorCode) : null;
+  return err instanceof ImportActionError ? err.code : null;
 }
 
 export function ImportItemsV2({ importToken, itemCount, recommended_list }: ImportItemsV2Props) {
@@ -65,6 +80,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
 
   const requestId = useRef(0);
   const hasTrackedSearch = useRef(false);
+  const hasTrackedLoad = useRef(false);
   const isTooLarge = itemCount > MAX_IMPORT_ITEMS;
   const canSubmit = Boolean(list) && !isTooLarge && !loadError && !isSubmitting;
 
@@ -102,16 +118,29 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
     const id = ++requestId.current;
     setIsLoading(true);
     try {
-      const next = await loadImportItemsPage({
-        importToken,
-        page,
-        pageSize: IMPORT_V2_PAGE_SIZE,
-        sortBy,
-        sortDir,
-        search,
-        filter,
-      });
+      const next = unwrapImportResult(
+        await loadImportItemsPage({
+          importToken,
+          page,
+          pageSize: IMPORT_V2_PAGE_SIZE,
+          sortBy,
+          sortDir,
+          search,
+          filter,
+        })
+      );
       if (id !== requestId.current) return;
+
+      if (!hasTrackedLoad.current) {
+        hasTrackedLoad.current = true;
+        window.umami?.track('import-v2-loaded', {
+          itemCount: next.totalCount,
+          notFound: next.notFoundCount,
+          ambiguous: next.ambiguous.length,
+          hasRecommended: Boolean(recommended_list),
+        });
+      }
+
       setResult(next);
       setLoadError(null);
       if (next.page !== page) setPage(next.page);
@@ -134,7 +163,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
     } finally {
       if (id === requestId.current) setIsLoading(false);
     }
-  }, [importToken, page, sortBy, sortDir, search, filter, isTooLarge, t, toast]);
+  }, [importToken, page, sortBy, sortDir, search, filter, isTooLarge, recommended_list, t, toast]);
 
   useEffect(() => {
     void fetchPage();
@@ -226,12 +255,14 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
     });
 
     try {
-      const applyResult = await applyListImportV2({
-        importToken,
-        listId: list.internal_id,
-        action,
-        ignore,
-      });
+      const applyResult = unwrapImportResult(
+        await applyListImportV2({
+          importToken,
+          listId: list.internal_id,
+          action,
+          ignore,
+        })
+      );
 
       window.umami?.track('import-v2-success', {
         action,
@@ -418,7 +449,13 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
                     <Pagination
                       currentPage={result.page}
                       totalPages={result.totalPages}
-                      setPage={setPage}
+                      setPage={(next) => {
+                        window.umami?.track('import-v2-page', {
+                          page: next,
+                          totalPages: result.totalPages,
+                        });
+                        setPage(next);
+                      }}
                       mt={4}
                     />
                   )}

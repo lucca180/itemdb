@@ -50,6 +50,14 @@ export type ImportItemsPageResult = {
   filterCounts: ImportFilterCounts;
 };
 
+/**
+ * Server action response. Expected failures come back as a code instead of being thrown,
+ * since thrown server action errors reach the client with a redacted message in production.
+ */
+export type ImportActionResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: ImportErrorCode };
+
 export type ApplyListImportV2Input = ApplyListImportInput;
 export type ApplyListImportV2Result = ApplyListImportResult & {
   /** Session keys skipped because they matched several items. */

@@ -200,9 +200,6 @@ export function ImportControlsSidebar({
               disabled={!canSubmit}
               loading={isSubmitting}
               w="100%"
-              data-umami-event="import-v2-submit"
-              data-umami-event-label={action}
-              data-umami-event-ignore={ignore.length ? ignore.join(',') : 'none'}
             >
               <Icon as={LuCheck} mr={1} boxSize={4} />
               {t('General.submit')}
