@@ -9,6 +9,7 @@ import {
   Heading,
   HStack,
   Icon,
+  Link,
   NativeSelect,
   Skeleton,
   Text,
@@ -21,9 +22,11 @@ import ListSelect from '@components/UserLists/ListSelect';
 import { CreateLinkedListButton } from '@components/DynamicLists/CreateLinkedList';
 import MainLink from '@components/Utils/MainLink';
 import { useAuth } from '@utils/auth';
+import { useLists } from '@utils/useLists';
 import { dynamicListCan } from '@utils/utils';
 import type { UserList, UserListLite } from '@types';
 import type { ImportAction, ImportIgnore } from '@app/[locale]/lists/import/importShared';
+import { useLastImportListId } from './lastImportList';
 
 export type ImportControlsSidebarProps = {
   list: UserListLite | undefined;
@@ -56,6 +59,13 @@ export function ImportControlsSidebar({
 }: ImportControlsSidebarProps) {
   const t = useTranslations();
   const { user, authLoading } = useAuth();
+  const { lists } = useLists();
+  const lastListId = useLastImportListId();
+
+  // only lists the user still owns (deleted lists / other accounts on this browser drop out)
+  const lastList = lastListId ? lists.find((l) => l.internal_id === lastListId) : undefined;
+  const showLastList =
+    !recommended_list && !!lastList && list?.internal_id !== lastList.internal_id;
 
   return (
     <Box
@@ -114,6 +124,24 @@ export function ImportControlsSidebar({
                 recommended_id={recommended_list?.internal_id}
                 trackEvent="import-v2-list-select"
               />
+              {showLastList && lastList && (
+                <Text fontSize="xs" color="gray.300">
+                  {t.rich('Lists.importV2-last-list', {
+                    name: lastList.name,
+                    Link: (chunk) => (
+                      <Link asChild color="teal.300" fontWeight="semibold">
+                        <button
+                          type="button"
+                          onClick={() => onListChange(lastList)}
+                          data-umami-event="import-v2-last-list"
+                        >
+                          {chunk}
+                        </button>
+                      </Link>
+                    ),
+                  })}
+                </Text>
+              )}
               {recommended_list && (
                 <>
                   <Text fontSize="xs" color="gray.300">

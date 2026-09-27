@@ -30,6 +30,7 @@ import { ImportItemsLoadingSkeleton } from './ImportItemsLoadingSkeleton';
 import { ImportSessionAlert } from './ImportSessionAlert';
 import { ImportSummaryBar } from './ImportSummaryBar';
 import { ImportToolbar } from './ImportToolbar';
+import { setLastImportListId } from './lastImportList';
 
 type ImportItemsV2Props = {
   importToken: string;
@@ -263,6 +264,8 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
           ignore,
         })
       );
+
+      setLastImportListId(list.internal_id);
 
       window.umami?.track('import-v2-success', {
         action,

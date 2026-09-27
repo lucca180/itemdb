@@ -8,6 +8,7 @@ import { useAuth } from '@utils/auth';
 import DynamicIcon from '@assets/icons/dynamic.png';
 import NextImage from 'next/image';
 import { useLists } from '@utils/useLists';
+import { useToast } from '@utils/theme/toast';
 import { useTranslations } from 'next-intl';
 import { ViewportList } from 'react-viewport-list';
 
@@ -29,9 +30,11 @@ const LIST_SEARCH_THRESHOLD = 8;
 const ListSelect = (props: Props) => {
   const t = useTranslations();
   const { user, authLoading } = useAuth();
+  const toast = useToast();
   const [forceSelected, setSelected] = useState<UserListLite | undefined>(props.defaultValue);
   const [listSearch, setListSearch] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const { lists, isLoading, revalidate } = useLists();
   const sorted = useMemo(() => [...lists].sort((a, b) => SortListByChange(a, b)), [lists]);
   const showSearch = sorted.length >= (props.searchThreshold ?? LIST_SEARCH_THRESHOLD);
@@ -77,8 +80,10 @@ const ListSelect = (props: Props) => {
     if (props.onChange) props.onChange(list);
   };
 
+  // creates a list with a random name and selects it right away
   const createNewList = async () => {
-    if (!user) return;
+    if (!user || isCreating) return;
+    setIsCreating(true);
     try {
       const res = await axios.post(`/api/v1/lists/${user.username}`, {
         description: '',
@@ -88,11 +93,28 @@ const ListSelect = (props: Props) => {
         colorHex: '#fff',
       });
 
-      if (res.data.success) {
-        revalidate();
-      } else throw new Error(res.data.message);
+      if (!res.data.success) throw new Error(res.data.message);
+
+      const newList = res.data.message as UserListLite;
+      revalidate();
+      handleSelect(newList);
+
+      toast({
+        id: 'list-select-created',
+        title: t('Lists.list-created', { name: newList.name }),
+        status: 'success',
+        duration: 5000,
+      });
     } catch (err) {
       console.error(err);
+      toast({
+        id: 'list-select-created',
+        title: t('General.something-went-wrong-please-try-again-later'),
+        status: 'error',
+        duration: 5000,
+      });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -112,7 +134,7 @@ const ListSelect = (props: Props) => {
           variant="subtle"
           size={props.size}
           fontSize={{ base: 'xs', md: 'sm' }}
-          loading={isLoading || authLoading}
+          loading={isLoading || authLoading || isCreating}
           data-umami-event={props.trackEvent}
           data-umami-event-label={props.trackEvent ? 'open' : undefined}
         >
@@ -294,6 +316,8 @@ const ListSelect = (props: Props) => {
               <Menu.Item
                 value="create-new"
                 onClick={createNewList}
+                _hover={{ bg: 'whiteAlpha.100' }}
+                cursor="pointer"
                 data-umami-event={props.trackEvent}
                 data-umami-event-label={props.trackEvent ? 'create-new' : undefined}
               >
