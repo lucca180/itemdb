@@ -181,6 +181,8 @@ export function buildNewItemFields(item: ItemProcess, itemSlug: string): Partial
     canEat: checkEat(item.category) && !item.isWearable ? 'true' : undefined,
     canPlay: checkPlay(item.category) && !item.isWearable ? 'true' : undefined,
     canRead: checkRead(item.category) && !item.isWearable ? 'true' : undefined,
+    // NP items are never openable by default; NC items wait for drops to confirm it.
+    canOpen: item.isNC ? 'unknown' : 'false',
     status: item.status,
   };
 }
@@ -295,6 +297,7 @@ export async function updateOrAddDB(
     }
 
     const changeObj = {} as ItemChangesLog;
+    const wasNC = dbItem.isNC;
 
     let hasChange = false;
     for (const key of Object.keys(dbItem) as Array<keyof typeof dbItem>) {
@@ -311,6 +314,10 @@ export async function updateOrAddDB(
     }
 
     if (!hasChange) return undefined;
+
+    // An item that just became NC may be openable after all: reopen it for drop evidence.
+    const reopenCanOpen = !wasNC && dbItem.isNC && dbItem.canOpen === 'false';
+    if (reopenCanOpen) logChanges(changeObj, 'false', 'unknown', 'canOpen');
 
     const updatedItem: Prisma.ItemsUpdateArgs['data'] = {
       item_id: dbItem.item_id,
@@ -341,6 +348,7 @@ export async function updateOrAddDB(
         dbItem.canRead === 'unknown' && checkRead(dbItem.category) && !dbItem.isWearable
           ? 'true'
           : undefined,
+      canOpen: reopenCanOpen ? 'unknown' : undefined,
       updatedAt: new Date(),
     };
 

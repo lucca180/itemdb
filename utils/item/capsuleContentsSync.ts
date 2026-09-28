@@ -254,7 +254,10 @@ export async function syncCapsuleContents(capsule: CapsuleSyncTarget): Promise<C
     prisma.openableItems.createMany({ data: dropRows, skipDuplicates: true }),
   ]);
 
-  await markNcItemOpenableFromDrops(capsule.internal_id);
+  await markNcItemOpenableFromDrops(
+    capsule.internal_id,
+    dropRows.map((row) => row.item_iid)
+  );
   await revalidateItem(capsule.internal_id, ItemRevalidateTags.drops(capsule.internal_id));
 
   return {

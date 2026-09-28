@@ -155,9 +155,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     data: openableItems,
   });
 
-  if (hasDisplayableOpeningDrop(openableItems)) {
-    await maybeMarkNcItemOpenableFromDrops(parentData);
-  }
+  await maybeMarkNcItemOpenableFromDrops(parentData, getOpeningDropIds(openableItems));
 
   return res.status(200).json(openableItemData);
 };
@@ -234,9 +232,7 @@ export const processOpenableItems = async (openableItem: OpenableQueue) => {
     data: openableItems,
   });
 
-  if (hasDisplayableOpeningDrop(openableItems)) {
-    await maybeMarkNcItemOpenableFromDrops(parentData);
-  }
+  await maybeMarkNcItemOpenableFromDrops(parentData, getOpeningDropIds(openableItems));
 
   return openableItemData;
 };
@@ -261,6 +257,10 @@ const addToQueue = async (
   });
 };
 
-const hasDisplayableOpeningDrop = (
-  rows: Array<Pick<Prisma.OpenableItemsUncheckedCreateInput, 'notes'>>
-) => rows.some((row) => !row.notes?.toLowerCase().includes(GRAM_OPTION_NOTE));
+/** Items actually received in an opening — gram options are choices, not drops. */
+const getOpeningDropIds = (
+  rows: Array<Pick<Prisma.OpenableItemsUncheckedCreateInput, 'notes' | 'item_iid'>>
+) =>
+  rows
+    .filter((row) => !row.notes?.toLowerCase().includes(GRAM_OPTION_NOTE))
+    .map((row) => row.item_iid);
