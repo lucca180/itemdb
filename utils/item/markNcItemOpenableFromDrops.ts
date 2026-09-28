@@ -16,11 +16,22 @@ export const isNcUnknownOpenable = (item: NcOpenableMarkCandidate) => {
 };
 
 /**
- * Persist `canOpen = true` for an NC item that already displays the drops card.
- * No-ops when the row is NP, already true, or explicitly false.
+ * Persist `canOpen = true` for an NC item that received at least one NC drop.
+ * No-ops when the row is NP, already true, explicitly false, or every drop is NP.
  */
-export async function markNcItemOpenableFromDrops(internalId: number): Promise<boolean> {
+export async function markNcItemOpenableFromDrops(
+  internalId: number,
+  dropItemIds: number[]
+): Promise<boolean> {
   try {
+    if (dropItemIds.length === 0) return false;
+
+    const ncDropCount = await prisma.items.count({
+      where: { internal_id: { in: dropItemIds }, isNC: true },
+    });
+
+    if (ncDropCount === 0) return false;
+
     const result = await prisma.items.updateMany({
       where: {
         internal_id: internalId,
@@ -52,8 +63,9 @@ export async function markNcItemOpenableFromDrops(internalId: number): Promise<b
 }
 
 export async function maybeMarkNcItemOpenableFromDrops(
-  item: NcOpenableMarkCandidate
+  item: NcOpenableMarkCandidate,
+  dropItemIds: number[]
 ): Promise<boolean> {
   if (!isNcUnknownOpenable(item)) return false;
-  return markNcItemOpenableFromDrops(item.internal_id);
+  return markNcItemOpenableFromDrops(item.internal_id, dropItemIds);
 }

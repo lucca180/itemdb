@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { Center, Grid, Heading, Link, Text } from '@chakra-ui/react';
 import {
   MdAddCircle,
+  MdOutlineCardGiftcard,
   MdOutlineEditNote,
   MdOutlineFactCheck,
   MdPlaylistAdd,
@@ -43,6 +44,14 @@ const adminTools: AdminTool[] = [
     description: 'Review items users suggested as missing from official lists.',
     icon: <MdPlaylistAdd />,
     color: '#557f8f',
+  },
+  {
+    href: '/admin/openable-review',
+    title: 'Openable Review',
+    description:
+      'Review items with recent opening reports that are not marked as openable and mark them in one click.',
+    icon: <MdOutlineCardGiftcard />,
+    color: '#8f7a55',
   },
   {
     href: '/admin/price-markers',

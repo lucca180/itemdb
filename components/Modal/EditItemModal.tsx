@@ -281,6 +281,7 @@ const EditItemModal = (props: EditItemModalProps) => {
                           itemOpenableLoadError={itemOpenableLoadError}
                           onRetryItemOpenable={onRetryItemOpenable}
                           item={item}
+                          savedCanOpen={itemProps.useTypes.canOpen}
                         />
                       </Tabs.Content>
                     )}
@@ -792,6 +793,8 @@ type OpenableTabProps = {
   itemOpenableLoadError?: boolean;
   onRetryItemOpenable?: () => void;
   item: ItemData;
+  /** canOpen as persisted — drops are neither loaded nor shown while it is 'false'. */
+  savedCanOpen: ItemData['useTypes']['canOpen'];
 };
 
 const defaultItemOpenable: ItemOpenable = {
@@ -814,6 +817,7 @@ export const OpenableTab = (props: OpenableTabProps) => {
     itemOpenableLoadError,
     onRetryItemOpenable,
     item,
+    savedCanOpen,
   } = props;
   const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(
     itemOpenableProps ?? defaultItemOpenable
@@ -890,6 +894,18 @@ export const OpenableTab = (props: OpenableTabProps) => {
 
     setItemOpenable(newOpenable);
   };
+
+  if (savedCanOpen === 'false') {
+    return (
+      <Center py={8} flexDirection="column" gap={2} textAlign="center">
+        <Text fontWeight="bold">This item is marked as not openable.</Text>
+        <Text fontSize="sm" color="gray.300">
+          Drops are hidden while Openable is False. Set Openable to True in the Item Info tab and
+          save to manage this item&apos;s drops.
+        </Text>
+      </Center>
+    );
+  }
 
   if (isItemOpenableLoading) {
     return (
