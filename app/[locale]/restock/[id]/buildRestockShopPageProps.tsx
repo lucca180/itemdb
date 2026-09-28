@@ -130,24 +130,36 @@ export async function buildRestockShopPageProps(
       </>
     ),
     historyCta: (
-      <Text mt={3} fontSize="sm" textAlign="center">
-        {t.rich('Restock.history-cta', {
-          Link: (chunk) => (
-            <Link asChild>
-              <I18nLink href={`/restock/${slugify(shopInfo.name)}/history`}>
-                {chunk}
-                <Image
-                  src="/favicon.svg"
-                  width="18px"
-                  height="18px"
-                  style={{ display: 'inline', verticalAlign: 'middle' }}
-                  alt="link icon"
-                />
-              </I18nLink>
-            </Link>
-          ),
-        })}
-      </Text>
+      <>
+        <Text mt={3} fontSize="sm" textAlign="center">
+          {t.rich('Restock.history-cta', {
+            Link: (chunk) => (
+              <Link asChild>
+                <I18nLink href={`/restock/${slugify(shopInfo.name)}/history`}>
+                  {chunk}
+                  <Image
+                    src="/favicon.svg"
+                    width="18px"
+                    height="18px"
+                    style={{ display: 'inline', verticalAlign: 'middle' }}
+                    alt="link icon"
+                  />
+                </I18nLink>
+              </Link>
+            ),
+          })}
+        </Text>
+        <Text fontSize="sm" textAlign="center">
+          {t.rich('Restock.practice-cta', {
+            shopname: shopInfo.name,
+            Link: (chunk) => (
+              <Link asChild>
+                <I18nLink href={`/restock/${slugify(shopInfo.name)}/practice`}>{chunk}</I18nLink>
+              </Link>
+            ),
+          })}
+        </Text>
+      </>
     ),
     specialDayLabels: {
       hpd: t('Restock.half-price-day'),

@@ -28,6 +28,7 @@ const API_SKIPS = {
     /^\/api\/health$/,
     /^\/api\/health\/db$/,
     /^\/api\/cache.*$/,
+    /^\/api\/v2\/restock\/\d+\/practice$/,
   ],
   POST: [
     /^\/api\/auth.*$/,
