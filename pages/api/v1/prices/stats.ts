@@ -20,7 +20,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   redis_setDataCount(4, req);
 
-  res.setHeader('Cache-Control', 'max-age 0, s-maxage 120, stale-while-revalidate 120');
+  res.setHeader('Cache-Control', 'max-age=0, s-maxage=120, stale-while-revalidate=120');
 
   res.json(lastSeen);
 }
