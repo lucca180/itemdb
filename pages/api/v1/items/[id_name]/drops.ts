@@ -98,8 +98,8 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const newDrops = await getItemDrops(item.internal_id);
 
-  if (newDrops) {
-    await maybeMarkNcItemOpenableFromDrops(item);
+  if (newDrops && action === 'add') {
+    await maybeMarkNcItemOpenableFromDrops(item, [Number(drop_id)]);
   }
 
   await revalidateItem(item.internal_id, ItemRevalidateTags.drops(item.internal_id));

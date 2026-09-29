@@ -74,7 +74,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     };
   });
 
-  res.setHeader('Cache-Control', 'max-age 0, s-maxage 300');
+  res.setHeader('Cache-Control', 'max-age=0, s-maxage=300');
 
   redis_setDataCount(Object.keys(items).length, req);
 

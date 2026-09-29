@@ -12,7 +12,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       cachedBuildId = fs.readFileSync('.next/BUILD_ID', 'utf8');
     }
 
-    res.setHeader('Cache-Control', 'max-age 0, s-maxage 60');
+    res.setHeader('Cache-Control', 'max-age=0, s-maxage=60');
 
     //add last modified header based on the BUILD_ID file
     const buildIdStats = fs.statSync('.next/BUILD_ID');

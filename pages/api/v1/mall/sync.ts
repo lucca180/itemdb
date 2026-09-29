@@ -291,7 +291,7 @@ const processBundle = async (data: NCMallData, parent_iid: number) => {
       },
     });
 
-    await markNcItemOpenableFromDrops(parent_iid);
+    await markNcItemOpenableFromDrops(parent_iid, [item_iid]);
     return true;
   }
 
@@ -316,7 +316,10 @@ const processBundle = async (data: NCMallData, parent_iid: number) => {
       skipDuplicates: true,
     });
 
-    await markNcItemOpenableFromDrops(parent_iid);
+    await markNcItemOpenableFromDrops(
+      parent_iid,
+      createMany.map((row) => row.item_iid)
+    );
     return true;
   }
 
