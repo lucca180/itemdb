@@ -239,7 +239,7 @@ const sentryWebpackPluginOptions: SentryBuildOptions = {
   widenClientFileUpload: false,
   // Orchestrion loader runs on every server .js file under Turbopack (slow + OOM builds).
   // ioredis 6 publishes its own diagnostics channels; other deps are instrumented at runtime.
-  // buildTimeInstrumentation: false,
+  buildTimeInstrumentation: false,
 };
 
 const withNextIntl = createNextIntlPlugin();
