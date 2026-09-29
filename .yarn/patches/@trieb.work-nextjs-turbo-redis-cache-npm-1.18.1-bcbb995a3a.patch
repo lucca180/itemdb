@@ -1,0 +1,46 @@
+diff --git a/dist/index.js b/dist/index.js
+index 4054e86df174348df4ae9edd91893cf090f197ac..d98cad0ec6750777ef8d34681dc5b91009c491a9 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -478,7 +478,8 @@ var DeduplicatedRequestHandler = class {
+               self.cachingTimeMs,
+               "ms"
+             );
+-            self.inMemoryDeduplicationCache.delete(key);
++            // Local TTL expiry only: do not broadcast (would wipe every worker's entry).
++            self.inMemoryDeduplicationCache.delete(key, true);
+           }, self.cachingTimeMs);
+         }
+       };
+@@ -498,7 +499,7 @@ var DeduplicatedRequestHandler = class {
+       value.substring(0, 200)
+     );
+     setTimeout(() => {
+-      this.inMemoryDeduplicationCache.delete(key);
++      this.inMemoryDeduplicationCache.delete(key, true);
+     }, this.cachingTimeMs);
+   }
+ };
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 83f1faf00250af9d20a1ae5cf6ff2a9a218c40f4..7acb583b476bfb74037fc90b2ea5ce38b0ba7bab 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -434,7 +434,8 @@ var DeduplicatedRequestHandler = class {
+               self.cachingTimeMs,
+               "ms"
+             );
+-            self.inMemoryDeduplicationCache.delete(key);
++            // Local TTL expiry only: do not broadcast (would wipe every worker's entry).
++            self.inMemoryDeduplicationCache.delete(key, true);
+           }, self.cachingTimeMs);
+         }
+       };
+@@ -454,7 +455,7 @@ var DeduplicatedRequestHandler = class {
+       value.substring(0, 200)
+     );
+     setTimeout(() => {
+-      this.inMemoryDeduplicationCache.delete(key);
++      this.inMemoryDeduplicationCache.delete(key, true);
+     }, this.cachingTimeMs);
+   }
+ };

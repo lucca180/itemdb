@@ -1,10 +1,3 @@
-// TODO(pre-launch): items to validate before this counts as launch-ready —
-// 1. "Price Checker" (utilityCards + hero CTA + FAQ) currently shows Neopets market price,
-//    not Faerie Festival recycling points — either add that lookup to Price Checker, or
-//    change this copy/CTA to point at the SDB Importer "sort by Recycling Points" flow
-//    instead, which already does this today.
-// 2. EVENT_YEAR in _data.ts — confirm official 2026 lists exist and are tagged correctly.
-// See _event.ts for the OG image TODO.
 import type { ReactNode } from 'react';
 import { Badge, Box, Flex, Heading, Image, Link, Table, Text } from '@chakra-ui/react';
 import NextImage from 'next/image';
