@@ -17,7 +17,8 @@ import MainLink from '@components/Utils/MainLink';
 import type { PracticeStockedItem } from '@utils/restockPractice';
 
 export type PracticeResult = {
-  reactionMs: number;
+  /** null when the timer is turned off */
+  reactionMs: number | null;
   picked: PracticeStockedItem;
   missed: PracticeStockedItem[];
   isBestPick: boolean;
@@ -53,16 +54,34 @@ export function PracticeResultModal({ result, onNext }: PracticeResultModalProps
             {result && (
               <>
                 <Dialog.Header flexDirection="column" alignItems="center" gap={1}>
-                  <Text fontSize="xs" color="whiteAlpha.700" textTransform="uppercase">
-                    {t('Restock.practice-reaction-time')}
-                  </Text>
-                  <Dialog.Title
-                    fontSize="4xl"
-                    fontWeight="bold"
-                    color={`${getReactionColor(result.reactionMs)}.300`}
-                  >
-                    {t('Restock.practice-ms', { x: format.number(Math.round(result.reactionMs)) })}
-                  </Dialog.Title>
+                  {result.reactionMs !== null ? (
+                    <>
+                      <Text fontSize="xs" color="whiteAlpha.700" textTransform="uppercase">
+                        {t('Restock.practice-reaction-time')}
+                      </Text>
+                      <Dialog.Title
+                        fontSize="4xl"
+                        fontWeight="bold"
+                        color={`${getReactionColor(result.reactionMs)}.300`}
+                      >
+                        {t('Restock.practice-ms', {
+                          x: format.number(Math.round(result.reactionMs)),
+                        })}
+                      </Dialog.Title>
+                    </>
+                  ) : (
+                    <Dialog.Title
+                      fontSize="2xl"
+                      fontWeight="bold"
+                      color={result.isBestPick ? 'green.300' : 'yellow.300'}
+                    >
+                      {result.isBestPick
+                        ? t('Restock.practice-best-pick')
+                        : result.hasProfitableItems
+                          ? t('Restock.practice-better-options')
+                          : t('Restock.practice-nothing-worth-buying')}
+                    </Dialog.Title>
+                  )}
                 </Dialog.Header>
                 <Dialog.Body>
                   <Stack gap={4}>
@@ -71,7 +90,7 @@ export function PracticeResultModal({ result, onNext }: PracticeResultModalProps
                         <Text fontSize="xs" color="whiteAlpha.700">
                           {t('Restock.practice-you-bought')}
                         </Text>
-                        {result.isBestPick && (
+                        {result.isBestPick && result.reactionMs !== null && (
                           <Badge colorPalette="green">{t('Restock.practice-best-pick')}</Badge>
                         )}
                       </HStack>

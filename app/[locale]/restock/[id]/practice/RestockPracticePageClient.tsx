@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Box, Button, Center, HStack, Spinner, Stack, Text } from '@chakra-ui/react';
+import { Badge, Box, Button, Center, HStack, Spinner, Stack, Switch, Text } from '@chakra-ui/react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -27,6 +27,8 @@ type RestockPracticePageClientProps = {
 
 type SessionStats = {
   attempts: number;
+  /** attempts made with the timer on — the reaction averages only count these */
+  timedAttempts: number;
   totalMs: number;
   bestMs: number | null;
   bestPicks: number;
@@ -37,7 +39,13 @@ type PoolState =
   | { status: 'error' }
   | { status: 'ready'; items: PracticeItem[] };
 
-const INITIAL_STATS: SessionStats = { attempts: 0, totalMs: 0, bestMs: null, bestPicks: 0 };
+const INITIAL_STATS: SessionStats = {
+  attempts: 0,
+  timedAttempts: 0,
+  totalMs: 0,
+  bestMs: null,
+  bestPicks: 0,
+};
 const MAX_MISSED_ITEMS = 5;
 
 // Simulated page load so the grid doesn't pop in instantly after each refresh
@@ -45,13 +53,34 @@ const randomLoadDelay = () => 150 + Math.random() * 350;
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const statsStorageKey = (shopId: string) => `restock-practice-stats:${shopId}`;
+const TIMER_STORAGE_KEY = 'restock-practice-timer';
 
 function readStoredStats(shopId: string): SessionStats {
   try {
     const stored = localStorage.getItem(statsStorageKey(shopId));
-    return stored ? { ...INITIAL_STATS, ...JSON.parse(stored) } : INITIAL_STATS;
+    if (!stored) return INITIAL_STATS;
+
+    const parsed = JSON.parse(stored) as Partial<SessionStats>;
+    // stats saved before the timer toggle existed: every attempt was timed
+    return { ...INITIAL_STATS, timedAttempts: parsed.attempts ?? 0, ...parsed };
   } catch {
     return INITIAL_STATS;
+  }
+}
+
+function readStoredTimerEnabled() {
+  try {
+    return localStorage.getItem(TIMER_STORAGE_KEY) !== 'off';
+  } catch {
+    return true;
+  }
+}
+
+function writeStoredTimerEnabled(enabled: boolean) {
+  try {
+    localStorage.setItem(TIMER_STORAGE_KEY, enabled ? 'on' : 'off');
+  } catch {
+    // storage unavailable — the preference just won't persist
   }
 }
 
@@ -82,6 +111,7 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
   const [isLoading, setLoading] = useState(false);
   const [result, setResult] = useState<PracticeResult | null>(null);
   const [stats, setStats] = useState<SessionStats>(INITIAL_STATS);
+  const [isTimerEnabled, setTimerEnabled] = useState(true);
 
   // performance.now() of the first frame the restock was painted; null while not measurable
   const shownAtRef = useRef<number | null>(null);
@@ -121,6 +151,15 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
   useEffect(() => {
     setStats(readStoredStats(shopInfo.id));
   }, [shopInfo.id]);
+
+  useEffect(() => {
+    setTimerEnabled(readStoredTimerEnabled());
+  }, []);
+
+  const handleTimerChange = (enabled: boolean) => {
+    setTimerEnabled(enabled);
+    writeStoredTimerEnabled(enabled);
+  };
 
   const updateStats = (updater: (prev: SessionStats) => SessionStats) => {
     setStats((prev) => {
@@ -165,7 +204,7 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
     if (shownAt === null || !items) return;
     shownAtRef.current = null;
 
-    const reactionMs = Math.max(0, clickTime - shownAt);
+    const reactionMs = isTimerEnabled ? Math.max(0, clickTime - shownAt) : null;
     // only items that actually profit count as "missed", even when the pick lost money
     const pickedProfit = Math.max(item.profit ?? 0, 0);
     const missed = items
@@ -186,9 +225,14 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
 
     updateStats((prev) => ({
       attempts: prev.attempts + 1,
-      totalMs: prev.totalMs + reactionMs,
-      bestMs: prev.bestMs === null ? reactionMs : Math.min(prev.bestMs, reactionMs),
       bestPicks: prev.bestPicks + (isBestPick ? 1 : 0),
+      ...(reactionMs === null
+        ? { timedAttempts: prev.timedAttempts, totalMs: prev.totalMs, bestMs: prev.bestMs }
+        : {
+            timedAttempts: prev.timedAttempts + 1,
+            totalMs: prev.totalMs + reactionMs,
+            bestMs: prev.bestMs === null ? reactionMs : Math.min(prev.bestMs, reactionMs),
+          }),
     }));
   };
 
@@ -215,11 +259,15 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
     <Stack gap={4} w="100%">
       <HStack justify="center" gap={{ base: 2, md: 4 }} flexWrap="wrap">
         <StatBox label={t('Restock.practice-attempts')} value={format.number(stats.attempts)} />
-        <StatBox
-          label={t('Restock.practice-avg-reaction')}
-          value={formatMs(stats.attempts ? stats.totalMs / stats.attempts : null)}
-        />
-        <StatBox label={t('Restock.practice-best-reaction')} value={formatMs(stats.bestMs)} />
+        {isTimerEnabled && (
+          <>
+            <StatBox
+              label={t('Restock.practice-avg-reaction')}
+              value={formatMs(stats.timedAttempts ? stats.totalMs / stats.timedAttempts : null)}
+            />
+            <StatBox label={t('Restock.practice-best-reaction')} value={formatMs(stats.bestMs)} />
+          </>
+        )}
         <StatBox
           label={t('Restock.practice-best-pick-rate')}
           value={
@@ -238,11 +286,22 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
         </Button>
       </HStack>
 
-      <HStack justify="center" gap={2} flexWrap="wrap">
-        <Badge colorPalette="orange">Beta</Badge>
-        <Text textAlign="center" fontSize="sm" color="whiteAlpha.700">
-          {t('Restock.practice-refresh-hint')}
-        </Text>
+      <HStack justify="center" gap={4} flexWrap="wrap">
+        <HStack gap={2}>
+          <Badge colorPalette="orange">Beta</Badge>
+          <Text textAlign="center" fontSize="sm" color="whiteAlpha.700">
+            {t('Restock.practice-refresh-hint')}
+          </Text>
+        </HStack>
+        <Switch.Root
+          size="sm"
+          checked={isTimerEnabled}
+          onCheckedChange={({ checked }) => handleTimerChange(!!checked)}
+        >
+          <Switch.HiddenInput />
+          <Switch.Control />
+          <Switch.Label fontSize="sm">{t('Restock.practice-timer')}</Switch.Label>
+        </Switch.Root>
       </HStack>
 
       <NeoShopFrame

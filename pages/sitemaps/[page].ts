@@ -147,7 +147,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const restockPaths: ISitemapField[] = Object.values(restockShopInfo)
     .slice(pageNum * 10, pageNum * 10 + 10)
-    .flatMap((shop) => bilingualSitemapFields(`/restock/${slugify(shop.name)}`));
+    .flatMap((shop) => [
+      ...bilingualSitemapFields(`/restock/${slugify(shop.name)}`),
+      ...(Number(shop.id) >= 0
+        ? bilingualSitemapFields(`/restock/${slugify(shop.name)}/practice`)
+        : []),
+    ]);
 
   const officialListsCats: ISitemapField[] = Object.values(listCategoriesData)
     .slice(pageNum * 10, pageNum * 10 + 10)

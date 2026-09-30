@@ -74,7 +74,7 @@ export function NeoShopFrame({
       {/* .page-title__2020 */}
       <Box position="relative" display="flex" minH="39px" mt="10px" mb="5px">
         <Heading
-          as="h1"
+          as="div"
           w="calc(100% - 100px)"
           m="auto"
           textAlign="center"
@@ -125,7 +125,7 @@ export function NeoShopFrame({
 
       {/* .container h2 */}
       <Heading
-        as="h2"
+        as="div"
         w="100%"
         m="auto"
         p="10px"

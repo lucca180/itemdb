@@ -151,7 +151,6 @@ export async function buildRestockShopPageProps(
         </Text>
         <Text fontSize="sm" textAlign="center">
           {t.rich('Restock.practice-cta', {
-            shopname: shopInfo.name,
             Link: (chunk) => (
               <Link asChild>
                 <I18nLink href={`/restock/${slugify(shopInfo.name)}/practice`}>{chunk}</I18nLink>

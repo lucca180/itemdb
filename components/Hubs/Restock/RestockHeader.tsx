@@ -19,8 +19,8 @@ type RestockHeaderProps = {
   useAppDir?: boolean;
   historyCta?: ReactNode;
   specialDayLabels: RestockHeaderSpecialDayLabels;
-  isHistory?: boolean;
-  historyBadge?: string;
+  /** Shop subpages (history, practice) show this badge instead of the shop's category/difficulty */
+  subpageBadge?: string;
 };
 
 export default function RestockHeader({
@@ -31,8 +31,7 @@ export default function RestockHeader({
   useAppDir,
   historyCta,
   specialDayLabels,
-  isHistory,
-  historyBadge,
+  subpageBadge,
 }: RestockHeaderProps) {
   const color = Color(shopInfo.color);
   const rgb = color.rgb().array();
@@ -52,9 +51,9 @@ export default function RestockHeader({
         <RestockBreadcrumb breadcrumbList={breadcrumbList} locale={locale} useAppDir={useAppDir} />
       </Box>
       <Center mt={2} mb={6} flexFlow="column" gap={2} css={{ '& a': { color: linkColor } }}>
-        {isHistory ? (
+        {subpageBadge ? (
           <HStack>
-            <Badge colorPalette="orange">{historyBadge}</Badge>
+            <Badge colorPalette="orange">{subpageBadge}</Badge>
           </HStack>
         ) : (
           <HStack>
@@ -97,7 +96,7 @@ export default function RestockHeader({
         </Link>
         <Heading as="h1">{shopInfo.name}</Heading>
         {children}
-        {!isHistory && historyCta}
+        {!subpageBadge && historyCta}
         <RestockShopSpecialDayTag shopId={shopInfo.id} labels={specialDayLabels} />
       </Center>
     </>
