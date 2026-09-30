@@ -69,9 +69,13 @@ export class dti {
 
     const res = await dti._query(GET_ITEM_PREVIEW_BY_NAME, variables);
 
-    return res.itemByName as DTIItemPreview & {
+    const item = res.itemByName as DTIItemPreview & {
       compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[];
     };
+
+    if (item) await dti.replaceGlitchedBodyAppearances([item]);
+
+    return item;
   }
 
   public static async fetchItemLayer(remoteId: number) {
@@ -103,24 +107,63 @@ export class dti {
     };
 
     const res = await dti._query(GET_ITEMS_PREVIEW_BY_NAME, variables);
-    return res.itemsByName as (DTIItemPreview & {
+    const items = res.itemsByName as (DTIItemPreview & {
       compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[];
     })[];
+
+    if (items) await dti.replaceGlitchedBodyAppearances(items);
+
+    return items;
   }
 
-  public static async fetchPetPreview(speciesId: number, colorId: number) {
+  public static async fetchPetAppearances(speciesId: number | string, colorId: number | string) {
     const variables = {
       speciesId: speciesId,
       colorId: colorId,
     };
 
     const res = await dti._query(GET_PET_APPEARANCE_ANY_POSE, variables);
-    const petAppearances = res.petAppearances as DTIPetAppearance[];
-    const happy = petAppearances.find(
-      (pet) => pet.pose === 'HAPPY_MASC' || pet.pose === 'HAPPY_FEM'
-    );
+    return res.petAppearances as DTIPetAppearance[];
+  }
 
-    return happy || petAppearances[0];
+  public static async fetchPetPreview(speciesId: number, colorId: number) {
+    const petAppearances = await dti.fetchPetAppearances(speciesId, colorId);
+
+    return pickPetAppearance(petAppearances) ?? petAppearances[0];
+  }
+
+  // DTI's canonical body appearance can be a glitched one (e.g. Alien Aisha / MSP Poogle
+  // come with an extra "Eyes" layer), so swap it for a non-glitched appearance of the same body
+  public static async replaceGlitchedBodyAppearances(items: DTIItemPreview[]) {
+    const replacements = new Map<string, Promise<DTIPetAppearance | null>>();
+
+    const getReplacement = (glitched: DTIPetAppearance) => {
+      if (!replacements.has(glitched.id)) {
+        const replacement = dti
+          .fetchPetAppearances(glitched.species.id, glitched.color.id)
+          .then((appearances) =>
+            pickPetAppearance(
+              appearances.filter((a) => a.bodyId === glitched.bodyId),
+              glitched.pose
+            )
+          )
+          .catch(() => null);
+
+        replacements.set(glitched.id, replacement);
+      }
+
+      return replacements.get(glitched.id)!;
+    };
+
+    await Promise.all(
+      items.map(async (item) => {
+        const body = item?.canonicalAppearance?.body;
+        if (!body?.canonicalAppearance?.isGlitched) return;
+
+        const replacement = await getReplacement(body.canonicalAppearance);
+        if (replacement) body.canonicalAppearance = replacement;
+      })
+    );
   }
 
   public static async getItemPreview(itemName: string) {
@@ -217,6 +260,23 @@ export function getVisibleLayers(
   visibleLayers.sort((a, b) => a.zone.depth - b.zone.depth);
 
   return visibleLayers;
+}
+
+const HAPPY_POSES = ['HAPPY_MASC', 'HAPPY_FEM'];
+
+export function pickPetAppearance(
+  appearances: DTIPetAppearance[],
+  preferredPose?: string
+): DTIPetAppearance | null {
+  const notGlitched = appearances.filter((a) => !a.isGlitched);
+
+  return (
+    notGlitched.find((a) => preferredPose && a.pose === preferredPose) ??
+    notGlitched.find((a) => HAPPY_POSES.includes(a.pose)) ??
+    notGlitched.find((a) => a.pose !== 'UNCONVERTED' && a.pose !== 'UNKNOWN') ??
+    appearances.find((a) => HAPPY_POSES.includes(a.pose)) ??
+    null
+  );
 }
 
 export function resolveItemAppearanceConflicts(
