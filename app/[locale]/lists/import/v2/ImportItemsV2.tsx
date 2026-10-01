@@ -22,7 +22,6 @@ import {
   type ImportSortDir,
   type ImportSortKey,
 } from './importV2Shared';
-import { FaerieFestivalSidebarPromo } from './FaerieFestivalSidebarPromo';
 import { ImportAmbiguityAlert } from './ImportAmbiguityAlert';
 import { ImportControlsSidebar } from './ImportControlsSidebar';
 import { ImportItemTable } from './ImportItemTable';
@@ -466,15 +465,12 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
               )}
             </Box>
 
-            <Flex
-              direction="column"
-              gap={4}
+            <Box
               w={{ base: '100%', lg: '300px', xl: '320px' }}
               flexShrink={0}
               position={{ base: 'static', lg: 'sticky' }}
               top="24px"
             >
-              <FaerieFestivalSidebarPromo />
               <ImportControlsSidebar
                 list={list}
                 onListChange={handleListChange}
@@ -489,7 +485,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
                 canSubmit={canSubmit}
                 itemCount={result?.totalCount ?? itemCount}
               />
-            </Flex>
+            </Box>
           </Flex>
         </>
       )}

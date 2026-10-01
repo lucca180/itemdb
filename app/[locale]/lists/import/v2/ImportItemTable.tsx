@@ -13,7 +13,6 @@ import type {
 } from '@app/[locale]/lists/import/v2/importV2Shared';
 import type { ImportSortDir, ImportSortKey } from '@utils/list/sortImportPreviewItems';
 import { capitalizeWords } from '@utils/item/itemInfo';
-import { rarityToCCPointsV2 } from '@utils/item/v2';
 
 /** Colors match ItemHeader.tsx and SearchFilters.tsx (album item = yellow). */
 const BADGE_CONFIG: Record<ImportItemBadge, { labelKey: string; colorPalette: string }> = {
@@ -105,7 +104,6 @@ export function ImportItemTable({
             {header(t('Lists.importV2-col-price'), 'price')}
             {header(t('Lists.importV2-col-total'), 'price_qty', { end: true })}
             {header(t('General.rarity'), 'rarity', { center: true })}
-            {header(t('Lists.importV2-col-points'), 'ffPoints', { center: true })}
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -226,27 +224,6 @@ export function ImportItemTable({
                       —
                     </Text>
                   )}
-                </Table.Cell>
-                <Table.Cell textAlign="center" py={2.5} px={3}>
-                  {(() => {
-                    const points = rarityToCCPointsV2(item);
-                    return points > 0 ? (
-                      <Badge
-                        size="lg"
-                        colorPalette="pink"
-                        variant="subtle"
-                        fontSize="sm"
-                        fontWeight="bold"
-                        px={2.5}
-                      >
-                        {points}
-                      </Badge>
-                    ) : (
-                      <Text fontSize="xs" color="whiteAlpha.400">
-                        —
-                      </Text>
-                    );
-                  })()}
                 </Table.Cell>
               </Table.Row>
             );
