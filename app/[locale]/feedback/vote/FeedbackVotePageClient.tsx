@@ -41,6 +41,7 @@ import { useAuth } from '@utils/auth';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { NewPolicyReminder } from '@components/Feedback/NewPolicyReminder';
+import { LowXpWarning } from '@components/Feedback/LowXpWarning';
 
 const ReportFeedbackModal = dynamic(() => import('@components/Modal/ReportFeedbackModal'), {
   ssr: false,
@@ -50,6 +51,7 @@ const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
 
 type FeedbackVotePageClientProps = {
   shouldShowReminder: boolean;
+  showLowXpWarning: boolean;
   target?: string;
   wishlist?: string;
   order?: string;
@@ -92,6 +94,7 @@ const VOTE_CRITERIA: VoteCriterion[] = [
 
 export function FeedbackVotePageClient({
   shouldShowReminder,
+  showLowXpWarning,
   target,
   wishlist,
   order,
@@ -370,6 +373,7 @@ export function FeedbackVotePageClient({
           w="100%"
           gap={3}
         >
+          {showLowXpWarning && <LowXpWarning />}
           {shouldShowReminder && <NewPolicyReminder />}
           {isLoading && (
             <Center py={16}>

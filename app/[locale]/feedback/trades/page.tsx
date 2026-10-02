@@ -64,6 +64,7 @@ async function FeedbackTradesPageContent({ params, searchParams }: FeedbackTrade
       </HeaderCard>
       <FeedbackTradesPageClient
         shouldShowReminder={labels.shouldShowReminder}
+        showLowXpWarning={labels.showLowXpWarning}
         isNewAccount={labels.isNewAccount}
         target={query.target}
         adminEditId={query.admin_edit_id}

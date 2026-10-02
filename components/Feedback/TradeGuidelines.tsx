@@ -51,7 +51,7 @@ export function TradeGuidelines({ forVoting = false }: TradeGuidelinesProps) {
         <Icon as={BsXLg} verticalAlign="middle" /> {t('Feedback.donts')}
       </Heading>
       <Text>{t('Feedback.pt-2')}</Text>
-      <List.Root mt={3} gap={3}>
+      <List.Root mt={3} gap={3} listStyle="none">
         <List.Item>
           <List.Indicator asChild color="red.300">
             <BsXCircleFill />
@@ -102,7 +102,7 @@ export function TradeGuidelines({ forVoting = false }: TradeGuidelinesProps) {
       <Heading size="md" mt={6} color="green.300">
         <Icon as={BsCheckLg} verticalAlign="middle" /> {t('Feedback.dos')}
       </Heading>
-      <List.Root mt={3} gap={3}>
+      <List.Root mt={3} gap={3} listStyle="none">
         <List.Item>
           <List.Indicator asChild color="green.300">
             <BsCheckCircleFill />

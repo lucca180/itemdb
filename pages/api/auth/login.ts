@@ -7,6 +7,7 @@ import { User as PrismaUser } from '@prisma/generated/client';
 import { consumeMagicToken } from '@utils/auth/magicLink';
 import { SESSION_DURATION_SECONDS, SESSION_VERSION, signSession } from '@utils/auth/jwt';
 import { invalidateCachedUser } from '@utils/auth/userCache';
+import { isUserBanned } from '@utils/auth/feedbackXp';
 import { isDisposableEmail } from 'fakeout';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -96,6 +97,6 @@ export const rawToUser = (rawUser: PrismaUser, removeMail = false): User => {
     createdAt: rawUser.createdAt.toJSON(),
     xp: rawUser.xp,
     profileMode: (rawUser.profile_mode as 'default' | 'groups') ?? 'default',
-    banned: rawUser.xp < -1000 || !!rawUser.flags?.includes('temp_mail'),
+    banned: isUserBanned(rawUser),
   };
 };

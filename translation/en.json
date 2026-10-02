@@ -985,7 +985,10 @@
     "unit-price-in-neopoints": "Price per unit in Neopoints",
     "multiple-amount-msg": "Please enter the <b>price per unit</b> for this item. Divide the total price by the amount if necessary.",
     "script-issues-tool-cta": "Script Issues? Check our <Link>Troubleshooting Tool</Link>!",
-    "cool-negg-alert": "Do NOT use <b>Cool Negg</b> value to compose the lot price. Check the guidelines for more info."
+    "cool-negg-alert": "Do NOT use <b>Cool Negg</b> value to compose the lot price. Check the guidelines for more info.",
+    "low-xp-warning-title": "Let's review the guidelines together?",
+    "low-xp-warning-desc": "We noticed that several of your recent votes and suggestions didn't match the community's final decision. It happens! A quick re-read of the guidelines goes a long way toward making your contributions more accurate.",
+    "low-xp-warning-tip": "Tip: if the wishlist doesn't state a Neopoint value (Cool Neggs, Baby Paint Brushes, NM, offers...), <b>leaving the price blank is the right answer</b>."
   },
   "Restock": {
     "restock-info": "Restock Info",

@@ -65,6 +65,7 @@ async function FeedbackVotePageContent({ params, searchParams }: FeedbackVotePag
       </HeaderCard>
       <FeedbackVotePageClient
         shouldShowReminder={labels.shouldShowReminder}
+        showLowXpWarning={labels.showLowXpWarning}
         target={query.target}
         wishlist={query.wishlist}
         order={query.order}

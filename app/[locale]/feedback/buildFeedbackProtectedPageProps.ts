@@ -3,6 +3,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { isLowXpWarning } from '@utils/auth/feedbackXp';
 import { getLocalizedLoginRedirect, withLocalePrefix, type AppLocale } from '@utils/locales';
 
 export async function buildFeedbackProtectedPageProps(locale: string, pathname: string) {
@@ -19,6 +20,7 @@ export async function buildFeedbackProtectedPageProps(locale: string, pathname: 
 
   const cookieStore = await cookies();
   const shouldShowReminder = cookieStore.get('bbpb_new_policy_reminder')?.value !== 'true';
+  const showLowXpWarning = isLowXpWarning(user);
 
-  return { shouldShowReminder, user };
+  return { shouldShowReminder, showLowXpWarning, user };
 }
