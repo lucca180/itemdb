@@ -137,13 +137,13 @@ describe('updateOrAddDB dedup guard', () => {
     expect(prismaMock.itemProcess.update).not.toHaveBeenCalled();
   });
 
-  test('guard queries only match "established" rows (item_id not null)', async () => {
+  test('rename guard matches rows without item_id; re-art guard only "established" rows', async () => {
     prismaMock.items.findFirst.mockResolvedValue(null);
 
     await updateOrAddDB(itemProcess({ name: 'X', image_id: 'y' }), newCtx());
 
     const [renameCall, reArtCall] = prismaMock.items.findFirst.mock.calls;
-    expect(renameCall[0].where.item_id).toEqual({ not: null });
+    expect(renameCall[0].where).toEqual({ image_id: 'y', name: { not: 'X' } });
     expect(reArtCall[0].where.item_id).toEqual({ not: null });
   });
 });

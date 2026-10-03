@@ -258,18 +258,21 @@ export async function updateOrAddDB(
 
     if (noMatchAtAll) {
       // Neither name+image_id nor item_id matched anything. Before creating a new row, check
-      // whether this is actually a rename or a re-art of an already-catalogued item (one with a
-      // confirmed item_id) rather than a genuinely new item — name+image_id alone silently misses
-      // renames (image matches, name doesn't) and re-arts (name matches, image doesn't).
+      // whether this is actually a rename or a re-art of an existing item rather than a genuinely
+      // new item — name+image_id alone silently misses renames (image matches, name doesn't) and
+      // re-arts (name matches, image doesn't).
+      // Renames match any row, even without a confirmed item_id: name typos fixed later on
+      // prize-code/event items (which rarely get an item_id) would otherwise duplicate.
       const renameGuard = await prisma.items.findFirst({
         where: {
           image_id: item.image_id,
           name: { not: item.name },
-          item_id: { not: null },
         },
         select: { internal_id: true },
       });
       if (renameGuard) throw `'name' Merge Conflict with (${renameGuard.internal_id})`;
+
+      // Re-arts still require a confirmed item_id: a shared name alone is a weaker signal.
 
       const reArtGuard = await prisma.items.findFirst({
         where: {
