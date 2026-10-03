@@ -12,9 +12,11 @@ import { TradeData } from '@types';
 import { useAuth } from '@utils/auth';
 import { useTranslations } from 'next-intl';
 import { NewPolicyReminder } from '@components/Feedback/NewPolicyReminder';
+import { LowXpWarning } from '@components/Feedback/LowXpWarning';
 
 type FeedbackTradesPageClientProps = {
   shouldShowReminder: boolean;
+  showLowXpWarning: boolean;
   isNewAccount: boolean;
   target?: string;
   adminEditId?: string;
@@ -22,6 +24,7 @@ type FeedbackTradesPageClientProps = {
 
 export function FeedbackTradesPageClient({
   shouldShowReminder,
+  showLowXpWarning,
   isNewAccount,
   target,
   adminEditId,
@@ -205,6 +208,7 @@ export function FeedbackTradesPageClient({
         <TradeGuidelines />
       </CardBase>
       <Flex flex="2" flexFlow={{ base: 'column-reverse', md: 'column' }} h="100%" w="100%" gap={4}>
+        {showLowXpWarning && <LowXpWarning />}
         {shouldShowReminder && <NewPolicyReminder />}
         {isNewAccount && (
           <Alert.Root status="info" variant="subtle" borderRadius="md">

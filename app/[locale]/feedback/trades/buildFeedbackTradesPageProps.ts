@@ -6,6 +6,7 @@ import { buildFeedbackProtectedPageProps } from '../buildFeedbackProtectedPagePr
 
 export type FeedbackTradesPageLabels = {
   shouldShowReminder: boolean;
+  showLowXpWarning: boolean;
   isNewAccount: boolean;
   breadcrumbList: BreadcrumbItem[];
   heading: string;
@@ -15,13 +16,14 @@ export type FeedbackTradesPageLabels = {
 export async function buildFeedbackTradesPageProps(
   locale: string
 ): Promise<FeedbackTradesPageLabels> {
-  const [{ shouldShowReminder, user }, t] = await Promise.all([
+  const [{ shouldShowReminder, showLowXpWarning, user }, t] = await Promise.all([
     buildFeedbackProtectedPageProps(locale, '/feedback/trades'),
     getTranslations(),
   ]);
 
   return {
     shouldShowReminder,
+    showLowXpWarning,
     isNewAccount:
       user.role !== 'ADMIN' &&
       Date.now() - new Date(user.createdAt).getTime() < 7 * 24 * 60 * 60 * 1000,

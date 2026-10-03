@@ -4,9 +4,8 @@ import { getFormatter, getTranslations } from 'next-intl/server';
 import { getTrendingLists } from '@pages/api/v1/beta/trending';
 import { ItemService } from '@services/ItemService';
 import { loadRecentlyReleasedCombos } from '@app/server/rainbowPool';
-import { loadFaerieFestivalLists } from '@app/[locale]/hub/faeriefestival/_data';
 import { HomeCard } from '@components/Card/HomeCard';
-import { FFHomeCard, HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
+import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { FeaturedListsGrid } from '@components/Home/FeaturedListsGrid';
 import { ComboTile } from '@app/[locale]/rainbow-pool/components/ComboTile';
 
@@ -145,24 +144,6 @@ async function FeaturedListsHomeCardContent() {
     >
       <FeaturedListsGrid lists={lists} />
     </HorizontalHomeCard>
-  );
-}
-
-export function FaerieFestivalHomeCard() {
-  return (
-    <Suspense fallback={<FFHomeCard>{null}</FFHomeCard>}>
-      <FaerieFestivalHomeCardContent />
-    </Suspense>
-  );
-}
-
-async function FaerieFestivalHomeCardContent() {
-  const lists = (await loadFaerieFestivalLists()).slice(0, 3);
-
-  return (
-    <FFHomeCard>
-      <FeaturedListsGrid lists={lists} utmContent="ff-lists" isSmall />
-    </FFHomeCard>
   );
 }
 

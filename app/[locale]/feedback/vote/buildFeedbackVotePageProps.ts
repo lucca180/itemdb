@@ -6,19 +6,21 @@ import { buildFeedbackProtectedPageProps } from '../buildFeedbackProtectedPagePr
 
 export type FeedbackVotePageLabels = {
   shouldShowReminder: boolean;
+  showLowXpWarning: boolean;
   breadcrumbList: BreadcrumbItem[];
   heading: string;
   description: string;
 };
 
 export async function buildFeedbackVotePageProps(locale: string): Promise<FeedbackVotePageLabels> {
-  const [{ shouldShowReminder }, t] = await Promise.all([
+  const [{ shouldShowReminder, showLowXpWarning }, t] = await Promise.all([
     buildFeedbackProtectedPageProps(locale, '/feedback/vote'),
     getTranslations(),
   ]);
 
   return {
     shouldShowReminder,
+    showLowXpWarning,
     breadcrumbList: [
       { position: 1, name: t('Layout.home'), item: '/' },
       { position: 2, name: t('Layout.feedback'), item: '/feedback' },

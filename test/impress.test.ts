@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import type { DTICanonicalAppearance, DTILayer } from '@types';
-import { resolveItemAppearanceConflicts } from '@utils/item/impress';
+import type { DTICanonicalAppearance, DTILayer, DTIPetAppearance } from '@types';
+import { pickPetAppearance, resolveItemAppearanceConflicts } from '@utils/item/impress';
 
 const layer = (id: string, zoneId: string): DTILayer =>
   ({
@@ -57,5 +57,47 @@ describe('resolveItemAppearanceConflicts', () => {
     const second = appearance('second', ['2']);
 
     expect(resolveItemAppearanceConflicts([first, second])).toEqual([second]);
+  });
+});
+
+const petAppearance = (id: string, pose: string, isGlitched = false): DTIPetAppearance =>
+  ({
+    id,
+    pose,
+    isGlitched,
+    bodyId: '106',
+    layers: [],
+    restrictedZones: [],
+  }) as unknown as DTIPetAppearance;
+
+describe('pickPetAppearance', () => {
+  test('skips glitched appearances in favor of a clean one with the same pose', () => {
+    const glitched = petAppearance('glitched', 'HAPPY_MASC', true);
+    const clean = petAppearance('clean', 'HAPPY_MASC');
+    const other = petAppearance('other', 'HAPPY_FEM');
+
+    expect(pickPetAppearance([glitched, other, clean], 'HAPPY_MASC')).toBe(clean);
+  });
+
+  test('falls back to a clean happy pose when the preferred pose is missing', () => {
+    const glitched = petAppearance('glitched', 'SAD_MASC', true);
+    const sad = petAppearance('sad', 'SAD_FEM');
+    const happy = petAppearance('happy', 'HAPPY_FEM');
+
+    expect(pickPetAppearance([glitched, sad, happy], 'SAD_MASC')).toBe(happy);
+  });
+
+  test('ignores unknown and unconverted poses when looking for a clean fallback', () => {
+    const unknown = petAppearance('unknown', 'UNKNOWN');
+    const sad = petAppearance('sad', 'SAD_FEM');
+
+    expect(pickPetAppearance([unknown, sad])).toBe(sad);
+  });
+
+  test('returns a glitched happy appearance only when nothing else is available', () => {
+    const glitched = petAppearance('glitched', 'HAPPY_MASC', true);
+
+    expect(pickPetAppearance([glitched])).toBe(glitched);
+    expect(pickPetAppearance([])).toBeNull();
   });
 });
