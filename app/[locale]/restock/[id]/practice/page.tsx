@@ -6,7 +6,8 @@ import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import RestockHeader from '@components/Hubs/Restock/RestockHeader';
 import { PracticeFaq } from '@components/Hubs/Restock/Practice/PracticeFaq';
-import { PracticeIntroPills } from '@components/Hubs/Restock/Practice/PracticeIntroPills';
+import { PracticePopularShops } from '@components/Hubs/Restock/Practice/PracticePopularShops';
+import { RestockLinkPills } from '@components/Hubs/Restock/RestockLinkPills';
 import { getStaticAppMetadata } from '@app/utils/appPage';
 import {
   resolveRestockShopForMetadata,
@@ -18,6 +19,7 @@ import {
   buildRestockPracticePageProps,
   getRestockPracticePathname,
 } from './buildRestockPracticePageProps';
+import { getPopularPracticeShops } from './loadPopularPracticeShops';
 import { RestockPracticePageClient } from './RestockPracticePageClient';
 
 type RestockPracticePageProps = {
@@ -73,7 +75,10 @@ async function RestockPracticePageContent({ params }: RestockPracticePageProps) 
     notFound();
   }
 
-  const labels = await buildRestockPracticePageProps(route.shop);
+  const [labels, popularShops] = await Promise.all([
+    buildRestockPracticePageProps(route.shop),
+    getPopularPracticeShops(route.shop.id),
+  ]);
 
   return (
     <>
@@ -89,9 +94,10 @@ async function RestockPracticePageContent({ params }: RestockPracticePageProps) 
         <Text as="h2" textAlign="center" maxW="3xl">
           {labels.intro}
         </Text>
-        <PracticeIntroPills guideLabel={labels.guidePill} dashboardLabel={labels.dashboardPill} />
+        <RestockLinkPills pills={labels.pills} trackEvent="restock-practice-pills" />
       </RestockHeader>
       <RestockPracticePageClient shopInfo={route.shop} />
+      <PracticePopularShops title={labels.popularShopsTitle} shops={popularShops} />
       <PracticeFaq title={labels.faqTitle} items={labels.faqItems} />
     </>
   );

@@ -1,4 +1,11 @@
-import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import type { ShopInfo } from '@types';
 import type { PracticeStockedItem } from '@utils/restockPractice';
@@ -44,9 +51,43 @@ type NeoShopFrameProps = {
   onItemClick: (item: PracticeStockedItem, timeStamp: number) => void;
   // Clicking the shopkeeper reloads the shop on Neopets
   onRefresh: () => void;
-  // Rendered in place of the grid while there is no restock on screen (idle state)
+  // Shown on top of the (empty) inventory while there is no restock on screen
   placeholder?: ReactNode;
+  // Practice controls (stats, timer) shown under the shopkeeper — not part of the Neopets page
+  toolbar?: ReactNode;
+  // Shown inline after the shop name in the title (e.g. a "beta" badge)
+  titleBadge?: ReactNode;
 };
+
+const INVENTORY_MIN_HEIGHT = 200;
+// .shop-grid vertical margins (20px auto)
+const GRID_MARGIN_Y = 40;
+
+/**
+ * Tallest height the grid reached at the current width: the inventory never shrinks between
+ * refreshes (no layout shift), and starts over when the width changes (new column count).
+ */
+function useLargestHeight(ref: React.RefObject<HTMLDivElement | null>) {
+  const [largest, setLargest] = useState(0);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    let width = -1;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width: newWidth, height } = entry.contentRect;
+      const widthChanged = newWidth !== width;
+      width = newWidth;
+      setLargest((prev) => (widthChanged ? height : Math.max(prev, height)));
+    });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return largest;
+}
 
 export function NeoShopFrame({
   shop,
@@ -54,7 +95,11 @@ export function NeoShopFrame({
   onItemClick,
   onRefresh,
   placeholder,
+  toolbar,
+  titleBadge,
 }: NeoShopFrameProps) {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const inventoryMinHeight = useLargestHeight(gridRef);
   return (
     <Box
       position="relative"
@@ -78,13 +123,19 @@ export function NeoShopFrame({
           w="calc(100% - 100px)"
           m="auto"
           textAlign="center"
-          fontFamily='"Cafeteria", "Arial Bold", sans-serif'
+          // Neopets uses Cafeteria (licensed, not loaded here): use the site's heading font instead
+          fontFamily="heading"
           fontSize="2em"
           fontWeight="bold"
           lineHeight="normal"
           color="#000"
         >
           {shop.name}
+          {titleBadge && (
+            <Box as="span" display="inline-flex" verticalAlign="middle" ml={2} fontFamily="body">
+              {titleBadge}
+            </Box>
+          )}
         </Heading>
       </Box>
 
@@ -112,16 +163,11 @@ export function NeoShopFrame({
         }}
       />
 
-      {/* .shop-info */}
-      <Text
-        w="90%"
-        m="auto auto 10px"
-        textAlign="center"
-        fontSize="11pt"
-        css={{ [smallText]: { display: 'none' } }}
-      >
-        <b>{shop.name}</b>
-      </Text>
+      {toolbar && (
+        <Box w="90%" mx="auto" mb="10px">
+          {toolbar}
+        </Box>
+      )}
 
       {/* .container h2 */}
       <Heading
@@ -132,7 +178,7 @@ export function NeoShopFrame({
         bg="#000"
         color="#fff"
         textAlign="center"
-        fontFamily={MUSEO_700}
+        fontFamily="heading"
         fontSize="13pt"
         fontWeight="bold"
         lineHeight="normal"
@@ -140,16 +186,13 @@ export function NeoShopFrame({
         Shop Inventory
       </Heading>
 
-      {items === null && placeholder}
-
-      {items && items.length === 0 && (
-        <Text m="20px auto" w="90%" textAlign="center" fontSize="11pt">
-          Sorry, we are sold out of everything!
-        </Text>
-      )}
-
-      {items && items.length > 0 && (
+      <Box
+        position="relative"
+        minH={`${Math.max(INVENTORY_MIN_HEIGHT, inventoryMinHeight + GRID_MARGIN_Y)}px`}
+      >
+        {/* Always mounted (empty while loading) so its height can be tracked across refreshes */}
         <Box
+          ref={gridRef}
           w="90%"
           m="20px auto"
           display="grid"
@@ -157,11 +200,23 @@ export function NeoShopFrame({
           gap="10px"
           css={gridColumns}
         >
-          {items.map((item) => (
+          {items?.map((item) => (
             <NeoShopItem key={item.id} item={item} onClick={onItemClick} />
           ))}
         </Box>
-      )}
+
+        {(items === null || items.length === 0) && (
+          <Box position="absolute" top={0} left={0} right={0}>
+            {items === null ? (
+              placeholder
+            ) : (
+              <Text m="20px auto" w="90%" textAlign="center" fontSize="11pt">
+                Sorry, we are sold out of everything!
+              </Text>
+            )}
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }

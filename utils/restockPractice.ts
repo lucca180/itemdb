@@ -4,6 +4,7 @@ import {
   getRestockPrice,
   getShopRestockSpecialDay,
   shopIDToCategory,
+  type ShopRestockSpecialDay,
 } from '@utils/utils';
 
 // Restock practice mode: the shop pool is fetched once and every refresh is generated
@@ -111,6 +112,25 @@ export function rollStockAmount(rarity: number, rng: Rng = Math.random) {
   return dice(rng, 5, 7);
 }
 
+/**
+ * Units added by one successful roll, following the post's steps in order: rarity table →
+ * 1/3 reduction (cap 8, min 1) → Usuki Day ×2 → Food/Medicine +2d8. Repeated rolls of the
+ * same item add up afterwards.
+ */
+export function rollShopStockAmount(
+  rarity: number,
+  shopId: number,
+  specialDay: ShopRestockSpecialDay | undefined,
+  rng: Rng = Math.random
+) {
+  let amount = rollStockAmount(rarity, rng);
+  if (REDUCED_STOCK_SHOPS.has(shopId)) amount = Math.min(8, Math.max(1, Math.floor(amount / 3)));
+  if (specialDay === 'usukicon') amount *= 2;
+  if (EXTRA_STOCK_SHOPS.has(shopId) && rarity <= 75) amount += dice(rng, 1, 8) + dice(rng, 1, 8);
+
+  return amount;
+}
+
 export type GenerateRestockOptions = {
   rng?: Rng;
   /** Timestamp used for special days (prices and Usuki Day stock). Defaults to now. */
@@ -137,25 +157,17 @@ export function generateRestock(
     const current = stocked.get(item.id);
     if (!current && stocked.size >= MAX_UNIQUE_ITEMS) continue;
 
-    let amount = rollStockAmount(item.rarity, rng);
-    if (EXTRA_STOCK_SHOPS.has(shopId) && item.rarity <= 75)
-      amount += dice(rng, 1, 8) + dice(rng, 1, 8);
-    if (specialDay === 'usukicon') amount *= 2;
+    const amount = rollShopStockAmount(item.rarity, shopId, specialDay, rng);
 
     if (current) current.stock += amount;
     else stocked.set(item.id, { item, stock: amount });
   }
 
   const restock = [...stocked.values()].map(({ item, stock }) => {
-    // The post isn't clear if the 1/3 reduction runs per roll or on the total; min 1 + cap 8 suggest the total
-    const finalStock = REDUCED_STOCK_SHOPS.has(shopId)
-      ? Math.min(8, Math.max(1, Math.floor(stock / 3)))
-      : stock;
-
     const shopPrice = rollShopPrice(item, shopId, rng, date);
     const profit = item.marketPrice !== null ? item.marketPrice - shopPrice : null;
 
-    return { ...item, stock: finalStock, shopPrice, profit };
+    return { ...item, stock, shopPrice, profit };
   });
 
   return restock.sort(compareShopOrder);

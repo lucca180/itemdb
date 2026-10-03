@@ -116,6 +116,7 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
   // performance.now() of the first frame the restock was painted; null while not measurable
   const shownAtRef = useRef<number | null>(null);
   const refreshIdRef = useRef(0);
+  const frameRef = useRef<HTMLDivElement>(null);
   // next restock, rolled + images preloaded while the user looks at the current one
   const nextRestockRef = useRef<Promise<PracticeStockedItem[]> | null>(null);
 
@@ -174,6 +175,8 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
 
     const refreshId = ++refreshIdRef.current;
     shownAtRef.current = null;
+    // like a page reload, every refresh starts at the top of the shop (before the clock starts)
+    frameRef.current?.scrollIntoView({ block: 'start' });
     setResult(null);
     setItems(null);
     setLoading(true);
@@ -255,82 +258,92 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
 
   const hasStarted = items !== null || isLoading;
 
-  return (
-    <Stack gap={4} w="100%">
-      <HStack justify="center" gap={{ base: 2, md: 4 }} flexWrap="wrap">
-        <StatBox label={t('Restock.practice-attempts')} value={format.number(stats.attempts)} />
-        {isTimerEnabled && (
-          <>
-            <StatBox
-              label={t('Restock.practice-avg-reaction')}
-              value={formatMs(stats.timedAttempts ? stats.totalMs / stats.timedAttempts : null)}
-            />
-            <StatBox label={t('Restock.practice-best-reaction')} value={formatMs(stats.bestMs)} />
-          </>
-        )}
-        <StatBox
-          label={t('Restock.practice-best-pick-rate')}
-          value={
-            stats.attempts
-              ? format.number(stats.bestPicks / stats.attempts, { style: 'percent' })
-              : '-'
-          }
-        />
-        <Button
-          size="sm"
-          variant="subtle"
-          onClick={() => updateStats(() => INITIAL_STATS)}
-          disabled={!stats.attempts}
-        >
-          {t('Restock.practice-reset')}
-        </Button>
-      </HStack>
-
-      <HStack justify="center" gap={4} flexWrap="wrap">
-        <HStack gap={2}>
-          <Badge colorPalette="orange">Beta</Badge>
-          <Text textAlign="center" fontSize="sm" color="whiteAlpha.700">
-            {t('Restock.practice-refresh-hint')}
-          </Text>
-        </HStack>
-        <Switch.Root
-          size="sm"
-          checked={isTimerEnabled}
-          onCheckedChange={({ checked }) => handleTimerChange(!!checked)}
-        >
-          <Switch.HiddenInput />
-          <Switch.Control />
-          <Switch.Label fontSize="sm">{t('Restock.practice-timer')}</Switch.Label>
-        </Switch.Root>
-      </HStack>
-
-      <NeoShopFrame
-        shop={shopInfo}
-        items={isLoading ? null : items}
-        onItemClick={handleItemClick}
-        onRefresh={refresh}
-        placeholder={
-          !hasStarted && (
-            <Center flexDirection="column" gap={3} py="60px" px={4} textAlign="center">
-              <Text fontSize="11pt">{t('Restock.practice-description')}</Text>
-              {pool.status === 'loading' && <Spinner />}
-              {pool.status === 'error' && (
-                <>
-                  <Text fontSize="11pt" color="red.600">
-                    {t('General.something-went-wrong-please-try-again-later')}
-                  </Text>
-                  <Button onClick={() => loadPool()}>{t('Restock.practice-retry')}</Button>
-                </>
-              )}
-              {pool.status === 'ready' && (
-                <Button colorPalette="green" onClick={refresh}>
-                  {t('Restock.practice-start')}
-                </Button>
-              )}
-            </Center>
-          )
+  // Lives inside the (white) shop replica, under the shopkeeper, so it stays in view after the
+  // refresh scroll. Colors are explicit: the theme's recipes are tuned for the dark site background
+  const toolbar = (
+    <HStack justify="center" gap={2} flexWrap="wrap" fontFamily="body">
+      <StatBox label={t('Restock.practice-attempts')} value={format.number(stats.attempts)} />
+      {isTimerEnabled && (
+        <>
+          <StatBox
+            label={t('Restock.practice-avg-reaction')}
+            value={formatMs(stats.timedAttempts ? stats.totalMs / stats.timedAttempts : null)}
+          />
+          <StatBox label={t('Restock.practice-best-reaction')} value={formatMs(stats.bestMs)} />
+        </>
+      )}
+      <StatBox
+        label={t('Restock.practice-best-pick-rate')}
+        value={
+          stats.attempts
+            ? format.number(stats.bestPicks / stats.attempts, { style: 'percent' })
+            : '-'
         }
       />
+      <Button
+        size="sm"
+        bg="blackAlpha.100"
+        color="blackAlpha.800"
+        _hover={{ bg: 'blackAlpha.200' }}
+        onClick={() => updateStats(() => INITIAL_STATS)}
+        disabled={!stats.attempts}
+      >
+        {t('Restock.practice-reset')}
+      </Button>
+      <Switch.Root
+        size="sm"
+        checked={isTimerEnabled}
+        onCheckedChange={({ checked }) => handleTimerChange(!!checked)}
+      >
+        <Switch.HiddenInput />
+        <Switch.Control bg="blackAlpha.300" _checked={{ bg: 'green.500' }} />
+        <Switch.Label fontSize="sm" color="blackAlpha.800">
+          {t('Restock.practice-timer')}
+        </Switch.Label>
+      </Switch.Root>
+    </HStack>
+  );
+
+  return (
+    <Stack gap={4} w="100%">
+      <Box ref={frameRef}>
+        <NeoShopFrame
+          shop={shopInfo}
+          items={isLoading ? null : items}
+          onItemClick={handleItemClick}
+          onRefresh={refresh}
+          toolbar={toolbar}
+          titleBadge={
+            <Badge colorPalette="orange" variant="solid">
+              Beta
+            </Badge>
+          }
+          placeholder={
+            !hasStarted && (
+              <Center flexDirection="column" gap={3} py="60px" px={4} textAlign="center">
+                <Text fontSize="11pt">{t('Restock.practice-description')}</Text>
+                <Text fontSize="10pt" color="blackAlpha.700">
+                  {t('Restock.practice-refresh-hint')}
+                </Text>
+                {pool.status === 'loading' && <Spinner />}
+                {pool.status === 'error' && (
+                  <>
+                    <Text fontSize="11pt" color="red.600">
+                      {t('General.something-went-wrong-please-try-again-later')}
+                    </Text>
+                    <Button onClick={() => loadPool()}>{t('Restock.practice-retry')}</Button>
+                  </>
+                )}
+                {pool.status === 'ready' && (
+                  <Button colorPalette="green" onClick={refresh}>
+                    {t('Restock.practice-start')}
+                  </Button>
+                )}
+              </Center>
+            )
+          }
+        />
+      </Box>
 
       <PracticeResultModal result={result} onNext={refresh} />
     </Stack>
@@ -339,11 +352,11 @@ export function RestockPracticePageClient({ shopInfo }: RestockPracticePageClien
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
-    <Box bg="blackAlpha.400" borderRadius="md" px={3} py={2} minW="110px" textAlign="center">
-      <Text fontSize="xs" color="whiteAlpha.700">
+    <Box bg="blackAlpha.100" borderRadius="md" px={2.5} py={1} minW="96px" textAlign="center">
+      <Text fontSize="2xs" color="blackAlpha.700" lineHeight="short">
         {label}
       </Text>
-      <Text fontSize="lg" fontWeight="bold">
+      <Text fontSize="md" fontWeight="bold" lineHeight="short">
         {value}
       </Text>
     </Box>

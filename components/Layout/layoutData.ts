@@ -70,6 +70,12 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           trackEventLabel: 'restock-restock-dashboard',
         },
         {
+          label: t('Layout.restock-simulator'),
+          href: '/restock/neopian-fresh-foods/practice',
+          trackEventLabel: 'restock-simulator',
+          newUntil: 1793577599000, // 2026-11-01
+        },
+        {
           label: 'Neopian Fresh Foods',
           href: '/restock/neopian-fresh-foods',
           trackEventLabel: 'neopian-fresh-foods',

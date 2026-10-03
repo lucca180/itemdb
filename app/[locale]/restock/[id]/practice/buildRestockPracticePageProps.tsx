@@ -1,6 +1,10 @@
 import { createRestockBreadcrumbList } from '@components/Breadcrumbs/RestockBreadcrumb';
 import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
 import type { RestockHeaderSpecialDayLabels } from '@components/Hubs/Restock/RestockHeader';
+import {
+  RESTOCK_PILL_ICONS,
+  type RestockLinkPill,
+} from '@components/Hubs/Restock/RestockLinkPills';
 import { getTranslations } from 'next-intl/server';
 import { getRestockShopPathname } from '@app/utils/resolveRestockShopRoute';
 import type { ShopInfo } from '@types';
@@ -13,10 +17,10 @@ export type RestockPracticeFaqItem = {
 export type RestockPracticePageLabels = {
   badge: string;
   intro: string;
-  guidePill: string;
-  dashboardPill: string;
+  pills: RestockLinkPill[];
   breadcrumbList: BreadcrumbItem[];
   specialDayLabels: RestockHeaderSpecialDayLabels;
+  popularShopsTitle: string;
   faqTitle: string;
   faqItems: RestockPracticeFaqItem[];
 };
@@ -42,8 +46,20 @@ export async function buildRestockPracticePageProps(
   return {
     badge: t('Restock.practice-mode'),
     intro: t('Restock.practice-intro', { shopname }),
-    guidePill: t('Restock.practice-intro-guide'),
-    dashboardPill: t('Restock.practice-intro-dashboard'),
+    pills: [
+      {
+        id: 'guide',
+        href: '/restock',
+        image: RESTOCK_PILL_ICONS.shop,
+        label: t('Restock.practice-intro-guide'),
+      },
+      {
+        id: 'dashboard',
+        href: '/restock/dashboard',
+        image: RESTOCK_PILL_ICONS.itemdb,
+        label: t('Restock.practice-intro-dashboard'),
+      },
+    ],
     breadcrumbList,
     specialDayLabels: {
       hpd: t('Restock.half-price-day'),
@@ -52,6 +68,7 @@ export async function buildRestockPracticePageProps(
       festival: t('Restock.faerie-festival'),
       halloween: t('Restock.halloween'),
     },
+    popularShopsTitle: t('Restock.practice-popular-shops'),
     faqTitle: t('Restock.practice-faq-title'),
     faqItems: Array.from({ length: FAQ_COUNT }, (_, index) => ({
       question: t(`Restock.practice-faq-${index + 1}`, { shopname }),
