@@ -22,8 +22,7 @@ export function RestockHistoryPageContent({
     <>
       <RestockHeader
         shop={shopInfo}
-        isHistory
-        historyBadge={labels.historyBadge}
+        subpageBadge={labels.historyBadge}
         breadcrumbList={labels.breadcrumbList}
         locale={locale}
         useAppDir

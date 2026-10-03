@@ -24,9 +24,9 @@ export function resolveRestockShopForMetadata(id: string): ShopInfo | null {
 export function resolveRestockShopRoute(
   id: string,
   locale: string,
-  options?: { history?: boolean }
+  options?: { history?: boolean; practice?: boolean }
 ): RestockShopRouteResult {
-  const historySuffix = options?.history ? '/history' : '';
+  const historySuffix = options?.history ? '/history' : options?.practice ? '/practice' : '';
 
   if (!Number.isNaN(Number(id))) {
     const shopById = restockShopInfo[id];
