@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
-import { HStack, Image, Link, Text } from '@chakra-ui/react';
+import { Box, HStack, Image, Link, Text } from '@chakra-ui/react';
 import { createRestockBreadcrumbList } from '@components/Breadcrumbs/RestockBreadcrumb';
 import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
 import type { RestockHeaderSpecialDayLabels } from '@components/Hubs/Restock/RestockHeader';
+import { RESTOCK_PILL_ICONS, RestockLinkPills } from '@components/Hubs/Restock/RestockLinkPills';
 import { ShopInfoCard } from '@components/Hubs/Restock/ShopInfoCard';
 import MainLink from '@components/Utils/MainLink';
-import { Link as I18nLink } from '@i18n/navigation';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import type { ShopInfo } from '@types';
 import { shopIDToCategory, slugify } from '@utils/utils';
@@ -130,24 +130,26 @@ export async function buildRestockShopPageProps(
       </>
     ),
     historyCta: (
-      <Text mt={3} fontSize="sm" textAlign="center">
-        {t.rich('Restock.history-cta', {
-          Link: (chunk) => (
-            <Link asChild>
-              <I18nLink href={`/restock/${slugify(shopInfo.name)}/history`}>
-                {chunk}
-                <Image
-                  src="/favicon.svg"
-                  width="18px"
-                  height="18px"
-                  style={{ display: 'inline', verticalAlign: 'middle' }}
-                  alt="link icon"
-                />
-              </I18nLink>
-            </Link>
-          ),
-        })}
-      </Text>
+      <Box mt={3}>
+        <RestockLinkPills
+          trackEvent="restock-shop-pills"
+          pills={[
+            {
+              id: 'history',
+              href: `/restock/${slugify(shopInfo.name)}/history`,
+              image: RESTOCK_PILL_ICONS.itemdb,
+              label: t.markup('Restock.history-cta', { Link: (chunk) => chunk }),
+            },
+            {
+              id: 'practice',
+              href: `/restock/${slugify(shopInfo.name)}/practice`,
+              image: RESTOCK_PILL_ICONS.shop,
+              label: t.markup('Restock.practice-cta', { Link: (chunk) => chunk }),
+              badge: t('Layout.new'),
+            },
+          ]}
+        />
+      </Box>
     ),
     specialDayLabels: {
       hpd: t('Restock.half-price-day'),
