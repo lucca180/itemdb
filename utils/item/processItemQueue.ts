@@ -10,6 +10,7 @@ import { sendNewItemsHook } from '@utils/discord-hooks';
 import { syncAllDynamicLists } from '@pages/api/v1/lists/sync';
 import { LogService } from '@services/ActionLogService';
 import { mergeItemFieldKey, decodeItemTextFields } from '@utils/item/itemFieldMerge';
+import { parseConflictField } from '@utils/manualCheck/itemProcessDiff';
 import type { ItemData } from '@types';
 
 type ValueOf<T> = T[keyof T];
@@ -79,7 +80,7 @@ export async function processItemProcessQueue(
   );
 
   const deleteIds: number[] = [];
-  const itemsToProcess: ItemProcess[] = [];
+  const groupsToProcess: { merged: ItemProcess; rows: ItemProcess[] }[] = [];
 
   for (const item of uniqueNames) {
     const allItemData = processList.filter((x) => genItemKey(x, true) === genItemKey(item, true));
@@ -94,11 +95,11 @@ export async function processItemProcessQueue(
       deleteIds.push(itemOtherData.internal_id);
     }
 
-    itemsToProcess.push(decodeItemTextFields(itemData));
+    groupsToProcess.push({ merged: decodeItemTextFields(itemData), rows: allItemData });
   }
 
   let itemAddList = (
-    await pMap(itemsToProcess, (item) => updateOrAddDB(item, ctx), {
+    await pMap(groupsToProcess, ({ merged, rows }) => processItemGroup(merged, rows, ctx), {
       concurrency: ITEM_PROCESS_DB_CONCURRENCY,
     })
   ).filter((x) => !!x) as Item[];
@@ -187,9 +188,66 @@ export function buildNewItemFields(item: ItemProcess, itemSlug: string): Partial
   };
 }
 
+/** A manual check reason raised instead of being stored, so the caller can retry differently. */
+class ManualCheckError {
+  constructor(public reason: unknown) {}
+}
+
+/** The row that carried the value a merged batch row conflicted on, or null if it can't be told. */
+function getConflictSourceId(
+  merged: ItemProcess,
+  reason: unknown,
+  rows: ItemProcess[]
+): number | null {
+  const field = typeof reason === 'string' ? parseConflictField(reason) : null;
+  if (!field || !(field in merged)) return null;
+
+  const key = field as keyof ItemProcess;
+  const source = rows.find((row) => decodeItemTextFields(row)[key] === merged[key]);
+
+  return source?.internal_id ?? null;
+}
+
+/**
+ * Same-key batch rows are applied merged. If that needs a manual check, each row is applied on its
+ * own instead: data from rows without a conflict still lands, and only the row that holds the
+ * conflicting value gets flagged. That row goes last so the pending manual check it creates doesn't
+ * block the others.
+ */
+async function processItemGroup(
+  merged: ItemProcess,
+  rows: ItemProcess[],
+  ctx: ProcessContext
+): Promise<Partial<Item> | undefined> {
+  if (rows.length === 1) return updateOrAddDB(merged, ctx);
+
+  let reason: unknown;
+  try {
+    return await updateOrAddDB(merged, ctx, { rethrowManualCheck: true });
+  } catch (e) {
+    if (!(e instanceof ManualCheckError)) throw e;
+    reason = e.reason;
+  }
+
+  const sourceId = getConflictSourceId(merged, reason, rows);
+  const ordered = [
+    ...rows.filter((row) => row.internal_id !== sourceId),
+    ...rows.filter((row) => row.internal_id === sourceId),
+  ];
+
+  let created: Partial<Item> | undefined;
+  for (const row of ordered) {
+    const result = await updateOrAddDB(row, ctx);
+    created ??= result;
+  }
+
+  return created;
+}
+
 export async function updateOrAddDB(
   item: ItemProcess,
-  ctx: ProcessContext
+  ctx: ProcessContext,
+  options: { rethrowManualCheck?: boolean } = {}
 ): Promise<Partial<Item> | undefined> {
   item = decodeItemTextFields(item);
 
@@ -372,6 +430,8 @@ export async function updateOrAddDB(
       console.error({ error: e, item });
       throw { error: e, item };
     }
+
+    if (options.rethrowManualCheck) throw new ManualCheckError(e);
 
     await prisma.itemProcess.update({
       data: { manual_check: typeof e == 'string' ? e : e.code },
