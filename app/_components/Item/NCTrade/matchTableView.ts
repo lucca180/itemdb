@@ -1,5 +1,3 @@
-import { isSameDay } from 'date-fns';
-import { tz } from '@date-fns/tz';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { getCachedNow } from '@utils/getCachedNow';
 import { resolvePageLocale } from '@utils/locales';
@@ -12,6 +10,9 @@ export type MatchTableRow = {
   ownerUsername: string | null;
   ownerLastSeen: string;
 };
+
+// Not `tz()` from @date-fns/tz: TZDate calls `new Date()` in its constructor, which aborts runtime prerenders.
+const nstDayFormat = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' });
 
 export type MatchTableLabeledRow = MatchTableRow & {
   lastSeenLabel: string;
@@ -53,6 +54,7 @@ export async function labelMatchTableLastSeen(
     getFormatter({ locale }),
     getCachedNow(),
   ]);
+  const todayNST = nstDayFormat.format(now);
 
   return [...data]
     .sort((a, b) => {
@@ -61,10 +63,9 @@ export async function labelMatchTableLastSeen(
     })
     .map((list) => ({
       ...list,
-      lastSeenLabel: isSameDay(new Date(list.ownerLastSeen), now, {
-        in: tz('America/Los_Angeles'),
-      })
-        ? t('General.today')
-        : format.relativeTime(new Date(list.ownerLastSeen), now),
+      lastSeenLabel:
+        nstDayFormat.format(new Date(list.ownerLastSeen)) === todayNST
+          ? t('General.today')
+          : format.relativeTime(new Date(list.ownerLastSeen), now),
     }));
 }
