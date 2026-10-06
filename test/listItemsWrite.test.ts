@@ -74,6 +74,24 @@ describe('listItemsWrite', () => {
     expect(mockCountSql).toHaveBeenCalledWith(10, expect.any(Object));
   });
 
+  test('upsertItems adds provided amounts to existing rows with addAmounts', async () => {
+    await upsertItems(
+      10,
+      [
+        { item_iid: '1', capValue: undefined, amount: '3', imported: true },
+        { item_iid: '2', capValue: undefined, amount: undefined, imported: true },
+      ],
+      { addAmounts: true }
+    );
+
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(2);
+    const [withAmount, withoutAmount] = mockExecuteRaw.mock.calls.map(([q]) => q);
+
+    expect(sqlText(withAmount)).toContain('amount = LEAST(amount + VALUES(amount), ?)');
+    expect(withAmount.values).toEqual([10, 1, 0, 3, true, 2_147_483_647]);
+    expect(sqlText(withoutAmount)).not.toContain('amount =');
+  });
+
   test('hideItems updates items, touches list and recounts', async () => {
     mockUpdateMany.mockResolvedValue({ count: 2 });
     mockUserListUpdate.mockResolvedValue({});

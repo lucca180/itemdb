@@ -21,6 +21,13 @@ export type PutListItemInput = {
   imported: boolean;
 };
 
+export type UpsertItemsOptions = {
+  addAmounts?: boolean;
+};
+
+/** `ListItems.amount` is a signed INT; summed amounts are clamped to it. */
+const MAX_LIST_ITEM_AMOUNT = 2_147_483_647;
+
 type ListItemRow = {
   list_id: number;
   item_iid: number;
@@ -179,11 +186,16 @@ export async function moveOrCopyItems({
  * `(list_id, item_iid)`. Omitted `capValue` / `amount` keep the existing value on duplicates.
  * No-op when `items` is empty.
  *
+ * @param options.addAmounts - Add provided amounts to existing rows instead of replacing them.
  * @returns `true` when rows were written, `null` when there was nothing to upsert.
  */
-export async function upsertItems(listId: number, items: PutListItemInput[]) {
+export async function upsertItems(
+  listId: number,
+  items: PutListItemInput[],
+  options: UpsertItemsOptions = {}
+) {
   if (items.length === 0) return null;
-  const upsertQueries = buildBulkListItemsUpsertQueries(listId, items);
+  const upsertQueries = buildBulkListItemsUpsertQueries(listId, items, options);
 
   return withItemWrite([listId], async (tx) => {
     for (const query of upsertQueries) {
@@ -288,7 +300,11 @@ function toOptionalNumber(value: string | undefined): number | null {
  * Omitted `capValue` / `amount` keep the existing value on duplicate rows (new rows get the
  * column defaults), so items are grouped by which fields they provide — one query per group.
  */
-function buildBulkListItemsUpsertQueries(listId: number, items: PutListItemInput[]) {
+function buildBulkListItemsUpsertQueries(
+  listId: number,
+  items: PutListItemInput[],
+  { addAmounts = false }: UpsertItemsOptions
+) {
   const groups = new Map<string, { hasCap: boolean; hasAmount: boolean; values: Prisma.Sql[] }>();
 
   for (const item of items) {
@@ -313,7 +329,10 @@ function buildBulkListItemsUpsertQueries(listId: number, items: PutListItemInput
   return [...groups.values()].map(({ hasCap, hasAmount, values }) => {
     const updates = [
       hasCap && Prisma.sql`capValue = VALUES(capValue)`,
-      hasAmount && Prisma.sql`amount = VALUES(amount)`,
+      hasAmount &&
+        (addAmounts
+          ? Prisma.sql`amount = LEAST(amount + VALUES(amount), ${MAX_LIST_ITEM_AMOUNT})`
+          : Prisma.sql`amount = VALUES(amount)`),
       Prisma.sql`imported = VALUES(imported)`,
       Prisma.sql`updatedAt = NOW()`,
     ].filter((sql): sql is Prisma.Sql => !!sql);

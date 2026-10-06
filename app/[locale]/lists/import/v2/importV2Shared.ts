@@ -8,6 +8,7 @@ import {
   type ImportErrorCode,
   type ImportIgnore,
 } from '@app/[locale]/lists/import/importShared';
+import type { ImportQuantityMode } from '@utils/list/importQuantityMode';
 import type { ImportFilterCounts, ImportFilterType } from '@utils/list/filterImportPreviewItems';
 import type { ImportSortDir, ImportSortKey } from '@utils/list/sortImportPreviewItems';
 import type { ImportSummary } from '@utils/list/computeImportSummary';
@@ -16,7 +17,11 @@ import type { ImportAmbiguity } from '@utils/list/resolveImportItems';
 
 export const IMPORT_V2_PAGE_SIZE = 30;
 
-export type ImportPreviewItemV2 = ImportPreviewItem & { badges: ImportItemBadge[] };
+export type ImportPreviewItemV2 = ImportPreviewItem & {
+  badges: ImportItemBadge[];
+  /** Amount already in the target list; `null` when not in it or no list was given. */
+  listAmount: number | null;
+};
 
 export type LoadImportItemsPageInput = {
   importToken: string;
@@ -26,6 +31,8 @@ export type LoadImportItemsPageInput = {
   sortDir: ImportSortDir;
   search?: string;
   filter?: ImportFilterType;
+  /** Target list (owned by the user) to read current amounts from. */
+  listId?: number;
 };
 
 export type ImportItemsPageResult = {
@@ -48,6 +55,8 @@ export type ImportItemsPageResult = {
   filteredSummary: ImportSummary;
   /** Bucket counts over all resolved items (for filter chips). */
   filterCounts: ImportFilterCounts;
+  /** Resolved items already in the target list; `null` when no list was given. */
+  inListCount: number | null;
 };
 
 /**
@@ -58,7 +67,13 @@ export type ImportActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: ImportErrorCode };
 
-export type ApplyListImportV2Input = ApplyListImportInput;
+/** Quantities are handled by `quantityMode` in v2. */
+export type ImportIgnoreV2 = Exclude<ImportIgnore, 'quantity'>;
+
+export type ApplyListImportV2Input = Omit<ApplyListImportInput, 'ignore'> & {
+  ignore: ImportIgnoreV2[];
+  quantityMode: ImportQuantityMode;
+};
 export type ApplyListImportV2Result = ApplyListImportResult & {
   /** Session keys skipped because they matched several items. */
   ambiguousCount: number;
@@ -69,6 +84,7 @@ export type {
   ImportAction,
   ImportErrorCode,
   ImportIgnore,
+  ImportQuantityMode,
   ImportPreviewItem,
   ImportItemBadge,
   ImportFilterType,

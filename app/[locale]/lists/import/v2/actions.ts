@@ -15,6 +15,8 @@ import {
   isImportFilterType,
 } from '@utils/list/filterImportPreviewItems';
 import { getImportItemBadges } from '@utils/list/importItemBadges';
+import { getImportListAmounts } from '@utils/list/importListAmounts';
+import { isImportQuantityMode } from '@utils/list/importQuantityMode';
 import { resolveImportRecommendedListId } from '@utils/list/importMeta';
 import { getListImportSession, type ListImportSession } from '@utils/list/importSession';
 import {
@@ -206,8 +208,17 @@ async function loadImportItemsPageData(
   const pageSize = clampPageSize(input.pageSize);
   const page = Math.max(1, Math.floor(input.page) || 1);
 
-  const session = await requireImportSession(input.importToken);
+  const [session, listId] = await Promise.all([
+    requireImportSession(input.importToken),
+    resolveOwnedListId(input.listId),
+  ]);
   const resolved = await resolveImportPreviewItems(session);
+  const listAmounts = listId
+    ? await getImportListAmounts(
+        listId,
+        resolved.items.map(({ item }) => item.internal_id)
+      )
+    : null;
   const summary = computeImportSummary(resolved.items);
   const filterCounts = countImportFilterBuckets(resolved.items);
 
@@ -229,6 +240,7 @@ async function loadImportItemsPageData(
     items: pageItems.map((entry) => ({
       ...entry,
       badges: badges.get(entry.item.internal_id) ?? [],
+      listAmount: listAmounts?.get(entry.item.internal_id) ?? null,
     })),
     page: safePage,
     pageSize,
@@ -241,7 +253,26 @@ async function loadImportItemsPageData(
     summary,
     filteredSummary,
     filterCounts,
+    inListCount: listAmounts
+      ? resolved.items.filter(({ item }) => listAmounts.has(item.internal_id)).length
+      : null,
   };
+}
+
+/** The list id when the current user may write to it; otherwise `null` (preview without amounts). */
+async function resolveOwnedListId(listId: number | undefined): Promise<number | null> {
+  if (!listId || !Number.isSafeInteger(listId) || listId <= 0) return null;
+
+  const { user } = await getServerCurrentUser();
+  if (!user || user.banned) return null;
+
+  const list = await prisma.userList.findUnique({
+    where: { internal_id: listId },
+    select: { user_id: true },
+  });
+  if (!list || (list.user_id !== user.id && !user.isAdmin)) return null;
+
+  return listId;
 }
 
 async function applyImport(input: ApplyListImportV2Input): Promise<ApplyListImportV2Result> {
@@ -254,7 +285,8 @@ async function applyImport(input: ApplyListImportV2Input): Promise<ApplyListImpo
     input.listId <= 0 ||
     !['add', 'remove', 'hide'].includes(input.action) ||
     !Array.isArray(input.ignore) ||
-    input.ignore.some((value) => !['np', 'nc', 'quantity'].includes(value))
+    input.ignore.some((value) => !['np', 'nc'].includes(value)) ||
+    !isImportQuantityMode(input.quantityMode)
   ) {
     throwImportError(IMPORT_ERROR.INVALID_TYPE);
   }
@@ -288,12 +320,14 @@ async function applyImport(input: ApplyListImportV2Input): Promise<ApplyListImpo
     return true;
   });
 
-  const importData = buildImportListItems(entries, session.items, ignore.has('quantity'));
+  const importData = buildImportListItems(entries, session.items, input.quantityMode);
 
   if (!importData.length) throwImportError(IMPORT_ERROR.NO_ITEMS);
 
   if (input.action === 'add') {
-    await ListService.upsertItems(list.internal_id, importData);
+    await ListService.upsertItems(list.internal_id, importData, {
+      addAmounts: input.quantityMode === 'sum',
+    });
   } else {
     const itemIids = importData.map((item) => Number(item.item_iid));
     const shouldHide = input.action === 'hide' || list.dynamicType === 'fullSync';

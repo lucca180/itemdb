@@ -141,7 +141,11 @@ export async function applyListImport(input: ApplyListImportInput): Promise<Appl
     return true;
   });
 
-  const importData = buildImportListItems(entries, session.items, ignore.has('quantity'));
+  const importData = buildImportListItems(
+    entries,
+    session.items,
+    ignore.has('quantity') ? 'keep' : 'replace'
+  );
 
   if (!importData.length) throwImportError(IMPORT_ERROR.NO_ITEMS);
 

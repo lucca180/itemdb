@@ -5,6 +5,7 @@ import {
   Button,
   Checkbox,
   Field,
+  Fieldset,
   Flex,
   Heading,
   HStack,
@@ -25,7 +26,12 @@ import { useAuth } from '@utils/auth';
 import { useLists } from '@utils/useLists';
 import { dynamicListCan } from '@utils/utils';
 import type { UserList, UserListLite } from '@types';
-import type { ImportAction, ImportIgnore } from '@app/[locale]/lists/import/importShared';
+import type { ImportAction } from '@app/[locale]/lists/import/importShared';
+import type {
+  ImportIgnoreV2,
+  ImportQuantityMode,
+} from '@app/[locale]/lists/import/v2/importV2Shared';
+import { ImportQuantityModePicker } from '@app/[locale]/lists/import/v2/ImportQuantityModePicker';
 import { useLastImportListId } from './lastImportList';
 
 export type ImportControlsSidebarProps = {
@@ -35,8 +41,12 @@ export type ImportControlsSidebarProps = {
   onLinkedList: (list: UserList) => void;
   action: ImportAction;
   onActionChange: (action: ImportAction) => void;
-  ignore: ImportIgnore[];
-  onToggleIgnore: (value: ImportIgnore) => void;
+  ignore: ImportIgnoreV2[];
+  onToggleIgnore: (value: ImportIgnoreV2) => void;
+  quantityMode: ImportQuantityMode;
+  onQuantityModeChange: (mode: ImportQuantityMode) => void;
+  /** Items already in the selected list; `null` until known. */
+  inListCount: number | null;
   onSubmit: () => void;
   isSubmitting: boolean;
   canSubmit: boolean;
@@ -52,6 +62,9 @@ export function ImportControlsSidebar({
   onActionChange,
   ignore,
   onToggleIgnore,
+  quantityMode,
+  onQuantityModeChange,
+  inListCount,
   onSubmit,
   isSubmitting,
   canSubmit,
@@ -184,16 +197,19 @@ export function ImportControlsSidebar({
             </NativeSelect.Root>
           </Field.Root>
 
-          <Field.Root>
-            <Field.Label fontSize="xs" fontWeight="semibold" color="whiteAlpha.800">
+          {/* Fieldset, not Field: checkboxes inside a Field share its control id. */}
+          <Fieldset.Root gap={1.5} spaceY={0}>
+            <Fieldset.Legend mb={1.5} fontSize="xs" fontWeight="semibold" color="whiteAlpha.800">
               {t('General.ignore')}
-            </Field.Label>
+            </Fieldset.Legend>
             <VStack align="flex-start" gap={1.5}>
-              {(['np', 'nc', 'quantity'] as const).map((value) => (
+              {(['np', 'nc'] as const).map((value) => (
                 <Checkbox.Root
                   key={value}
                   size="sm"
                   colorPalette="teal"
+                  cursor="pointer"
+                  _hover={{ '& [data-part="control"]': { borderColor: 'teal.400' } }}
                   checked={ignore.includes(value)}
                   onCheckedChange={({ checked }) => {
                     window.umami?.track('import-v2-option', {
@@ -205,18 +221,22 @@ export function ImportControlsSidebar({
                   }}
                 >
                   <Checkbox.HiddenInput value={value} />
-                  <Checkbox.Control />
+                  <Checkbox.Control cursor="pointer" />
                   <Checkbox.Label fontSize="xs" color="whiteAlpha.800">
-                    {value === 'np'
-                      ? t('General.np-items')
-                      : value === 'nc'
-                        ? t('General.nc-items')
-                        : t('General.quantities')}
+                    {value === 'np' ? t('General.np-items') : t('General.nc-items')}
                   </Checkbox.Label>
                 </Checkbox.Root>
               ))}
             </VStack>
-          </Field.Root>
+          </Fieldset.Root>
+
+          {action === 'add' && (
+            <ImportQuantityModePicker
+              value={quantityMode}
+              onChange={onQuantityModeChange}
+              inListCount={list ? inListCount : null}
+            />
+          )}
 
           <Separator borderColor="whiteAlpha.100" />
 
