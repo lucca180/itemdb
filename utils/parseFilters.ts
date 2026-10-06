@@ -408,51 +408,31 @@ const checkWord = (input: string, startIndex: number): boolean => {
   return !stopwords.includes(word) && word.length > 2;
 };
 
+// Removes the minimum number of unmatched parentheses in linear time.
+// (A BFS over removals is exponential and lets a short search query hang the server.)
 function removeInvalidParentheses(s: string) {
-  // Helper function to check if a string is valid
-  function isValid(str: string) {
-    let count = 0;
-    for (let i = 0; i < str.length; i++) {
-      if (str[i] === '(') {
-        count++;
-      } else if (str[i] === ')') {
-        count--;
-        if (count < 0) {
-          return false;
-        }
-      }
+  // Forward pass: drop ')' with no open '(' before it.
+  const chars: string[] = [];
+  let open = 0;
+  for (const char of s) {
+    if (char === ')') {
+      if (open === 0) continue;
+      open--;
+    } else if (char === '(') {
+      open++;
     }
-    return count === 0;
+    chars.push(char);
   }
 
-  // Initialize a queue for BFS (Breadth-First Search)
-  const queue = [s];
-  const visited = new Set();
-  visited.add(s);
-
-  while (queue.length > 0) {
-    const current = queue.shift() ?? '';
-
-    if (isValid(current)) {
-      return current;
-    }
-
-    // Generate all possible strings by removing one character at a time
-    for (let i = 0; i < current.length; i++) {
-      if (current[i] !== '(' && current[i] !== ')') {
-        continue; // Ignore characters that are not parentheses
-      }
-
-      const next = current.slice(0, i) + current.slice(i + 1);
-
-      if (!visited.has(next)) {
-        queue.push(next);
-        visited.add(next);
-      }
+  // Backward pass: drop the rightmost `open` '(' left without a matching ')'.
+  for (let i = chars.length - 1; i >= 0 && open > 0; i--) {
+    if (chars[i] === '(') {
+      chars[i] = '';
+      open--;
     }
   }
 
-  return s;
+  return chars.join('');
 }
 
 export const getFiltersDiff = (
