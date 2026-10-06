@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 import { createPoolBreadcrumbList, PoolBreadcrumbs } from '@components/Breadcrumbs/PoolBreadcrumbs';
 import { IconLink } from '@components/Utils/IconLink';
 import MainLink from '@components/Utils/MainLink';
+import { stringifyJsonLd } from '@app/[locale]/articles/articleJsonLd';
 import { getCachedNow } from '@utils/getCachedNow';
 import { petColorSlug } from '@utils/pet-utils';
 import { POPULAR_COLOR_NAMES, type RainbowPoolComboTile } from '@utils/petColorTool';
@@ -240,7 +241,7 @@ export async function HubContent({ locale, colors, species, recentlyReleased }: 
         <Box>
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+            dangerouslySetInnerHTML={{ __html: stringifyJsonLd(faqJsonLd) }}
           />
           <Heading as="h2" size="md" mb={4}>
             {t('PetColors.faq-title')}

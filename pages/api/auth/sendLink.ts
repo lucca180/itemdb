@@ -9,6 +9,8 @@ import { consumeLoginRateLimit } from '@utils/auth/loginRateLimit';
 const isDev = process.env.NODE_ENV === 'development';
 
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// RFC 5321 max email length; also caps input before mailRegex (polynomial on long strings).
+const MAX_CRED_LENGTH = 254;
 const USERNAME_TIMING_PAD_MS = 75;
 
 type SendLinkBody = {
@@ -53,6 +55,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(500).json({ success: false, message: 'Bad server' });
   if (!cred || typeof cred !== 'string')
     return res.status(400).json({ success: false, message: 'No credential provided' });
+  if (cred.length > MAX_CRED_LENGTH)
+    return res.status(400).json({ success: false, message: 'Invalid credential' });
 
   const ip = requestIp.getClientIp(req);
   const rate = await consumeLoginRateLimit(ip);

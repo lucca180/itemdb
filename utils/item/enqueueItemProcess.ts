@@ -2,6 +2,7 @@ import { ItemType, Prisma } from '@prisma/generated/client';
 import hash from 'object-hash';
 import prisma from '@utils/prisma';
 import { allCategories } from '@utils/allCats';
+import { getImageId } from '@utils/item/imageId';
 import {
   processItemProcessQueue,
   type ProcessItemQueueOptions,
@@ -76,12 +77,13 @@ export function buildItemProcessRows(
     weight = isNaN(Number(weight)) ? undefined : Number(weight);
     itemId = isNaN(Number(itemId)) ? undefined : Number(itemId);
 
-    if (!name || !img || /[\d\,\.]+\WNP/gm.test(name)) continue;
+    // Lookbehind keeps this linear on long names (avoids ReDoS).
+    if (!name || !img || /(?<![\d,.])[\d,.]+\WNP/.test(name)) continue;
 
     if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
     if (!img.includes('images.neopets.com/items/')) continue;
 
-    if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+    if (img) imageId = getImageId(img as string) ?? '';
 
     if (!imageId) continue;
 

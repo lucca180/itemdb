@@ -6,6 +6,7 @@ import { getManyItems } from './many';
 import requestIp from 'request-ip';
 import { validateExtractorHash } from '@utils/api/hashValidator';
 import { GRAM_OPTION_NOTE } from '@utils/item/itemDropEvidence';
+import { getImageId } from '@utils/item/imageId';
 import { maybeMarkNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenableFromDrops';
 
 const chance = new Chance();
@@ -56,7 +57,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
       if (!img.includes('images.neopets.com/items/')) return undefined;
-      if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+      if (img) imageId = getImageId(img as string) ?? '';
       if (!imageId) return undefined;
 
       return [name, imageId];
@@ -71,7 +72,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
     if (!img.includes('images.neopets.com/items/'))
       return res.status(400).json({ error: 'invalid parent' });
-    if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+    if (img) imageId = getImageId(img as string) ?? '';
     if (!imageId) return res.status(400).json({ error: 'invalid parent' });
 
     parent_name_image_id = [name, imageId];
@@ -179,7 +180,7 @@ export const processOpenableItems = async (openableItem: OpenableQueue) => {
 
   if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
   if (!img.includes('images.neopets.com/items/')) throw 'invalid item';
-  if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+  if (img) imageId = getImageId(img as string) ?? '';
   if (!imageId) throw 'invalid item';
 
   const name_image_id: [string, string] = [name, imageId];
@@ -191,7 +192,7 @@ export const processOpenableItems = async (openableItem: OpenableQueue) => {
 
     if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
     if (!img.includes('images.neopets.com/items/')) throw 'invalid parent';
-    if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+    if (img) imageId = getImageId(img as string) ?? '';
     if (!imageId) throw 'invalid parent';
 
     parent_name_image_id = [name, imageId];

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Box, Flex, Heading, Link, Separator, Text } from '@chakra-ui/react';
 import { getTranslations } from 'next-intl/server';
 import MainLink from '@components/Utils/MainLink';
+import { stringifyJsonLd } from '@app/[locale]/articles/articleJsonLd';
 
 const OFFICIAL_NC_MALL = 'https://ncmall.neopets.com/';
 const FAQ_COUNT = 6;
@@ -98,7 +99,7 @@ export async function FaqSection() {
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: stringifyJsonLd(faqJsonLd) }}
       />
       <Separator borderColor="whiteAlpha.200" />
       <Heading as="h2" size={{ base: 'xl', md: '2xl' }} css={{ textWrap: 'balance' }}>

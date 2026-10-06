@@ -14,6 +14,7 @@ import { TradeItems, Trades } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
 import { isValidOptionalOwnerHash, omitOwnerHash, withoutOwnerData } from '@utils/ownerHash';
 import { validateExtractorHash } from '@utils/api/hashValidator';
+import { getImageId } from '@utils/item/imageId';
 
 export const config = {
   api: {
@@ -107,7 +108,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
 
-      if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
+      if (img) imageId = getImageId(img as string) ?? null;
 
       if (!imageId) continue;
 
