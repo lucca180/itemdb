@@ -38,7 +38,7 @@
     "@hello-pangea/color-picker": "^3.2.2",
     "@hugocxl/react-to-image": "^0.0.9",
     "@json2csv/node": "^7.0.6",
-    "@napi-rs/canvas": "^1.0.9",
+    "@napi-rs/canvas": "^1.0.10",
     "@prisma/adapter-mariadb": "7.10.0",
     "@prisma/client": "7.10.0",
     "@sentry/nextjs": "^11.4.0",
@@ -52,7 +52,7 @@
     "colorthief": "^3.5.0",
     "cookies-next": "^6.1.1",
     "date-fns": "^4.4.0",
-    "fakeout": "^1.0.113",
+    "fakeout": "^1.0.115",
     "fuse.js": "^7.5.0",
     "he": "^1.2.0",
     "html-react-parser": "5.2.17",
@@ -65,7 +65,7 @@
     "lightweight-charts": "^5.2.0",
     "lodash": "^4.18.1",
     "mailgen": "^2.0.36",
-    "next": "16.4.0-canary.57",
+    "next": "16.4.0-canary.61",
     "next-intl": "^4.14.9",
     "next-seo": "^6.8.0",
     "next-sitemap": "^4.2.3",
@@ -87,7 +87,7 @@
     "redis": "4.7.0",
     "request-ip": "^3.3.0",
     "resend": "6.26.0",
-    "simple-statistics": "^7.11.0",
+    "simple-statistics": "^7.12.1",
     "swr": "^2.5.1"
   },
   "devDependencies": {
@@ -157,6 +157,7 @@
     "undici": ">=6.24.0",
     "svgo": ">=2.8.1",
     "picomatch": ">=2.3.2",
-    "sharp": ">=0.35.0"
+    "sharp": ">=0.35.0",
+    "mysql2": "^3.22.0"
   }
 }
