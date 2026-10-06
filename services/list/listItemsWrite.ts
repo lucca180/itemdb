@@ -176,16 +176,19 @@ export async function moveOrCopyItems({
  * Bulk upserts items via raw SQL (HTTP PUT on list items).
  *
  * Inserts new rows or updates `capValue`, `amount`, `imported`, and `updatedAt` on duplicate
- * `(list_id, item_iid)`. No-op when `items` is empty.
+ * `(list_id, item_iid)`. Omitted `capValue` / `amount` keep the existing value on duplicates.
+ * No-op when `items` is empty.
  *
  * @returns `true` when rows were written, `null` when there was nothing to upsert.
  */
 export async function upsertItems(listId: number, items: PutListItemInput[]) {
-  const upsertQuery = buildBulkListItemsUpsertQuery(listId, items);
-  if (!upsertQuery) return null;
+  if (items.length === 0) return null;
+  const upsertQueries = buildBulkListItemsUpsertQueries(listId, items);
 
   return withItemWrite([listId], async (tx) => {
-    await tx.$executeRaw(upsertQuery);
+    for (const query of upsertQueries) {
+      await tx.$executeRaw(query);
+    }
     await touchList(listId, tx);
     return true;
   });
@@ -272,35 +275,60 @@ export async function applyDynamicItemChanges(listId: number, changes: DynamicIt
   }
 }
 
-/** Builds a parameterized `INSERT … ON DUPLICATE KEY UPDATE` for {@link upsertItems}. */
-function buildBulkListItemsUpsertQuery(listId: number, items: PutListItemInput[]) {
-  if (items.length === 0) return null;
+/** Parses an optional numeric string field; empty/missing/invalid values return `null`. */
+function toOptionalNumber(value: string | undefined): number | null {
+  if (value === undefined || value === null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
 
-  const values = items.map((item) => {
-    return Prisma.sql`(
+/**
+ * Builds parameterized `INSERT … ON DUPLICATE KEY UPDATE` queries for {@link upsertItems}.
+ *
+ * Omitted `capValue` / `amount` keep the existing value on duplicate rows (new rows get the
+ * column defaults), so items are grouped by which fields they provide — one query per group.
+ */
+function buildBulkListItemsUpsertQueries(listId: number, items: PutListItemInput[]) {
+  const groups = new Map<string, { hasCap: boolean; hasAmount: boolean; values: Prisma.Sql[] }>();
+
+  for (const item of items) {
+    const capValue = toOptionalNumber(item.capValue);
+    const amount = toOptionalNumber(item.amount);
+    const hasCap = capValue !== null;
+    const hasAmount = amount !== null;
+    const key = `${hasCap}-${hasAmount}`;
+
+    const group = groups.get(key) ?? { hasCap, hasAmount, values: [] };
+    group.values.push(Prisma.sql`(
       ${listId},
       ${Number(item.item_iid)},
-      ${item.capValue ? Number(item.capValue) : 0},
-      ${item.amount ? Number(item.amount) : 1},
+      ${capValue ?? 0},
+      ${amount ?? 1},
       ${item.imported ?? false},
       NOW()
-    )`;
-  });
+    )`);
+    groups.set(key, group);
+  }
 
-  return Prisma.sql`
-    INSERT INTO ListItems (
-      list_id,
-      item_iid,
-      capValue,
-      amount,
-      imported,
-      updatedAt
-    )
-    VALUES ${Prisma.join(values)}
-    ON DUPLICATE KEY UPDATE
-      capValue = COALESCE(VALUES(capValue), capValue),
-      amount = COALESCE(VALUES(amount), amount),
-      imported = VALUES(imported),
-      updatedAt = NOW()
-  `;
+  return [...groups.values()].map(({ hasCap, hasAmount, values }) => {
+    const updates = [
+      hasCap && Prisma.sql`capValue = VALUES(capValue)`,
+      hasAmount && Prisma.sql`amount = VALUES(amount)`,
+      Prisma.sql`imported = VALUES(imported)`,
+      Prisma.sql`updatedAt = NOW()`,
+    ].filter((sql): sql is Prisma.Sql => !!sql);
+
+    return Prisma.sql`
+      INSERT INTO ListItems (
+        list_id,
+        item_iid,
+        capValue,
+        amount,
+        imported,
+        updatedAt
+      )
+      VALUES ${Prisma.join(values)}
+      ON DUPLICATE KEY UPDATE ${Prisma.join(updates)}
+    `;
+  });
 }

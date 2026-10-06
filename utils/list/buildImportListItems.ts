@@ -40,6 +40,7 @@ export function importQuantity(
 /**
  * Collapse resolved import rows onto list `item_iid`s.
  * Clones (`canonical_id`) share the canonical item; amounts are summed from session qty.
+ * With `ignoreQuantity`, `amount` is omitted so existing list amounts are kept (new rows get 1).
  */
 export function buildImportListItems(
   entries: Array<[string, ImportApplyItem]>,
@@ -57,7 +58,7 @@ export function buildImportListItems(
   return [...amounts.entries()].map(([iid, amount]) => ({
     item_iid: String(iid),
     capValue: undefined,
-    amount: String(ignoreQuantity ? 1 : amount),
+    amount: ignoreQuantity ? undefined : String(amount),
     imported: true,
   }));
 }

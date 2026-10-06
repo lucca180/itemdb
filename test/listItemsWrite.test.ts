@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
-import { applyDynamicItemChanges, hideItems } from '@services/list/listItemsWrite';
+import { applyDynamicItemChanges, hideItems, upsertItems } from '@services/list/listItemsWrite';
 
 const mockCountSql = vi.fn();
 const mockTransaction = vi.fn();
@@ -7,6 +7,7 @@ const mockUpdateMany = vi.fn();
 const mockDeleteMany = vi.fn();
 const mockCreateMany = vi.fn();
 const mockUserListUpdate = vi.fn();
+const mockExecuteRaw = vi.fn();
 
 vi.mock('@utils/prisma', () => ({
   default: {
@@ -16,6 +17,10 @@ vi.mock('@utils/prisma', () => ({
 
 vi.mock('@services/list/listCount', () => ({
   countSql: (...args: unknown[]) => mockCountSql(...args),
+}));
+
+vi.mock('@services/list/listItemsV2Cache', () => ({
+  invalidateListItemIds: vi.fn(),
 }));
 
 describe('listItemsWrite', () => {
@@ -30,10 +35,43 @@ describe('listItemsWrite', () => {
           createMany: mockCreateMany,
         },
         userList: { update: mockUserListUpdate },
-        $executeRaw: vi.fn(),
+        $executeRaw: mockExecuteRaw,
       };
       return fn(tx);
     });
+  });
+
+  const sqlText = (query: { strings: readonly string[] }) => query.strings.join('?');
+
+  test('upsertItems is a no-op when there are no items', async () => {
+    expect(await upsertItems(10, [])).toBeNull();
+    expect(mockTransaction).not.toHaveBeenCalled();
+  });
+
+  test('upsertItems only overwrites capValue/amount when provided', async () => {
+    await upsertItems(10, [
+      { item_iid: '1', capValue: '5', amount: '3', imported: true },
+      { item_iid: '2', capValue: undefined, amount: '4', imported: true },
+      { item_iid: '3', capValue: undefined, amount: undefined, imported: false },
+      { item_iid: '4', capValue: '', amount: undefined, imported: false },
+    ]);
+
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(3);
+    const [full, amountOnly, none] = mockExecuteRaw.mock.calls.map(([q]) => q);
+
+    expect(sqlText(full)).toContain('capValue = VALUES(capValue)');
+    expect(sqlText(full)).toContain('amount = VALUES(amount)');
+    expect(full.values).toEqual([10, 1, 5, 3, true]);
+
+    expect(sqlText(amountOnly)).not.toContain('capValue = VALUES(capValue)');
+    expect(sqlText(amountOnly)).toContain('amount = VALUES(amount)');
+    expect(amountOnly.values).toEqual([10, 2, 0, 4, true]);
+
+    expect(sqlText(none)).not.toContain('capValue = VALUES(capValue)');
+    expect(sqlText(none)).not.toContain('amount = VALUES(amount)');
+    expect(none.values).toEqual([10, 3, 0, 1, false, 10, 4, 0, 1, false]);
+
+    expect(mockCountSql).toHaveBeenCalledWith(10, expect.any(Object));
   });
 
   test('hideItems updates items, touches list and recounts', async () => {

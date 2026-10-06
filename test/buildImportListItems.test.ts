@@ -89,7 +89,7 @@ describe('buildImportListItems', () => {
     ]);
   });
 
-  it('sets amount to 1 per unique item when ignoring quantities', () => {
+  it('omits amount when ignoring quantities so existing list amounts are kept', () => {
     const rows = buildImportListItems(
       [
         ['1', item({ internal_id: 11, name: 'Red', item_id: 1, canonical_id: 900 })],
@@ -99,6 +99,8 @@ describe('buildImportListItems', () => {
       true
     );
 
-    expect(rows).toEqual([{ item_iid: '900', capValue: undefined, amount: '1', imported: true }]);
+    expect(rows).toEqual([
+      { item_iid: '900', capValue: undefined, amount: undefined, imported: true },
+    ]);
   });
 });
