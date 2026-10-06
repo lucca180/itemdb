@@ -94,11 +94,12 @@ export const AuctionPriceChange = ({
   );
 };
 
+/** Kept muted on purpose so it doesn't compete with the price for attention. */
 export const AuctionRelistedTag = ({ count, open }: { count: number; open: boolean }) => {
   const t = useTranslations();
 
   return (
-    <Badge colorPalette="orange" size="xs" variant="subtle" gap={1}>
+    <Badge colorPalette="gray" size="xs" variant="subtle" gap={1}>
       {t('ItemPage.auction-relisted', { count })}
       <Icon
         as={LuChevronDown}
