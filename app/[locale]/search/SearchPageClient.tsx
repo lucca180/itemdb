@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 'use client';
 
 import {
@@ -649,7 +649,7 @@ const SpecialListSearch = (props: { userList: UserList }) => {
       textAlign="center"
     >
       <Text opacity={0.66} fontSize="xs" as="div">
-        <ListBreadcrumb list={props.userList} show={2} skipCurrent />
+        <ListBreadcrumb list={props.userList} show={2} skipCurrent useAppDir />
       </Text>
       <Text mb={2} fontSize="lg" fontWeight="bold">
         {props.userList.name}

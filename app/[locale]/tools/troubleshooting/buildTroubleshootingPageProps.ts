@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { cookies, headers } from 'next/headers';
+import { io } from 'next/cache';
 import type { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
 import { isLikelyBrowser, normalizeIP } from '@utils/api/api-utils';
@@ -17,6 +18,8 @@ export async function buildTroubleshootingPageProps(): Promise<TroubleshootingPa
   const cookieStore = await cookies();
   const headerStore = await headers();
 
+  // Cookies resolve during runtime prefetches; jwt.verify reads Date.now() synchronously
+  await io();
   const sessionCookie = cookieStore.get('idb-session-id')?.value ?? '';
   const hasSession = !!checkSession(sessionCookie);
 

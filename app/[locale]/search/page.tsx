@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { io } from 'next/cache';
 import { connection } from 'next/server';
 import { cache, Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
@@ -31,6 +32,8 @@ const getSearchList = cache(async (listIdParam: string | undefined): Promise<Use
   const list_id = listIdParam ? parseInt(listIdParam, 10) : undefined;
   if (!list_id || Number.isNaN(list_id)) return null;
 
+  // the mariadb pool reads Date.now() synchronously when validating idle connections
+  await io();
   const { user } = await getServerCurrentUser();
   return (
     (await ListService.initUser(user).getList({
