@@ -1,5 +1,6 @@
 import type { PutListItemInput } from '@services/list/listItemsWrite';
 import type { ListImportSession } from '@utils/list/importSession';
+import type { ImportQuantityMode } from '@utils/list/importQuantityMode';
 
 type ImportQuantitySource = ListImportSession['items'] | Record<string | number, unknown>;
 
@@ -40,11 +41,12 @@ export function importQuantity(
 /**
  * Collapse resolved import rows onto list `item_iid`s.
  * Clones (`canonical_id`) share the canonical item; amounts are summed from session qty.
+ * In `keep` mode, `amount` is omitted so existing list amounts are kept (new rows get 1).
  */
 export function buildImportListItems(
   entries: Array<[string, ImportApplyItem]>,
   sessionItems: ImportQuantitySource,
-  ignoreQuantity: boolean
+  quantityMode: ImportQuantityMode
 ): PutListItemInput[] {
   const amounts = new Map<number, number>();
 
@@ -57,7 +59,7 @@ export function buildImportListItems(
   return [...amounts.entries()].map(([iid, amount]) => ({
     item_iid: String(iid),
     capValue: undefined,
-    amount: String(ignoreQuantity ? 1 : amount),
+    amount: quantityMode === 'keep' ? undefined : String(amount),
     imported: true,
   }));
 }

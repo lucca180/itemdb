@@ -1,5 +1,6 @@
 import { Tag } from '@chakra-ui/react';
-import { getShopRestockSpecialDay, type ShopRestockSpecialDay } from '@utils/utils';
+import { getCachedNow } from '@utils/getCachedNow';
+import { getDateNST, getShopRestockSpecialDay, type ShopRestockSpecialDay } from '@utils/utils';
 
 const specialDayColorPalette = {
   hpd: 'green',
@@ -14,8 +15,9 @@ type RestockShopSpecialDayTagProps = {
   labels: Record<ShopRestockSpecialDay, string>;
 };
 
-export function RestockShopSpecialDayTag({ shopId, labels }: RestockShopSpecialDayTagProps) {
-  const specialDay = getShopRestockSpecialDay(shopId);
+export async function RestockShopSpecialDayTag({ shopId, labels }: RestockShopSpecialDayTagProps) {
+  // Cached clock: a bare `new Date()` aborts runtime prerenders
+  const specialDay = getShopRestockSpecialDay(shopId, getDateNST(await getCachedNow()));
   if (!specialDay) return null;
 
   return (

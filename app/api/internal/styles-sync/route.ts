@@ -6,6 +6,7 @@ import { PET_COLORS_CACHE_TAG } from '@utils/pet-utils';
 import { syncPetStylesFromTarnumSnapshot, type TarnumStyleData } from '@utils/petStyles/sync';
 import { enqueueAndProcessItems } from '@utils/item/enqueueItemProcess';
 import { processItemProcessQueue } from '@utils/item/processItemQueue';
+import { getImageId } from '@utils/item/imageId';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 const TARNUM_SERVER = process.env.TARNUM_SERVER;
@@ -46,7 +47,7 @@ async function syncPetStyles() {
       const dbItem = existingById.get(style.item_id);
       if (!dbItem) return true;
 
-      const imageId = style.image.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+      const imageId = getImageId(style.image) ?? '';
       return style.name !== dbItem.name || imageId !== dbItem.image_id;
     })
     .map((style) => ({

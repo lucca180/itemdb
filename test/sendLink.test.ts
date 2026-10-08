@@ -100,4 +100,14 @@ describe('POST /api/auth/sendLink', () => {
     expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
     expect(createMagicTokenMock).not.toHaveBeenCalled();
   });
+
+  test('oversized credential returns 400 before rate limit or lookup', async () => {
+    const res = mockRes();
+
+    await handle(req({ cred: '!@!.' + '!.'.repeat(50_000) + '@' }), res);
+
+    expect(res.statusCode).toBe(400);
+    expect(consumeLoginRateLimitMock).not.toHaveBeenCalled();
+    expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
+  });
 });

@@ -14,6 +14,7 @@ import { slugify } from '@utils/utils';
 import { decodeItemTextFields } from '@utils/item/itemFieldMerge';
 import { buildNewItemFields } from '@utils/item/processItemQueue';
 import { detectWearable } from '@utils/item/detectWearable';
+import { getImageId } from '@utils/item/imageId';
 import type { User } from '@types';
 
 export class ManualCheckInputError extends Error {
@@ -312,7 +313,7 @@ async function handleItemUpdate(id: number, field: string, value: unknown, user:
   }
 
   if (field === 'image') {
-    image_id = String(value).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+    image_id = getImageId(String(value)) ?? '';
   }
 
   const parsedValue = ['weight', 'rarity', 'est_val', 'item_id'].includes(field)

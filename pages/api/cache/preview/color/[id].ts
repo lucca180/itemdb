@@ -89,6 +89,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       ctx = canvas.getContext('2d');
 
       const imagesURLs = await fetchPetPreviewImages(speciesId, colorId);
+      if (!imagesURLs) return res.status(404).send('Pet Preview Not Found');
       if (imagesURLs.length === 0) throw new Error('No layers found');
 
       const imagesPromises = [];
@@ -159,6 +160,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 const fetchPetPreviewImages = async (species_id: number, color_id: number) => {
   const petPreviewData = await dti.fetchPetPreview(species_id, color_id);
+  if (!petPreviewData) return null;
 
   const layers = petPreviewData.layers.sort((a, b) => a.zone.depth - b.zone.depth);
 

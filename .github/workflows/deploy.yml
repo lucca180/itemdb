@@ -8,13 +8,15 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+# Jobs only SSH into the server; none of them use GITHUB_TOKEN.
+permissions: {}
 jobs:
   test:
     name: Prepare and test inactive environment
     runs-on: ubuntu-latest
     steps:
       - name: Prepare and test inactive environment
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -61,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build inactive environment
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -95,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Switch traffic
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}

@@ -61,11 +61,12 @@ const getIcon = (url: string) => {
   try {
     const urlObj = new URL(url, 'https://itemdb.com.br');
     const hostname = urlObj.hostname;
-    if (hostname.endsWith('neopets.com')) return '/icons/neopets.png';
-    if (hostname.endsWith('magnetismotimes.com')) return '/icons/mt.png';
-    if (hostname.endsWith('itemdb.com.br')) return '/favicon.svg';
-    if (hostname.endsWith('openneo.net')) return '/icons/dti.png';
-    if (hostname.endsWith('neomerch.com')) return '/icons/merch.png';
+    const isHost = (domain: string) => hostname === domain || hostname.endsWith(`.${domain}`);
+    if (isHost('neopets.com')) return '/icons/neopets.png';
+    if (isHost('magnetismotimes.com')) return '/icons/mt.png';
+    if (isHost('itemdb.com.br')) return '/favicon.svg';
+    if (isHost('openneo.net')) return '/icons/dti.png';
+    if (isHost('neomerch.com')) return '/icons/merch.png';
   } catch (e) {
     console.error(e);
   }

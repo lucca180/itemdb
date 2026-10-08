@@ -123,10 +123,14 @@ export class dti {
     };
 
     const res = await dti._query(GET_PET_APPEARANCE_ANY_POSE, variables);
-    return res.petAppearances as DTIPetAppearance[];
+    // DTI returns null data for combos it doesn't know
+    return (res?.petAppearances ?? []) as DTIPetAppearance[];
   }
 
-  public static async fetchPetPreview(speciesId: number, colorId: number) {
+  public static async fetchPetPreview(
+    speciesId: number,
+    colorId: number
+  ): Promise<DTIPetAppearance | undefined> {
     const petAppearances = await dti.fetchPetAppearances(speciesId, colorId);
 
     return pickPetAppearance(petAppearances) ?? petAppearances[0];

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import { cache, Suspense } from 'react';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
@@ -7,6 +8,7 @@ import { ListService } from '@services/ListService';
 import type { UserList } from '@types';
 import { signListJWT } from '@utils/api/api-utils';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { getCachedNow } from '@utils/getCachedNow';
 import { routing } from '@utils/locales';
 import { getTranslations } from 'next-intl/server';
 import { SearchPageClient } from './SearchPageClient';
@@ -70,10 +72,16 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
 
 async function SearchPageContent({ searchParams }: Pick<SearchPageProps, 'searchParams'>) {
   const { list_id: listIdParam } = await searchParams;
-  const userList = await getSearchList(firstSearchParam(listIdParam));
+  const [userList, now] = await Promise.all([
+    getSearchList(firstSearchParam(listIdParam)),
+    getCachedNow(),
+  ]);
+
+  // jwt.sign reads Date.now(); the token must be per request anyway
+  if (userList) await connection();
   const listJWT = userList ? signListJWT(userList.internal_id) : null;
 
-  const searchTip = new Date().getMinutes() % 5;
+  const searchTip = new Date(now).getMinutes() % 5;
 
   return (
     <>

@@ -12,7 +12,12 @@ import type {
   ImportPreviewItemV2,
 } from '@app/[locale]/lists/import/v2/importV2Shared';
 import type { ImportSortDir, ImportSortKey } from '@utils/list/sortImportPreviewItems';
+import type { ImportQuantityMode } from '@utils/list/importQuantityMode';
 import { capitalizeWords } from '@utils/item/itemInfo';
+import {
+  ImportQuantityBadge,
+  ImportQuantityMath,
+} from '@app/[locale]/lists/import/v2/ImportQuantityMath';
 
 /** Colors match ItemHeader.tsx and SearchFilters.tsx (album item = yellow). */
 const BADGE_CONFIG: Record<ImportItemBadge, { labelKey: string; colorPalette: string }> = {
@@ -30,6 +35,8 @@ export type ImportItemTableProps = {
   sortDir: ImportSortDir;
   onSortChange: (key: ImportSortKey, dir: ImportSortDir) => void;
   isLoading?: boolean;
+  /** When set, the quantity column previews the resulting list amount. */
+  quantityMode?: ImportQuantityMode | null;
 };
 
 export function ImportItemTable({
@@ -38,6 +45,7 @@ export function ImportItemTable({
   sortDir,
   onSortChange,
   isLoading,
+  quantityMode,
 }: ImportItemTableProps) {
   const t = useTranslations();
   const format = useFormatter();
@@ -107,7 +115,7 @@ export function ImportItemTable({
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {items.map(({ key, item, quantity, badges }, index) => {
+          {items.map(({ key, item, quantity, badges, listAmount }, index) => {
             const npUnit = item.price?.type === 'np' ? item.price.value : null;
             const totalNp = typeof npUnit === 'number' && npUnit > 0 ? npUnit * quantity : null;
             const isNc = item.type === 'nc';
@@ -178,14 +186,22 @@ export function ImportItemTable({
                   </Flex>
                 </Table.Cell>
                 <Table.Cell textAlign="center" py={2.5} px={3}>
-                  <Badge
-                    size="sm"
-                    colorPalette={quantity > 1 ? 'teal' : 'gray'}
-                    variant={quantity > 1 ? 'solid' : 'subtle'}
-                    textTransform="none"
-                  >
-                    {quantity}x
-                  </Badge>
+                  {quantityMode ? (
+                    <Flex direction="column" align="center" gap={0.5}>
+                      <ImportQuantityMath
+                        mode={quantityMode}
+                        listAmount={listAmount}
+                        imported={quantity}
+                      />
+                      {listAmount === null && (
+                        <Text fontSize="2xs" color="whiteAlpha.500">
+                          {t('Lists.importV2-qty-new')}
+                        </Text>
+                      )}
+                    </Flex>
+                  ) : (
+                    <ImportQuantityBadge value={quantity} />
+                  )}
                 </Table.Cell>
                 <Table.Cell py={2.5} px={3}>
                   <ItemCardBadgeV2 item={item} />

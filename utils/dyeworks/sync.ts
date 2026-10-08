@@ -9,6 +9,7 @@ import {
 } from '@utils/dyeworks/parseCategories';
 import { listMutationCacheTags, MallHubRevalidateTags } from '@utils/appCacheTags';
 import { revalidateAppCache } from '@utils/item/revalidateItem';
+import { getImageId } from '@utils/item/imageId';
 
 export const DYEWORKS_CURRENT_LIST_ID = 28472;
 export const DYEWORKS_RETIRED_LIST_ID = 28473;
@@ -80,7 +81,7 @@ export function parseDyeworksEndDate(
 }
 
 export function imageIdFromUrl(image: string): string {
-  return image.match(/[^./]+(?=\.gif)/)?.[0] ?? '';
+  return getImageId(image) ?? '';
 }
 
 export function diffDyeworksListMembership(

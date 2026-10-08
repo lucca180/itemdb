@@ -15,6 +15,7 @@ import { UTCDate } from '@date-fns/utc';
 import { LogService } from '@services/ActionLogService';
 import { ITEM_COLOR_SOURCE, ITEM_COLOR_TYPE } from '@utils/item/itemColorSource';
 import { getOrCreateColorThiefColors } from '@utils/item/itemColorThief';
+import { getImageId } from '@utils/item/imageId';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 // const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE; // 'itemdb' or 'lebron'
@@ -73,7 +74,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (!itemData.image) return res.status(400).json({ error: 'Invalid Request' });
 
-  const imageId = itemData.image.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? undefined;
+  const imageId = getImageId(itemData.image);
   if (!imageId) return res.status(400).json({ error: 'Invalid Request' });
 
   const originalItem = await prisma.items.findUnique({

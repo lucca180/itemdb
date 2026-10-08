@@ -9,6 +9,7 @@ import { differenceInCalendarDays } from 'date-fns';
 import { chunk } from 'lodash';
 import { isValidOptionalOwnerHash, isValidOwnerHash, withoutOwnerData } from '@utils/ownerHash';
 import { validateExtractorHash } from '@utils/api/hashValidator';
+import { getImageId } from '@utils/item/imageId';
 import {
   getAuctionSoldSuffix,
   shouldUpdateAuctionPriceProcess,
@@ -82,7 +83,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
 
-    if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
+    if (img) imageId = getImageId(img as string) ?? null;
 
     // sw, ssw and usershop items have a max value of 999.999
     if (['sw', 'ssw', 'usershop'].includes(type) && value > 999999) continue;

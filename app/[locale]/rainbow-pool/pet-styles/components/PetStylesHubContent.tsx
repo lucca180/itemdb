@@ -15,6 +15,7 @@ import { IconLink } from '@components/Utils/IconLink';
 import Image from '@components/Utils/Image';
 import MainLink from '@components/Utils/MainLink';
 import type { StudioEssentialItem } from '@app/server/petStyles';
+import { stringifyJsonLd } from '@app/[locale]/articles/articleJsonLd';
 import type { StyleToken } from '@utils/petStyles/display';
 import { STYLES_BASE_PATH } from '@utils/petStyles/paths';
 import { getTranslations } from 'next-intl/server';
@@ -284,7 +285,7 @@ export async function PetStylesHubContent({
         <Box>
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+            dangerouslySetInnerHTML={{ __html: stringifyJsonLd(faqJsonLd) }}
           />
           <Heading as="h2" size="md" mb={4}>
             {t('PetColors.faq-title')}

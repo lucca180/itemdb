@@ -17,8 +17,9 @@ import {
   type ImportActionResult,
   type ImportErrorCode,
   type ImportFilterType,
-  type ImportIgnore,
+  type ImportIgnoreV2,
   type ImportItemsPageResult,
+  type ImportQuantityMode,
   type ImportSortDir,
   type ImportSortKey,
 } from './importV2Shared';
@@ -76,7 +77,9 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
 
   const [list, setList] = useState<UserListLite | undefined>();
   const [action, setAction] = useState<ImportAction>('add');
-  const [ignore, setIgnore] = useState<ImportIgnore[]>([]);
+  const [ignore, setIgnore] = useState<ImportIgnoreV2[]>([]);
+  const [quantityMode, setQuantityMode] = useState<ImportQuantityMode>('replace');
+  const listId = list?.internal_id;
 
   const requestId = useRef(0);
   const hasTrackedSearch = useRef(false);
@@ -127,6 +130,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
           sortDir,
           search,
           filter,
+          listId,
         })
       );
       if (id !== requestId.current) return;
@@ -163,7 +167,19 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
     } finally {
       if (id === requestId.current) setIsLoading(false);
     }
-  }, [importToken, page, sortBy, sortDir, search, filter, isTooLarge, recommended_list, t, toast]);
+  }, [
+    importToken,
+    page,
+    sortBy,
+    sortDir,
+    search,
+    filter,
+    listId,
+    isTooLarge,
+    recommended_list,
+    t,
+    toast,
+  ]);
 
   useEffect(() => {
     void fetchPage();
@@ -220,7 +236,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
     setList(next);
   };
 
-  const toggleIgnore = (value: ImportIgnore) => {
+  const toggleIgnore = (value: ImportIgnoreV2) => {
     setIgnore((prev) =>
       prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     );
@@ -261,6 +277,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
           listId: list.internal_id,
           action,
           ignore,
+          quantityMode,
         })
       );
 
@@ -273,6 +290,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
         ambiguous: applyResult.ambiguousCount,
         dynamic: list.dynamicType ?? 'none',
         ignore: ignore.length ? ignore.join(',') : 'none',
+        quantityMode: action === 'add' ? quantityMode : 'none',
         hasRecommended: Boolean(recommended_list),
         usedRecommended:
           Boolean(recommended_list) && list.linkedListId === recommended_list?.internal_id,
@@ -446,6 +464,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
                     sortDir={sortDir}
                     onSortChange={handleSortChange}
                     isLoading={isLoading}
+                    quantityMode={list && action === 'add' ? quantityMode : null}
                   />
                   {result && result.totalPages > 1 && (
                     <Pagination
@@ -480,6 +499,9 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
                 onActionChange={setAction}
                 ignore={ignore}
                 onToggleIgnore={toggleIgnore}
+                quantityMode={quantityMode}
+                onQuantityModeChange={setQuantityMode}
+                inListCount={isLoading ? null : (result?.inListCount ?? null)}
                 onSubmit={handleImport}
                 isSubmitting={isSubmitting}
                 canSubmit={canSubmit}
