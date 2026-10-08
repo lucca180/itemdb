@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'node',
-    setupFiles: ['dotenv/config', 'test/setup-next-navigation.ts'],
+    setupFiles: ['dotenv/config', 'test/setup-next-navigation.ts', 'test/setup-redis.ts'],
     retry: 3,
     maxWorkers: '60%',
     bail: 1,

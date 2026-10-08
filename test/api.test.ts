@@ -1,8 +1,8 @@
-import { verifySessionToken } from '@utils/api/api-utils';
+import { decodeSiteToken, verifySessionToken } from '@utils/api/api-utils';
 import { expect, test, describe, vi, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { apiMiddleware } from '../proxy';
-import { createSession, redis_setItemCount } from '@utils/api/redis';
+import { createSession, redis, redis_setItemCount } from '@utils/api/redis';
 import { generateAPIToken } from '../pages/api/auth/token';
 import { verifyTurnstileToken } from '@utils/api/turnstile';
 
@@ -182,6 +182,10 @@ describe.concurrent('API Access tests', () => {
       });
 
       request.headers.set('x-itemdb-token', limitedToken);
+
+      // the first request of a key only creates its counter, so start it at the limit
+      const { sub, limit } = decodeSiteToken(limitedToken)!;
+      await redis!.set(`apiKey:${sub}`, limit!);
 
       const response = await apiMiddleware(request);
       expect(response.status).toBe(429);
