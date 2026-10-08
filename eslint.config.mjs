@@ -25,6 +25,17 @@ export default [
     },
   },
   {
+    // Stricter in eslint-plugin-react-hooks 7.1; fix gradually.
+    // Same glob as eslint-config-next, which registers the react-hooks plugin.
+    files: ['**/*.{js,jsx,mjs,ts,tsx,mts,cts}'],
+    rules: {
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/refs': 'warn',
+      'react-hooks/immutability': 'warn',
+      'react-hooks/set-state-in-render': 'warn',
+    },
+  },
+  {
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
