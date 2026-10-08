@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
   if (list_id && !isNaN(list_id)) {
     const listJWT = request.headers.get('x-itemdb-list-jwt') ?? undefined;
-    if (!listJWT || !verifyListJWT(listJWT, list_id)) {
+    if (!listJWT || !(await verifyListJWT(listJWT, list_id))) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
   }

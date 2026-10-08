@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { SignJWT, decodeJwt, jwtVerify, type JWTPayload } from 'jose';
 import { NextRequest } from 'next/server';
 import ipaddr from 'ipaddr.js';
 import { NextApiRequest } from 'next';
@@ -7,24 +7,58 @@ import { Chance } from 'chance';
 
 const chance = new Chance();
 
+// -------- site tokens ---------- //
+
+type SiteTokenPayload = JWTPayload & {
+  ctx?: string;
+  limit?: number;
+  listId?: number;
+};
+
+const getSiteProofSecret = () => new TextEncoder().encode(process.env.SITE_PROOF_SECRET!);
+
+export function signSiteToken(payload: SiteTokenPayload, expiresIn: string) {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(expiresIn)
+    .sign(getSiteProofSecret());
+}
+
+async function verifySiteToken(token: string) {
+  const { payload } = await jwtVerify<SiteTokenPayload>(token, getSiteProofSecret(), {
+    algorithms: ['HS256'],
+  });
+
+  return payload;
+}
+
+/** Reads the payload without checking the signature. Returns null for malformed tokens. */
+export function decodeSiteToken(token: string) {
+  try {
+    return decodeJwt<SiteTokenPayload>(token);
+  } catch {
+    return null;
+  }
+}
+
 // -------- user session ---------- //
 
 export function generateSessionToken(limit: number, expires: number = 7 * 24 * 60 * 60) {
-  return jwt.sign(
+  return signSiteToken(
     {
       sub: chance.guid({ version: 5 }),
       aud: 'itemdb.com.br',
       ctx: 'session',
       limit: limit,
     },
-    process.env.SITE_PROOF_SECRET!,
-    { expiresIn: `${expires}s` }
+    `${expires}s`
   );
 }
 
-export function verifySessionToken(token: string) {
+export async function verifySessionToken(token: string) {
   try {
-    const payload = jwt.verify(token, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
+    const payload = await verifySiteToken(token);
 
     if (payload.aud !== 'itemdb.com.br' || payload.ctx !== 'session') {
       return null;
@@ -143,9 +177,9 @@ export function normalizeIP(ip: string) {
 
 // -------- api token ---------- //
 
-export function verifyApiToken(token: string) {
+export async function verifyApiToken(token: string) {
   try {
-    const payload = jwt.verify(token, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
+    const payload = await verifySiteToken(token);
 
     if (payload.aud !== 'itemdb.com.br' || payload.ctx !== 'api-token') {
       return false;
@@ -160,14 +194,13 @@ export function verifyApiToken(token: string) {
 // -------- search lists -------- //
 
 export function signListJWT(listId: number) {
-  return jwt.sign(
+  return signSiteToken(
     {
       aud: 'itemdb.com.br',
       listId,
       ctx: 'list_access',
     },
-    process.env.SITE_PROOF_SECRET!,
-    { expiresIn: '15m' }
+    '15m'
   );
 }
 
@@ -180,12 +213,12 @@ export async function generateListJWT(listId: number, req: NextApiRequest) {
 
   if (!list) return null;
 
-  return { token: signListJWT(listId), list };
+  return { token: await signListJWT(listId), list };
 }
 
-export function verifyListJWT(token: string, list_id: number) {
+export async function verifyListJWT(token: string, list_id: number) {
   try {
-    const payload = jwt.verify(token, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
+    const payload = await verifySiteToken(token);
 
     if (
       payload.aud !== 'itemdb.com.br' ||

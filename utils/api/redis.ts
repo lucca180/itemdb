@@ -1,8 +1,12 @@
 import { Redis as RedisRaw } from 'ioredis';
 import { NextApiRequest } from 'next/types';
 import { NextRequest } from 'next/server';
-import { generateSessionToken, normalizeIP, verifySessionToken } from './api-utils';
-import jwt from 'jsonwebtoken';
+import {
+  decodeSiteToken,
+  generateSessionToken,
+  normalizeIP,
+  verifySessionToken,
+} from './api-utils';
 import requestIp from 'request-ip';
 import * as Sentry from '@sentry/nextjs';
 
@@ -82,13 +86,13 @@ export const redisCache =
   globalForRedis.redisCache ??
   (redisOpts ? (globalForRedis.redisCache = new RedisRaw({ ...redisOpts, db: 1 })) : undefined);
 
-export const createSession = (logged = false) => {
+export const createSession = async (logged = false) => {
   const { LOGGED_LIMIT, MIN_LIMIT_COUNT, SESSION_EXPIRE, SESSION_EXPIRE_LOGGED } = API_CONST;
 
   const limit = logged ? LOGGED_LIMIT : MIN_LIMIT_COUNT;
   const expires = logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE;
 
-  const session = generateSessionToken(limit, expires);
+  const session = await generateSessionToken(limit, expires);
 
   return {
     session: session,
@@ -97,8 +101,8 @@ export const createSession = (logged = false) => {
   };
 };
 
-export const checkSession = (sessionToken: string) => {
-  const payload = verifySessionToken(sessionToken);
+export const checkSession = async (sessionToken: string) => {
+  const payload = await verifySessionToken(sessionToken);
   if (!payload || !payload.sub) return false;
 
   return payload.sub;
@@ -181,7 +185,7 @@ export const redis_setItemCount = async (
     const banCount = Number((await redis.get(`bCount:${ip}`)) || '0');
 
     if (sessionCookie) {
-      const sessionData = verifySessionToken(sessionCookie);
+      const sessionData = await verifySessionToken(sessionCookie);
 
       if (sessionData && sessionData.limit) {
         limit = Math.max(sessionData.limit, limit);
@@ -254,7 +258,7 @@ export const checkApiToken = async (token: string, ctx?: ApiTokenContext) => {
 
   // we already validated the token in middleware,
   // so we can just decode it here
-  const payload = jwt.decode(token) as jwt.JwtPayload | null;
+  const payload = decodeSiteToken(token);
 
   if (!payload || !payload.sub || payload.limit === undefined || payload.limit === null)
     throw API_ERROR_CODES.invalidKey;
@@ -290,7 +294,7 @@ export const checkApiToken = async (token: string, ctx?: ApiTokenContext) => {
 const incrementApiKey = async (token: string | null | undefined, incrementBy: number) => {
   if (!token || !redis) return;
 
-  const payload = jwt.decode(token) as jwt.JwtPayload | null;
+  const payload = decodeSiteToken(token);
   if (!payload || !payload.sub || payload.limit === undefined || payload.limit === null) {
     throw API_ERROR_CODES.invalidKey;
   }
@@ -320,7 +324,7 @@ const incrementApiKey = async (token: string | null | undefined, incrementBy: nu
 
 export const getKeyTTL = async (token: string) => {
   if (!token || !redis) return 0;
-  const payload = jwt.decode(token) as jwt.JwtPayload | null;
+  const payload = decodeSiteToken(token);
   if (!payload || !payload.sub) return 0;
   const keyId = payload.sub;
   const ttl = await redis.ttl(`apiKey:${keyId}`);

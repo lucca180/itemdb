@@ -1,5 +1,5 @@
 import prisma from '@utils/prisma';
-import jwt from 'jsonwebtoken';
+import { signSiteToken } from '@utils/api/api-utils';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -33,17 +33,15 @@ export const generateAPIToken = async (apiKey: string) => {
 
   if (!keyData) throw new Error('Invalid API key');
 
-  const token = jwt.sign(
+  // jose types `sub` as string, but issued tokens carry the numeric key_id
+  const token = await signSiteToken(
     {
       aud: 'itemdb.com.br',
       ctx: 'api-token',
-      sub: keyData.key_id,
+      sub: keyData.key_id as unknown as string,
       limit: keyData.limit,
     },
-    process.env.SITE_PROOF_SECRET!,
-    {
-      expiresIn: '1h',
-    }
+    '1h'
   );
 
   return token;

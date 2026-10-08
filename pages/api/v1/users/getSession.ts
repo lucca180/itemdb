@@ -24,7 +24,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
   } catch (e) {}
 
-  const { session, expires } = createSession(!!user);
+  const { session, expires } = await createSession(!!user);
   const expExpiration = expires - 12 * 60 * 60; // 12 hours earlier than the actual expiration to be safe
 
   const cookies = [

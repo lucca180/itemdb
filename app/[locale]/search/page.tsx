@@ -80,9 +80,9 @@ async function SearchPageContent({ searchParams }: Pick<SearchPageProps, 'search
     getCachedNow(),
   ]);
 
-  // jwt.sign reads Date.now(); the token must be per request anyway
+  // signing reads the clock; the token must be per request anyway
   if (userList) await connection();
-  const listJWT = userList ? signListJWT(userList.internal_id) : null;
+  const listJWT = userList ? await signListJWT(userList.internal_id) : null;
 
   const searchTip = new Date(now).getMinutes() % 5;
 

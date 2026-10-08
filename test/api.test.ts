@@ -96,7 +96,7 @@ describe.concurrent('API Access tests', () => {
       const sessionData = await createSession();
       session = sessionData.session;
       limit = sessionData.limit;
-      sessionId = verifySessionToken(session)!.sub!;
+      sessionId = (await verifySessionToken(session))!.sub!;
 
       expect(sessionId).toBeDefined();
       expect(session).toBeDefined();

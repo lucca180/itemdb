@@ -165,7 +165,7 @@ export const apiMiddleware = async (request: NextRequest) => {
     if (sessionCookie && sessionCookie.value) {
       Sentry.setTag('api_type', 'session');
       try {
-        const sessionId = checkSession(sessionCookie.value);
+        const sessionId = await checkSession(sessionCookie.value);
         if (!!sessionId) {
           Sentry.metrics.count('api.requests', 1, {
             attributes: {
@@ -198,7 +198,7 @@ export const apiMiddleware = async (request: NextRequest) => {
 
   // request is coming from a non-browser source -> check api token
   const apiToken = request.headers.get('x-itemdb-token');
-  const tokenPayload = apiToken ? verifyApiToken(apiToken) : null;
+  const tokenPayload = apiToken ? await verifyApiToken(apiToken) : null;
   if (apiToken && tokenPayload) {
     Sentry.setTag('api_type', 'api-token');
     Sentry.setTag('api_key_id', tokenPayload.sub);

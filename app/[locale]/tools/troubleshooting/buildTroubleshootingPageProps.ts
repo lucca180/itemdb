@@ -18,10 +18,10 @@ export async function buildTroubleshootingPageProps(): Promise<TroubleshootingPa
   const cookieStore = await cookies();
   const headerStore = await headers();
 
-  // Cookies resolve during runtime prefetches; jwt.verify reads Date.now() synchronously
+  // Cookies resolve during runtime prefetches; verifying the token reads the clock
   await io();
   const sessionCookie = cookieStore.get('idb-session-id')?.value ?? '';
-  const hasSession = !!checkSession(sessionCookie);
+  const hasSession = !!(await checkSession(sessionCookie));
 
   let isIpBan = false;
   try {

@@ -32,14 +32,14 @@ function normalizeFilters(filters: SearchFilters): SearchFilters {
  * Authorize list-scoped search like the v1 API: the page resolves the list
  * once and signs a short-lived JWT; actions just verify it in memory (no DB).
  */
-function resolveListScope(
+async function resolveListScope(
   list_id: number | undefined | null,
   listJWT: string | undefined | null
-): ListScope | undefined {
+): Promise<ListScope | undefined> {
   const id = Number(list_id);
   if (!id || Number.isNaN(id)) return undefined;
 
-  if (!listJWT || !verifyListJWT(listJWT, id)) {
+  if (!listJWT || !(await verifyListJWT(listJWT, id))) {
     throw new Error('Unauthorized');
   }
 
@@ -53,7 +53,7 @@ export async function runSearch(
   listJWT?: string | null
 ): Promise<SearchV2Result<'card'>> {
   const normalizedFilters = normalizeFilters(filters);
-  const list = resolveListScope(normalizedFilters.list_id, listJWT);
+  const list = await resolveListScope(normalizedFilters.list_id, listJWT);
 
   return ItemService.search(normalizeQuery(query), normalizedFilters, {
     intent: 'card',
@@ -69,7 +69,7 @@ export async function runSearchCount(
   listJWT?: string | null
 ): Promise<number> {
   const normalizedFilters = normalizeFilters(filters);
-  const list = resolveListScope(normalizedFilters.list_id, listJWT);
+  const list = await resolveListScope(normalizedFilters.list_id, listJWT);
 
   const result = await doSearch(
     normalizeQuery(query),
@@ -90,6 +90,6 @@ export async function loadSearchStats(
   listJWT?: string | null
 ): Promise<SearchStats | null> {
   const normalizedListId = normalizeInteger(list_id, 0, 0, Number.MAX_SAFE_INTEGER);
-  const list = resolveListScope(normalizedListId, listJWT);
+  const list = await resolveListScope(normalizedListId, listJWT);
   return getSearchStats(normalizeQuery(query), { list }) as Promise<SearchStats>;
 }
