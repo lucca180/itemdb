@@ -165,7 +165,19 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json({});
 };
 
-export const getItemEffects = async (item_id_name: ItemData | string | number) => {
+export type EffectCatalogs = {
+  colors: Awaited<ReturnType<typeof fetchAllNeopetsColors>>;
+  petpetColorEntries: Awaited<ReturnType<typeof fetchAllPetpetColors>>;
+};
+
+/**
+ * @param catalogs - App Router callers should pass the `'use cache'` catalogs
+ * (`getAllNeopetsColors` / `getAllPetpetColors`); otherwise both are read from the DB.
+ */
+export const getItemEffects = async (
+  item_id_name: ItemData | string | number,
+  catalogs?: EffectCatalogs
+) => {
   const item =
     typeof item_id_name === 'object'
       ? item_id_name
@@ -173,15 +185,14 @@ export const getItemEffects = async (item_id_name: ItemData | string | number) =
 
   if (!item) throw new Error('Item not found');
 
-  const effectsRaw = await prisma.itemEffect.findMany({
-    where: {
-      item_iid: item.internal_id,
-    },
-  });
-
-  const [colors, petpetColorEntries] = await Promise.all([
-    fetchAllNeopetsColors(),
-    fetchAllPetpetColors(),
+  const [effectsRaw, colors, petpetColorEntries] = await Promise.all([
+    prisma.itemEffect.findMany({
+      where: {
+        item_iid: item.internal_id,
+      },
+    }),
+    catalogs?.colors ?? fetchAllNeopetsColors(),
+    catalogs?.petpetColorEntries ?? fetchAllPetpetColors(),
   ]);
   const petpetColorNames = petpetCatalogToNameRecord(petpetColorEntries);
   const effects = effectsRaw.map((effect) => formatEffect(effect, colors, petpetColorNames));

@@ -18,9 +18,7 @@ import type {
   InsightsResponse,
   ItemData,
   ItemEffect,
-  ItemMMEData,
   ItemPetpetData,
-  ItemRecipe,
   LebronTrade,
   NCMallData,
   UserList,
@@ -29,14 +27,12 @@ import type {
 import { getItemEffects } from '@pages/api/v1/items/[id_name]/effects';
 import { getSingleItemColor } from '@pages/api/v1/items/[id_name]/colors';
 import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
-import { getMMEData, isMME } from '@pages/api/v1/items/[id_name]/mme';
-import { getDyeworksData, type DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
-import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 import { itemRootTag } from '@utils/appCacheTags';
 import prisma from '@utils/prisma';
 import { getAllNeopetsColors } from '@app/server/petColors';
+import { getAllPetpetColors } from '@app/server/petpetCatalog';
 import { allSpecies, findPetColorName, PET_COLORS_CACHE_TAG } from '@utils/pet-utils';
 import {
   getComboPbOutfitIds,
@@ -111,15 +107,22 @@ export const loadItemPriceMarkers = cache(
 export const loadItemEffects = cache(async (internalId: number): Promise<ItemEffect[]> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'effects');
-  cacheLife('homeSlow');
-  const fresh = await getCachedItem(internalId, true);
-  return getItemEffects(fresh ?? ({ internal_id: internalId } as ItemData));
+  cacheLife('itemStatic');
+  const [fresh, colors, petpetColorEntries] = await Promise.all([
+    getCachedItem(internalId, true),
+    getAllNeopetsColors(),
+    getAllPetpetColors(),
+  ]);
+  return getItemEffects(fresh ?? ({ internal_id: internalId } as ItemData), {
+    colors,
+    petpetColorEntries,
+  });
 });
 
 export const loadItemColors = cache(async (internalId: number) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'colors');
-  cacheLife('homeSlow');
+  cacheLife('itemStatic');
   const fresh = await getCachedItem(internalId, true);
   return getSingleItemColor(fresh ?? ({ internal_id: internalId } as ItemData));
 });
@@ -127,7 +130,7 @@ export const loadItemColors = cache(async (internalId: number) => {
 export const loadItemWearableData = cache(async (internalId: number): Promise<WearableData> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'wearable');
-  cacheLife('homeSlow');
+  cacheLife('itemStatic');
   return getWearableData(internalId) as Promise<WearableData>;
 });
 
@@ -174,7 +177,7 @@ export const loadTradeLists = cache(async (internalId: number) => {
 export const loadPetpetData = cache(async (internalId: number): Promise<ItemPetpetData | null> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'petpet');
-  cacheLife('homeSlow');
+  cacheLife('itemStatic');
   const cachedItem = await getCachedItem(internalId, true);
   if (
     !cachedItem ||
@@ -214,33 +217,6 @@ export const loadLebronTradeHistory = cache(
   }
 );
 
-export const loadMMEData = cache(async (internalId: number): Promise<ItemMMEData | null> => {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'mme');
-  cacheLife('itemMedium');
-  const cachedItem = await getCachedItem(internalId, true);
-  if (!cachedItem || !isMME(cachedItem.name)) return null;
-  return getMMEData(cachedItem);
-});
-
-export const loadDyeData = cache(async (internalId: number): Promise<DyeworksData | null> => {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'dye');
-  cacheLife('itemMedium');
-  const cachedItem = await getCachedItem(internalId, true);
-  if (!cachedItem?.isNC || !cachedItem.isWearable) return null;
-  return getDyeworksData(cachedItem);
-});
-
-export const loadItemRecipes = cache(async (internalId: number): Promise<ItemRecipe[]> => {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'recipes');
-  cacheLife('itemMedium');
-  const cachedItem = await getCachedItem(internalId, true);
-  if (!cachedItem || cachedItem.isNC) return [];
-  return getItemRecipes(cachedItem.internal_id);
-});
-
 export const loadItemAuctions = cache(async (internalId: number) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'auction');
@@ -278,7 +254,7 @@ export const loadAvyData = cache(
   async (internalId: number, includeTrade: boolean): Promise<AvyData[] | null> => {
     'use cache';
     applyItemSectionCacheTags(internalId, 'avy', 'lists');
-    cacheLife('itemMedium');
+    cacheLife('homeSlow');
     const officialLists = await getAllOfficialItemLists(internalId, includeTrade);
     return getAvyData(internalId, officialLists);
   }
@@ -296,7 +272,10 @@ export const loadPetStyleForItem = cache(
   async (internalId: number): Promise<PetStyleLinkData | null> => {
     'use cache';
     applyItemSectionCacheTags(internalId, 'pet-style');
-    cacheLife('itemSection');
+    // `styles-sync` revalidates this tag when styles change; tag before the query so
+    // `null` (no style yet) entries are invalidated too.
+    cacheTag(PET_COLORS_CACHE_TAG);
+    cacheLife('itemStatic');
 
     const row = await prisma.petStyle.findFirst({
       where: {
@@ -339,7 +318,7 @@ export const loadPbOutfitComboForItem = cache(
     // Before the early return: without it the null entry falls back to the `default`
     // profile (never expires) and piles up in Redis across deploys.
     applyItemSectionCacheTags(internalId, 'wearable');
-    cacheLife('itemSection');
+    cacheLife('itemStatic');
 
     // PB paint brushes and other non-wearable items cannot be outfit pieces. Keep this gate
     // before every fetch/query so ordinary item pages pay no PB-resolution cost.

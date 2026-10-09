@@ -1,15 +1,11 @@
 import { Suspense } from 'react';
 import { Button, Flex, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
-import ItemCard from '@components/Items/ItemCard';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import MainLink from '@components/Utils/MainLink';
 import { needsDye } from '@app/_components/Item/itemPageGates';
-import {
-  loadDyeData,
-  loadPetStyleForItem,
-  type PetStyleLinkData,
-} from '@app/_components/Item/loadUtils';
-import type { DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
+import { loadPetStyleForItem, type PetStyleLinkData } from '@app/_components/Item/loadUtils';
+import { loadDyeData, type DyeworksDataV2 } from '@app/_components/Item/relatedItemsLoaders';
 import { getTranslations } from 'next-intl/server';
 import { stylesComboHref, stylesUnknownHref } from '@utils/petStyles/paths';
 import type { ItemData } from '@types';
@@ -21,7 +17,7 @@ type Props = {
 
 type DyeCardType = 'dyeworks' | 'prismatic' | 'none';
 
-function getDyeCardType(dyeData: DyeworksData): DyeCardType {
+function getDyeCardType(dyeData: DyeworksDataV2): DyeCardType {
   if (dyeData.originalItem.name.toLowerCase().includes('dyeworks')) return 'dyeworks';
   if (dyeData.originalItem.name.toLowerCase().includes('prismatic')) return 'prismatic';
 
@@ -109,7 +105,7 @@ async function DyeCardContent({ item }: Props) {
           >
             <Text>{t('DyeCard.dyeworks-original-item')}</Text>
             <Flex wrap="wrap" gap={2} justifyContent={'center'}>
-              <ItemCard
+              <ItemCardV2
                 uniqueID="dyeworks-original-item"
                 key={dyeData.originalItem.internal_id}
                 item={dyeData.originalItem}
@@ -127,8 +123,8 @@ async function DyeCardContent({ item }: Props) {
           >
             <Text>{t('DyeCard.dyeworks-all-variants')}</Text>
             <Flex wrap="wrap" gap={2} justifyContent={'center'}>
-              {dyeData.dyes.map((dye: ItemData) => (
-                <ItemCard uniqueID="dyeworks-variant" key={dye.internal_id} item={dye} small />
+              {dyeData.dyes.map((dye) => (
+                <ItemCardV2 uniqueID="dyeworks-variant" key={dye.internal_id} item={dye} small />
               ))}
             </Flex>
           </Flex>

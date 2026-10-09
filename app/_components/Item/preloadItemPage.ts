@@ -20,19 +20,16 @@ import { shouldShowTradeRelisting } from '@utils/item/tradeRelisting';
 import { loadItemOpenableMeta } from '@app/_components/Item/Drops/loadItemDrops';
 import {
   loadAvyData,
-  loadDyeData,
   loadItemColors,
   loadItemEffects,
   getOfficialItemLists,
   loadItemParentData,
-  loadItemRecipes,
   loadItemAuctions,
   loadItemTrades,
   loadItemPriceMarkers,
   loadItemWearableData,
   loadLastSeen,
   loadLebronTradeHistory,
-  loadMMEData,
   loadNCMallData,
   loadNCTradeInsights,
   loadNPPricesSummary,
@@ -40,6 +37,11 @@ import {
   loadPetStyleForItem,
   loadTradeLists,
 } from '@app/_components/Item/loadUtils';
+import {
+  loadDyeData,
+  loadItemRecipes,
+  loadMMEData,
+} from '@app/_components/Item/relatedItemsLoaders';
 import { loadSimilarItemData } from '@app/_components/Item/SimilarItems/loadSimilarItems';
 import pMap from 'p-map';
 

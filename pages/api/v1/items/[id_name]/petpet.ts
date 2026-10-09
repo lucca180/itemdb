@@ -119,6 +119,8 @@ async function DELETE(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 
+  await revalidateItem(item.internal_id, ItemRevalidateTags.petpet(item.internal_id));
+
   return res.status(200).json(petpet);
 }
 

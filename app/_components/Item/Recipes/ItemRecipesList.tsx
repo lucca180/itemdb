@@ -2,13 +2,13 @@
 
 import { Fragment, useState } from 'react';
 import { Button, Center, Flex } from '@chakra-ui/react';
-import ItemCard from '@components/Items/ItemCard';
-import type { ItemRecipe } from '@types';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
+import type { ItemRecipeV2 } from '@app/_components/Item/relatedItemsLoaders';
 
 const VISIBLE_LIMIT = 3;
 
 type Props = {
-  recipes: ItemRecipe[];
+  recipes: ItemRecipeV2[];
   layout: 'combine' | 'transform';
   uniquePrefix: string;
   labels: {
@@ -22,7 +22,7 @@ function RecipeRow({
   layout,
   uniquePrefix,
 }: {
-  recipe: ItemRecipe;
+  recipe: ItemRecipeV2;
   layout: Props['layout'];
   uniquePrefix: string;
 }) {
@@ -40,7 +40,7 @@ function RecipeRow({
         borderRadius={'md'}
         flexWrap={'wrap'}
       >
-        <ItemCard
+        <ItemCardV2
           uniqueID={`${uniquePrefix}-${recipe.internal_id}-${left.internal_id}`}
           item={left}
           small
@@ -48,7 +48,7 @@ function RecipeRow({
         <Center>{operator}</Center>
         {right.map((entry, i) => (
           <Fragment key={`${recipe.internal_id}-${entry.internal_id}`}>
-            <ItemCard
+            <ItemCardV2
               uniqueID={`${uniquePrefix}-${recipe.internal_id}-${entry.internal_id}`}
               item={entry}
               small

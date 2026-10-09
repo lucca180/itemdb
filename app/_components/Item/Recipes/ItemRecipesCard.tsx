@@ -4,10 +4,10 @@ import Color from 'color';
 import CardBase from '@components/Card/CardBase';
 import { IconLink } from '@components/Utils/IconLink';
 import { needsRecipes } from '@app/_components/Item/itemPageGates';
-import { loadItemRecipes } from '@app/_components/Item/loadUtils';
+import { loadItemRecipes, type ItemRecipeV2 } from '@app/_components/Item/relatedItemsLoaders';
 import { ItemRecipesList } from '@app/_components/Item/Recipes/ItemRecipesList';
 import { getTranslations } from 'next-intl/server';
-import type { ItemData, ItemRecipe } from '@types';
+import type { ItemData } from '@types';
 import type { ReactNode } from 'react';
 
 type Props = {
@@ -62,7 +62,7 @@ function richIconLink(href: string, linkColor: string) {
 function getIntroText(
   config: RecipeTypeConfig,
   item: ItemData,
-  recipes: ItemRecipe[],
+  recipes: ItemRecipeV2[],
   t: Awaited<ReturnType<typeof getTranslations>>,
   linkColor: string
 ): ReactNode {

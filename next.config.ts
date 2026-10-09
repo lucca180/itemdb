@@ -28,6 +28,8 @@ const nextConfig: NextConfig = {
     homeSection: { stale: 180, revalidate: 300, expire: 3600 },
     homeFast: { stale: 180, revalidate: 180, expire: 3600 },
     homeSlow: { stale: 3600, revalidate: 3600, expire: 86400 },
+    // Item sections whose writes revalidate their section/root tags; time-based revalidation is only a fallback.
+    itemStatic: { stale: 3600, revalidate: 86400, expire: 259200 },
   },
   generateBuildId: async () => {
     return process.env.BUILD_ID || 'dev';

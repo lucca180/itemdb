@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 import { Flex, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
-import ItemCard from '@components/Items/ItemCard';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import { needsMME } from '@app/_components/Item/itemPageGates';
-import { loadMMEData } from '@app/_components/Item/loadUtils';
+import { loadMMEData } from '@app/_components/Item/relatedItemsLoaders';
 import { getTranslations } from 'next-intl/server';
 import type { ItemData } from '@types';
 
@@ -55,13 +55,13 @@ async function MMECardContent({ item }: Props) {
                 <b>{trail.label}</b>
               </Text>
               <Flex wrap="wrap" gap={2} justifyContent={'center'}>
-                <ItemCard
+                <ItemCardV2
                   uniqueID={`mme-initial-${mmeData.initial.internal_id}`}
                   item={mmeData.initial}
                   small
                 />
                 {trail.items.map((trailItem) => (
-                  <ItemCard
+                  <ItemCardV2
                     uniqueID={`mme-trail-${trail.key}-${trailItem.internal_id}`}
                     key={trailItem.internal_id}
                     item={trailItem}
@@ -77,7 +77,7 @@ async function MMECardContent({ item }: Props) {
             b: (children) => <b>{children}</b>,
           })}
         </Text>
-        <ItemCard
+        <ItemCardV2
           uniqueID={`mme-bonus-${mmeData.bonus.internal_id}`}
           item={mmeData.bonus}
           small

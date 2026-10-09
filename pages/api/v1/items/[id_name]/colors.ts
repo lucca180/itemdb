@@ -3,6 +3,7 @@ import { getItem } from '.';
 import { getItemColor } from '../colors';
 import prisma from '../../../../../utils/prisma';
 import { getColorThiefSwatchRows } from '@utils/item/itemColorThief';
+import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 import { ItemData } from '../../../../../types';
 
 // The 6 named swatch types this endpoint manages — scoped so a force-refresh here never
@@ -28,6 +29,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (!item) return res.status(400).json({ error: 'Invalid Item' });
 
   const result = await getSingleItemColor(item, isForce);
+
+  if (isForce) {
+    await revalidateItem(item.internal_id, ItemRevalidateTags.colors(item.internal_id));
+  }
 
   return res.json(result);
 }

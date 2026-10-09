@@ -135,7 +135,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       res.end(buffer);
 
-      if (rawData) await processDTIData(item, rawData);
+      const insertedWearables = rawData ? await processDTIData(item, rawData) : 0;
 
       if (forceRefresh) {
         const chance = new Chance();
@@ -144,7 +144,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           where: { internal_id: item.internal_id },
           data: { imgCacheOverride: chance.hash({ length: 10 }) },
         });
+      }
 
+      if (forceRefresh || insertedWearables > 0) {
         await revalidateItem(item.internal_id, ItemRevalidateTags.preview(item.internal_id));
       }
 
@@ -267,10 +269,12 @@ const processDTIData = async (
     });
   });
 
-  await prisma.wearableData.createMany({
+  const { count } = await prisma.wearableData.createMany({
     data: dataArr,
     skipDuplicates: true,
   });
+
+  return count;
 };
 
 const updateServerTime = (label: string, startTime: number, response: NextApiResponse) => {
