@@ -47,7 +47,9 @@ function getRedisCacheHandlerOptions() {
     getTimeoutMs: Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 750,
     revalidateTagQuerySize: 250,
     sharedTagsKey: '__sharedTags__',
-    avgResyncIntervalMs: 60 * 60 * 1_000,
+    // Full HSCAN of sharedTags + SCAN of every key per worker; pub/sub keeps maps in sync,
+    // so this is only a safety net (each resync moves ~190k entries).
+    avgResyncIntervalMs: 12 * 60 * 60 * 1_000,
     redisGetDeduplication: true,
     inMemoryCachingTime: 10_000,
     defaultStaleAge: 1209600,
