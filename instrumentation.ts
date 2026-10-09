@@ -28,7 +28,7 @@ function tracesSampler({
   return DEFAULT_TRACE_RATE;
 }
 
-export function register() {
+export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     // Next 16.3+ regression: internal rewrites (next-intl's locale rewrite runs on
     // almost every page request) are proxied through `httpxy`, which adds extra
@@ -46,16 +46,28 @@ export function register() {
   if (!isProd) return;
   try {
     if (process.env.NEXT_RUNTIME === 'nodejs') {
+      // Native add-on: imported inside the nodejs branch (dropped from the edge bundle) and
+      // only in production; a missing binary disables profiling instead of Sentry as a whole.
+      let profilingIntegration = null;
+      try {
+        const { nodeProfilingIntegration } = await import('@sentry/profiling-node');
+        profilingIntegration = nodeProfilingIntegration();
+      } catch (error) {
+        console.warn('Sentry profiling disabled:', error);
+      }
       Sentry.init({
         dsn:
           SENTRY_DSN ||
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
         tracesSampler,
-        profileSessionSampleRate: DEFAULT_TRACE_RATE,
+        // Every worker profiles; `trace` lifecycle only runs the profiler while a sampled
+        // span is active, so the effective rate follows `tracesSampler`.
+        profileSessionSampleRate: 1,
         profileLifecycle: 'trace',
         ignoreSpans: IGNORE_CACHE_REDIS,
         ignoreErrors,
         integrations: [
+          ...(profilingIntegration ? [profilingIntegration] : []),
           Sentry.prismaIntegration(),
           Sentry.captureConsoleIntegration({
             // array of methods that should be captured
