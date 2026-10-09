@@ -35,6 +35,17 @@ Disallow: */api/*
 Disallow: /search
 Disallow: /pt/search
 
+# SEO crawlers: throttled. A specific group replaces `*`, so repeat its rules.
+User-agent: AhrefsBot
+User-agent: SemrushBot
+Content-Signal: ai-train=no, search=yes, ai-input=no
+Crawl-delay: 10
+Allow: /
+Disallow: */admin/*
+Disallow: */api/*
+Disallow: /search
+Disallow: /pt/search
+
 # Host
 Host: https://itemdb.com.br
 
