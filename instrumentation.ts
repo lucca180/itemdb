@@ -3,6 +3,9 @@ import * as Sentry from '@sentry/nextjs';
 
 const DEFAULT_TRACE_RATE = 0.12;
 
+/** PM2 cluster instances (`NODE_APP_INSTANCE` 0..n) that run the CPU profiler. */
+const PROFILED_WORKERS = 3;
+
 /** Cache Components handler (node-redis). Leaves ioredis `redis-get` / `redis-set` alone. */
 const IGNORE_CACHE_REDIS = [/^(HDEL|HSET|HSCAN|PUBLISH|SUBSCRIBE|UNLINK|SCAN)\b/i];
 
@@ -48,21 +51,23 @@ export async function register() {
     if (process.env.NEXT_RUNTIME === 'nodejs') {
       // Native add-on: imported inside the nodejs branch (dropped from the edge bundle) and
       // only in production; a missing binary disables profiling instead of Sentry as a whole.
+      // Only the first PROFILED_WORKERS PM2 instances profile: the profiler is effectively always
+      // on (token API requests are 100% sampled), so each worker costs ~720 profile hours/month.
       let profilingIntegration = null;
-      try {
-        const { nodeProfilingIntegration } = await import('@sentry/profiling-node');
-        profilingIntegration = nodeProfilingIntegration();
-      } catch (error) {
-        console.warn('Sentry profiling disabled:', error);
+      if (Number(process.env.NODE_APP_INSTANCE ?? 0) < PROFILED_WORKERS) {
+        try {
+          const { nodeProfilingIntegration } = await import('@sentry/profiling-node');
+          profilingIntegration = nodeProfilingIntegration();
+        } catch (error) {
+          console.warn('Sentry profiling disabled:', error);
+        }
       }
       Sentry.init({
         dsn:
           SENTRY_DSN ||
           'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
         tracesSampler,
-        // Every worker profiles; `trace` lifecycle only runs the profiler while a sampled
-        // span is active, so the effective rate follows `tracesSampler`.
-        profileSessionSampleRate: 1,
+        profileSessionSampleRate: profilingIntegration ? 1 : 0,
         profileLifecycle: 'trace',
         ignoreSpans: IGNORE_CACHE_REDIS,
         ignoreErrors,
