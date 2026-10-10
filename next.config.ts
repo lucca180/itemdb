@@ -229,9 +229,9 @@ const nextConfig: NextConfig = {
 // })
 
 const sentryWebpackPluginOptions: SentryBuildOptions = {
-  org: 'lucca-4p',
+  org: 'itemdb',
   project: 'itemdb',
-  silent: true,
+  silent: false,
   authToken: sentryAuthToken,
   sourcemaps: {
     disable: !sentryAuthToken,
