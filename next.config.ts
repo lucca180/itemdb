@@ -46,7 +46,6 @@ const nextConfig: NextConfig = {
     : {}),
   compress: false, // cloudflare does it for us
   enablePrerenderSourceMaps: false,
-  productionBrowserSourceMaps: false,
   skipProxyUrlNormalize: true,
   images: {
     qualities: [100, 90, 80],
