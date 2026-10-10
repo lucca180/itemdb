@@ -315,10 +315,12 @@ export const processTradePrice = async (
       )
         return [];
 
+      // updateMany: the row may be gone (deleted item cascades its TradeItems) and update would throw P2025
       const transaction: any = [
-        prisma.tradeItems.update({
+        prisma.tradeItems.updateMany({
           where: {
             internal_id: item.internal_id,
+            trade_id: trade.trade_id,
           },
           data: {
             price: item.price,

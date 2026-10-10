@@ -42,16 +42,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       : getVoteMultiplier(user.xp);
 
   try {
-    const feedbackRaw = await prisma.feedbacks.findUniqueOrThrow({
+    const feedbackRaw = await prisma.feedbacks.findUnique({
       where: {
         feedback_id: parseInt(feedback_id),
+      },
+      include: {
         vote: {
-          none: {
-            user_id: user_id,
-          },
+          where: { user_id: user_id },
+          select: { vote_id: true },
+          take: 1,
         },
       },
     });
+
+    if (!feedbackRaw) return res.status(404).json({ error: 'Feedback not found' });
+
+    if (feedbackRaw.vote.length)
+      return res.status(409).json({ error: 'You have already voted on this feedback' });
 
     if (feedbackRaw.user_id === user_id && !isAdmin)
       return res.status(403).json({ error: 'You cannot vote on your own feedback' });
@@ -100,7 +107,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     res.json({ success: true });
-  } catch (e) {
+  } catch (e: any) {
+    // concurrent double vote hits FeedbackVotes @@unique([feedback_id, user_id])
+    if (e?.code === 'P2002')
+      return res.status(409).json({ error: 'You have already voted on this feedback' });
+
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
     return;

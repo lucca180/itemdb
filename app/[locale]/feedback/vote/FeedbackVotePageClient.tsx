@@ -198,13 +198,19 @@ export function FeedbackVotePageClient({
           setCurrentFeedback(newFeedbacks[0]);
         } else throw new Error(res.data.message);
       } catch (e: any) {
+        // already voted or feedback is gone: nothing to do here, move on
+        if (axios.isAxiosError(e) && [404, 409].includes(e.response?.status ?? 0)) {
+          await handleSkip();
+          return;
+        }
+
         console.error(e);
         setError(e.message);
       } finally {
         setIsLoading(false);
       }
     },
-    [currentFeedback, feedbacks, init]
+    [currentFeedback, feedbacks, init, handleSkip]
   );
 
   useEffect(() => {
