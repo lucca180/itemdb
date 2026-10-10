@@ -15,6 +15,8 @@ export type LoginPageLabels = {
   fillAllFields: string;
   onlyLettersNumbers: string;
   usernameTaken: string;
+  invalidLink: string;
+  requestNewLink: string;
 };
 
 export async function buildLoginPageProps(): Promise<LoginPageLabels> {
@@ -35,5 +37,7 @@ export async function buildLoginPageProps(): Promise<LoginPageLabels> {
     fillAllFields: t('Login.please-fill-all-fields'),
     onlyLettersNumbers: t('Login.only-letters-numbers'),
     usernameTaken: t('Login.username-already-taken'),
+    invalidLink: t('Login.invalid-link'),
+    requestNewLink: t('Login.request-new-link'),
   };
 }

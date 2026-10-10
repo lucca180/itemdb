@@ -1301,7 +1301,9 @@
     "go-back": "Voltar",
     "new-account-confirm": "Nenhuma conta encontrada com este email. Continuar cria uma conta nova. Se você já tinha conta, volte e tente outro email ou seu nome de usuário do itemdb.",
     "confirm-create-and-send": "Criar conta e enviar link",
-    "rate-limited": "Muitas tentativas de login. Tente novamente mais tarde."
+    "rate-limited": "Muitas tentativas de login. Tente novamente mais tarde.",
+    "invalid-link": "Este link de acesso expirou ou já foi usado. Cada link funciona uma única vez e expira em 15 minutos.",
+    "request-new-link": "Enviar um novo link"
   },
   "Profile": {
     "allowedDomains": "Somente imagens de neopets.com, magnetismotimes.com e itemdb.com.br são permitidas",

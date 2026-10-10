@@ -2,7 +2,7 @@
 'use client';
 
 import { Center, Flex, Field, Input, Text, Spinner, Button, useDisclosure } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import logoIcon from '@assets/logo_white.svg';
 import axios from 'axios';
@@ -43,18 +43,26 @@ export function LoginPageClient({
   const router = useRouter();
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [linkError, setLinkError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [needInfo, setNeedInfo] = useState<boolean>(false);
   const [neopetsUser, setNeopetsUser] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const { user, authLoading, setUser } = useAuth();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
+  const submittedToken = useRef<string | null>(null);
 
   const init = async () => {
+    const shouldConsumeToken = !!token && !!emailFromQuery && !user;
+
+    // effect re-runs (user hydration, StrictMode) must not resubmit a single-use token
+    if (shouldConsumeToken && submittedToken.current === token) return;
+
     setIsLoading(true);
     const redirect = redirectTo ?? '/';
 
-    if (token && emailFromQuery && !user) {
+    if (shouldConsumeToken) {
+      submittedToken.current = token;
       try {
         const userRes = await axios.post('/api/auth/login', {
           token,
@@ -73,7 +81,15 @@ export function LoginPageClient({
         setUser(userData);
         router.replace(resolveLoginRedirect(redirect));
       } catch (e: any) {
-        setError(e.response?.data?.error ?? e.message);
+        const isInvalidLink = e.response?.data?.code === 'invalid-token';
+        setLinkError(isInvalidLink ? labels.invalidLink : (e.response?.data?.error ?? e.message));
+
+        // tokens are single-use: drop it from the URL so a reload doesn't resubmit it
+        const url = new URL(window.location.href);
+        url.searchParams.delete('token');
+        url.searchParams.delete('email');
+        window.history.replaceState(null, '', url.toString());
+
         setIsLoading(false);
       }
     } else if (user) {
@@ -185,7 +201,17 @@ export function LoginPageClient({
           </Text>
         )}
 
-        {!isLoading && !needInfo && (
+        {!isLoading && !!linkError && (
+          <Flex flexFlow="column" gap={4} justifyContent="center" alignItems="center" maxW="md">
+            <Image src={logoIcon} alt="itemdb logo" width={300} quality={100} />
+            <Text mt={4} color="red.400" textAlign="center">
+              {linkError}
+            </Text>
+            <Button onClick={onOpen}>{labels.requestNewLink}</Button>
+          </Flex>
+        )}
+
+        {!isLoading && !needInfo && !linkError && (
           <Flex flexFlow="column" gap={4} justifyContent="center" alignItems="center">
             <Image src={logoIcon} alt="itemdb logo" width={300} quality={100} />
             <Text mt={4} textAlign="center">

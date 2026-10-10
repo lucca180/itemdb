@@ -4,7 +4,7 @@ import requestIp from 'request-ip';
 import { User, UserRoles } from '../../../types';
 import { startOfDay } from 'date-fns';
 import { User as PrismaUser } from '@prisma/generated/client';
-import { consumeMagicToken } from '@utils/auth/magicLink';
+import { consumeMagicToken, MagicTokenError } from '@utils/auth/magicLink';
 import { SESSION_DURATION_SECONDS, SESSION_VERSION, signSession } from '@utils/auth/jwt';
 import { invalidateCachedUser } from '@utils/auth/userCache';
 import { isUserBanned } from '@utils/auth/feedbackXp';
@@ -64,6 +64,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const finalUser = rawToUser(dbUser);
     res.json(finalUser);
   } catch (e: any) {
+    // expired/used links are expected — warn so Sentry (captures console.error) skips them
+    if (e instanceof MagicTokenError) {
+      console.warn('[login] magic token rejected:', e.message);
+      return res.status(401).json({ error: 'Unauthorized', code: 'invalid-token' });
+    }
+
     console.error(e);
     res.status(401).json({ error: 'Unauthorized' });
   }

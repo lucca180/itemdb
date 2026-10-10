@@ -20,6 +20,11 @@ const hashToken = (token: string) => crypto.createHash('sha256').update(token).d
 
 const generateToken = () => crypto.randomBytes(32).toString('hex');
 
+/** Expected failure (expired, already used or wrong email) — not a server error. */
+export class MagicTokenError extends Error {
+  name = 'MagicTokenError';
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -57,12 +62,13 @@ export const consumeMagicToken = async (token: string, email: string): Promise<v
 
   if (isDev) {
     const entry = devStore.get(hash);
-    if (!entry) throw new Error('Invalid or expired token');
+    if (!entry) throw new MagicTokenError('Invalid or expired token');
     if (entry.expires < Date.now()) {
       devStore.delete(hash);
-      throw new Error('Token expired');
+      throw new MagicTokenError('Token expired');
     }
-    if (entry.email.toLowerCase() !== email.toLowerCase()) throw new Error('Email mismatch');
+    if (entry.email.toLowerCase() !== email.toLowerCase())
+      throw new MagicTokenError('Email mismatch');
     devStore.delete(hash);
     return;
   }
@@ -73,8 +79,9 @@ export const consumeMagicToken = async (token: string, email: string): Promise<v
   const key = `magic:${hash}`;
   const storedEmail = await redis.get(key);
 
-  if (!storedEmail) throw new Error('Invalid or expired token');
-  if (storedEmail.toLowerCase() !== email.toLowerCase()) throw new Error('Email mismatch');
+  if (!storedEmail) throw new MagicTokenError('Invalid or expired token');
+  if (storedEmail.toLowerCase() !== email.toLowerCase())
+    throw new MagicTokenError('Email mismatch');
 
   await redis.del(key);
 };

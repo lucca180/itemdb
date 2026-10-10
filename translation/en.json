@@ -1299,7 +1299,9 @@
     "go-back": "Go back",
     "new-account-confirm": "No account found for this email. Continuing creates a new account. If you already have one, go back and try another email or your itemdb username.",
     "confirm-create-and-send": "Create account and send link",
-    "rate-limited": "Too many login attempts. Please try again later."
+    "rate-limited": "Too many login attempts. Please try again later.",
+    "invalid-link": "This sign-in link has expired or was already used. Each link works only once and expires after 15 minutes.",
+    "request-new-link": "Send a new link"
   },
   "Profile": {
     "fill-required-fields": "Fill out all required fields",
