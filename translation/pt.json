@@ -1222,6 +1222,7 @@
     "practice-meta-title": "Simulador de Restock: {shopname}",
     "practice-meta-description": "Simulador de restock grátis da {shopname} no Neopets. Treine o tempo de reação e ache os itens lucrativos. Os preços são os mesmos que podem aparecer na loja.",
     "practice-popular-shops": "Outras Lojas Populares",
+    "practice-this-shop": "Pratique nessa loja",
     "practice-faq-title": "Perguntas Frequentes",
     "practice-faq-1": "O que é o Treino de Restock?",
     "practice-faq-1-text": "Um simulador da página da {shopname}. Cada atualização é um restock novo: compre o item mais valioso o mais rápido que puder, sem gastar Neopontos e sem risco de restock ban.",

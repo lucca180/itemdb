@@ -18,6 +18,7 @@ import {
   tyrannianShops,
 } from '@utils/utils';
 import CardBase from '@components/Card/CardBase';
+import { RESTOCK_PILL_ICONS, RestockLinkPills } from '@components/Hubs/Restock/RestockLinkPills';
 import Image from 'next/image';
 import { Link as I18nLink } from '@i18n/navigation';
 import { getFormatter, getTranslations } from 'next-intl/server';
@@ -168,6 +169,22 @@ export default async function ItemRestock(props: Props) {
               {!lastSeen?.restock && '???'}
             </Text>
           </HStack>
+        )}
+        {!isHT && shopInfo && (
+          <Center mt={1}>
+            <RestockLinkPills
+              trackEvent="item-restock-practice"
+              size="sm"
+              pills={[
+                {
+                  id: 'practice',
+                  href: `/restock/${slugify(shopInfo.name)}/practice`,
+                  image: RESTOCK_PILL_ICONS.shop,
+                  label: t('Restock.practice-this-shop'),
+                },
+              ]}
+            />
+          </Center>
         )}
         {isHT && (
           <>
