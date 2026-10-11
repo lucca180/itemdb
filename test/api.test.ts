@@ -1,10 +1,16 @@
 import { decodeSiteToken, verifySessionToken } from '@utils/api/api-utils';
-import { expect, test, describe, vi, afterEach } from 'vitest';
+import { expect, test, describe, vi, afterEach, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { apiMiddleware } from '../proxy';
 import { createSession, redis, redis_setItemCount } from '@utils/api/redis';
 import { generateAPIToken } from '../pages/api/auth/token';
 import { verifyTurnstileToken } from '@utils/api/turnstile';
+import * as Sentry from '@sentry/nextjs';
+
+const expectTurnstileFailure = (reason: string) =>
+  expect(Sentry.metrics.count).toHaveBeenCalledWith('turnstile.verify_failed', 1, {
+    attributes: expect.objectContaining({ reason }),
+  });
 
 describe.concurrent('API Access tests', () => {
   test('GET getSession is not a bootstrap skip', async () => {
@@ -206,9 +212,14 @@ describe.concurrent('API Access tests', () => {
 });
 
 describe('Turnstile siteverify', () => {
+  beforeEach(() => {
+    vi.spyOn(Sentry.metrics, 'count').mockImplementation(() => {});
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
   test('skips verification in non-production when secret is unset', async () => {
@@ -217,10 +228,16 @@ describe('Turnstile siteverify', () => {
     await expect(verifyTurnstileToken(undefined)).resolves.toBe(true);
   });
 
-  test('fails closed in production without a secret', async () => {
+  test('skips verification in non-production even when a secret is set', async () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'test-secret');
+    await expect(verifyTurnstileToken(undefined)).resolves.toBe(true);
+  });
+
+  test('skips verification in production when secret is unset', async () => {
     vi.stubEnv('NODE_ENV', 'production');
     vi.stubEnv('TURNSTILE_SECRET_KEY', '');
-    await expect(verifyTurnstileToken('token')).resolves.toBe(false);
+    await expect(verifyTurnstileToken(undefined)).resolves.toBe(true);
   });
 
   test('accepts a successful siteverify with matching action', async () => {
@@ -257,6 +274,33 @@ describe('Turnstile siteverify', () => {
     );
 
     await expect(verifyTurnstileToken('ok-token')).resolves.toBe(false);
+    expectTurnstileFailure('action-mismatch');
+  });
+
+  test('records Cloudflare error-codes when siteverify fails', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'test-secret');
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ success: false, 'error-codes': ['timeout-or-duplicate'] }),
+      }))
+    );
+
+    await expect(verifyTurnstileToken('ok-token', '2001:db8::1')).resolves.toBe(false);
+    expect(Sentry.metrics.count).toHaveBeenCalledWith('turnstile.verify_failed', 1, {
+      attributes: { reason: 'timeout-or-duplicate', ip_version: 'ipv6' },
+    });
+  });
+
+  test('records a missing token in production', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'test-secret');
+
+    await expect(verifyTurnstileToken(undefined)).resolves.toBe(false);
+    expectTurnstileFailure('missing-token');
   });
 
   test('rejects a non-OK siteverify response', async () => {
@@ -267,10 +311,12 @@ describe('Turnstile siteverify', () => {
       'fetch',
       vi.fn(async () => ({
         ok: false,
+        status: 503,
         json: async () => ({ success: false }),
       }))
     );
 
     await expect(verifyTurnstileToken('ok-token')).resolves.toBe(false);
+    expectTurnstileFailure('http-503');
   });
 });
