@@ -30,217 +30,82 @@ export const defaultFilters: SearchFilters = {
   page: 1,
 };
 
-const parsableFilters = [
-  'category',
-  'zone',
-  'type',
-  'status',
-  'color',
+// `cat:food -cat:toy` → category: ['food', '!toy']
+const listFilters = {
+  category: 'cat',
+  zone: 'zone',
+  type: 'type',
+  status: 'status',
+} as const;
+
+// `priceMin:1000 priceMax:5000` → price: ['1000', '5000']
+const rangeFilters = ['price', 'rarity', 'weight', 'estVal', 'ncValue'] as const;
+
+// queryBuilder compares these case-sensitively ('estVal', 'ncValue')
+const sortByValues = [
+  'name',
   'price',
-  'rarity',
+  'added',
+  'ncValue',
+  'color',
   'weight',
   'estVal',
-  'ncValue',
-  'sortBy',
-  'sortDir',
-  'mode',
-  'colorTolerance',
-  'colorType',
+  'id',
+  'rarity',
+  'match',
 ];
+
+const modeValues = ['name', 'description', 'all', 'not', 'boolean', 'natural', 'fuzzy'] as const;
 
 // This function will parse the query string and return an object with the filters
 export const parseFilters = (query: string, skipBoolean = true): [SearchFilters, string] => {
-  query = query.toLowerCase();
   const filters: SearchFilters = { ...defaultFilters };
 
-  for (const filterName of parsableFilters) {
-    if (filterName === 'category') {
-      const posCategory = matchRegex(query, `cat`);
-      const negCategory = matchRegex(query, `-cat`);
+  // removes every `name:value` / `name:"some value"` occurrence and returns their values
+  const take = (filterName: string) => {
+    const [values, rest] = extractFilter(query, filterName);
+    query = rest;
+    return values;
+  };
 
-      query = sanitizeQuery(query, `cat`);
-      query = sanitizeQuery(query, `-cat`);
+  for (const filterName of Object.keys(listFilters) as (keyof typeof listFilters)[]) {
+    const alias = listFilters[filterName];
+    const pos = take(alias).flatMap((v) => v.split(','));
+    const neg = take(`-${alias}`).flatMap((v) => v.split(','));
 
-      const newCategory = [];
-
-      if (posCategory) newCategory.push(...posCategory.split(','));
-      if (negCategory) newCategory.push(...negCategory.split(',').map((c) => `!${c}`));
-
-      filters.category = newCategory;
-    }
-
-    if (filterName === 'zone') {
-      const posCategory = matchRegex(query, `zone`);
-      const negCategory = matchRegex(query, `-zone`);
-
-      query = sanitizeQuery(query, `zone`);
-      query = sanitizeQuery(query, `-zone`);
-
-      const newZone = [];
-
-      if (posCategory) newZone.push(...posCategory.split(','));
-      if (negCategory) newZone.push(...negCategory.split(',').map((c) => `!${c}`));
-
-      filters.zone = newZone;
-    }
-
-    if (filterName === 'type') {
-      const posType = matchRegex(query, `type`);
-      const negType = matchRegex(query, `-type`);
-
-      query = sanitizeQuery(query, `type`);
-      query = sanitizeQuery(query, `-type`);
-
-      const newTypes = [];
-
-      if (posType) newTypes.push(...posType.split(','));
-      if (negType) newTypes.push(...negType.split(',').map((c) => `!${c}`));
-
-      filters.type = newTypes;
-    }
-
-    if (filterName === 'status') {
-      const posStatus = matchRegex(query, `status`);
-      const negStatus = matchRegex(query, `-status`);
-
-      query = sanitizeQuery(query, `status`);
-      query = sanitizeQuery(query, `-status`);
-
-      const newStatus = [];
-
-      if (posStatus) newStatus.push(...posStatus.split(','));
-      if (negStatus) newStatus.push(...negStatus.split(',').map((c) => `!${c}`));
-
-      filters.status = newStatus;
-    }
-
-    if (filterName === 'color') {
-      const color = matchRegex(query, `vibrant`);
-      const negColor = matchRegex(query, `-vibrant`);
-
-      query = sanitizeQuery(query, `vibrant`);
-      query = sanitizeQuery(query, `-vibrant`);
-
-      if (color) filters.color = color;
-      else if (negColor) filters.color = `!${negColor}`;
-    }
-
-    if (filterName === 'price') {
-      const minPrice = matchRegex(query, `priceMin`);
-      const maxPrice = matchRegex(query, `priceMax`);
-
-      query = sanitizeQuery(query, `priceMin`);
-      query = sanitizeQuery(query, `priceMax`);
-
-      const newPrice = [];
-
-      if (minPrice) newPrice[0] = minPrice;
-      if (maxPrice) newPrice[1] = maxPrice;
-
-      filters.price = newPrice;
-    }
-
-    if (filterName === 'rarity') {
-      const minRarity = matchRegex(query, `rarityMin`);
-      const maxRarity = matchRegex(query, `rarityMax`);
-
-      query = sanitizeQuery(query, `rarityMin`);
-      query = sanitizeQuery(query, `rarityMax`);
-
-      const newRarity = [];
-
-      if (minRarity) newRarity[0] = minRarity;
-      if (maxRarity) newRarity[1] = maxRarity;
-
-      filters.rarity = newRarity;
-    }
-
-    if (filterName === 'weight') {
-      const minWeight = matchRegex(query, `weightMin`);
-      const maxWeight = matchRegex(query, `weightMax`);
-
-      query = sanitizeQuery(query, `weightMin`);
-      query = sanitizeQuery(query, `weightMax`);
-
-      const newWeight = [];
-
-      if (minWeight) newWeight[0] = minWeight;
-      if (maxWeight) newWeight[1] = maxWeight;
-
-      filters.weight = newWeight;
-    }
-
-    if (filterName === 'estVal') {
-      const minEstVal = matchRegex(query, `estValMin`);
-      const maxEstVal = matchRegex(query, `estValMax`);
-
-      query = sanitizeQuery(query, `estValMin`);
-      query = sanitizeQuery(query, `estValMax`);
-
-      const newEstVal = [];
-
-      if (minEstVal) newEstVal[0] = minEstVal;
-      if (maxEstVal) newEstVal[1] = maxEstVal;
-
-      filters.estVal = newEstVal;
-    }
-
-    if (filterName === 'ncValue') {
-      const minNcValue = matchRegex(query, `ncValueMin`);
-      const maxNcValue = matchRegex(query, `ncValueMax`);
-
-      query = sanitizeQuery(query, `ncValueMin`);
-      query = sanitizeQuery(query, `ncValueMax`);
-
-      const newNcValue = [];
-
-      if (minNcValue) newNcValue[0] = minNcValue;
-      if (maxNcValue) newNcValue[1] = maxNcValue;
-
-      filters.ncValue = newNcValue;
-    }
-
-    if (filterName === 'sortBy') {
-      const sortBy = matchRegex(query, `sortBy`);
-
-      query = sanitizeQuery(query, `sortBy`);
-
-      if (sortBy) filters.sortBy = sortBy;
-    }
-
-    if (filterName === 'sortDir') {
-      const sortDir = matchRegex(query, `sortDir`);
-
-      query = sanitizeQuery(query, `sortDir`);
-
-      if (sortDir) filters.sortDir = sortDir;
-    }
-
-    if (filterName === 'mode') {
-      const mode = matchRegex(query, `mode`);
-
-      query = sanitizeQuery(query, `mode`);
-
-      if (mode && ['name', 'description', 'all', 'not'].includes(mode))
-        filters.mode = mode as 'name' | 'description' | 'all' | 'not';
-    }
-
-    if (filterName === 'colorTolerance') {
-      const tolerance = matchRegex(query, `tolerance`);
-
-      query = sanitizeQuery(query, `tolerance`);
-
-      if (tolerance) filters.colorTolerance = tolerance;
-    }
-
-    if (filterName === 'colorType') {
-      const colorType = matchRegex(query, `colorType`);
-
-      query = sanitizeQuery(query, `colorType`);
-
-      if (colorType) filters.colorType = colorType;
-    }
+    filters[filterName] = [...pos, ...neg.map((c) => `!${c}`)];
   }
+
+  const [color] = take('vibrant');
+  const [negColor] = take('-vibrant');
+  if (color) filters.color = color;
+  else if (negColor) filters.color = `!${negColor}`;
+
+  for (const filterName of rangeFilters) {
+    const [min] = take(`${filterName}Min`);
+    const [max] = take(`${filterName}Max`);
+
+    // stays [] when absent so queryBuilder skips the price/owls joins
+    filters[filterName] = min || max ? [min ?? '', max ?? ''] : [];
+  }
+
+  const [sortBy] = take('sortBy');
+  if (sortBy) filters.sortBy = sortByValues.find((v) => v.toLowerCase() === sortBy) ?? sortBy;
+
+  const [sortDir] = take('sortDir');
+  if (sortDir) filters.sortDir = sortDir;
+
+  const [mode] = take('mode');
+  if (mode && (modeValues as readonly string[]).includes(mode))
+    filters.mode = mode as (typeof modeValues)[number];
+
+  const [tolerance] = take('tolerance');
+  if (tolerance) filters.colorTolerance = tolerance;
+
+  const [colorType] = take('colorType');
+  if (colorType) filters.colorType = colorType;
+
+  query = query.toLowerCase();
 
   if (!query.match(/^#[0-9A-Fa-f]{6}$/) && query.match(/#[0-9A-Fa-f]{6}/)) {
     const hex = query.match(/#[0-9A-Fa-f]{6}/)?.[0];
@@ -255,27 +120,16 @@ export const parseFilters = (query: string, skipBoolean = true): [SearchFilters,
   return [filters, newQuery];
 };
 
-const matchRegex = (query: string, filterName: string): string | null => {
-  // const regex = new RegExp(`(${filterName}):("([^"]*)"|(\\S+))`, 'gi');
-  const regex = new RegExp(`(\\s|^)(${filterName}):(([^\\s"])|("([^"]*)"))+`, 'gi');
+const extractFilter = (query: string, filterName: string): [string[], string] => {
+  const regex = new RegExp(`(\\s|^)${filterName}:((?:[^\\s"]|"[^"]*")+)`, 'gi');
+  const values: string[] = [];
 
-  const match = regex.exec(query);
-  if (!match) return null;
+  const rest = query.replace(regex, (_, __, value: string) => {
+    values.push(value.replaceAll('"', '').trim().toLowerCase());
+    return '';
+  });
 
-  const result = match[0].replace(`${filterName}:`, '');
-
-  return result.replaceAll('"', '').trim();
-};
-
-const sanitizeQuery = (query: string, filterName: string): string => {
-  const regex = new RegExp(`(\\s|^)(${filterName}):(([^\\s"])|("([^"]*)"))+`, 'gi');
-
-  const match = regex.exec(query);
-  if (!match) return query;
-
-  const [result] = match;
-
-  return query.replace(result, '').trim();
+  return [values, rest.trim()];
 };
 
 const shouldAddPlusPrefix = (str: string): boolean => {
@@ -297,18 +151,7 @@ const shouldAddPlusPrefix = (str: string): boolean => {
 function addPlusToWords(input: string): string {
   input = removeInvalidOperators(input);
   input = removeInvalidParentheses(input);
-
-  if (input.endsWith('-') || input.endsWith('+')) input = input.slice(0, -1);
-  else if (input.endsWith('-"') || input.endsWith('+"')) input = input.slice(0, -2) + '"';
-
-  input = input.replaceAll('+-', '-');
-  input = input.replaceAll('-+', '+');
-  input = input.replaceAll('++', '+');
-  input = input.replaceAll('--', '-');
-
-  if (input.includes('@') && !input.includes('@distance')) input = input.replaceAll('@', '');
-
-  input = input.replaceAll(/(?<=.)[-+](?=\s)/gim, '');
+  input = quoteHyphenatedWords(input);
 
   let result = '';
   let isInQuotes = false;
@@ -338,6 +181,8 @@ function addPlusToWords(input: string): string {
       } else {
         result += char;
       }
+    } else if (char === '"' && !isInParentheses && lastWasEmpty && checkPhrase(input, i)) {
+      result += '+' + char;
     } else {
       result += char;
     }
@@ -353,7 +198,7 @@ function addPlusToWords(input: string): string {
 }
 
 // adding "+" to these words will cause the search to fail
-const stopwords = [
+const stopwords = new Set([
   'a',
   'about',
   'an',
@@ -388,9 +233,8 @@ const stopwords = [
   'will',
   'with',
   'und',
-  'the',
   'www',
-];
+]);
 
 // check if a word is a stopword or has less than 3 characters
 const checkWord = (input: string, startIndex: number): boolean => {
@@ -406,8 +250,37 @@ const checkWord = (input: string, startIndex: number): boolean => {
     word += char;
   }
 
-  return !stopwords.includes(word) && word.length > 2;
+  return !stopwords.has(word) && word.length > 2;
 };
+
+// a required phrase made only of stopwords or short words ("of the", "5-in-1") matches nothing
+const checkPhrase = (input: string, quoteIndex: number): boolean => {
+  const end = input.indexOf('"', quoteIndex + 1);
+  const phrase = input.slice(quoteIndex + 1, end === -1 ? undefined : end);
+
+  return phrase.split(/[^\p{L}\p{N}]+/u).some((word) => word.length > 2 && !stopwords.has(word));
+};
+
+// InnoDB reads "+hand-painted" as "+hand -painted", so hyphenated words become phrases.
+// Phrases can't be truncated, so "hand-pai*" is split into words instead.
+function quoteHyphenatedWords(input: string) {
+  return input.replace(/"[^"]*"|[^\s"()]+/g, (token) => {
+    if (token.startsWith('"')) return token;
+
+    const match = token.match(/^([-+~<>]?)(\S*[\p{L}\p{N}]-[\p{L}\p{N}]\S*)$/u);
+    if (!match) return token;
+
+    const [, prefix, word] = match;
+    if (word.endsWith('*'))
+      return word
+        .split('-')
+        .filter(Boolean)
+        .map((part) => prefix + part)
+        .join(' ');
+
+    return `${prefix}"${word}"`;
+  });
+}
 
 // Drops operators that InnoDB's boolean-mode parser rejects (error 1064), e.g. "* foo", "foo ~", "~+foo".
 function removeInvalidOperators(input: string) {
@@ -416,6 +289,11 @@ function removeInvalidOperators(input: string) {
     const last = input.lastIndexOf('"');
     input = input.slice(0, last) + input.slice(last + 1);
   }
+
+  // '@N' is only valid as a proximity operator right after a phrase: "foo bar" @3
+  input = input.replace(/("[^"]*")\s*@(\d+)|@\d*/g, (_, phrase?: string, distance?: string) =>
+    phrase ? `${phrase} @${distance}` : ''
+  );
 
   // '*' is only valid as a truncation operator right after a word
   input = input.replace(/(?<=^|[\s"()+\-<>~@%*])\*+/g, '');
