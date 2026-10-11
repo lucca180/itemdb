@@ -7,6 +7,11 @@ import TradeTable from '@components/Trades/TradeTable';
 import { useTranslations } from 'next-intl';
 import { ViewportList } from 'react-viewport-list';
 
+const TRADE_CARD_CSS = {
+  contentVisibility: 'auto',
+  containIntrinsicSize: 'auto 500px',
+};
+
 type Props = {
   trades: TradeData[];
   item?: ItemData;
@@ -26,10 +31,7 @@ const TradeCard = ({ trades, item, isLoading }: Props) => {
       overflow="hidden"
       flexFlow="column"
       boxShadow="sm"
-      css={{
-        contentVisibility: 'auto',
-        containIntrinsicSize: 'auto 500px',
-      }}
+      css={TRADE_CARD_CSS}
     >
       <Box p={2} textAlign="center" fontWeight="bold" bg={colorString}>
         {t('ItemPage.trade-history')}{' '}

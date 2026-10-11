@@ -1,6 +1,6 @@
 import type { ItemData, TradeData } from '@types';
 
-export const TRADE_LOT_VISIBLE_LIMIT = 5;
+export const TRADE_LOT_VISIBLE_LIMIT = 3;
 
 type TradeLotItem = TradeData['items'][number];
 type FeaturedItem = Pick<ItemData, 'name' | 'image_id'>;

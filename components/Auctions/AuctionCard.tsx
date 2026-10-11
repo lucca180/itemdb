@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Box, Button, Flex, Separator, SimpleGrid, Text } from '@chakra-ui/react';
+import { Badge, Button, Flex, SimpleGrid, Text } from '@chakra-ui/react';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
@@ -27,11 +27,30 @@ const SeenHistoryModal = dynamic<SeenHistoryModalProps>(
   }
 );
 
+/**
+ * Entry styling lives in static selectors so each auction row renders plain elements instead of
+ * ~8 Chakra components (Box/Separator/Flex/Text) that each resolve style props on every render.
+ */
+const AUCTION_LIST_CSS = {
+  '& [data-auction-entry]': {
+    display: 'flex',
+    p: 3,
+    gap: 2,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    borderTop: '1px solid',
+    borderColor: 'border',
+  },
+  '& [data-auction-col]': { display: 'flex', flexDirection: 'column', gap: 1 },
+  '& [data-auction-col="end"]': { alignItems: 'flex-end', textAlign: 'right' },
+  '& [data-auction-price]': { fontWeight: 'semibold', color: 'whiteAlpha.900', fontSize: 'sm' },
+  '& [data-auction-meta]': { fontSize: 'xs', color: 'whiteAlpha.600' },
+};
+
 const AuctionCard = ({ auctions, item, totalSold, soldMedianPrice }: Props) => {
   const t = useTranslations();
-  const now = useNow({
-    updateInterval: 1000 * 10,
-  });
+  // No updateInterval: relative times stay as rendered (no client timer).
+  const now = useNow();
   const format = useFormatter();
   const [historyOpen, setHistoryOpen] = useState(false);
   const entries = getAuctionCardEntries(auctions);
@@ -49,7 +68,14 @@ const AuctionCard = ({ auctions, item, totalSold, soldMedianPrice }: Props) => {
         chakraWrapper={{ maxH: '500px', boxShadow: 'sm' }}
         chakra={{ display: 'flex', flexFlow: 'column', minH: 0, overflow: 'hidden' }}
       >
-        <Flex bg="gray.600" overflowY="auto" minH={0} flex="1" flexFlow="column">
+        <Flex
+          bg="gray.600"
+          overflowY="auto"
+          minH={0}
+          flex="1"
+          flexFlow="column"
+          css={AUCTION_LIST_CSS}
+        >
           <SimpleGrid columns={2} gap={2} p={2}>
             <AuctionStat label={t('ItemPage.total-sold')} value={format.number(totalSold)} />
             <AuctionStat
@@ -63,32 +89,27 @@ const AuctionCard = ({ auctions, item, totalSold, soldMedianPrice }: Props) => {
             </Text>
           )}
           {entries.map((auction) => (
-            <Box key={auction.internal_id}>
-              <Separator />
-              <Flex p={3} gap={2} justifyContent="space-between" alignItems="flex-start">
-                <Flex flexFlow="column" gap={1}>
-                  <Text fontWeight="semibold" color="whiteAlpha.900" fontSize="sm">
-                    {format.number(auction.price)} NP
-                  </Text>
-                  <Text fontSize="xs" color="whiteAlpha.600">
-                    {auction.flag && `[${auction.flag}] `}
-                    {auction.timeLeft ?? t('General.unknown')}
-                  </Text>
-                </Flex>
-                <Flex flexFlow="column" gap={1} alignItems="flex-end" textAlign="right">
-                  <Badge colorPalette={auction.hasBuyer ? 'green' : 'gray'} size="xs">
-                    {auction.bidCount != null
-                      ? t('ItemPage.bids-count', { x: auction.bidCount })
-                      : auction.hasBuyer
-                        ? t('ItemPage.has-bids')
-                        : t('ItemPage.no-bids')}
-                  </Badge>
-                  <Text fontSize="xs" color="whiteAlpha.600" suppressHydrationWarning>
-                    {format.relativeTime(new Date(auction.addedAt), now)}
-                  </Text>
-                </Flex>
-              </Flex>
-            </Box>
+            <div key={auction.internal_id} data-auction-entry>
+              <div data-auction-col>
+                <span data-auction-price>{format.number(auction.price)} NP</span>
+                <span data-auction-meta>
+                  {auction.flag && `[${auction.flag}] `}
+                  {auction.timeLeft ?? t('General.unknown')}
+                </span>
+              </div>
+              <div data-auction-col="end">
+                <Badge colorPalette={auction.hasBuyer ? 'green' : 'gray'} size="xs">
+                  {auction.bidCount != null
+                    ? t('ItemPage.bids-count', { x: auction.bidCount })
+                    : auction.hasBuyer
+                      ? t('ItemPage.has-bids')
+                      : t('ItemPage.no-bids')}
+                </Badge>
+                <span data-auction-meta suppressHydrationWarning>
+                  {format.relativeTime(new Date(auction.addedAt), now)}
+                </span>
+              </div>
+            </div>
           ))}
           <Flex p={2} flexFlow="column" gap={2}>
             {entries.length === AUCTION_CARD_LIMIT && (

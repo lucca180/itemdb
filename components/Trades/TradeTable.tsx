@@ -1,19 +1,8 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import {
-  Box,
-  Button,
-  Text,
-  Separator,
-  Flex,
-  Link,
-  Badge,
-  Tooltip,
-  IconButton,
-} from '@chakra-ui/react';
+import { Button, Flex, Badge, Tooltip, IconButton } from '@chakra-ui/react';
 import { ItemData, TradeData } from '@types';
-import Image from 'next/image';
 import { slugify } from '@utils/utils';
 import MainLink from '@components/Utils/MainLink';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -35,18 +24,93 @@ type Props = {
   showAdminEdit?: boolean;
 };
 
+/** Same styles as Chakra's `Link` recipe (plain variant), applied to the plain item anchors. */
+const LINK_CSS = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  outline: 'none',
+  gap: '1.5',
+  cursor: 'pointer',
+  borderRadius: 'l1',
+  focusVisibleRing: 'outside',
+  color: 'colorPalette.fg',
+  _hover: {
+    textDecoration: 'underline',
+    textUnderlineOffset: '3px',
+    textDecorationColor: 'currentColor/20',
+  },
+};
+
+const SEPARATOR_LINE_CSS = { display: 'block', borderTop: '1px solid' };
+
+/**
+ * Lot styling lives in static selectors so each trade row renders plain elements instead of
+ * ~8 Chakra components (Flex/Text/Link/Separator) that each resolve style props on every render.
+ */
+const TRADE_TABLE_CSS = {
+  '& [data-trade-body]': { display: 'flex', flexDirection: 'column' },
+  '& [data-trade-header]': {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  '& [data-trade-meta]': { fontSize: 'xs', px: 3, py: 2 },
+  '& [data-trade-lot]': {
+    color: 'gray.200',
+    display: 'inline-flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 1,
+  },
+  '& [data-trade-seen]': { color: 'gray.300' },
+  '& [data-trade-actions]': { display: 'flex', gap: 1, pr: 2 },
+  '& [data-trade-item]': { display: 'flex', px: 3, py: 2, gap: 2 },
+  '& [data-trade-item][data-featured]': { bg: 'gray.700' },
+  '& [data-trade-thumb]': {
+    display: 'flex',
+    w: '50px',
+    flexShrink: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  '& [data-trade-info]': { display: 'flex', flexDirection: 'column', justifyContent: 'center' },
+  '& [data-trade-name]': { wordBreak: 'break-word', whiteSpace: 'pre-line', fontSize: 'sm' },
+  '& [data-trade-thumb] > a, & [data-trade-name] > a': LINK_CSS,
+  '& [data-trade-price]': { fontSize: 'xs', opacity: 0.8 },
+  '& [data-trade-price][data-unspecified]': { fontStyle: 'italic' },
+  '& [data-trade-gap]': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    px: 3,
+    py: 1.5,
+    color: 'whiteAlpha.700',
+  },
+  '& [data-trade-gap-line]': { ...SEPARATOR_LINE_CSS, flex: 1, borderColor: 'whiteAlpha.400' },
+  '& [data-trade-gap-dots]': { fontSize: 'lg', lineHeight: '1' },
+  '& [data-trade-footer]': {
+    display: 'flex',
+    flexDirection: 'column',
+    textAlign: 'center',
+    fontSize: 'xs',
+    wordBreak: 'break-word',
+    whiteSpace: 'pre-line',
+    p: 2,
+  },
+  '& [data-trade-instant]': { mb: 2 },
+  '& [data-trade-separator]': { ...SEPARATOR_LINE_CSS, mt: 4, borderColor: 'border' },
+};
+
 function HiddenItemsGap({ count }: { count: number }) {
   return (
-    <Flex alignItems="center" gap={2} px={3} py={1.5} color="whiteAlpha.700">
-      <Separator flex="1" borderColor="whiteAlpha.400" />
-      <Text fontSize="lg" lineHeight="1">
-        …
-      </Text>
+    <div data-trade-gap>
+      <span data-trade-gap-line />
+      <span data-trade-gap-dots>…</span>
       <Badge size="xs" variant="surface" colorPalette="gray">
         +{count}
       </Badge>
-      <Separator flex="1" borderColor="whiteAlpha.400" />
-    </Flex>
+      <span data-trade-gap-line />
+    </div>
   );
 }
 
@@ -65,10 +129,10 @@ const TradeTable = (props: Props) => {
   const hiddenCount = data.items.length - items.length;
 
   return (
-    <Flex flexFlow="column" w="100%" flex={1} mb={3}>
-      <Flex flexFlow="column">
-        <Flex justifyContent={'space-between'} alignItems={'center'}>
-          <Box fontSize="xs" px={3} py={2}>
+    <Flex flexFlow="column" w="100%" flex={1} mb={3} css={TRADE_TABLE_CSS}>
+      <div data-trade-body>
+        <div data-trade-header>
+          <div data-trade-meta>
             {props.isAuto && (
               <Tooltip.Root positioning={{ placement: 'top' }}>
                 <Tooltip.Trigger asChild>
@@ -81,29 +145,23 @@ const TradeTable = (props: Props) => {
                 </Tooltip.Positioner>
               </Tooltip.Root>
             )}
-            <Text
-              color="gray.200"
-              display="inline-flex"
-              justifyContent={'center'}
-              alignItems={'center'}
-              gap={1}
-            >
+            <span data-trade-lot>
               <b>
                 {t('ItemPage.lot')} {data.trade_id}
               </b>{' '}
               | {t('ItemPage.owned-by')} {data.owner}
-            </Text>
-            <Text color="gray.300">
+            </span>
+            <div data-trade-seen>
               {t('ItemPage.seen-at')}{' '}
               {format.dateTime(new Date(data.addedAt), {
                 month: 'long',
                 day: 'numeric',
                 year: 'numeric',
               })}
-            </Text>
-          </Box>
+            </div>
+          </div>
           {!!props.onReport || (props.showAdminEdit && user?.isAdmin) ? (
-            <Flex gap={1} pr={2}>
+            <div data-trade-actions>
               {props.showAdminEdit && user?.isAdmin && (
                 <IconButton
                   aria-label="Edit trade prices"
@@ -128,22 +186,21 @@ const TradeTable = (props: Props) => {
                   <FaFlag />
                 </IconButton>
               )}
-            </Flex>
+            </div>
           ) : null}
-        </Flex>
+        </div>
         {indexedItems.map(({ item, sourceIndex }, displayIndex) => {
           const previousSourceIndex =
             displayIndex === 0 ? -1 : indexedItems[displayIndex - 1].sourceIndex;
           const omittedBefore = sourceIndex - previousSourceIndex - 1;
+          const itemHref = `/item/${slugify(item.name)}`;
 
           return (
             <Fragment key={item.order}>
               {!expanded && omittedBefore > 0 && <HiddenItemsGap count={omittedBefore} />}
-              <Flex
-                px={3}
-                py={2}
-                gap={2}
-                bg={isFeaturedTradeItem(item, featuredItem) ? 'gray.700' : ''}
+              <div
+                data-trade-item
+                data-featured={isFeaturedTradeItem(item, featuredItem) || undefined}
               >
                 {props.collapseItems && (
                   <Badge
@@ -161,39 +218,41 @@ const TradeTable = (props: Props) => {
                     {sourceIndex + 1}
                   </Badge>
                 )}
-                <Flex w={50} flexShrink="0" justifyContent="center" alignItems="center">
-                  <Link asChild>
-                    <MainLink href={`/item/${slugify(item.name)}`} prefetch={false}>
-                      <Image src={item.image} unoptimized width={50} height={50} alt="" />
-                    </MainLink>
-                  </Link>
-                </Flex>
-                <Flex flexFlow="column" justifyContent="center">
-                  <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
+                <div data-trade-thumb>
+                  <MainLink href={itemHref} prefetch={false}>
+                    {/* Fixed 50px thumbnails: next/image is `unoptimized` here anyway, and
+                        getImgProps showed up in SSR profiles. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.image}
+                      width={50}
+                      height={50}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </MainLink>
+                </div>
+                <div data-trade-info>
+                  <div data-trade-name>
                     {item.amount > 1 && (
                       <Badge mr={1} colorPalette="yellow" textTransform={'none'}>
                         {item.amount}x
                       </Badge>
                     )}
-                    <Link asChild>
-                      <MainLink href={`/item/${slugify(item.name)}`} prefetch={false}>
-                        {item.name}
-                      </MainLink>
-                    </Link>
-                  </Text>
-                  {item.price && (
-                    <Text fontSize="xs" opacity="0.8">
-                      {format.number(item.price)} NP
-                    </Text>
-                  )}
+                    <MainLink href={itemHref} prefetch={false}>
+                      {item.name}
+                    </MainLink>
+                  </div>
+                  {item.price && <div data-trade-price>{format.number(item.price)} NP</div>}
                   {data.priced && !item.price && (
-                    <Text fontSize="xs" opacity="0.8" fontStyle="italic">
+                    <div data-trade-price data-unspecified>
                       {t('ItemPage.unspecified-price')}
-                    </Text>
+                    </div>
                   )}
                   {item.relisting && <ListingRelistingBadge relisting={item.relisting} />}
-                </Flex>
-              </Flex>
+                </div>
+              </div>
             </Fragment>
           );
         })}
@@ -217,24 +276,17 @@ const TradeTable = (props: Props) => {
             {expanded ? t('ItemPage.show-less') : `${t('ItemPage.show-more')} (${hiddenCount})`}
           </Button>
         )}
-        <Flex
-          textAlign="center"
-          fontSize="xs"
-          wordBreak={'break-word'}
-          whiteSpace={'pre-line'}
-          flexFlow="column"
-          p={2}
-        >
+        <div data-trade-footer>
           {!!data.instantBuy && (
-            <Text mb={2}>
+            <div data-trade-instant>
               <Badge colorPalette="orange">Instant Buy - {format.number(data.instantBuy)} NP</Badge>
-            </Text>
+            </div>
           )}
           <b>{t('ItemPage.wishlist')}</b>
-          <Text>{data.wishlist}</Text>
-        </Flex>
-      </Flex>
-      <Separator mt={4} />
+          <div>{data.wishlist}</div>
+        </div>
+      </div>
+      <div data-trade-separator />
     </Flex>
   );
 };
