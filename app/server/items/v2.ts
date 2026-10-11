@@ -114,7 +114,7 @@ const RAW_COLUMNS = {
   ncMallDiscountEnd: Prisma.sql`ncMall.discountEnd AS ncMallDiscountEnd`,
   ncMallDiscountPrice: Prisma.sql`ncMall.discountPrice AS ncMallDiscountPrice`,
   saleStats: Prisma.sql`saleStats.stats AS saleStats`,
-  saleAdded: Prisma.sql`saleStats.addedAt AS saleAdded`,
+  saleAdded: Prisma.sql`COALESCE(saleStats.checkedAt, saleStats.addedAt) AS saleAdded`,
 } as const;
 
 // TODO: restore JOIN branching on NC_VALUES_TYPE (itemdb / best).

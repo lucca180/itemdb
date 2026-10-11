@@ -108,7 +108,7 @@ export const getManyItems = async (
       c.addedAt as priceAdded, c.price, c.noInflation_id,
       d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
       o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin, o.isVolatile as owlsIsVolatile,
-      s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
+      s.totalSold, s.totalItems, s.stats, s.daysPeriod, COALESCE(s.checkedAt, s.addedAt) as saleAdded,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = ${ITEM_COLOR_TYPE}

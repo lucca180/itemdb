@@ -65,7 +65,7 @@ const loadMMEStructure = cache(async (internalId: number): Promise<MMEStructure 
   'use cache';
   applyItemSectionCacheTags(internalId, 'mme');
   cacheLife('itemStatic');
-  const cachedItem = await getCachedItem(internalId, true);
+  const cachedItem = await getCachedItem(internalId);
   if (!cachedItem || !isMME(cachedItem.name)) return null;
   const data = await getMMEData(cachedItem);
   if (!data) return null;
@@ -108,7 +108,7 @@ const loadDyeStructure = cache(async (internalId: number): Promise<DyeStructure 
   'use cache';
   applyItemSectionCacheTags(internalId, 'dye');
   cacheLife('itemStatic');
-  const cachedItem = await getCachedItem(internalId, true);
+  const cachedItem = await getCachedItem(internalId);
   if (!cachedItem?.isNC || !cachedItem.isWearable) return null;
   const data = await getDyeworksData(cachedItem);
   if (!data) return null;
@@ -136,7 +136,7 @@ const loadItemRecipesStructure = cache(async (internalId: number): Promise<Recip
   'use cache';
   applyItemSectionCacheTags(internalId, 'recipes');
   cacheLife('itemStatic');
-  const cachedItem = await getCachedItem(internalId, true);
+  const cachedItem = await getCachedItem(internalId);
   if (!cachedItem || cachedItem.isNC) return [];
   const recipes = await getItemRecipes(cachedItem.internal_id);
   return recipes.map((recipe) => ({

@@ -51,7 +51,7 @@ export function searchRowToItemV2<I extends ItemIntent>(
     // `o.valueMin as owlsValueMin` — last two already matching)
     owlsPricedAt: row.owlsPriced,
 
-    // sale status ← SaleStats (`s.stats as stats`, `s.addedAt as saleAdded` — matching)
+    // sale status ← SaleStats (`s.stats as stats`, `COALESCE(s.checkedAt, s.addedAt) as saleAdded` — matching)
     saleStats: row.stats,
   };
 

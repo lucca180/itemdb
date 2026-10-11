@@ -1,4 +1,4 @@
-export { getItemForPage } from '@app/server/items/getItemForPage';
+export { getItemForPage, getItemInternalId } from '@app/server/items/getItemForPage';
 export {
   getItemPriceMarkers,
   getManualPriceMarkers,

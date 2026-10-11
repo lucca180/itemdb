@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getItemForPage } from '@app/server/items';
+import { getItemForPage, getItemInternalId } from '@app/server/items';
 import { getAuctionData, getTradeData } from '@app/server/items/tradingHistoryData';
 import { getLebronItemData } from '@pages/api/v1/items/[id_name]/[tradings]';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
@@ -46,15 +46,36 @@ import {
   toPriceSummary,
 } from '@app/_components/Item/Price/itemPriceUtils';
 
-export const getCachedItem = cache(async (id_name: number | string, flags = false) => {
+/**
+ * Keyed only by `internalId` so every caller shares one cache entry per item — each miss runs
+ * `getItemForPage` and its `after()` refresh, so extra keys mean duplicated work.
+ * Resolve slugs/names with `getCachedItemInternalId` first.
+ */
+export const getCachedItem = cache(async (internalId: number) => {
   'use cache';
   cacheLife('itemFast');
-  const item = await getItemForPage(id_name, flags);
+  const item = await getItemForPage(internalId, true);
   if (!item) return null;
 
   cacheTag(itemRootTag(item.internal_id));
   applyItemSectionCacheTags(item.internal_id);
   return item;
+});
+
+export const getCachedItemInternalId = cache(async (slugOrName: string) => {
+  'use cache';
+  const internalId = await getItemInternalId(slugOrName);
+
+  if (!internalId) {
+    // short-lived so newly added items don't 404 for long
+    cacheLife('itemFast');
+    return null;
+  }
+
+  // slug renames still work: the cached id loads the item and the route redirects to its new slug
+  cacheLife('itemStatic');
+  cacheTag(itemRootTag(internalId));
+  return internalId;
 });
 
 const loadItemListCollections = cache(async (internalId: number, includeTrade: boolean) => {
@@ -109,7 +130,7 @@ export const loadItemEffects = cache(async (internalId: number): Promise<ItemEff
   applyItemSectionCacheTags(internalId, 'effects');
   cacheLife('itemStatic');
   const [fresh, colors, petpetColorEntries] = await Promise.all([
-    getCachedItem(internalId, true),
+    getCachedItem(internalId),
     getAllNeopetsColors(),
     getAllPetpetColors(),
   ]);
@@ -123,7 +144,7 @@ export const loadItemColors = cache(async (internalId: number) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'colors');
   cacheLife('itemStatic');
-  const fresh = await getCachedItem(internalId, true);
+  const fresh = await getCachedItem(internalId);
   return getSingleItemColor(fresh ?? ({ internal_id: internalId } as ItemData));
 });
 
@@ -178,7 +199,7 @@ export const loadPetpetData = cache(async (internalId: number): Promise<ItemPetp
   'use cache';
   applyItemSectionCacheTags(internalId, 'petpet');
   cacheLife('itemStatic');
-  const cachedItem = await getCachedItem(internalId, true);
+  const cachedItem = await getCachedItem(internalId);
   if (
     !cachedItem ||
     cachedItem.isNC ||

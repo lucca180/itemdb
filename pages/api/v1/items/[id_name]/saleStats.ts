@@ -1,7 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
-import { PriceProcess2, RestockAuctionHistory, TradeItems, Trades } from '@prisma/generated/client';
+import {
+  Prisma,
+  PriceProcess2,
+  RestockAuctionHistory,
+  SaleStats,
+  TradeItems,
+  Trades,
+} from '@prisma/generated/client';
 import { SaleStatus } from '../../../../../types';
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 
@@ -57,7 +64,9 @@ export const getSaleStats = async (
     },
   });
 
-  if (saleStats && new Date(saleStats.addedAt).getTime() >= latestDate) {
+  const checkedAt = saleStats ? (saleStats.checkedAt ?? saleStats.addedAt) : null;
+
+  if (saleStats && checkedAt && checkedAt.getTime() >= latestDate) {
     if (saleStats.stats === 'unknown') return null;
 
     return {
@@ -65,7 +74,7 @@ export const getSaleStats = async (
       total: saleStats.totalItems,
       percent: Math.round((saleStats.totalSold / saleStats.totalItems) * 100),
       status: saleStats.stats,
-      addedAt: saleStats.addedAt.toJSON(),
+      addedAt: checkedAt.toJSON(),
       type: saleStats.daysPeriod > 15 ? 'unbuyable' : 'buyable',
     };
   }
@@ -95,7 +104,7 @@ export const getSaleStats = async (
   }
 
   if (itemTotal < MIN_PRICE_DATA) {
-    await saveLatestSaleStats(iid, {
+    await saveLatestSaleStats(iid, saleStats, {
       totalSold: 0,
       totalItems: 0,
       stats: 'unknown',
@@ -111,7 +120,7 @@ export const getSaleStats = async (
   if (salePercent >= 45) status = 'ets';
   else if (salePercent >= 20) status = 'regular';
 
-  await saveLatestSaleStats(iid, {
+  await saveLatestSaleStats(iid, saleStats, {
     totalSold: itemSold,
     totalItems: itemTotal,
     stats: status,
@@ -330,24 +339,60 @@ type SaleStatsWrite = {
   daysPeriod: number;
 };
 
-const saveLatestSaleStats = async (iid: number, data: SaleStatsWrite) => {
-  await transactionRetry(
-    () =>
-      prisma.$transaction([
-        prisma.saleStats.updateMany({
-          where: { item_iid: iid, isLatest: true },
-          data: { isLatest: null },
+const isSameSaleStats = (current: SaleStats, data: SaleStatsWrite) =>
+  current.stats === data.stats &&
+  current.totalSold === data.totalSold &&
+  current.totalItems === data.totalItems &&
+  current.daysPeriod === data.daysPeriod;
+
+/**
+ * `current` is the latest row read before computing. Concurrent refreshes of the same item
+ * (several `after()` callbacks, PM2 workers) all start from that same row, so only the first
+ * one to demote it inserts a new row; the others become no-ops.
+ */
+const saveLatestSaleStats = async (
+  iid: number,
+  current: SaleStats | null,
+  data: SaleStatsWrite
+) => {
+  // Same result: just mark the current row as re-checked instead of adding a duplicate
+  if (current && isSameSaleStats(current, data)) {
+    await prisma.saleStats.updateMany({
+      where: { internal_id: current.internal_id },
+      data: { checkedAt: new Date() },
+    });
+    return;
+  }
+
+  try {
+    await transactionRetry(
+      () =>
+        prisma.$transaction(async (tx) => {
+          if (current) {
+            const { count } = await tx.saleStats.updateMany({
+              where: { internal_id: current.internal_id, isLatest: true },
+              data: { isLatest: null },
+            });
+
+            // another request already replaced this row
+            if (count === 0) return;
+          }
+
+          await tx.saleStats.create({
+            data: {
+              item_iid: iid,
+              ...data,
+              isLatest: true,
+            },
+          });
         }),
-        prisma.saleStats.create({
-          data: {
-            item_iid: iid,
-            ...data,
-            isLatest: true,
-          },
-        }),
-      ]),
-    3
-  );
+      3
+    );
+  } catch (error) {
+    // another request created the latest row first
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') return;
+    throw error;
+  }
 };
 
 const exponentialBackoff = async (tries: number) => {
@@ -361,7 +406,7 @@ const transactionRetry = async <T>(operation: () => Promise<T>, maxRetries = 3):
     try {
       return await operation();
     } catch (error: any) {
-      if (['P2002', 'P2034', 'P2028'].includes(error.code) && attempts < maxRetries - 1) {
+      if (['P2034', 'P2028'].includes(error.code) && attempts < maxRetries - 1) {
         attempts++;
         await exponentialBackoff(attempts);
       } else {

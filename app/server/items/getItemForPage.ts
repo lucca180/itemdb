@@ -115,6 +115,16 @@ const refreshItemDerivedData = cache(async (item: ItemData) => {
   await Promise.allSettled(tasks);
 });
 
+/** Resolves an id, slug or name to `internal_id` using the same matching as `getItemForPage`. */
+export async function getItemInternalId(idName: number | string): Promise<number | null> {
+  const query = buildItemQuery(idName);
+  const result = (await prisma.$queryRaw`
+    SELECT a.internal_id FROM Items as a WHERE ${query} LIMIT 1
+  `) as { internal_id: number }[];
+
+  return result[0]?.internal_id ?? null;
+}
+
 /** App Router item-page loader. Returns legacy `ItemData` (not the public ItemV2 API). */
 export async function getItemForPage(
   idName: number | string,
@@ -127,7 +137,7 @@ export async function getItemForPage(
       c.addedAt as priceAdded, c.price, c.noInflation_id, c.newPrice,
       d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
       o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin, o.isVolatile as owlsIsVolatile,
-      s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
+      s.totalSold, s.totalItems, s.stats, s.daysPeriod, COALESCE(s.checkedAt, s.addedAt) as saleAdded,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = ${ITEM_COLOR_TYPE}

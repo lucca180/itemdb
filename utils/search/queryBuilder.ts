@@ -587,7 +587,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   const saleStatsSelect = includeSaleStats
     ? isFacetsMode
       ? Prisma.sql`, s.stats`
-      : Prisma.sql`, s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded`
+      : Prisma.sql`, s.totalSold, s.totalItems, s.stats, s.daysPeriod, COALESCE(s.checkedAt, s.addedAt) as saleAdded`
     : isFacetsMode
       ? Prisma.empty
       : Prisma.sql`, null as stats`;

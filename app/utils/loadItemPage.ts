@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
-import { getCachedItem } from '@app/_components/Item/loadUtils';
+import { getCachedItem, getCachedItemInternalId } from '@app/_components/Item/loadUtils';
 import { ItemData } from '@types';
 import {
   buildItemDbHreflangAlternates,
@@ -73,11 +73,12 @@ async function resolveItemSlug(slugParam: string): Promise<ItemPageRouteMetadata
   let item: ItemData | null | undefined;
 
   if (isIdNumber) {
-    item = await getCachedItem(Number(slugParam), true);
+    item = await getCachedItem(Number(slugParam));
     if (!item) return { type: 'notFound' };
     if (item.slug) return { type: 'redirect', href: `/item/${item.slug}`, item };
   } else {
-    item = await getCachedItem(slugParam, true);
+    const internalId = await getCachedItemInternalId(slugParam);
+    item = internalId ? await getCachedItem(internalId) : null;
     if (!item) return { type: 'notFound' };
     if (slugParam !== item.slug) {
       return { type: 'redirect', href: `/item/${item.slug}`, item };
