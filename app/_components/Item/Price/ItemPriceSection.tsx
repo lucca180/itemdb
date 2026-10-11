@@ -36,6 +36,7 @@ import {
   HelpNeeded,
   ItemPriceModalProvider,
   ItemPricePanel,
+  ItemPricePanelSkeleton,
   ItemPriceTabBar,
   ItemPriceTabProvider,
   LastSeenCards,
@@ -58,12 +59,15 @@ type ItemPriceShellProps = ItemProps & {
 
 type ItemPriceLoadedProps = ItemProps;
 
+type PriceTableProps = ItemPriceShellProps & { includeTradeMarkers: boolean };
+
 function PriceTablePanel({
   item,
   prices,
   hasMore,
+  includeTradeMarkers,
   t,
-}: ItemPriceShellProps & { t: Awaited<ReturnType<typeof getTranslations>> }) {
+}: PriceTableProps & { t: Awaited<ReturnType<typeof getTranslations>> }) {
   if (!prices.length) {
     return (
       <PriceEmptyPanel
@@ -75,34 +79,28 @@ function PriceTablePanel({
     );
   }
 
+  // Lightweight fallback: a full table here would render (and hydrate) the rows twice.
   return (
-    <Suspense
-      fallback={<PriceHistoryTable item={item} prices={prices} markers={[]} hasMore={hasMore} />}
-    >
-      <PriceTableWithMarkers item={item} prices={prices} hasMore={hasMore} />
+    <Suspense fallback={<ItemPricePanelSkeleton />}>
+      <PriceTableWithMarkers
+        item={item}
+        prices={prices}
+        hasMore={hasMore}
+        includeTradeMarkers={includeTradeMarkers}
+      />
     </Suspense>
   );
 }
 
-async function PriceTableWithMarkers({ item, prices, hasMore }: ItemPriceShellProps) {
-  const [{ user }, markers] = await Promise.all([
-    getServerCurrentUser(),
-    loadItemPriceMarkers(
-      item.internal_id,
-      item.firstSeen,
-      shouldShowTradeLists(item, await getCachedNow())
-    ),
-  ]);
+async function PriceTableWithMarkers({
+  item,
+  prices,
+  hasMore,
+  includeTradeMarkers,
+}: PriceTableProps) {
+  const markers = await loadItemPriceMarkers(item.internal_id, item.firstSeen, includeTradeMarkers);
 
-  return (
-    <PriceHistoryTable
-      item={item}
-      prices={prices}
-      markers={markers}
-      hasMore={hasMore}
-      isAdmin={!!user?.isAdmin}
-    />
-  );
+  return <PriceHistoryTable item={item} prices={prices} markers={markers} hasMore={hasMore} />;
 }
 
 async function PriceHelpBannerAsync({
@@ -217,7 +215,13 @@ async function ItemPriceTradeableCard({ item, prices, hasMore }: ItemPriceShellP
 
               <Flex flexFlow="column" width="100%" maxW="580px">
                 <ItemPricePanel tab="table">
-                  <PriceTablePanel item={item} prices={prices} hasMore={hasMore} t={t} />
+                  <PriceTablePanel
+                    item={item}
+                    prices={prices}
+                    hasMore={hasMore}
+                    includeTradeMarkers={shouldShowLists}
+                    t={t}
+                  />
                 </ItemPricePanel>
                 <ItemPricePanel tab="chart">
                   <PriceChartPanel item={item} />

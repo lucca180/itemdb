@@ -10,6 +10,7 @@ import {
 } from '@app/_components/Item/Price/itemPricePrefetch';
 import { NCMatchTable } from '@app/_components/Item/NCTrade/NCMatchTable';
 import { ItemPricePanelSkeleton } from '@app/_components/Item/Price/ItemPriceCard';
+import { useAuth } from '@utils/auth';
 import type { ItemData, PriceData, PriceMarker } from '@types';
 
 type PriceHistoryTableProps = {
@@ -17,7 +18,6 @@ type PriceHistoryTableProps = {
   prices: PriceData[];
   markers: PriceMarker[];
   hasMore: boolean;
-  isAdmin?: boolean;
 };
 
 export function PriceHistoryTable({
@@ -25,10 +25,12 @@ export function PriceHistoryTable({
   prices: initialPrices,
   markers: initialMarkers,
   hasMore,
-  isAdmin,
 }: PriceHistoryTableProps) {
   const t = useTranslations();
   const format = useFormatter();
+  // Read on the client so the server table doesn't depend on cookies (no Suspense re-render).
+  const { user } = useAuth();
+  const isAdmin = !!user?.isAdmin;
   const [prices, setPrices] = useState(initialPrices);
   const [markers, setMarkers] = useState(initialMarkers);
   const [expanded, setExpanded] = useState(false);

@@ -1,5 +1,5 @@
 import { Box, Flex, Table, Text, Badge } from '@chakra-ui/react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import Color from 'color';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 import { LuMinus } from 'react-icons/lu';
@@ -42,6 +42,39 @@ const MARKER_DATE_FORMAT = {
   day: 'numeric',
 } as const;
 
+const DEFAULT_MIN_H = { base: 100 };
+const DEFAULT_MAX_H = { base: 200, md: 300 };
+
+/**
+ * Row styling lives in static selectors (striping, colored left border, change colors) and
+ * per-row values go through CSS variables, so rows don't generate per-row Emotion classes.
+ */
+const TABLE_CSS = {
+  '& td': { border: 0 },
+  '& tr[data-row] td:not(:first-of-type)': { px: 1 },
+  '& tr[data-row]': { bg: 'transparent' },
+  '& tr[data-row][data-odd]': { bg: 'blackAlpha.400' },
+  '& tr[data-row][data-colored]': { borderLeft: '3px solid var(--price-row-border)' },
+  '& [data-marker-body] :is(a, strong, b)': { color: 'var(--price-marker-color)' },
+  '& [data-price-context] a': { color: 'var(--price-link-color)' },
+  '& [data-pct]': { ml: 1, fontSize: '0.55rem', opacity: 0.8, color: 'red.200' },
+  '& [data-pct][data-up]': { color: 'green.100' },
+};
+
+/** Data attributes (+ CSS variables when colored) matched by {@link TABLE_CSS}. */
+function rowProps(odd: boolean | undefined, border?: string, markerColor?: string) {
+  if (!border) return { 'data-row': true, 'data-odd': odd };
+  return {
+    'data-row': true,
+    'data-odd': odd,
+    'data-colored': true,
+    style: {
+      '--price-row-border': border,
+      ...(markerColor ? { '--price-marker-color': markerColor } : {}),
+    } as CSSProperties,
+  };
+}
+
 function formatMarkerDate(price: PriceOrMarker, format: PriceTableFormat) {
   const start = format.dateTime(new Date(price.addedAt!), MARKER_DATE_FORMAT);
   if (!price.rangeEndAt) return start;
@@ -57,7 +90,6 @@ function PriceTableRow({
   index,
   isAdmin,
   itemColor,
-  linkColor,
   t,
   format,
 }: {
@@ -66,32 +98,26 @@ function PriceTableRow({
   index: number;
   isAdmin?: boolean;
   itemColor: string;
-  linkColor: string;
   t: PriceTableTranslate;
   format: PriceTableFormat;
 }) {
-  const bgColor = index % 2 === 0 ? 'blackAlpha.400' : 'transparent';
+  const odd = index % 2 === 0 || undefined;
   const nextPrice = getNextPrice(sortedData, index);
 
   if (price.marker) {
     return (
-      <Table.Row h={42} bg={bgColor} borderLeft={`3px solid ${price.color}85`}>
-        <Table.Cell colSpan={isAdmin ? 4 : 3} border={0}>
-          <Flex
-            flexFlow="column"
-            alignItems="center"
-            gap={2}
-            css={{ '& a, & strong, & b': { color: price.color } }}
-          >
+      <Table.Row h={42} {...rowProps(odd, `${price.color}85`, price.color)}>
+        <Table.Cell colSpan={isAdmin ? 4 : 3}>
+          <Flex flexFlow="column" alignItems="center" gap={2} data-marker-body>
             {!!price.badgeText && <Badge>{price.badgeText}</Badge>}
             {!!price.title && (
-              <Text as="span">
+              <span>
                 {price.slug ? (
                   <I18nLink href={`/lists/official/${price.slug}`}>{price.title}</I18nLink>
                 ) : (
                   <Markdown skipParagraph>{price.title}</Markdown>
                 )}
-              </Text>
+              </span>
             )}
             {!!price.description && (
               <Box whiteSpace="normal" fontSize="0.8rem" textAlign="center" color="whiteAlpha.700">
@@ -109,7 +135,7 @@ function PriceTableRow({
 
   if (price.value === 0) {
     return (
-      <Table.Row h={50} bg={bgColor} border={0} borderLeft={`3px solid ${itemColor}`}>
+      <Table.Row h={50} {...rowProps(odd, itemColor)}>
         <Table.Cell colSpan={isAdmin ? 3 : 4}>
           <Flex flexFlow="column" alignItems="center" gap={2}>
             {format.dateTime(new Date(price.addedAt!), {
@@ -123,7 +149,7 @@ function PriceTableRow({
           </Flex>
         </Table.Cell>
         {isAdmin && (
-          <Table.Cell px={1}>
+          <Table.Cell>
             <PriceTableEditButton price={price as PriceData} />
           </Table.Cell>
         )}
@@ -133,7 +159,7 @@ function PriceTableRow({
 
   if (price.isUnconfirmed) {
     return (
-      <Table.Row h={50} bg={bgColor} border={0} borderLeft={`3px solid ${itemColor}`}>
+      <Table.Row h={50} {...rowProps(odd, itemColor)}>
         <Table.Cell colSpan={4}>
           <Flex flexFlow="column" alignItems="center" gap={2}>
             <Text textAlign="center">{t('ItemPage.unconfirmed-price')}</Text>
@@ -152,55 +178,33 @@ function PriceTableRow({
     );
   }
 
+  const diff = nextPrice?.value ? price.value! - nextPrice.value : 0;
+
   return (
     <>
-      <Table.Row
-        bg={bgColor}
-        border={0}
-        borderLeft={price.color ? `3px solid ${price.color}85` : undefined}
-      >
+      <Table.Row {...rowProps(odd, price.color ? `${price.color}85` : undefined)}>
         <Table.Cell>
-          <Flex alignItems="center">
-            <Flex flexFlow="column">
-              {price.inflated && (
-                <Text fontWeight="bold" color="red.400">
-                  {t('General.inflation')}!
-                </Text>
-              )}
-              {format.number(price.value!)} NP
-            </Flex>
-          </Flex>
+          {price.inflated && (
+            <Text fontWeight="bold" color="red.400">
+              {t('General.inflation')}!
+            </Text>
+          )}
+          {format.number(price.value!)} NP
         </Table.Cell>
-        <Table.Cell px={1}>
+        <Table.Cell>
           {!!nextPrice?.value && (
             <Flex alignItems="center">
-              {!!(price.value! - nextPrice.value) && (
-                <Flex
-                  display="inline-flex"
-                  flexFlow="column"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  {price.value! - nextPrice.value > 0 && <FaCaretUp color="#68D391" size={22} />}
-                  {price.value! - nextPrice.value < 0 && <FaCaretDown color="#FC8181" size={22} />}
-                </Flex>
-              )}
-              {!(price.value! - nextPrice.value) && (
-                <LuMinus size={16} style={{ marginRight: 4, display: 'inline-block' }} />
-              )}
-              <Text>{format.number(price.value! - nextPrice.value)} NP</Text>
-              <Text
-                ml={1}
-                fontSize="0.55rem"
-                color={price.value! > nextPrice.value ? 'green.100' : 'red.200'}
-                opacity={0.8}
-              >
+              {diff > 0 && <FaCaretUp color="#68D391" size={22} />}
+              {diff < 0 && <FaCaretDown color="#FC8181" size={22} />}
+              {!diff && <LuMinus size={16} style={{ marginRight: 4, display: 'inline-block' }} />}
+              <span>{format.number(diff)} NP</span>
+              <span data-pct data-up={price.value! > nextPrice.value || undefined}>
                 {getPercentChange(price.value!, nextPrice.value!)}%
-              </Text>
+              </span>
             </Flex>
           )}
         </Table.Cell>
-        <Table.Cell px={1}>
+        <Table.Cell>
           {format.dateTime(new Date(price.addedAt!), {
             year: 'numeric',
             month: 'long',
@@ -208,13 +212,13 @@ function PriceTableRow({
           })}
         </Table.Cell>
         {isAdmin && (
-          <Table.Cell px={1}>
+          <Table.Cell>
             <PriceTableEditButton price={price as PriceData} />
           </Table.Cell>
         )}
       </Table.Row>
       {!!price.context && (
-        <Table.Row bg={bgColor} border={0}>
+        <Table.Row {...rowProps(odd)}>
           <Table.Cell colSpan={4}>
             <Box
               whiteSpace="normal"
@@ -224,7 +228,7 @@ function PriceTableRow({
               bg="blackAlpha.300"
               p={1}
               borderRadius="md"
-              css={{ '& a': { color: linkColor } }}
+              data-price-context
             >
               <Text fontWeight="bold" mb={2}>
                 {t('ItemPage.price-context')}
@@ -247,8 +251,8 @@ export function PriceTableView({
   itemColor,
   t,
   format,
-  minH = { base: 100 },
-  maxH = { base: 200, md: 300 },
+  minH = DEFAULT_MIN_H,
+  maxH = DEFAULT_MAX_H,
   footer,
 }: PriceTableViewProps) {
   const sortedData = sortedDataProp ?? buildPriceTableData(data, markers, t, truncated);
@@ -256,7 +260,12 @@ export function PriceTableView({
 
   return (
     <Table.ScrollArea minH={minH} maxH={maxH} w="100%" borderRadius="sm">
-      <Table.Root h="100%" size="sm" css={{ '& td': { border: 0 } }}>
+      <Table.Root
+        h="100%"
+        size="sm"
+        css={TABLE_CSS}
+        style={{ '--price-link-color': linkColor } as CSSProperties}
+      >
         <Table.Body>
           {sortedData.map((price, index) => (
             <PriceTableRow
@@ -270,7 +279,6 @@ export function PriceTableView({
               index={index}
               isAdmin={isAdmin}
               itemColor={itemColor}
-              linkColor={linkColor}
               t={t}
               format={format}
             />
