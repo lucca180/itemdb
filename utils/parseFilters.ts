@@ -295,6 +295,7 @@ const shouldAddPlusPrefix = (str: string): boolean => {
 };
 
 function addPlusToWords(input: string): string {
+  input = removeInvalidOperators(input);
   input = removeInvalidParentheses(input);
 
   if (input.endsWith('-') || input.endsWith('+')) input = input.slice(0, -1);
@@ -407,6 +408,27 @@ const checkWord = (input: string, startIndex: number): boolean => {
 
   return !stopwords.includes(word) && word.length > 2;
 };
+
+// Drops operators that InnoDB's boolean-mode parser rejects (error 1064), e.g. "* foo", "foo ~", "~+foo".
+function removeInvalidOperators(input: string) {
+  // an unmatched quote would swallow the rest of the query
+  if ((input.match(/"/g)?.length ?? 0) % 2 === 1) {
+    const last = input.lastIndexOf('"');
+    input = input.slice(0, last) + input.slice(last + 1);
+  }
+
+  // '*' is only valid as a truncation operator right after a word
+  input = input.replace(/(?<=^|[\s"()+\-<>~@%*])\*+/g, '');
+
+  // tokens made only of operators/punctuation ("-", "~", "()", ...)
+  input = input.replace(/(^|\s)[^\p{L}\p{N}\s"]+(?=\s|$)/gu, '$1');
+
+  // stacked prefixes ("~+foo" -> "+foo") and prefixes with nothing after them ("foo~")
+  input = input.replace(/[-+~<>]+(?=[-+~<>])/g, '');
+  input = input.replace(/(?<=\S)[-+~<>]+(?=[\s)]|$)/g, '');
+
+  return input.replace(/\s+/g, ' ').trim();
+}
 
 // Removes the minimum number of unmatched parentheses in linear time.
 // (A BFS over removals is exponential and lets a short search query hang the server.)
