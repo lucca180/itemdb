@@ -1878,5 +1878,30 @@
     "import-checklists-description": "Import items from your Neopets pages and track your collection progress.",
     "lebron": "Lebron Values",
     "lebron-description": "NC item values in caps, based on NC trades reported by the community."
+  },
+  "GoalCounter": {
+    "button": "Goal Counter",
+    "title": "Goal Counter",
+    "description": "Show your progress toward this avatar on your Neopets lookup, petpage or shop. Stamps you hide in this list count as collected.",
+    "style": "Style",
+    "variant-mosaic": "Mosaic",
+    "variant-reveal": "Reveal",
+    "variant-page-header": "Album page · Header",
+    "variant-page-value": "Album page · Value",
+    "variant-page-legend": "Album page · Signature",
+    "paper-background": "Paper background",
+    "paper-album-only": "Only available for album page styles",
+    "embed-code": "Code to paste on Neopets",
+    "copy-code": "Copy code",
+    "code-copied": "Code copied",
+    "copy-failed": "Couldn't copy. Select the code and copy it manually.",
+    "open-image": "Open image",
+    "update-title": "No need to change the code",
+    "update-note": "The image updates by itself when you hide stamps in this list. <b>Changes can take a few minutes to show up.</b>",
+    "preview-background": "Preview background",
+    "bg-check": "Transparency",
+    "bg-light": "White",
+    "bg-dark": "Dark",
+    "bg-lookup": "Colorful lookup"
   }
 }

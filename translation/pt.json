@@ -1880,5 +1880,30 @@
     "import-checklists-description": "Importe itens das suas páginas do Neopets e acompanhe o progresso das suas coleções.",
     "lebron": "Valores Lebron",
     "lebron-description": "Valores de itens NC em caps, baseados nas trocas NC reportadas pela comunidade."
+  },
+  "GoalCounter": {
+    "button": "Contador de Meta",
+    "title": "Contador de Meta",
+    "description": "Mostre seu progresso para este avatar no seu lookup, petpage ou loja do Neopets. Os selos que você ocultar nesta lista contam como coletados.",
+    "style": "Estilo",
+    "variant-mosaic": "Mosaico",
+    "variant-reveal": "Revelação",
+    "variant-page-header": "Página do álbum · Cabeçalho",
+    "variant-page-value": "Página do álbum · Valor",
+    "variant-page-legend": "Página do álbum · Assinatura",
+    "paper-background": "Fundo de papel",
+    "paper-album-only": "Disponível só nos estilos de página do álbum",
+    "embed-code": "Código para colar no Neopets",
+    "copy-code": "Copiar código",
+    "code-copied": "Código copiado",
+    "copy-failed": "Não foi possível copiar. Selecione o código e copie manualmente.",
+    "open-image": "Abrir imagem",
+    "update-title": "Não é necessário alterar o código",
+    "update-note": "A imagem se atualiza sozinha quando você oculta selos nesta lista. <b>As mudanças podem levar alguns minutos para aparecer.</b>",
+    "preview-background": "Fundo da prévia",
+    "bg-check": "Transparência",
+    "bg-light": "Branco",
+    "bg-dark": "Escuro",
+    "bg-lookup": "Lookup colorido"
   }
 }

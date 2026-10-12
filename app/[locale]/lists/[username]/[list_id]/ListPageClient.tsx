@@ -36,6 +36,8 @@ import { SearchFilterModalProps } from '@components/Search/SearchFiltersModal';
 import { defaultFilters } from '@utils/parseFilters';
 import { AddListItemsModalProps } from '@components/Modal/AddListItemsModal';
 import { SuggestListItemModalProps } from '@components/Modal/SuggestListItemModal';
+import type { GoalCounterModalProps } from '@components/Modal/GoalCounterModal';
+import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
 import { ItemList } from '@components/UserLists/ItemList';
 import { BiHelpCircle } from 'react-icons/bi';
 import A11yTooltip from '@components/Utils/Tooltip';
@@ -60,6 +62,10 @@ const SearchFilterModal = dynamic<SearchFilterModalProps>(
 );
 const AddListItemsModal = dynamic<AddListItemsModalProps>(
   () => import('@components/Modal/AddListItemsModal'),
+  { ssr: false }
+);
+const GoalCounterModal = dynamic<GoalCounterModalProps>(
+  () => import('@components/Modal/GoalCounterModal'),
   { ssr: false }
 );
 const SuggestListItemModal = dynamic<SuggestListItemModalProps>(
@@ -104,6 +110,8 @@ export type ListPageClientProps = {
   initialPreload: ListItemsData;
   matches: ListItemInfo[];
   similarLists: UserList[];
+  /** Set when the owner can embed a goal counter for this list */
+  goalCounter?: GoalCounterInfo | null;
   children?: ReactNode;
 };
 
@@ -116,12 +124,14 @@ export function ListPageClient({
   initialPreload,
   matches,
   similarLists,
+  goalCounter,
   children,
 }: ListPageClientProps) {
   const t = useTranslations();
   const { open, onOpen, onClose } = useDisclosure();
   const { open: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
   const { open: isOpenSuggest, onOpen: onOpenSuggest, onClose: onCloseSuggest } = useDisclosure();
+  const { open: isOpenGoal, onOpen: onOpenGoal, onClose: onCloseGoal } = useDisclosure();
   const { user } = useAuth();
 
   const state = useListPageState({ locale, username, listId, core, initialPreload });
@@ -212,6 +222,14 @@ export function ListPageClient({
       {isOpenInsert && (
         <AddListItemsModal isOpen={isOpenInsert} onClose={onCloseInsert} list={state.list} />
       )}
+      {isOpenGoal && goalCounter && (
+        <GoalCounterModal
+          isOpen={isOpenGoal}
+          onClose={onCloseGoal}
+          listId={state.list.internal_id}
+          goalCounter={goalCounter}
+        />
+      )}
       {isOpenSuggest && (
         <SuggestListItemModal
           isOpen={isOpenSuggest}
@@ -262,6 +280,11 @@ export function ListPageClient({
               )}
               {(state.isOwner || state.list.official || state.list.canBeLinked) && (
                 <CreateLinkedListButton list={state.list} isLoading={state.isLoading} />
+              )}
+              {goalCounter && state.isOwner && (
+                <Button onClick={onOpenGoal} variant="ghost" data-umami-event="goal-counter-open">
+                  {t('GoalCounter.button')}
+                </Button>
               )}
               <HStack gap={1}>
                 <Text as="div" color="gray.300" fontSize="sm">
