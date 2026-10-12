@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { IconLink } from '@components/Utils/IconLink';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { mallNumericPrice } from '@app/server/ncMallHub';
+import { MALL_HUB_PATH } from '@app/[locale]/mall/mallHubTheme';
+import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
 import type { ItemData, NCMallData } from '@types';
 
 export type LeavingMallDateGroup = {
@@ -15,6 +17,7 @@ export type LeavingMallPageLabels = {
   metaDescription: string;
   itemsByDate: LeavingMallDateGroup[];
   itemData: ItemData[];
+  breadcrumbList: BreadcrumbItem[];
 };
 
 export async function buildLeavingMallPageProps(
@@ -47,6 +50,11 @@ export async function buildLeavingMallPageProps(
 
   return {
     title: t('NcMall.leaving-soon-tm'),
+    breadcrumbList: [
+      { position: 1, name: t('Layout.home'), item: '/' },
+      { position: 2, name: t('NcMall.hub-h1'), item: MALL_HUB_PATH },
+      { position: 3, name: t('NcMall.leaving-soon-tm'), item: '/mall/leaving' },
+    ],
     description: t.rich('NcMall.leaving-soon-desc', {
       Link: (chunk) => (
         <IconLink href="https://ncmall.neopets.com/" isExternal>

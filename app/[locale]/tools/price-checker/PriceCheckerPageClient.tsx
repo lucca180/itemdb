@@ -2,8 +2,10 @@
 
 import { Box, Flex, Heading, SimpleGrid, Text } from '@chakra-ui/react';
 import NextImage from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import DynamicIcon from '@assets/icons/dynamic.png';
+import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
+import { createToolsBreadcrumbList } from '@components/Breadcrumbs/ToolsBreadcrumbs';
 import HeaderCard from '@components/Card/HeaderCard';
 import { PriceCheckerHowItWorks } from './PriceCheckerHowItWorks';
 import { PriceCheckerPageCard } from './PriceCheckerPageCard';
@@ -16,11 +18,17 @@ import {
 
 export function PriceCheckerPageClient() {
   const t = useTranslations();
+  const locale = useLocale();
+  const breadcrumbList = createToolsBreadcrumbList(
+    (key) => t(key),
+    [{ name: t('Tools.price-checker'), item: '/tools/price-checker' }]
+  );
 
   return (
     <>
       <HeaderCard
         color={PRICE_CHECKER_ACCENT}
+        breadcrumb={<BreadcrumbsView breadcrumbList={breadcrumbList} locale={locale} useAppDir />}
         image={{
           src: 'https://images.neopets.com/nt/ntimages/128_bruce_ring.gif',
           alt: t('PriceChecker.title'),

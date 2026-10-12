@@ -19,6 +19,7 @@ export const STATIC_SITEMAP_PATHS = [
   '/mall',
   '/mall/leaving',
   '/restock',
+  '/tools',
   '/tools/price-calculator',
   '/tools/price-checker',
   '/rainbow-pool',

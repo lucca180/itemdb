@@ -13,7 +13,11 @@ import {
 } from '@chakra-ui/react';
 import Color from 'color';
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import {
+  createToolsBreadcrumbList,
+  ToolsBreadcrumbs,
+} from '@components/Breadcrumbs/ToolsBreadcrumbs';
 import type { ItemV2For } from '@types';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import { useToast } from '@utils/theme/toast';
@@ -29,6 +33,11 @@ type MissingInfoPageClientProps = {
 
 export function MissingInfoPageClient({ labels }: MissingInfoPageClientProps) {
   const t = useTranslations();
+  const locale = useLocale();
+  const breadcrumbList = createToolsBreadcrumbList(
+    (key) => t(key),
+    [{ name: t('Tools.missing-info'), item: '/hub/missing-info' }]
+  );
   const toast = useToast();
   const [field, setField] = useState<MissingInfoField>('item_id');
   const [items, setItems] = useState<ItemV2For<'card'>[]>([]);
@@ -83,6 +92,7 @@ export function MissingInfoPageClient({ labels }: MissingInfoPageClientProps) {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${GRADIENT_RGB[0]},${GRADIENT_RGB[1]},${GRADIENT_RGB[2]},.7) 70%)`}
         zIndex={-1}
       />
+      <ToolsBreadcrumbs breadcrumbList={breadcrumbList} locale={locale} />
       <Center my={6} flexFlow="column" gap={2} textAlign="center">
         <Box h="175px" overflow={'hidden'} borderRadius="md" boxShadow={'md'}>
           <Image

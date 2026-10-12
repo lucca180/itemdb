@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { Box, Center, Flex, Heading, HStack, Image, Separator, Text } from '@chakra-ui/react';
+import { Breadcrumbs } from '@components/Breadcrumbs/Breadcrumbs';
+import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
 import ItemCard from '@components/Items/ItemCard';
 import Color from 'color';
 import type { LeavingMallDateGroup } from './buildLeavingMallPageProps';
@@ -13,6 +15,7 @@ type LeavingMallPageContentProps = {
   description: ReactNode;
   itemsByDate: LeavingMallDateGroup[];
   itemData: ItemData[];
+  breadcrumbList: BreadcrumbItem[];
 };
 
 export function LeavingMallPageContent({
@@ -20,6 +23,7 @@ export function LeavingMallPageContent({
   description,
   itemsByDate,
   itemData,
+  breadcrumbList,
 }: LeavingMallPageContentProps) {
   return (
     <>
@@ -31,6 +35,9 @@ export function LeavingMallPageContent({
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]},${rgb[2]},.8) 70%)`}
         zIndex={-1}
       />
+      <Box mt={2}>
+        <Breadcrumbs breadcrumbList={breadcrumbList} useAppDir />
+      </Box>
       <Center
         my={6}
         flexFlow="column"

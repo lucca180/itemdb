@@ -1,4 +1,6 @@
 import { getTranslations } from 'next-intl/server';
+import { createToolsBreadcrumbList } from '@components/Breadcrumbs/ToolsBreadcrumbs';
+import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
 import { petColorSlug } from '@utils/pet-utils';
 import { stylesBrowseHref } from '@utils/petStyles/paths';
 
@@ -17,6 +19,7 @@ export type OutfitPageLabels = {
   previewCredit: string;
   showItems: string;
   hideItems: string;
+  breadcrumbList: BreadcrumbItem[];
 };
 
 export async function buildOutfitPageProps(species: string): Promise<OutfitPageLabels> {
@@ -39,6 +42,15 @@ export async function buildOutfitPageProps(species: string): Promise<OutfitPageL
     previewCredit: 'Outfit previews powered by Dress to Impress',
     showItems: t('OutfitPage.show-items'),
     hideItems: t('OutfitPage.hide-items'),
+    breadcrumbList: createToolsBreadcrumbList(
+      (key) => t(key),
+      [
+        {
+          name: t('OutfitPage.exclusive-species-clothes', { species }),
+          item: getOutfitPagePathname(species),
+        },
+      ]
+    ),
   };
 }
 

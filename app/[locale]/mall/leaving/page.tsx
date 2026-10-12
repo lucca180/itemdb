@@ -53,6 +53,7 @@ async function LeavingMallPageContentWrapper() {
         description={labels.description}
         itemsByDate={labels.itemsByDate}
         itemData={labels.itemData}
+        breadcrumbList={labels.breadcrumbList}
       />
     </>
   );

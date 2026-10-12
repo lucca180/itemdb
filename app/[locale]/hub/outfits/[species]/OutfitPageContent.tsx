@@ -1,4 +1,5 @@
 import { Box, Center, Flex, Heading, Link, Separator, SimpleGrid, Text } from '@chakra-ui/react';
+import { Breadcrumbs } from '@components/Breadcrumbs/Breadcrumbs';
 import Image from '@components/Utils/Image';
 import MainLink from '@components/Utils/MainLink';
 import { allSpecies, getSpeciesId } from '@utils/pet-utils';
@@ -28,6 +29,9 @@ export function OutfitPageContent({ outfits, species, labels }: OutfitPageConten
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0, rgba(${rgb[0]},${rgb[1]},${rgb[2]},.7) 70%)`}
         zIndex={-1}
       />
+      <Box mt={2}>
+        <Breadcrumbs breadcrumbList={labels.breadcrumbList} useAppDir />
+      </Box>
       <Center my={6} flexFlow="column" gap={2}>
         <OutfitNavArrows species={species} />
         <Image

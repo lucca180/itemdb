@@ -165,7 +165,7 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
     },
     {
       label: t('Layout.tools'),
-      href: '/rainbow-pool',
+      href: '/tools',
       options: [
         {
           label: t('Layout.userscripts'),
@@ -197,6 +197,11 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           label: t('Layout.restock-dashboard'),
           href: '/restock/dashboard',
           trackEventLabel: 'tools-restock-dashboard',
+        },
+        {
+          label: t('Layout.all-tools'),
+          href: '/tools',
+          trackEventLabel: 'all-tools',
         },
       ],
     },

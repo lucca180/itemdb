@@ -14,7 +14,11 @@ import {
 } from '@chakra-ui/react';
 import Color from 'color';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import {
+  createToolsBreadcrumbList,
+  ToolsBreadcrumbs,
+} from '@components/Breadcrumbs/ToolsBreadcrumbs';
 import { EffectsCard } from '@components/Hubs/Effects/EffectsCard';
 import { useToast } from '@utils/theme/toast';
 import type { ItemEffectsField, ItemEffectsPageLabels } from './buildItemEffectsPageProps';
@@ -29,6 +33,11 @@ type ItemEffectsPageClientProps = {
 
 export function ItemEffectsPageClient({ labels }: ItemEffectsPageClientProps) {
   const t = useTranslations();
+  const locale = useLocale();
+  const breadcrumbList = createToolsBreadcrumbList(
+    (key) => t(key),
+    [{ name: t('Tools.item-effects'), item: '/hub/item-effects' }]
+  );
   const toast = useToast();
   const [field, setField] = useState<ItemEffectsField>('stats');
   const [items, setItems] = useState<ItemEffectsHubItem[]>([]);
@@ -94,6 +103,7 @@ export function ItemEffectsPageClient({ labels }: ItemEffectsPageClientProps) {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${GRADIENT_RGB[0]},${GRADIENT_RGB[1]},${GRADIENT_RGB[2]},.7) 70%)`}
         zIndex={-1}
       />
+      <ToolsBreadcrumbs breadcrumbList={breadcrumbList} locale={locale} />
       <Center my={6} flexFlow="column" gap={2} textAlign={'center'}>
         <Box h="175px" overflow={'hidden'} borderRadius="md" boxShadow={'md'}>
           <Image
