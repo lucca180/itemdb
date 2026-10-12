@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
 import { cacheLife, cacheTag } from 'next/cache';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
@@ -8,11 +9,12 @@ import { getSpeciesOutfits } from '@pages/api/v1/tools/outfits';
 
 import type { ItemData } from '@types';
 import { fitCacheTag } from '@utils/appCacheTags';
+import { routing } from '@utils/locales';
 import { OutfitPageContent } from './OutfitPageContent';
 import {
   buildOutfitPageProps,
-  capitalizeSpecies,
   getOutfitPagePathname,
+  resolveSpecies,
 } from './buildOutfitPageProps';
 
 const mainColor = '#94aefaca';
@@ -24,7 +26,9 @@ type OutfitPageProps = {
 
 export async function generateMetadata({ params }: OutfitPageProps): Promise<Metadata> {
   const { species: speciesSlug } = await params;
-  const species = capitalizeSpecies(speciesSlug);
+  const species = resolveSpecies(speciesSlug);
+  if (!species) notFound();
+
   const labels = await buildOutfitPageProps(species);
   const metadata = await getStaticAppMetadata({
     title: labels.exclusiveSpeciesClothes,
@@ -42,7 +46,17 @@ export async function generateMetadata({ params }: OutfitPageProps): Promise<Met
   };
 }
 
-export default function OutfitPage({ params }: OutfitPageProps) {
+export function generateStaticParams() {
+  return routing.locales.flatMap((locale) =>
+    [{ species: 'aisha' }, { species: 'kougra' }].map((path) => ({ locale, ...path }))
+  );
+}
+
+export default async function OutfitPage({ params }: OutfitPageProps) {
+  // Validated before the Suspense boundary so invalid species return a real 404 status
+  const { species } = await params;
+  if (!resolveSpecies(species)) notFound();
+
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
       <OutfitPageContentWrapper params={params} />
@@ -52,10 +66,12 @@ export default function OutfitPage({ params }: OutfitPageProps) {
 
 async function OutfitPageContentWrapper({ params }: OutfitPageProps) {
   const { species: speciesSlug } = await params;
-  const species = capitalizeSpecies(speciesSlug);
+  const species = resolveSpecies(speciesSlug);
+  if (!species) notFound();
+
   const [labels, outfits] = await Promise.all([
     buildOutfitPageProps(species),
-    loadSpeciesOutfits(speciesSlug),
+    loadSpeciesOutfits(species),
   ]);
 
   return (

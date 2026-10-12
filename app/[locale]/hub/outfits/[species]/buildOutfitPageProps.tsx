@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { createToolsBreadcrumbList } from '@components/Breadcrumbs/ToolsBreadcrumbs';
 import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
-import { petColorSlug } from '@utils/pet-utils';
+import { allSpecies, getSpeciesId, petColorSlug } from '@utils/pet-utils';
 import { stylesBrowseHref } from '@utils/petStyles/paths';
 
 export type OutfitPageLabels = {
@@ -54,8 +54,9 @@ export async function buildOutfitPageProps(species: string): Promise<OutfitPageL
   };
 }
 
-export function capitalizeSpecies(slug: string) {
-  return slug.charAt(0).toUpperCase() + slug.slice(1);
+export function resolveSpecies(slug: string): string | null {
+  const speciesId = getSpeciesId(slug);
+  return speciesId ? allSpecies[String(speciesId)] : null;
 }
 
 export function getOutfitPagePathname(species: string) {
