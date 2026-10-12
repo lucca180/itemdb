@@ -2,6 +2,8 @@ import { AvatarSolutionCreateManyInput } from '@prisma/generated/models';
 import prisma from '@utils/prisma';
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { goalCounterAlbumTag } from '@utils/appCacheTags';
+import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -30,12 +32,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const allAvysMap = new Map(allAvys.map((a) => [a.avy_id, a]));
 
   const createData: AvatarSolutionCreateManyInput[] = [];
+  // official lists whose avatar changed: their goal counter eligibility is cached
+  const touchedLists = new Set<number>();
 
   for (const avy of data) {
     const existingAvy = allAvysMap.get(avy.id);
     if (existingAvy) {
       const updated = existingAvy.updatedAt.getTime() < avy.last_update * 1000;
       if (!updated) continue;
+
+      const listId = avy.itemdb.list_id ? Number(avy.itemdb.list_id) : null;
+      if (existingAvy.list_id) touchedLists.add(existingAvy.list_id);
+      if (listId) touchedLists.add(listId);
 
       await prisma.avatarSolution.update({
         where: { avy_id: avy.id },
@@ -44,7 +52,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
           image: avy.img,
           updatedAt: new Date(avy.last_update * 1000),
           releasedAt: avy.releaseDate ? new Date(avy.releaseDate * 1000) : null,
-          list_id: avy.itemdb.list_id ? Number(avy.itemdb.list_id) : null,
+          list_id: listId,
           item_iid: avy.itemdb.item_iid ? Number(avy.itemdb.item_iid) : null,
           solution: avy.itemdb.solution,
         },
@@ -52,6 +60,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
       continue;
     }
+
+    if (avy.itemdb.list_id) touchedLists.add(Number(avy.itemdb.list_id));
 
     createData.push({
       avy_id: avy.id,
@@ -70,6 +80,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       data: createData,
       skipDuplicates: true,
     });
+  }
+
+  if (touchedLists.size > 0) {
+    await triggerAppRevalidation({ tags: [...touchedLists].map(goalCounterAlbumTag) });
   }
 
   return res.status(200).json({ message: 'Avatar solutions updated successfully' });

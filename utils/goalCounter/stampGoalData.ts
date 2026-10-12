@@ -4,6 +4,8 @@ export const STAMPS_PER_PAGE = 25;
 
 export type StampGoalData = {
   avatarImage: string;
+  /** Album page title, e.g. "HAUNTED WOODS" (from "Stamp Album - Haunted Woods") */
+  title: string;
   /** Album positions 1..25 with the stamp image (null if the official list has no image) */
   stamps: { pos: number; image: string | null }[];
   /** Bit `pos - 1` is set when the user owns the stamp at that position */
@@ -17,6 +19,15 @@ const AVATAR_BASE_URL = 'https://images.neopets.com/neoboards/avatars/';
 export const isStampAlbum = (l: { official: boolean; official_tag: string | null } | null) =>
   !!l && l.official && l.official_tag?.toLowerCase() === 'stamps';
 
+/** "Stamp Album - Haunted Woods" -> "HAUNTED WOODS" */
+export const stampAlbumTitle = (listName: string) =>
+  // some list names have leading spaces (" Stamp Album - Lost Desert")
+  listName
+    .trim()
+    .replace(/^stamp album\s*[-–:]\s*/i, '')
+    .trim()
+    .toUpperCase();
+
 export const toAvatarUrl = (image: string) =>
   /^https?:\/\//.test(image)
     ? image.replace(/^http:\/\//, 'https://')
@@ -28,25 +39,31 @@ export const toAvatarUrl = (image: string) =>
  * - A user list must be linked to an official `stamps` list; owned stamps are the ones the user
  *   hid in their list (the checklist convention).
  * - An official `stamps` list resolves to itself with nothing owned.
+ * - `officialOnly` rejects user lists (used by the sample images, which take an album id).
  * - The album page must have an avatar (AvatarSolution) — otherwise there is no goal to show.
  */
-export async function getStampGoalData(listId: number): Promise<StampGoalData | null> {
+export async function getStampGoalData(
+  listId: number,
+  options: { officialOnly?: boolean } = {}
+): Promise<StampGoalData | null> {
   const list = await prisma.userList.findUnique({
     where: { internal_id: listId },
     select: {
       internal_id: true,
+      name: true,
       official: true,
       official_tag: true,
-      linkedList: { select: { internal_id: true, official: true, official_tag: true } },
+      linkedList: { select: { internal_id: true, name: true, official: true, official_tag: true } },
     },
   });
 
   if (!list) return null;
 
-  let albumListId: number;
-  if (isStampAlbum(list)) albumListId = list.internal_id;
-  else if (isStampAlbum(list.linkedList)) albumListId = list.linkedList!.internal_id;
+  let album: { internal_id: number; name: string };
+  if (isStampAlbum(list)) album = list;
+  else if (!options.officialOnly && isStampAlbum(list.linkedList)) album = list.linkedList!;
   else return null;
+  const albumListId = album.internal_id;
 
   const [avatar, albumItems] = await Promise.all([
     prisma.avatarSolution.findFirst({
@@ -87,6 +104,7 @@ export async function getStampGoalData(listId: number): Promise<StampGoalData | 
 
   return {
     avatarImage: toAvatarUrl(avatar.image),
+    title: stampAlbumTitle(album.name ?? ''),
     stamps: stamps.map(({ pos, image }) => ({ pos, image })),
     ownedMask,
     ownedCount: countBits(ownedMask),

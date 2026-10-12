@@ -79,12 +79,16 @@ export const LIST_ITEM_CACHE_SCOPES = ['preload', 'full', 'full-owner'] as const
 export type ListItemCacheScope = (typeof LIST_ITEM_CACHE_SCOPES)[number];
 export type ListItemsCacheTag = `list-items-${string}-${number}-${ListItemCacheScope}`;
 
+/** Goal counter eligibility of an official list (stamp album with avatar / collection). */
+export type GoalCounterAlbumCacheTag = `goal-counter-album-${number}`;
+
 export type AppCacheTag =
   | HomeCacheTag
   | MallHubCacheTag
   | ItemScopedCacheTag
   | UserListsPageCacheTag
-  | ListItemsCacheTag;
+  | ListItemsCacheTag
+  | GoalCounterAlbumCacheTag;
 
 export function userProfileTag(username: string): UserProfileCacheTag {
   return fitCacheTag(`user-profile-${username}`) as UserProfileCacheTag;
@@ -108,6 +112,10 @@ export function listItemsTag(
   scope: ListItemCacheScope
 ): ListItemsCacheTag {
   return fitCacheTag(`list-items-${username}-${listId}-${scope}`) as ListItemsCacheTag;
+}
+
+export function goalCounterAlbumTag(albumListId: number): GoalCounterAlbumCacheTag {
+  return `goal-counter-album-${albumListId}`;
 }
 
 /** Tags invalidated together when list items or list metadata change. */
@@ -192,6 +200,7 @@ const USER_ACHIEVEMENTS_TAG_PATTERN = /^user-achievements-[a-zA-Z0-9_]+$/;
 const USER_LISTS_TAG_PATTERN = /^user-lists-[a-zA-Z0-9_]+$/;
 const USER_MATCHES_TAG_PATTERN = /^user-matches-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+$/;
 const LIST_ITEMS_TAG_PATTERN = /^list-items-[a-zA-Z0-9_]+-\d+-(preload|full|full-owner)$/;
+const GOAL_COUNTER_ALBUM_TAG_PATTERN = /^goal-counter-album-\d+$/;
 
 export function parseItemTagInternalId(tag: ItemScopedCacheTag): number {
   const rootMatch = tag.match(ITEM_ROOT_TAG_PATTERN);
@@ -236,7 +245,8 @@ export function isAppCacheTag(tag: string): tag is AppCacheTag {
     USER_ACHIEVEMENTS_TAG_PATTERN.test(tag) ||
     USER_LISTS_TAG_PATTERN.test(tag) ||
     USER_MATCHES_TAG_PATTERN.test(tag) ||
-    LIST_ITEMS_TAG_PATTERN.test(tag)
+    LIST_ITEMS_TAG_PATTERN.test(tag) ||
+    GOAL_COUNTER_ALBUM_TAG_PATTERN.test(tag)
   ) {
     return true;
   }

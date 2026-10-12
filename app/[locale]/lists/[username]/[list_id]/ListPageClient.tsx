@@ -282,7 +282,16 @@ export function ListPageClient({
                 <CreateLinkedListButton list={state.list} isLoading={state.isLoading} />
               )}
               {goalCounter && state.isOwner && (
-                <Button onClick={onOpenGoal} variant="ghost" data-umami-event="goal-counter-open">
+                <Button
+                  onClick={onOpenGoal}
+                  variant="ghost"
+                  data-umami-event="goal-counter-open"
+                  data-umami-event-label={
+                    goalCounter.kind === 'collection'
+                      ? goalCounter.collection
+                      : `stamps-${goalCounter.albumListId}`
+                  }
+                >
                   {t('GoalCounter.button')}
                 </Button>
               )}

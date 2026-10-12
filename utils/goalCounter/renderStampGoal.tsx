@@ -1,70 +1,34 @@
 // next/og (Satori) only understands plain <img>; next/image does not apply here.
 /* eslint-disable @next/next/no-img-element */
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { ImageResponse } from 'next/og';
-import { createCanvas, loadImage, type Image } from '@napi-rs/canvas';
-import { Vibrant } from 'node-vibrant/node';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
 import type { CSSProperties, ReactElement } from 'react';
-import type { GoalConfig, GoalVariant } from './config';
+import { isStampVariant, normalizeGoalConfig, type GoalConfig, type StampVariant } from './config';
 import { STAMPS_PER_PAGE, countBits, type StampGoalData } from './stampGoalData';
-
-export const GOAL_SIZES: Record<GoalVariant, [number, number]> = {
-  mosaic: [96, 88],
-  reveal: [96, 84],
-  'page-header': [150, 76],
-  'page-value': [152, 60],
-  'page-legend': [152, 72],
-};
+import {
+  ClassicCounter,
+  GOAL_SIZES,
+  drawScaled,
+  fetchBuffer,
+  getFonts,
+  getIcon,
+  getPalette,
+  pngUri,
+  pressStart,
+  readableOnLight,
+  stroke,
+  type Palette,
+} from './renderShared';
 
 const PAPER = '#f6efe0';
 const CLEAR = 'rgba(0,0,0,0)';
-
-// ---------- static assets ---------- //
-
-const publicFile = (...p: string[]) => readFile(path.join(process.cwd(), 'public', ...p));
-
-let fontsPromise: Promise<NonNullable<ConstructorParameters<typeof ImageResponse>[1]>['fonts']>;
-const getFonts = () =>
-  (fontsPromise ??= Promise.all([
-    publicFile('fonts', 'Silkscreen-Regular.ttf'),
-    publicFile('fonts', 'Silkscreen-Bold.ttf'),
-    publicFile('fonts', 'PixelifySans-Bold.ttf'),
-  ]).then(([silk, silkBold, pixelify]) => [
-    { name: 'Silkscreen', data: silk, weight: 400 as const, style: 'normal' as const },
-    { name: 'Silkscreen', data: silkBold, weight: 700 as const, style: 'normal' as const },
-    { name: 'Pixelify', data: pixelify, weight: 700 as const, style: 'normal' as const },
-  ]));
-
-let iconPromise: Promise<string>;
-const getIcon = () =>
-  (iconPromise ??= publicFile('logo_icon.svg').then(
-    (svg) => `data:image/svg+xml;base64,${svg.toString('base64')}`
-  ));
-
-// ---------- image prep (GIF -> PNG; next/og can't draw GIFs) ---------- //
-
-const pngUri = (buf: Buffer) => `data:image/png;base64,${buf.toString('base64')}`;
-
-const fetchBuffer = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
-  return Buffer.from(await res.arrayBuffer());
-};
-
-const drawScaled = (img: Image, size: number) => {
-  const canvas = createCanvas(size, size);
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0, size, size);
-  return canvas;
-};
 
 type AvatarAssets = {
   color: string;
   gray: string;
   tiles: { on: string; off: string }[];
   ink: string;
+  palette: Palette;
 };
 
 async function prepareAvatar(url: string): Promise<AvatarAssets> {
@@ -88,13 +52,7 @@ async function prepareAvatar(url: string): Promise<AvatarAssets> {
     return pngUri(c.toBuffer('image/png'));
   };
 
-  let ink = '#555555';
-  try {
-    const palette = await Vibrant.from(buf).getPalette();
-    ink = palette.DarkVibrant?.hex ?? palette.DarkMuted?.hex ?? palette.Muted?.hex ?? ink;
-  } catch (e) {
-    console.error('[goal-counter] palette failed', url, e);
-  }
+  const palette = await getPalette(buf, url);
 
   return {
     color: pngUri(color.toBuffer('image/png')),
@@ -103,7 +61,8 @@ async function prepareAvatar(url: string): Promise<AvatarAssets> {
       on: tile(color, i),
       off: tile(gray, i),
     })),
-    ink,
+    ink: palette.ink,
+    palette,
   };
 }
 
@@ -133,10 +92,10 @@ type Ctx = {
   thumbs: Map<number, string>;
   icon: string;
   paper: boolean;
+  showNumber: boolean;
 };
 
 const owns = (ctx: Ctx, pos: number) => (ctx.data.ownedMask & (1 << (pos - 1))) !== 0;
-const stroke = (color = '#fff'): CSSProperties => ({ WebkitTextStroke: `1px ${color}` });
 
 const Brand = ({ ctx, light }: { ctx: Ctx; light?: boolean }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 2, height: 15 }}>
@@ -162,9 +121,7 @@ const CountPill = ({ ctx }: { ctx: Ctx }) => (
   <div
     style={{
       display: 'flex',
-      fontFamily: 'Silkscreen',
-      fontSize: 8,
-      lineHeight: 1,
+      ...pressStart(8),
       color: '#fff',
       background: ctx.avatar.ink,
       padding: '1px 4px 2px',
@@ -197,10 +154,7 @@ const CountColumn = ({ ctx }: { ctx: Ctx }) => (
     <div
       style={{
         display: 'flex',
-        fontFamily: 'Silkscreen',
-        fontWeight: 700,
-        fontSize: 14,
-        lineHeight: 1,
+        ...pressStart(12),
         color: ctx.paper ? ctx.avatar.ink : '#fff',
       }}
     >
@@ -209,9 +163,7 @@ const CountColumn = ({ ctx }: { ctx: Ctx }) => (
     <div
       style={{
         display: 'flex',
-        fontFamily: 'Silkscreen',
-        fontSize: 8,
-        lineHeight: 1,
+        ...pressStart(7),
         marginTop: 3,
         color: ctx.paper ? '#7a6a4f' : 'rgba(255,255,255,.8)',
       }}
@@ -345,7 +297,24 @@ const pageFrame = (ctx: Ctx, w: number, h: number): CSSProperties => ({
   border: `1px solid ${ctx.paper ? ctx.avatar.ink : CLEAR}`,
 });
 
-const VARIANTS: Record<GoalVariant, (ctx: Ctx) => ReactElement> = {
+const VARIANTS: Record<StampVariant, (ctx: Ctx) => ReactElement> = {
+  'stamp-classic': (ctx) => (
+    <ClassicCounter
+      size={GOAL_SIZES['stamp-classic']}
+      icon={ctx.avatar.color}
+      iconSize={50}
+      iconFrame={false}
+      brandIcon={ctx.icon}
+      title={ctx.data.title}
+      owned={ctx.data.ownedCount}
+      target={STAMPS_PER_PAGE}
+      showNumber={ctx.showNumber}
+      card={ctx.paper}
+      // ink is used for text on white/light surfaces
+      palette={{ ...ctx.avatar.palette, ink: readableOnLight(ctx.avatar.palette.ink) }}
+    />
+  ),
+
   mosaic: (ctx) => (
     <BrandOnTop ctx={ctx} visual={<MosaicGrid ctx={ctx} />} size={GOAL_SIZES.mosaic} />
   ),
@@ -412,10 +381,7 @@ const VARIANTS: Record<GoalVariant, (ctx: Ctx) => ReactElement> = {
           <div
             style={{
               display: 'flex',
-              fontFamily: 'Silkscreen',
-              fontWeight: 700,
-              fontSize: 14,
-              lineHeight: 1,
+              ...pressStart(12),
               color: ctx.paper ? ctx.avatar.ink : '#fff',
             }}
           >
@@ -424,9 +390,7 @@ const VARIANTS: Record<GoalVariant, (ctx: Ctx) => ReactElement> = {
           <div
             style={{
               display: 'flex',
-              fontFamily: 'Silkscreen',
-              fontSize: 8,
-              lineHeight: 1,
+              ...pressStart(7),
               marginTop: 2,
               color: ctx.paper ? '#7a6a4f' : 'rgba(255,255,255,.75)',
             }}
@@ -508,7 +472,10 @@ const VARIANTS: Record<GoalVariant, (ctx: Ctx) => ReactElement> = {
 // ---------- entry point ---------- //
 
 export async function renderStampGoal(data: StampGoalData, config: GoalConfig): Promise<Buffer> {
-  const needsThumbs = config.variant.startsWith('page-');
+  const normalized = normalizeGoalConfig(config);
+  const { variant } = normalized;
+  if (!isStampVariant(variant)) throw new Error(`Not a stamp goal variant: ${variant}`);
+  const needsThumbs = variant.startsWith('page-');
 
   const [fonts, icon, avatar, thumbs] = await Promise.all([
     getFonts(),
@@ -522,11 +489,12 @@ export async function renderStampGoal(data: StampGoalData, config: GoalConfig): 
     avatar,
     thumbs,
     icon,
-    paper: config.bg === 'paper',
+    paper: normalized.bg === 'paper',
+    showNumber: normalized.showNumber,
   };
 
-  const [width, height] = GOAL_SIZES[config.variant];
-  const res = new ImageResponse(VARIANTS[config.variant](ctx), { width, height, fonts });
+  const [width, height] = GOAL_SIZES[variant];
+  const res = new ImageResponse(VARIANTS[variant](ctx), { width, height, fonts });
 
   return Buffer.from(await res.arrayBuffer());
 }
