@@ -5,6 +5,7 @@ import {
   MallHubRevalidateTags,
   MAX_CACHE_TAG_LENGTH,
   fitCacheTag,
+  goalCounterAlbumTag,
   isAppCacheTag,
   itemRootTag,
   itemSectionCacheTags,
@@ -48,6 +49,9 @@ describe('appCacheTags', () => {
     expect(isAppCacheTag(MallHubRevalidateTags.events)).toBe(true);
     expect(isAppCacheTag(itemRootTag(1))).toBe(true);
     expect(isAppCacheTag(itemSectionTag(1, 'avy'))).toBe(true);
+    expect(isAppCacheTag(goalCounterAlbumTag(137))).toBe(true);
+    expect(goalCounterAlbumTag(137)).toBe('goal-counter-album-137');
+    expect(isAppCacheTag('goal-counter-album-x')).toBe(false);
     expect(isAppCacheTag('item-1-unknown-scope')).toBe(false);
     expect(isAppCacheTag('not-a-tag')).toBe(false);
   });

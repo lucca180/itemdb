@@ -21,6 +21,7 @@ import {
 } from './loadListPage';
 import { getListLoadingStrategy, type ListCore, type ListPageClientCore } from './listPage';
 import { ItemGridSkeleton, ListFullItemsReceiver, ListPageClient } from './ListPageClient';
+import { getListGoalCounter } from '@utils/goalCounter/eligibility';
 
 type ListDetailPageProps = {
   params: Promise<{ locale: string; username: string; list_id: string }>;
@@ -84,10 +85,12 @@ async function ListPageBody({
   list_id: string;
   core: ListCore;
 }) {
-  const [initialPreload, matches, similarLists] = await Promise.all([
+  const [initialPreload, matches, similarLists, goalCounter] = await Promise.all([
     getListPreload(core),
     getListMatches(core),
     getSimilarListsForList(core.list),
+    // only the owner gets the goal counter button
+    core.isOwner ? getListGoalCounter(core.list) : null,
   ]);
   const itemCount = core.list.itemCount ?? 0;
   const { useSuspenseFullLoad } = getListLoadingStrategy(itemCount);
@@ -108,6 +111,7 @@ async function ListPageBody({
       initialPreload={initialPreload}
       matches={matches}
       similarLists={similarLists}
+      goalCounter={goalCounter}
     >
       {useSuspenseFullLoad ? (
         <Suspense

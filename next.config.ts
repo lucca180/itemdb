@@ -122,7 +122,8 @@ const nextConfig: NextConfig = {
       },
       {
         // list more extensions here if needed; these are all the resources in the `public` folder including the subfolders
-        source: '/:all*(svg|jpg|png|gif|ttf|ico)',
+        // `/goal/*.png` is excluded: goal counter images are dynamic and set their own Cache-Control
+        source: '/:all((?!goal/).*(?:svg|jpg|png|gif|ttf|ico))',
         locale: false,
         headers: [
           {
