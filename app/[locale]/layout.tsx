@@ -3,10 +3,7 @@ import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { routing } from '@i18n/routing';
-import '@utils/global.css';
-import { inter } from '@utils/theme/fonts';
-import { AppScripts } from '@app/AppScripts';
-import { Providers } from '@app/providers';
+import { AppDocument } from '@app/AppDocument';
 import { buildAppMetadataDefaults } from '@app/utils/appPage';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 
@@ -24,20 +21,10 @@ export default async function LocaleLayout({ children }: LocaleLayoutProps) {
   const locale = await getLocale();
 
   return (
-    <html
-      lang={locale}
-      className={`${inter.className} dark`}
-      data-theme="dark"
-      suppressHydrationWarning
-    >
-      <body>
-        <AppScripts />
-        <Providers>
-          <NextIntlClientProvider>
-            <AppServerLayout locale={locale}>{children}</AppServerLayout>
-          </NextIntlClientProvider>
-        </Providers>
-      </body>
-    </html>
+    <AppDocument locale={locale}>
+      <NextIntlClientProvider>
+        <AppServerLayout locale={locale}>{children}</AppServerLayout>
+      </NextIntlClientProvider>
+    </AppDocument>
   );
 }
