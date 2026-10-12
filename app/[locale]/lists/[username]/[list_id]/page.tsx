@@ -89,10 +89,8 @@ async function ListPageBody({
     getListPreload(core),
     getListMatches(core),
     getSimilarListsForList(core.list),
-    // only the owner gets the goal counter button; admins only until the feature flag is on
-    core.isOwner && (process.env.GOAL_COUNTER_ENABLED === 'true' || core.viewer?.isAdmin)
-      ? getListGoalCounter(core.list)
-      : null,
+    // only the owner gets the goal counter button
+    core.isOwner ? getListGoalCounter(core.list) : null,
   ]);
   const itemCount = core.list.itemCount ?? 0;
   const { useSuspenseFullLoad } = getListLoadingStrategy(itemCount);

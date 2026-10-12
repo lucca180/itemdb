@@ -111,7 +111,8 @@
     "troubleshooting": "Troubleshooting",
     "nc-mall-hub": "NC Mall Hub",
     "import-wishlist": "Import Wishlist",
-    "all-tools": "All Tools"
+    "all-tools": "All Tools",
+    "goal-counters": "Goal Counters"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -1876,6 +1877,8 @@
     "suggestion-voting-description": "Review suggestions from other users and decide whether they should be added to itemdb.",
     "import-checklists": "Import & Checklists",
     "import-checklists-description": "Import items from your Neopets pages and track your collection progress.",
+    "goal-counters": "Goal Counters",
+    "goal-counters-description": "Show your stamp and collection progress on your lookup or petpage with an image that updates itself.",
     "lebron": "Lebron Values",
     "lebron-description": "NC item values in caps, based on NC trades reported by the community."
   },
@@ -1913,5 +1916,40 @@
     "goal-target-help": "Leave empty to use the official list total. Maximum: {max}.",
     "goal-target-invalid": "Use a whole number between 1 and {max}.",
     "variant-stamp-classic": "Classic bar"
+  },
+  "GoalsTool": {
+    "title": "Goal Counters",
+    "seo-title": "Neopets Goal Counters: Stamps, Gourmet Food and Book Awards | itemdb",
+    "seo-description": "Show on your lookup or petpage how many stamps, gourmet foods, NeoDeck cards and books you have collected. The itemdb image updates itself from your checklist.",
+    "h1": "Goal Counters for your Lookup",
+    "description": "Show your progress on stamp albums and collections with an image that updates itself from your itemdb checklist.",
+    "how-it-works": "How it works",
+    "step-1-title": "Create your checklist",
+    "step-1": "Open a <StampsLink>stamp album page</StampsLink> or one of the collections below and click <b>Create Checklist</b>.",
+    "step-2-title": "Hide what you have",
+    "step-2": "In your list, hide the items you already have. Hidden items count as collected.",
+    "step-3-title": "Pick a style",
+    "step-3": "Click <b>Goal Counter</b> on your list, pick a style and copy the code.",
+    "step-4-title": "Paste it on Neopets",
+    "step-4": "Paste the code on your lookup, petpage or shop. Done: the image follows your checklist.",
+    "stamps-eyebrow": "One counter for each avatar",
+    "stamps-title": "Stamp Album",
+    "stamps-hint": "Each album page uses its own avatar, colors and stamps. The samples use example progress.",
+    "stamps-disclaimer": "For now, only complete stamp pages (with all their stamps already released) have a counter.",
+    "album": "Album page",
+    "surface": "Preview on",
+    "collections-eyebrow": "Gourmet, NeoDeck and Book Awards",
+    "collections-title": "Collections",
+    "collections-hint": "Show how many items of the collection you have, against the official list total or a goal of your own.",
+    "view-list": "View official list",
+    "faq-title": "Good to know",
+    "faq-update-title": "No need to change the code",
+    "faq-update": "When you hide items in your checklist, the image updates itself. Changes may take a few minutes to show up.",
+    "faq-private-title": "Private lists work",
+    "faq-private": "The counter works even if your checklist is private.",
+    "faq-where-title": "Where to use it",
+    "faq-where": "The code is a regular image: paste it on your Neopets lookup, petpage or shop.",
+    "faq-owner-title": "Where to find the button",
+    "faq-owner": "The Goal Counter button shows up on the checklist page, only for the list owner."
   }
 }

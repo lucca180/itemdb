@@ -117,6 +117,14 @@ export const tools: ToolInfo[] = [
     category: 'lists',
   },
   {
+    id: 'goal-counters',
+    href: '/tools/goals',
+    image: 'https://images.neopets.com/images/frontpage/extremepotato.gif',
+    color: '#B7791F',
+    category: 'lists',
+    tags: ['new'],
+  },
+  {
     id: 'dynamic-lists',
     href: '/articles/checklists-and-dynamic-lists',
     image: 'https://images.neopets.com/nt/ntimages/79_aisha_dream.gif',

@@ -184,9 +184,10 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           trackEventLabel: 'rainbow-pool',
         },
         {
-          label: 'Pet Styles Tokens',
-          href: '/rainbow-pool/pet-styles',
-          trackEventLabel: 'pet-styles-tokens',
+          label: t('Layout.goal-counters'),
+          href: '/tools/goals',
+          newUntil: 1794441600000, // 2026-11-12
+          trackEventLabel: 'goal-counters',
         },
         {
           label: t('Layout.item-effects'),

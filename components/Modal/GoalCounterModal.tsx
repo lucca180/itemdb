@@ -34,6 +34,11 @@ import {
   type GoalVariant,
 } from '@utils/goalCounter/config';
 import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
+import {
+  PREVIEW_BACKGROUNDS,
+  PREVIEW_BACKGROUND_KEYS,
+  type PreviewBackground,
+} from '@utils/goalCounter/previewSurfaces';
 
 export type GoalCounterModalProps = {
   isOpen: boolean;
@@ -41,18 +46,6 @@ export type GoalCounterModalProps = {
   listId: number;
   goalCounter: GoalCounterInfo;
 };
-
-// preview surfaces only — they don't change the image, they show how it looks where it's pasted
-const PREVIEW_BACKGROUNDS = {
-  lookup: {
-    backgroundImage: 'linear-gradient(135deg, #ffd8e8 0%, #fff3c4 35%, #c9f0ff 70%, #d9ccff 100%)',
-  },
-  light: { backgroundColor: '#ffffff' },
-  dark: { backgroundColor: '#1f2129' },
-} as const;
-
-type PreviewBackground = keyof typeof PREVIEW_BACKGROUNDS;
-const PREVIEW_BACKGROUND_KEYS = Object.keys(PREVIEW_BACKGROUNDS) as PreviewBackground[];
 
 const parseTarget = (value: string): number | null | 'invalid' => {
   if (!value.trim()) return null;
