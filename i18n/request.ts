@@ -2,6 +2,7 @@ import * as rootParams from 'next/root-params';
 import { cookies, headers } from 'next/headers';
 import { hasLocale } from 'next-intl';
 import { getRequestConfig } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 import { routing } from './routing';
 import { LOCALE_COOKIE_NAME } from '@utils/locales';
 
@@ -13,6 +14,10 @@ export default getRequestConfig(async ({ locale }) => {
 
     if (hasLocale(routing.locales, paramValue)) {
       locale = paramValue;
+    } else if (paramValue !== undefined) {
+      // Invalid root param (e.g. /apple-touch-icon.png matching /[locale]).
+      // Must not fall through to headers() below: this can run inside "use cache".
+      notFound();
     } else {
       // No root param (e.g. global-not-found): use the locale prefix of the requested path
       // (set by proxy.ts), then the user's cookie, then the default.
