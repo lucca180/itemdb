@@ -1583,7 +1583,8 @@
     "apiChanges": "Userscripts pararam de funcionar? Confira a ferramenta de <Link>Solução de Problemas</Link>!",
     "newAuction": "Novas mudanças na Casa de Leilões podem afetar o histórico de leilões. Cheque essa <Link>atualização importante</Link>.",
     "apiV2": "Confira esta <Link>atualização rápida</Link> sobre API v2 e nossas quedas recentes",
-    "mallHub": "Confira nosso novo <Link>NC Mall Hub</Link> com os itens mais quentes, ofertas e muito mais!"
+    "mallHub": "Confira nosso novo <Link>NC Mall Hub</Link> com os itens mais quentes, ofertas e muito mais!",
+    "goalCounters": "Novo: mostre seu progresso em selos e coleções no seu lookup com os <Link>Contadores de Meta</Link>!"
   },
   "Owls": {
     "confirm-and-submit": "Confirmar e Enviar",
@@ -1921,8 +1922,8 @@
   },
   "GoalsTool": {
     "title": "Contadores de Meta",
-    "seo-title": "Contadores de Meta para Neopets: Selos, Gourmet e Book Awards | itemdb",
-    "seo-description": "Mostre no seu lookup ou petpage quantos selos, comidas gourmet, cartas NeoDeck e livros você já conquistou. A imagem do itemdb se atualiza sozinha com seu checklist.",
+    "seo-title": "Contadores de Meta do Neopets: Selos e Coleções | itemdb",
+    "seo-description": "Contadores de meta grátis para o seu lookup ou petpage do Neopets. Acompanhe álbuns de selos, Gourmet, NeoDeck e Book Awards direto do seu checklist no itemdb.",
     "h1": "Contadores de Meta para o seu Lookup",
     "description": "Mostre seu progresso em álbuns de selos e coleções com uma imagem que se atualiza sozinha a partir do seu checklist no itemdb.",
     "how-it-works": "Como funciona",

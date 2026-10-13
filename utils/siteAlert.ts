@@ -104,10 +104,23 @@ export const siteAlerts = {
     bg: '#cdc1ffa6',
     color: 'whiteAlpha.900',
   },
+  goalCounters: {
+    message: 'goalCounters',
+    link: '/tools/goals',
+    img: {
+      src: 'https://images.neopets.com/themes/h5/basic/images/highscore-icon.png',
+      h: 28,
+      w: 28,
+    },
+    bg: 'orange.900/50',
+    color: 'whiteAlpha.800',
+  },
 } as const;
 
 export function getCurrentSiteAlert() {
   const todayNST = getDateNST();
+  // until the start of Thursday 2026-10-15 (NST)
+  if (todayNST.getTime() < 1792022400000) return siteAlerts.goalCounters;
   if (isThirdWednesday(todayNST)) return siteAlerts.hiddenTower;
   if (todayNST.getDate() === 3) return siteAlerts.hpd;
   if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return siteAlerts.tyrannia;

@@ -37,6 +37,7 @@ import {
   GOALS_ACCENT,
   GOALS_ACCENT_LIGHT,
   GOALS_ACCENT_RGB,
+  GOALS_IMAGE,
   SAMPLE_COLLECTIONS,
   SAMPLE_STAMP_ALBUMS,
   STAMP_ALBUMS_HREF,
@@ -70,7 +71,7 @@ export function GoalsPageClient() {
         color={GOALS_ACCENT}
         breadcrumb={<BreadcrumbsView breadcrumbList={breadcrumbList} locale={locale} useAppDir />}
         image={{
-          src: 'https://images.neopets.com/nt/ntimages/351_lenny_stamps.gif',
+          src: GOALS_IMAGE.url,
           alt: t('GoalsTool.title'),
         }}
       >

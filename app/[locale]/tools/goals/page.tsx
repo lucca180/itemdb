@@ -6,7 +6,7 @@ import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton'
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import { routing } from '@utils/locales';
 import { GoalsPageClient } from './GoalsPageClient';
-import { GOALS_ACCENT } from './goalsPageData';
+import { GOALS_ACCENT, GOALS_IMAGE } from './goalsPageData';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('GoalsTool');
@@ -20,6 +20,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     ...metadata,
     title: { absolute: title },
+    openGraph: {
+      ...metadata.openGraph,
+      images: [GOALS_IMAGE],
+    },
   };
 }
 
