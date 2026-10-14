@@ -17,6 +17,9 @@ import {
   resolveSpecies,
 } from './buildOutfitPageProps';
 
+// params are awaited outside Suspense (real 404 status), so the route can't have a static shell
+export const instant = false;
+
 const mainColor = '#94aefaca';
 const headerImage = 'https://images.neopets.com/ncmall/shopkeepers/cashshop_fashionshow.png';
 
