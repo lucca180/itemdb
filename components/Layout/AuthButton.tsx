@@ -10,6 +10,7 @@ import { getScriptStatus } from '@utils/scriptUtils';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import MainLink from '@components/Utils/MainLink';
+import { UmamiSessionData } from '@components/Utils/UmamiSessionData';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 
 const LoginModal = dynamic(() => import('../Modal/LoginModal'));
@@ -26,9 +27,12 @@ export const AuthButton = (props: AuthButtonProps) => {
   const { open: isOpen, onOpen, onClose } = useDisclosure();
 
   const user = authUser ?? initialUser;
+  // Avoid SSR mismatch: LayoutAuthServer already resolved initialUser (User | null).
+  const isResolving = authLoading && typeof initialUser === 'undefined';
 
   return (
     <>
+      <UmamiSessionData loggedIn={isResolving ? undefined : !!user} />
       {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <Box
         display="flex"
@@ -46,8 +50,7 @@ export const AuthButton = (props: AuthButtonProps) => {
             onClick={onOpen}
             aria-label={t('Layout.login')}
             px={{ base: 0, md: 4 }}
-            // Avoid SSR mismatch: LayoutAuthServer already resolved initialUser (User | null).
-            loading={authLoading && typeof initialUser === 'undefined'}
+            loading={isResolving}
           >
             <Icon as={BsBoxArrowInRight} boxSize="18px" mr={2} verticalAlign="text-top" />
             <Box as="span" display={{ base: 'none', md: 'inline' }}>

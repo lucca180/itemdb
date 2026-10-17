@@ -303,8 +303,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
 
     const umami = window.umami;
 
+    // session data only: an `id` key would set a Distinct ID and de-anonymize the session
     await umami.identify({
-      id: user.id,
       restockScript:
         window.itemdb_restock?.versionCode ?? window.itemdb_restock?.scriptVersion ?? null,
       itemdbScript: window.itemdb_script?.version ?? null,
