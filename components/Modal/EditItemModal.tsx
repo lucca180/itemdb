@@ -23,6 +23,7 @@ import {
   Dialog,
   CloseButton,
   Portal,
+  Box,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -42,6 +43,14 @@ import ItemStatusSelect from '../Input/ItemStatusSelect';
 import { FiTrash } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 import ItemSelect from '../Input/ItemSelect';
+import { CreatePrizePoolForm } from '@components/Input/CreatePrizePoolForm';
+import { PrizePoolBadges } from '@components/Items/PrizePoolBadges';
+import type { ItemDropSources } from '@utils/item/itemDropSources';
+import type {
+  CapsuleSyncPreview,
+  CapsuleSyncPreviewItem,
+  CapsuleSyncResult,
+} from '@utils/item/capsuleContentsSync';
 import MainLink from '@components/Utils/MainLink';
 import { usePathname } from '@i18n/navigation';
 import { useTranslations } from 'next-intl';
@@ -810,6 +819,13 @@ const defaultItemOpenable: ItemOpenable = {
   minDrop: 0,
 };
 
+type DropAction =
+  | { action: 'add'; poolName: string; drop_id: number; isLE: boolean }
+  | { action: 'remove'; poolName: string; drop_id: number }
+  | { action: 'set-le'; poolName: string; drop_id: number; isLE: boolean }
+  | { action: 'rename-pool'; poolName: string; newPoolName: string }
+  | { action: 'delete-pool'; poolName: string };
+
 export const OpenableTab = (props: OpenableTabProps) => {
   const {
     itemOpenable: itemOpenableProps,
@@ -823,8 +839,12 @@ export const OpenableTab = (props: OpenableTabProps) => {
     itemOpenableProps ?? defaultItemOpenable
   );
   const [dropData, setDropData] = useState<{ [id: number]: ItemData }>({});
+  /** null = not loaded (or failed): origins are hidden and the X stays enabled. */
+  const [sources, setSources] = useState<Record<number, ItemDropSources> | null>(null);
+  const [sourcesError, setSourcesError] = useState(false);
   const [isLoading, setLoading] = useState<boolean>(false);
-  const [newPoolName, setNewPoolName] = useState<string>('');
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isItemOpenableLoading) return;
@@ -844,37 +864,65 @@ export const OpenableTab = (props: OpenableTabProps) => {
     init();
   }, [itemOpenable, isItemOpenableLoading, itemOpenableLoadError]);
 
+  const loadSources = () => {
+    setSourcesError(false);
+    axios
+      .get<{ sources: Record<number, ItemDropSources> }>(
+        `/api/admin/item-drops/${item.internal_id}`
+      )
+      .then((res) => setSources(res.data.sources))
+      .catch(() => setSourcesError(true));
+  };
+
+  useEffect(() => {
+    if (savedCanOpen === 'false') return;
+    loadSources();
+  }, [item.internal_id, savedCanOpen]);
+
+  const onCapsuleSynced = (result: CapsuleSyncResult) => {
+    setSyncMessage(`Synced ${result.dropsSynced} drops from ${result.capsuleName}.`);
+    loadSources();
+    onRetryItemOpenable?.();
+  };
+
   const init = async () => {
     if (!itemOpenable) return;
     setLoading(true);
-    const itemRes = await axios.post(`/api/v1/items/many`, {
-      id: Object.keys(itemOpenable.drops),
-    });
+    try {
+      const itemRes = await axios.post(`/api/v1/items/many`, {
+        id: Object.keys(itemOpenable.drops),
+      });
 
-    setDropData(itemRes.data);
-    setLoading(false);
+      setDropData(itemRes.data);
+    } catch (err) {
+      console.error(err);
+      setActionError('Failed to load the drop items.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updatePool = async (poolName: string, newItem: ItemData, action: 'add' | 'remove') => {
+  const runAction = async (body: DropAction) => {
     setLoading(true);
+    setActionError(null);
 
-    const res = await axios.patch(`/api/v1/items/${item.slug}/drops`, {
-      drop_id: newItem.internal_id,
-      poolName: poolName,
-      action: action,
-    });
+    try {
+      const res = await axios.patch(`/api/v1/items/${item.slug}/drops`, body);
 
-    setItemOpenable(res.data.dropUpdate);
+      setSources(res.data.sources ?? null);
+      // new object so init() always runs and clears the loading state
+      setItemOpenable(res.data.dropUpdate ?? { ...defaultItemOpenable });
+    } catch (err) {
+      console.error(err);
+      setActionError('Something went wrong. Try again.');
+      setLoading(false);
+    }
   };
 
-  const onSelect = (newItem: ItemData, poolName: string) => {
-    updatePool(poolName, newItem, 'add');
-  };
-
-  const createPool = () => {
-    if (!itemOpenable || !newPoolName) return;
+  const createPool = (poolName: string) => {
+    if (!itemOpenable) return;
     const newPool: PrizePoolData = {
-      name: newPoolName,
+      name: poolName,
       items: [],
       openings: 0,
       maxDrop: 0,
@@ -887,12 +935,23 @@ export const OpenableTab = (props: OpenableTabProps) => {
     const newOpenable: ItemOpenable = {
       ...itemOpenable,
       pools: {
-        [newPoolName]: newPool,
+        [poolName]: newPool,
         ...itemOpenable.pools,
       },
     };
 
     setItemOpenable(newOpenable);
+  };
+
+  /** Pools without items only exist in this tab until the first drop is added. */
+  const updateLocalPool = (poolName: string, newPoolName: string | null) => {
+    if (!itemOpenable) return;
+    const pools = { ...itemOpenable.pools };
+    const pool = pools[poolName];
+    delete pools[poolName];
+    if (newPoolName && pool) pools[newPoolName] = { ...pool, name: newPoolName };
+
+    setItemOpenable({ ...itemOpenable, pools });
   };
 
   if (savedCanOpen === 'false') {
@@ -930,58 +989,416 @@ export const OpenableTab = (props: OpenableTabProps) => {
 
   return (
     <Flex flexFlow="column" gap={3}>
+      {item.isNC && item.item_id && (
+        <CapsuleSyncPanel itemId={item.item_id} sources={sources} onApplied={onCapsuleSynced} />
+      )}
+      {syncMessage && (
+        <Text fontSize="sm" color="green.300" textAlign="center">
+          {syncMessage}
+        </Text>
+      )}
       <Flex flexFlow={'column'} bg="blackAlpha.300" p={2} gap={3}>
-        <Input
-          size="sm"
-          variant="subtle"
-          placeholder="Pool Name"
-          onChange={(e) => setNewPoolName(e.target.value)}
-        />
-        <Button size="sm" onClick={createPool} disabled={!newPoolName}>
-          Create New Pool
-        </Button>
+        <CreatePrizePoolForm onSubmit={createPool} />
       </Flex>
+      {actionError && (
+        <Text fontSize="sm" color="red.300" textAlign="center">
+          {actionError}
+        </Text>
+      )}
+      {sourcesError && (
+        <Text fontSize="xs" color="orange.300" textAlign="center">
+          Failed to load drop origins. LE toggles are disabled.
+        </Text>
+      )}
       {itemOpenable &&
         Object.values(itemOpenable.pools).map((pool) => (
-          <Flex flexFlow={'column'} key={pool.name} bg="blackAlpha.300" p={2}>
-            <Text fontSize={'sm'} textTransform="capitalize" textAlign={'center'} fontWeight="bold">
-              Prize Pool - {pool.name}
-            </Text>
-            {!isLoading && (
-              <Flex flexFlow={'column'} gap={3} mt={3}>
-                {pool.items.map((item) => {
-                  const itemData = dropData[item];
-                  if (!itemData) return null;
-                  return (
-                    <Flex key={itemData.internal_id} alignItems="center" gap={2}>
-                      <Image
-                        src={itemData.image}
-                        width="30px"
-                        height="30px"
-                        alt={itemData.description}
-                      />
-                      <Text fontSize={'sm'}>{itemData.name}</Text>
-                      <Button
-                        size="xs"
-                        colorPalette="red"
-                        onClick={() => updatePool(pool.name, itemData, 'remove')}
-                        variant="ghost"
-                      >
-                        X
-                      </Button>
-                    </Flex>
-                  );
-                })}
-                <ItemSelect onChange={(item) => onSelect(item, pool.name)} />
-              </Flex>
-            )}
-            {isLoading && (
-              <Center>
-                <Spinner />
-              </Center>
-            )}
-          </Flex>
+          <PoolEditor
+            key={pool.name}
+            pool={pool}
+            drops={itemOpenable.drops}
+            dropData={dropData}
+            sources={sources}
+            isLoading={isLoading}
+            onAction={runAction}
+            onLocalChange={updateLocalPool}
+          />
         ))}
+    </Flex>
+  );
+};
+
+type PoolEditorProps = {
+  pool: PrizePoolData;
+  drops: ItemOpenable['drops'];
+  dropData: { [id: number]: ItemData };
+  sources: Record<number, ItemDropSources> | null;
+  isLoading: boolean;
+  onAction: (body: DropAction) => void;
+  onLocalChange: (poolName: string, newPoolName: string | null) => void;
+};
+
+const PoolEditor = (props: PoolEditorProps) => {
+  const { pool, drops, dropData, sources, isLoading, onAction, onLocalChange } = props;
+  const [mode, setMode] = useState<'view' | 'rename' | 'delete'>('view');
+  const [addAsLE, setAddAsLE] = useState(false);
+
+  const poolItems = Array.from(new Set(pool.items));
+  const isLocal = poolItems.length === 0;
+  const manualCount = poolItems.filter((id) =>
+    sources?.[id]?.manualPools.includes(pool.name)
+  ).length;
+  const otherCount = poolItems.length - manualCount;
+  const canEditPool = isLocal || manualCount > 0;
+
+  const rename = (newPoolName: string) => {
+    setMode('view');
+    if (newPoolName === pool.name) return;
+    if (isLocal) onLocalChange(pool.name, newPoolName);
+    else onAction({ action: 'rename-pool', poolName: pool.name, newPoolName });
+  };
+
+  const remove = () => {
+    setMode('view');
+    if (isLocal) onLocalChange(pool.name, null);
+    else onAction({ action: 'delete-pool', poolName: pool.name });
+  };
+
+  return (
+    <Flex flexFlow={'column'} bg="blackAlpha.300" p={2} gap={2}>
+      <Flex justifyContent="space-between" alignItems="center" gap={2} flexWrap="wrap">
+        <VStack gap={1} alignItems="flex-start">
+          <Text fontSize={'sm'} textTransform="capitalize" fontWeight="bold">
+            Prize Pool - {pool.name}
+          </Text>
+          <HStack gap={1} flexWrap="wrap">
+            <PrizePoolBadges name={pool.name} isChance={pool.isChance} />
+            {pool.openings > 0 && (
+              <Badge size="sm" variant="outline">
+                {pool.openings} openings
+              </Badge>
+            )}
+          </HStack>
+        </VStack>
+        {canEditPool && mode === 'view' && (
+          <HStack gap={1}>
+            <Button size="xs" variant="ghost" onClick={() => setMode('rename')}>
+              Rename
+            </Button>
+            <Button size="xs" variant="ghost" colorPalette="red" onClick={() => setMode('delete')}>
+              Delete
+            </Button>
+          </HStack>
+        )}
+      </Flex>
+
+      {mode === 'rename' && (
+        <Flex flexFlow="column" gap={2} bg="blackAlpha.300" p={2} borderRadius="md">
+          <CreatePrizePoolForm
+            initialName={pool.name}
+            submitLabel="Rename"
+            onSubmit={rename}
+            onCancel={() => setMode('view')}
+          />
+          {otherCount > 0 && (
+            <Text fontSize="xs" color="orange.300">
+              Only the {manualCount} manual drop(s) move to the new name. Sync and community drops
+              stay in &quot;{pool.name}&quot;.
+            </Text>
+          )}
+        </Flex>
+      )}
+
+      {mode === 'delete' && (
+        <Flex flexFlow="column" gap={2} bg="blackAlpha.300" p={2} borderRadius="md">
+          <Text fontSize="sm">
+            {isLocal
+              ? 'Delete this empty pool?'
+              : `Delete the ${manualCount} manual drop(s) of this pool?`}
+          </Text>
+          {otherCount > 0 && (
+            <Text fontSize="xs" color="orange.300">
+              {otherCount} sync/community drop(s) will stay in this pool.
+            </Text>
+          )}
+          <HStack>
+            <Button size="xs" colorPalette="red" onClick={remove}>
+              Delete
+            </Button>
+            <Button size="xs" variant="ghost" onClick={() => setMode('view')}>
+              Cancel
+            </Button>
+          </HStack>
+        </Flex>
+      )}
+
+      {!isLoading && (
+        <Flex flexFlow={'column'} gap={3} mt={1}>
+          {poolItems.map((itemId) => {
+            const itemData = dropData[itemId];
+            if (!itemData) return null;
+
+            const source = sources?.[itemId];
+            const isManual = !!source?.manualPools.includes(pool.name);
+            const isManualLE = !!source?.manualLEPools.includes(pool.name);
+            const otherLE = !!(source?.syncLE || source?.communityLE);
+            const isLE = isManualLE || otherLE || (!source && !!drops[itemId]?.isLE);
+
+            let leHint = isManualLE ? 'Unmark as LE' : 'Mark as LE in this pool';
+            if (!sources) leHint = 'Drop origins not loaded';
+            else if (source?.hasSync) leHint = 'Controlled by the sync';
+            else if (otherLE && !isManualLE) leHint = 'LE from community reports';
+
+            const canToggleLE = !!sources && !source?.hasSync && !(otherLE && !isManualLE);
+            const canRemove = !sources || isManual;
+
+            return (
+              <Flex key={itemData.internal_id} alignItems="center" gap={2} flexWrap="wrap">
+                <Image src={itemData.image} width="30px" height="30px" alt={itemData.description} />
+                <Text fontSize={'sm'} flex={1}>
+                  {itemData.name}
+                </Text>
+                <DropSourceBadges source={source} isManual={isManual} />
+                {!pool.isLE && (
+                  <span title={leHint}>
+                    <Button
+                      size="xs"
+                      variant={isLE ? 'solid' : 'outline'}
+                      colorPalette={isLE ? 'green' : 'gray'}
+                      disabled={!canToggleLE}
+                      onClick={() =>
+                        onAction({
+                          action: 'set-le',
+                          poolName: pool.name,
+                          drop_id: itemData.internal_id,
+                          isLE: !isManualLE,
+                        })
+                      }
+                    >
+                      LE
+                    </Button>
+                  </span>
+                )}
+                <span title={canRemove ? 'Remove' : 'Only manual drops can be removed'}>
+                  <Button
+                    size="xs"
+                    colorPalette="red"
+                    variant="ghost"
+                    disabled={!canRemove}
+                    onClick={() =>
+                      onAction({
+                        action: 'remove',
+                        poolName: pool.name,
+                        drop_id: itemData.internal_id,
+                      })
+                    }
+                  >
+                    X
+                  </Button>
+                </span>
+              </Flex>
+            );
+          })}
+          <HStack>
+            <Box flex={1}>
+              <ItemSelect
+                onChange={(newItem) =>
+                  onAction({
+                    action: 'add',
+                    poolName: pool.name,
+                    drop_id: newItem.internal_id,
+                    isLE: addAsLE && !pool.isLE,
+                  })
+                }
+              />
+            </Box>
+            {!pool.isLE && (
+              <Checkbox.Root
+                size="sm"
+                checked={addAsLE}
+                onCheckedChange={(e) => setAddAsLE(!!e.checked)}
+              >
+                <Checkbox.HiddenInput />
+                <Checkbox.Control />
+                <Checkbox.Label>LE</Checkbox.Label>
+              </Checkbox.Root>
+            )}
+          </HStack>
+        </Flex>
+      )}
+      {isLoading && (
+        <Center>
+          <Spinner />
+        </Center>
+      )}
+    </Flex>
+  );
+};
+
+const DropSourceBadges = ({
+  source,
+  isManual,
+}: {
+  source: ItemDropSources | undefined;
+  isManual: boolean;
+}) => {
+  if (!source) return null;
+
+  return (
+    <HStack gap={1}>
+      {isManual && (
+        <Badge size="sm" colorPalette="blue">
+          Manual
+        </Badge>
+      )}
+      {source.hasSync && (
+        <Badge size="sm" colorPalette="purple">
+          Sync
+        </Badge>
+      )}
+      {source.communityOpenings > 0 && (
+        <Badge size="sm" variant="outline">
+          {source.communityOpenings} reports
+        </Badge>
+      )}
+    </HStack>
+  );
+};
+
+const SYNC_STATUS_COLORS: Record<CapsuleSyncPreviewItem['status'], string> = {
+  added: 'green',
+  changed: 'orange',
+  removed: 'red',
+  unchanged: 'gray',
+};
+
+const SYNC_STATUS_LABELS: Record<CapsuleSyncPreviewItem['status'], string> = {
+  added: 'added',
+  changed: 'changed',
+  removed: 'sync row removed',
+  unchanged: 'unchanged',
+};
+
+const formatSyncRow = (row: { isLE: boolean; pool: string | null }) =>
+  [row.isLE ? 'LE' : null, row.pool].filter(Boolean).join(' · ') || 'no pool';
+
+type CapsuleSyncPanelProps = {
+  itemId: number;
+  /** Used to tell whether an item that leaves the sync still has other drop rows. */
+  sources: Record<number, ItemDropSources> | null;
+  onApplied: (result: CapsuleSyncResult) => void;
+};
+
+/** Dry run of the capsule contents sync, applied only after the admin accepts it. */
+const CapsuleSyncPanel = ({ itemId, sources, onApplied }: CapsuleSyncPanelProps) => {
+  const [preview, setPreview] = useState<CapsuleSyncPreview | null>(null);
+  const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const request = async (dryRun: boolean) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.post('/api/admin/capsule-sync', { itemId, dryRun });
+      if (dryRun) setPreview(res.data);
+      else {
+        setPreview(null);
+        onApplied(res.data);
+      }
+    } catch (err) {
+      console.error(err);
+      setError(dryRun ? 'Failed to fetch the capsule contents.' : 'Failed to apply the sync.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const changes = preview?.items.filter((row) => row.status !== 'unchanged') ?? [];
+  const countBy = (status: CapsuleSyncPreviewItem['status']) =>
+    preview?.items.filter((row) => row.status === status).length ?? 0;
+  const newItems = preview?.items.filter((row) => row.item_iid === null).length ?? 0;
+
+  /** Whether an item losing its sync row keeps manual or community rows in this capsule. */
+  const staysInDrops = (row: CapsuleSyncPreviewItem) => {
+    const source = row.item_iid !== null ? sources?.[row.item_iid] : undefined;
+    return !!source && (source.manualPools.length > 0 || source.communityOpenings > 0);
+  };
+
+  return (
+    <Flex flexFlow="column" bg="blackAlpha.300" p={2} gap={2}>
+      {!preview && (
+        <Button size="xs" variant="outline" loading={isLoading} onClick={() => request(true)}>
+          Preview capsule sync
+        </Button>
+      )}
+      {error && (
+        <Text fontSize="xs" color="red.300" textAlign="center">
+          {error}
+        </Text>
+      )}
+      {preview && (
+        <>
+          <Text fontSize="sm" fontWeight="bold">
+            {preview.capsuleName} · {preview.itemsFound} items on the NC Mall
+          </Text>
+          <HStack gap={1} flexWrap="wrap">
+            {(['added', 'changed', 'removed', 'unchanged'] as const).map((status) => (
+              <Badge key={status} size="sm" colorPalette={SYNC_STATUS_COLORS[status]}>
+                {countBy(status)} {SYNC_STATUS_LABELS[status]}
+              </Badge>
+            ))}
+            {newItems > 0 && (
+              <Badge size="sm" colorPalette="purple">
+                {newItems} new to itemdb
+              </Badge>
+            )}
+          </HStack>
+          {preview.itemsFound === 0 && (
+            <Text fontSize="xs" color="orange.300">
+              API returned no items. Nothing would change.
+            </Text>
+          )}
+          {preview.itemsFound > 0 && !changes.length && (
+            <Text fontSize="xs" color="gray.400">
+              Nothing would change.
+            </Text>
+          )}
+          {changes.map((row) => (
+            <Flex key={`${row.status}-${row.item_id ?? row.item_iid}`} alignItems="center" gap={2}>
+              {row.img && <Image src={row.img} width="30px" height="30px" alt={row.name} />}
+              <Text fontSize="sm" flex={1}>
+                {row.name}
+              </Text>
+              <Text fontSize="xs" color="gray.400">
+                {row.status === 'changed' && row.previous && `${formatSyncRow(row.previous)} → `}
+                {formatSyncRow(row)}
+                {row.status === 'removed' &&
+                  (staysInDrops(row)
+                    ? ' · stays via manual/community rows'
+                    : ' · leaves the drops')}
+              </Text>
+              <Badge size="sm" colorPalette={SYNC_STATUS_COLORS[row.status]}>
+                {row.item_iid === null ? 'new item' : SYNC_STATUS_LABELS[row.status]}
+              </Badge>
+            </Flex>
+          ))}
+          <HStack>
+            {changes.length > 0 && (
+              <Button
+                size="xs"
+                colorPalette="green"
+                flex={1}
+                loading={isLoading}
+                onClick={() => request(false)}
+              >
+                Apply sync
+              </Button>
+            )}
+            <Button size="xs" variant="ghost" disabled={isLoading} onClick={() => setPreview(null)}>
+              {changes.length > 0 ? 'Ignore' : 'Close'}
+            </Button>
+          </HStack>
+        </>
+      )}
     </Flex>
   );
 };

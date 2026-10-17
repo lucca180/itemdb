@@ -145,6 +145,8 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
         </Badge>
       )}
 
+      {!odds && isLE && <Badge colorPalette="green">LE</Badge>}
+
       {sortType === 'profit' && !!profit && (
         <>
           {profit <= 1000 && (

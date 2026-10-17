@@ -15,12 +15,19 @@ import {
   MANUAL_OPENING_ID,
 } from '@utils/item/itemDropEvidence';
 import { maybeMarkNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenableFromDrops';
+import { getItemDropSources } from '@utils/item/itemDropSources';
+import { slugifyPoolBase } from '@utils/item/prizePoolName';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
 const giftBoxes = [65354, 17434, 860];
 
 export const SKIP_ITEMS = [61696, 65743];
+
+/** PATCH actions on one drop of a pool (need `drop_id`). */
+const DROP_ACTIONS = ['add', 'remove', 'set-le'];
+/** PATCH actions on the manual rows of a whole pool. */
+const POOL_ACTIONS = ['rename-pool', 'delete-pool'];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -67,44 +74,79 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const item = await getItem(itemQuery);
   if (!item) return res.status(400).json({ error: 'Item not found' });
 
-  const { drop_id, action, poolName } = req.body;
+  const { drop_id, action, poolName, isLE, newPoolName } = req.body;
 
-  if (!drop_id || !action || !poolName)
+  if (!action || !poolName) return res.status(400).json({ error: 'Missing parameters' });
+
+  if (DROP_ACTIONS.includes(action) && !drop_id)
     return res.status(400).json({ error: 'Missing parameters' });
+
+  if (![...DROP_ACTIONS, ...POOL_ACTIONS].includes(action))
+    return res.status(400).json({ error: 'Invalid action' });
+
+  const manualPoolRows = {
+    parent_iid: item.internal_id,
+    prizePool: poolName,
+    opening_id: MANUAL_OPENING_ID,
+    isManual: true,
+  };
 
   if (action === 'add') {
     await prisma.openableItems.create({
       data: {
-        parent_iid: item.internal_id,
+        ...manualPoolRows,
         item_iid: drop_id,
-        prizePool: poolName,
-        opening_id: MANUAL_OPENING_ID,
-        isManual: true,
+        limitedEdition: !!isLE,
       },
     });
   }
 
   if (action === 'remove') {
     await prisma.openableItems.deleteMany({
-      where: {
-        parent_iid: item.internal_id,
-        item_iid: drop_id,
-        prizePool: poolName,
-        opening_id: MANUAL_OPENING_ID,
-        isManual: true,
-      },
+      where: { ...manualPoolRows, item_iid: drop_id },
     });
   }
 
-  const newDrops = await getItemDrops(item.internal_id);
+  if (action === 'set-le') {
+    const updated = await prisma.openableItems.updateMany({
+      where: { ...manualPoolRows, item_iid: drop_id },
+      data: { limitedEdition: !!isLE },
+    });
 
-  if (newDrops && action === 'add') {
+    // the item is only in this pool through sync/community rows: pin it here as LE
+    if (updated.count === 0 && isLE) {
+      await prisma.openableItems.create({
+        data: { ...manualPoolRows, item_iid: drop_id, limitedEdition: true },
+      });
+    }
+  }
+
+  if (action === 'rename-pool') {
+    const targetName = slugifyPoolBase(newPoolName ?? '');
+    if (!targetName) return res.status(400).json({ error: 'Missing parameters' });
+
+    await prisma.openableItems.updateMany({
+      where: manualPoolRows,
+      data: { prizePool: targetName },
+    });
+  }
+
+  if (action === 'delete-pool') {
+    await prisma.openableItems.deleteMany({ where: manualPoolRows });
+  }
+
+  const [newDrops, sources] = await Promise.all([
+    getItemDrops(item.internal_id),
+    getItemDropSources(item.internal_id),
+  ]);
+
+  if (newDrops && (action === 'add' || action === 'set-le')) {
     await maybeMarkNcItemOpenableFromDrops(item, [Number(drop_id)]);
   }
 
   await revalidateItem(item.internal_id, ItemRevalidateTags.drops(item.internal_id));
 
-  return res.status(200).json({ dropUpdate: newDrops });
+  return res.status(200).json({ dropUpdate: newDrops, sources });
 };
 
 // ---------- helpers ---------- //

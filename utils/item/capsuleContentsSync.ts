@@ -165,6 +165,123 @@ export type CapsuleSyncResult = {
   dropsSynced: number;
 };
 
+export type CapsuleSyncPreviewItem = {
+  item_id: number | null;
+  /** null when the item isn't in itemdb yet — the sync creates it. */
+  item_iid: number | null;
+  name: string;
+  img: string | null;
+  isLE: boolean;
+  pool: string | null;
+  status: 'added' | 'changed' | 'unchanged' | 'removed';
+  /** Current synced row, for `changed` and `removed`. */
+  previous?: { isLE: boolean; pool: string | null };
+};
+
+export type CapsuleSyncPreview = {
+  capsuleName: string;
+  itemsFound: number;
+  items: CapsuleSyncPreviewItem[];
+};
+
+type CurrentSyncRow = { item_iid: number; limitedEdition: boolean; prizePool: string | null };
+type KnownItem = {
+  internal_id: number;
+  item_id: number | null;
+  name: string;
+  image: string | null;
+};
+
+/**
+ * Diffs the official contents against the rows the last sync stored. Mirrors
+ * `syncCapsuleContents`: an empty snapshot keeps the current rows untouched.
+ */
+export const buildCapsuleSyncPreview = (
+  snapshot: CapsuleContentsSnapshot,
+  dbItems: KnownItem[],
+  currentRows: CurrentSyncRow[]
+): CapsuleSyncPreview => {
+  const currentByItem = new Map(currentRows.map((row) => [row.item_iid, row]));
+  const items: CapsuleSyncPreviewItem[] = [];
+
+  if (snapshot.items.length === 0) {
+    return { capsuleName: snapshot.capsuleName, itemsFound: 0, items };
+  }
+
+  const syncedItemIds = new Set<number>();
+
+  for (const item of snapshot.items) {
+    const dbItem = dbItems.find((x) => x.item_id === item.item_id);
+    const pool = item.category ?? null;
+    const current = dbItem ? currentByItem.get(dbItem.internal_id) : undefined;
+    if (dbItem) syncedItemIds.add(dbItem.internal_id);
+
+    let status: CapsuleSyncPreviewItem['status'] = 'added';
+    if (current) {
+      const isSame =
+        current.limitedEdition === item.isBonus &&
+        (current.prizePool?.toLowerCase() ?? null) === pool;
+      status = isSame ? 'unchanged' : 'changed';
+    }
+
+    items.push({
+      item_id: item.item_id,
+      item_iid: dbItem?.internal_id ?? null,
+      name: item.name,
+      img: item.img,
+      isLE: item.isBonus,
+      pool,
+      status,
+      previous:
+        status === 'changed' && current
+          ? { isLE: current.limitedEdition, pool: current.prizePool }
+          : undefined,
+    });
+  }
+
+  for (const row of currentRows) {
+    if (syncedItemIds.has(row.item_iid)) continue;
+    const dbItem = dbItems.find((x) => x.internal_id === row.item_iid);
+
+    items.push({
+      item_id: dbItem?.item_id ?? null,
+      item_iid: row.item_iid,
+      name: dbItem?.name ?? `#${row.item_iid}`,
+      img: dbItem?.image ?? null,
+      isLE: row.limitedEdition,
+      pool: row.prizePool,
+      status: 'removed',
+      previous: { isLE: row.limitedEdition, pool: row.prizePool },
+    });
+  }
+
+  return { capsuleName: snapshot.capsuleName, itemsFound: snapshot.items.length, items };
+};
+
+/** Dry run of `syncCapsuleContents`: fetches the official contents and writes nothing. */
+export async function previewCapsuleContentsSync(
+  capsule: CapsuleSyncTarget
+): Promise<CapsuleSyncPreview> {
+  const snapshot = await fetchCapsuleContents(capsule.item_id);
+
+  const currentRows = await prisma.openableItems.findMany({
+    where: { parent_iid: capsule.internal_id, opening_id: CAPSULE_CONTENTS_SYNC_OPENING_ID },
+    select: { item_iid: true, limitedEdition: true, prizePool: true },
+  });
+
+  const dbItems = await prisma.items.findMany({
+    where: {
+      OR: [
+        { item_id: { in: snapshot.items.map((item) => item.item_id) } },
+        { internal_id: { in: currentRows.map((row) => row.item_iid) } },
+      ],
+    },
+    select: { internal_id: true, item_id: true, name: true, image: true },
+  });
+
+  return buildCapsuleSyncPreview(snapshot, dbItems, currentRows);
+}
+
 /**
  * Syncs a single capsule's official contents into OpenableItems as authoritative rows
  * (opening_id = CAPSULE_CONTENTS_SYNC_OPENING_ID). Idempotent: replaces any previous

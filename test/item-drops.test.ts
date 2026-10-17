@@ -141,6 +141,27 @@ describe('getItemDrops statistical filtering', () => {
     expect(result?.drops[REJECTED_DROP_ID]).toBeUndefined();
   });
 
+  test('marks a manual LE drop without turning its pool into an LE pool', async () => {
+    prismaMock.items.findFirst.mockResolvedValue(item(true));
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      drop(AUTHORITATIVE_OPENING_IDS[0], ACCEPTED_DROP_ID, {
+        prizePool: 'normal',
+        isManual: true,
+        limitedEdition: true,
+      }),
+      drop(AUTHORITATIVE_OPENING_IDS[0], REJECTED_DROP_ID, {
+        prizePool: 'normal',
+        isManual: true,
+      }),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.pools.normal.isLE).toBe(false);
+    expect(result?.drops[ACCEPTED_DROP_ID].isLE).toBe(true);
+    expect(result?.drops[REJECTED_DROP_ID].isLE).toBe(false);
+  });
+
   test('uses the same statistical acceptance for inverse parent results', async () => {
     prismaMock.$queryRaw.mockResolvedValue(
       communityDrops(NP_NEUTRAL_SUPPORT, ACCEPTED_DROP_ID).map((row) => ({

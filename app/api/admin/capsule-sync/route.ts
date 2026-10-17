@@ -1,9 +1,11 @@
 import prisma from '@utils/prisma';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
-import { syncCapsuleContents } from '@utils/item/capsuleContentsSync';
+import { previewCapsuleContentsSync, syncCapsuleContents } from '@utils/item/capsuleContentsSync';
 
 type CapsuleSyncRequest = {
   itemId?: number;
+  /** Returns what the sync would change without writing anything. */
+  dryRun?: boolean;
 };
 
 export async function POST(request: Request) {
@@ -34,10 +36,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await syncCapsuleContents({
-      internal_id: capsule.internal_id,
-      item_id: capsule.item_id,
-    });
+    const target = { internal_id: capsule.internal_id, item_id: capsule.item_id };
+    const result = body.dryRun
+      ? await previewCapsuleContentsSync(target)
+      : await syncCapsuleContents(target);
 
     return Response.json(result);
   } catch (error) {

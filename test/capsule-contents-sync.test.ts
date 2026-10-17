@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import axios from 'axios';
-import { fetchCapsuleContents } from '@utils/item/capsuleContentsSync';
+import {
+  buildCapsuleSyncPreview,
+  fetchCapsuleContents,
+  type CapsuleContentsItem,
+} from '@utils/item/capsuleContentsSync';
 
 vi.mock('axios');
 
@@ -181,5 +185,69 @@ describe('fetchCapsuleContents', () => {
     });
 
     await expect(fetchCapsuleContents(123)).rejects.toThrow(/error/i);
+  });
+});
+
+describe('buildCapsuleSyncPreview', () => {
+  const snapshotItem = (item_id: number, overrides: Partial<CapsuleContentsItem> = {}) => ({
+    item_id,
+    name: `Item ${item_id}`,
+    img: `https://images.neopets.com/items/${item_id}.gif`,
+    isBonus: false,
+    ...overrides,
+  });
+
+  const dbItem = (internal_id: number, item_id: number) => ({
+    internal_id,
+    item_id,
+    name: `Db ${item_id}`,
+    image: null,
+  });
+
+  test('classifies added, changed, unchanged, removed and new items', () => {
+    const preview = buildCapsuleSyncPreview(
+      {
+        capsuleName: 'Test Capsule',
+        capsuleTypeName: 'Mystery Capsule',
+        items: [
+          snapshotItem(1),
+          snapshotItem(2, { isBonus: true }),
+          snapshotItem(3, { category: 'clothing' }),
+          snapshotItem(4),
+          snapshotItem(5),
+        ],
+      },
+      [dbItem(11, 1), dbItem(12, 2), dbItem(13, 3), dbItem(14, 4), dbItem(16, 6)],
+      [
+        { item_iid: 11, limitedEdition: false, prizePool: null },
+        { item_iid: 12, limitedEdition: false, prizePool: null },
+        { item_iid: 13, limitedEdition: false, prizePool: 'Clothing' },
+        { item_iid: 16, limitedEdition: true, prizePool: null },
+      ]
+    );
+
+    const byName = Object.fromEntries(preview.items.map((row) => [row.name, row]));
+
+    expect(preview.itemsFound).toBe(5);
+    expect(byName['Item 1'].status).toBe('unchanged');
+    expect(byName['Item 2']).toMatchObject({
+      status: 'changed',
+      isLE: true,
+      previous: { isLE: false, pool: null },
+    });
+    expect(byName['Item 3'].status).toBe('unchanged');
+    expect(byName['Item 4']).toMatchObject({ status: 'added', item_iid: 14 });
+    expect(byName['Item 5']).toMatchObject({ status: 'added', item_iid: null });
+    expect(byName['Db 6']).toMatchObject({ status: 'removed', item_iid: 16, isLE: true });
+  });
+
+  test('an empty snapshot changes nothing', () => {
+    const preview = buildCapsuleSyncPreview(
+      { capsuleName: 'Empty', capsuleTypeName: 'Mystery Capsule', items: [] },
+      [dbItem(11, 1)],
+      [{ item_iid: 11, limitedEdition: false, prizePool: null }]
+    );
+
+    expect(preview.items).toEqual([]);
   });
 });
