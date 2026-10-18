@@ -14,7 +14,8 @@ import {
   Textarea,
   Link,
 } from '@chakra-ui/react';
-import { BsCheckCircleFill } from 'react-icons/bs';
+import { BsBoxArrowInRight, BsCheckCircleFill } from 'react-icons/bs';
+import { useAuth } from '@utils/auth';
 import Layout from '@components/Layout';
 import MainLink from '@components/Utils/MainLink';
 import HeaderCard from '@components/Card/HeaderCard';
@@ -198,6 +199,7 @@ const NC_TRADE_NOTES_MAX_LENGTH = 180;
 const NCTradeReportCard = (props: NCTradeReportProps) => {
   const { user } = props;
   const t = useTranslations();
+  const { openLogin } = useAuth();
 
   const steps = [
     { title: t('Owls.you-offered') },
@@ -331,6 +333,14 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
             <Text fontSize={'sm'} color={'gray.400'}>
               {t('Owls.create-account-cta')}
             </Text>
+            <Button
+              size="sm"
+              alignSelf="center"
+              onClick={() => openLogin('nc-report', { trigger: 'nc-report-page' })}
+            >
+              <BsBoxArrowInRight />
+              {t('Layout.login')}
+            </Button>
           </Flex>
         </Center>
       )}

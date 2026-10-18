@@ -1,10 +1,12 @@
 import { ChevronDownIcon } from '@utils/theme/chakraIcons';
-import { Menu, Button, Badge, Tooltip, Portal, Text, Input, Box } from '@chakra-ui/react';
+import { Menu, Button, Badge, Tooltip, Portal, Text, Input, Box, Icon } from '@chakra-ui/react';
+import { BsBoxArrowInRight } from 'react-icons/bs';
 import axios from 'axios';
 import type { RefObject } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { UserListLite } from '@types';
 import { useAuth } from '@utils/auth';
+import type { LoginSource } from '@utils/loginModal';
 import DynamicIcon from '@assets/icons/dynamic.png';
 import NextImage from 'next/image';
 import { useLists } from '@utils/useLists';
@@ -23,13 +25,17 @@ type Props = {
   portalRef?: RefObject<HTMLElement | null>;
   /** Umami event name. Tracks menu open, user list selection and list creation. */
   trackEvent?: string;
+  /** Login modal context for logged-out users (defaults to `add-to-list`). */
+  loginSource?: LoginSource;
+  /** Login funnel `trigger` for logged-out users (defaults to `list-select`). */
+  loginTrigger?: string;
 };
 
 const LIST_SEARCH_THRESHOLD = 8;
 
 const ListSelect = (props: Props) => {
   const t = useTranslations();
-  const { user, authLoading } = useAuth();
+  const { user, authLoading, openLogin } = useAuth();
   const toast = useToast();
   const [forceSelected, setSelected] = useState<UserListLite | undefined>(props.defaultValue);
   const [listSearch, setListSearch] = useState('');
@@ -307,7 +313,18 @@ const ListSelect = (props: Props) => {
             )}
 
             {!user && !authLoading && (
-              <Menu.Item value="login-required" disabled justifyContent="center">
+              <Menu.Item
+                value="login-required"
+                justifyContent="center"
+                cursor="pointer"
+                _hover={{ bg: 'whiteAlpha.100' }}
+                onClick={() =>
+                  openLogin(props.loginSource ?? 'add-to-list', {
+                    trigger: props.loginTrigger ?? 'list-select',
+                  })
+                }
+              >
+                <Icon as={BsBoxArrowInRight} />
                 {t('Lists.login-to-use-lists')}
               </Menu.Item>
             )}

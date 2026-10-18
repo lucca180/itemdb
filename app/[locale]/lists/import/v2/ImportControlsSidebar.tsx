@@ -19,6 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { LuCheck, LuImport, LuSparkles } from 'react-icons/lu';
+import { BsBoxArrowInRight } from 'react-icons/bs';
 import ListSelect from '@components/UserLists/ListSelect';
 import { CreateLinkedListButton } from '@components/DynamicLists/CreateLinkedList';
 import MainLink from '@components/Utils/MainLink';
@@ -71,7 +72,7 @@ export function ImportControlsSidebar({
   itemCount,
 }: ImportControlsSidebarProps) {
   const t = useTranslations();
-  const { user, authLoading } = useAuth();
+  const { user, authLoading, openLogin } = useAuth();
   const { lists } = useLists();
   const lastListId = useLastImportListId();
 
@@ -111,6 +112,16 @@ export function ImportControlsSidebar({
               })}
             </Text>
           </Flex>
+          <Button
+            size="xs"
+            colorPalette="teal"
+            w="100%"
+            mt={2.5}
+            onClick={() => openLogin('import', { trigger: 'import-v2-sidebar' })}
+          >
+            <Icon as={BsBoxArrowInRight} />
+            {t('Layout.login')}
+          </Button>
         </Box>
       )}
 

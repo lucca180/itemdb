@@ -1,4 +1,3 @@
- 
 'use client';
 
 import {
@@ -375,6 +374,9 @@ export function SearchPageClient(props: SearchPageClientProps) {
                 size="sm"
                 createNew
                 onChange={(list) => handleAddItemToList(list.internal_id)}
+                trackEvent="search-add-to-list"
+                loginSource="search"
+                loginTrigger="search-add-to-list"
               />
             )}
           </Flex>

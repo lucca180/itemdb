@@ -93,7 +93,7 @@ type Props = {
 const ItemCtxMenu = (props: Props) => {
   const t = useTranslations();
   const toast = useToast();
-  const { user } = useAuth();
+  const { user, openLogin } = useAuth();
   const { lists, isLoading } = useLists();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserListLite | undefined>();
@@ -127,7 +127,7 @@ const ItemCtxMenu = (props: Props) => {
   const addItemToList = async (list_id: number) => {
     if (!user) return;
 
-    window.umami?.track('item-ctx-menu', { action: 'open' });
+    window.umami?.track('item-ctx-menu', { action: 'add to list' });
 
     const toastId = toast({
       id: 'item-ctx-add-to-list',
@@ -292,7 +292,12 @@ const ItemCtxMenu = (props: Props) => {
               )}
             </ViewportList>
           </Box>
-          {(!user || (lists && !lists.length)) && !isLoading && (
+          {!user && !isLoading && (
+            <CtxMenuItem onClick={() => openLogin('add-to-list', { trigger: 'item-ctx-menu' })}>
+              {t('Lists.login-to-use-lists')}
+            </CtxMenuItem>
+          )}
+          {user && lists && !lists.length && !isLoading && (
             <CtxMenuItem disabled>{t('ItemPage.no-lists-found')}</CtxMenuItem>
           )}
           {isLoading && <CtxMenuItem disabled>{t('Layout.loading')}...</CtxMenuItem>}

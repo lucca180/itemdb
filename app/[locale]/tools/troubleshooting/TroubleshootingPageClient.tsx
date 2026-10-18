@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { Text, Flex, Alert } from '@chakra-ui/react';
+import { Text, Flex, Alert, Link } from '@chakra-ui/react';
 import { DETECTABLE_SCRIPTS, useScriptStatus } from '@utils/scriptUtils';
 import MainLink from '@components/Utils/MainLink';
 import { useAuth } from '@utils/auth';
@@ -143,7 +143,7 @@ const IpBanStatus = ({ isIpBan }: { isIpBan: boolean }) => {
 };
 
 const AccountStatus = () => {
-  const { user, authLoading } = useAuth();
+  const { user, authLoading, openLogin } = useAuth();
 
   if (authLoading) return <StatusCheck title="Checking itemdb account status..." status="info" />;
 
@@ -153,8 +153,18 @@ const AccountStatus = () => {
         title="Not logged in"
         description={
           <>
-            You are not logged in. Signed in users have higher limits. Try creating an itemdb
-            account.
+            You are not logged in. Signed in users have higher limits.{' '}
+            <Link asChild color="whiteAlpha.900">
+              <button
+                type="button"
+                onClick={() =>
+                  openLogin('troubleshooting', { trigger: 'troubleshooting-account-status' })
+                }
+              >
+                Sign in or create an itemdb account
+              </button>
+            </Link>
+            .
           </>
         }
         status="warning"

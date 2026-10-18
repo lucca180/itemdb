@@ -43,6 +43,8 @@ const LOGIN_VARIANTS: Partial<Record<LoginVariantId, LoginVariant>> & {
   import: { perks: ['import', 'lists', 'scripts'] },
   search: { perks: ['lists', 'import', 'api'] },
   checklist: { perks: ['lists', 'import', 'prices'] },
+  'nc-report': { perks: ['prices', 'lists', 'import'] },
+  troubleshooting: { perks: ['scripts', 'api', 'restock'] },
 };
 
 /** The variant id (translation key part) and perks for a source, falling back to `default`. */

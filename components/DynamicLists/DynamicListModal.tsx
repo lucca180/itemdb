@@ -33,7 +33,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
   const t = useTranslations();
   const toast = useToast();
   const { isOpen, onClose, resultCount, searchQuery } = props;
-  const { user } = useAuth();
+  const { user, openLogin } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const { revalidate } = useLists();
@@ -41,7 +41,15 @@ const DynamicListModal = (props: DynamicListModalProps) => {
   const [dynamicType, setDynamicType] = useState<DynamicListTypes>('addOnly');
 
   const createDynamic = async () => {
-    if (!searchQuery || !user) return;
+    if (!searchQuery) return;
+
+    if (!user) {
+      onClose();
+      openLogin('search', { trigger: 'search-dynamic-list' });
+      return;
+    }
+
+    window.umami?.track('dynamic-list-confirm', { from: 'search', type: dynamicType });
 
     setLoading(true);
     try {

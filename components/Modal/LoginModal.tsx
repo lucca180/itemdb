@@ -29,6 +29,8 @@ export type LoginModalProps = {
   source: LoginSource;
   /** Page the user returns to after logging in (pathname only), when known. */
   redirectPath?: string;
+  /** The UI element that asked for login, for the Umami funnel. */
+  trigger?: string;
 };
 
 type SendLinkResponse = {
@@ -46,7 +48,7 @@ const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const LoginModal = (props: LoginModalProps) => {
   const t = useTranslations();
-  const { isOpen, onClose, source, redirectPath } = props;
+  const { isOpen, onClose, source, redirectPath, trigger } = props;
   const [cred, setCred] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -63,9 +65,9 @@ const LoginModal = (props: LoginModalProps) => {
       : t(`Login.variant-${variant.id}-title`);
 
   // login funnel: open → (new-account prompt) → link sent; never send the typed credential
-  const funnelData: Record<string, string> = redirectPath
-    ? { source, redirect: redirectPath }
-    : { source };
+  const funnelData: Record<string, string> = { source };
+  if (redirectPath) funnelData.redirect = redirectPath;
+  if (trigger) funnelData.trigger = trigger;
 
   // once per opening (effects run twice under StrictMode)
   const trackedOpen = useRef(false);

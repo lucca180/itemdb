@@ -49,6 +49,7 @@ export function GlobalLoginModal() {
       onClose={close}
       source={request.source}
       redirectPath={request.redirectPath}
+      trigger={request.trigger}
     />
   );
 }

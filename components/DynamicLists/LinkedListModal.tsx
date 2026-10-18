@@ -21,7 +21,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
   const t = useTranslations();
   const toast = useToast();
   const { isOpen, onClose, list, onCreate } = props;
-  const { user } = useAuth();
+  const { user, openLogin } = useAuth();
   const { revalidate } = useLists();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -29,7 +29,13 @@ const LinkedListModal = (props: LinkedListModalProps) => {
   const [dynamicType, setDynamicType] = useState<DynamicListTypes>('fullSync');
 
   const createDynamic = async () => {
-    if (!user) return;
+    if (!user) {
+      onClose();
+      openLogin('checklist', { trigger: 'checklist-modal' });
+      return;
+    }
+
+    window.umami?.track('dynamic-list-confirm', { from: 'linked', type: dynamicType });
 
     setLoading(true);
     try {

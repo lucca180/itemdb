@@ -1,4 +1,5 @@
-import { Menu, Button, Badge, Tooltip, Portal, useDisclosure } from '@chakra-ui/react';
+import { Menu, Button, Badge, Tooltip, Portal, useDisclosure, Icon } from '@chakra-ui/react';
+import { BsBoxArrowInRight } from 'react-icons/bs';
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
@@ -13,6 +14,9 @@ import { useLists } from '../../utils/useLists';
 
 const DuplicatedItemModal = dynamic(() => import('../Modal/DuplicatedItemModal'));
 
+/** Item page "Add to list" menu: open / select / create-new. */
+const TRACK_EVENT = 'item-add-to-list';
+
 type Props = {
   item: ItemData;
 };
@@ -20,7 +24,7 @@ type Props = {
 const AddToListSelect = (props: Props) => {
   const t = useTranslations();
   const { item } = props;
-  const { user, authLoading } = useAuth();
+  const { user, authLoading, openLogin } = useAuth();
   const { lists, isLoading, revalidate } = useLists();
   const { open, onOpen, onClose } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserListLite | undefined>();
@@ -111,7 +115,12 @@ const AddToListSelect = (props: Props) => {
           itemInfo={duplicatedItem}
         />
       )}
-      <Menu.Root lazyMount>
+      <Menu.Root
+        lazyMount
+        onOpenChange={({ open }) => {
+          if (open) window.umami?.track(TRACK_EVENT, { label: 'open' });
+        }}
+      >
         <Menu.Trigger asChild>
           <Button colorPalette="whiteAlpha" variant="subtle" w="100%">
             {t('Lists.add-to-list')}
@@ -128,7 +137,10 @@ const AddToListSelect = (props: Props) => {
                       cursor="pointer"
                       key={list.internal_id}
                       value={String(list.internal_id)}
-                      onClick={() => addItemToList(list.internal_id)}
+                      onClick={() => {
+                        window.umami?.track(TRACK_EVENT, { label: 'select' });
+                        addItemToList(list.internal_id);
+                      }}
                       disabled={isDynamicActionDisabled('add', list.dynamicType)}
                       whiteSpace={'wrap'}
                       maxW={'90vw'}
@@ -188,7 +200,13 @@ const AddToListSelect = (props: Props) => {
               )}
 
               {user && !authLoading && !isLoading && (
-                <Menu.Item value="create-new" onClick={createNewList}>
+                <Menu.Item
+                  value="create-new"
+                  onClick={() => {
+                    window.umami?.track(TRACK_EVENT, { label: 'create-new' });
+                    createNewList();
+                  }}
+                >
                   + {t('Lists.create-new-list')}
                 </Menu.Item>
               )}
@@ -199,7 +217,13 @@ const AddToListSelect = (props: Props) => {
                 </Menu.Item>
               )}
               {!user && !authLoading && (
-                <Menu.Item value="login-required" justifyContent="center" disabled>
+                <Menu.Item
+                  value="login-required"
+                  justifyContent="center"
+                  cursor="pointer"
+                  onClick={() => openLogin('add-to-list', { trigger: 'item-page-list-menu' })}
+                >
+                  <Icon as={BsBoxArrowInRight} />
                   {t('Lists.login-to-use-lists')}
                 </Menu.Item>
               )}

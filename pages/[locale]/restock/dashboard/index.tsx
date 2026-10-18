@@ -94,7 +94,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
   const { user } = props;
   const t = useTranslations();
   const formatter = useFormatter();
-  const { userPref } = useAuth();
+  const { userPref, openLogin } = useAuth();
   const { open: isOpenOptions, onOpen: onOpenOptions, onClose: onCloseOptions } = useDisclosure();
   const { open: isWrappedOpen, onOpen: onWrappedOpen, onClose: onWrappedClose } = useDisclosure();
   const [openImport, setOpenImport] = useState<boolean>(false);
@@ -564,10 +564,15 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                 <Text>
                   {t.rich('Restock.text-2', {
                     Link: (chunk) => (
-                      <Link asChild>
-                        <MainLink href="/login" prefetch={false}>
+                      <Link asChild color="green.200">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openLogin('restock-dashboard', { trigger: 'restock-dashboard-intro' })
+                          }
+                        >
                           {chunk}
-                        </MainLink>
+                        </button>
                       </Link>
                     ),
                   })}

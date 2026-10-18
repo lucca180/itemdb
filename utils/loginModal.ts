@@ -14,6 +14,8 @@ export const LOGIN_SOURCES = [
   'import',
   'search',
   'checklist',
+  'nc-report',
+  'troubleshooting',
 ] as const;
 
 export type LoginSource = (typeof LOGIN_SOURCES)[number];
@@ -22,6 +24,11 @@ export type LoginRequest = {
   source: LoginSource;
   /** Page the user returns to after logging in (pathname only). */
   redirectPath?: string;
+  /**
+   * The exact UI element that asked for login (e.g. `item-ctx-menu`), sent with the funnel
+   * events. Needed when one source has several entry points.
+   */
+  trigger?: string;
   /** Runs after the modal closes. */
   onClose?: () => void;
 };
