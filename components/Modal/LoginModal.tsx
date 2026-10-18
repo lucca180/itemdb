@@ -10,20 +10,23 @@ import {
   Icon,
   Alert,
   Box,
+  Flex,
+  HStack,
+  Stack,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { BsCheckCircleFill } from 'react-icons/bs';
-import logoIcon from '../../public/logo_white.svg';
 import { useTranslations } from 'next-intl';
 import { trackEventWhenReady } from '@utils/umami';
+import type { LoginSource } from '@utils/loginModal';
+import { getLoginVariant } from '@components/Modal/loginModalVariants';
 
 export type LoginModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  /** Where the modal was opened from (Umami login funnel), e.g. `header` or `login-page`. */
-  source: string;
+  /** Where the modal was opened from: picks the contextual copy and tags the Umami funnel. */
+  source: LoginSource;
   /** Page the user returns to after logging in (pathname only), when known. */
   redirectPath?: string;
 };
@@ -51,11 +54,13 @@ const LoginModal = (props: LoginModalProps) => {
   const [sentMode, setSentMode] = useState<'email' | 'username'>('email');
   const [needsConfirmation, setNeedsConfirmation] = useState<boolean>(false);
 
+  const variant = getLoginVariant(source);
+
   const title = isSent
     ? t('Login.title-link-sent')
     : needsConfirmation
       ? t('Login.title-create-account')
-      : t('Login.title-sign-in');
+      : t(`Login.variant-${variant.id}-title`);
 
   // login funnel: open → (new-account prompt) → link sent; never send the typed credential
   const funnelData: Record<string, string> = redirectPath
@@ -165,9 +170,9 @@ const LoginModal = (props: LoginModalProps) => {
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>
             <Dialog.Body>
-              <Center flexFlow="column" gap={4}>
-                {!isSent && <Image src={logoIcon} alt="itemdb logo" width={140} quality={100} />}
+              {!isSent && !needsConfirmation && <LoginVariantContent variant={variant} />}
 
+              <Center flexFlow="column" gap={4}>
                 {isSent && (
                   <>
                     <Icon as={BsCheckCircleFill} boxSize="48px" color="green.400" />
@@ -177,12 +182,6 @@ const LoginModal = (props: LoginModalProps) => {
                         : t('Login.email-sent')}
                     </Text>
                   </>
-                )}
-
-                {!isSent && !needsConfirmation && (
-                  <Text color="gray.200" fontSize="sm" textAlign="center">
-                    {t('Login.login-modal-text')}
-                  </Text>
                 )}
 
                 {!isSent && needsConfirmation && (
@@ -259,5 +258,44 @@ const LoginModal = (props: LoginModalProps) => {
     </Dialog.Root>
   );
 };
+
+/** Contextual description + perks for the sign-in step (copy: loginModalVariants.ts). */
+function LoginVariantContent(props: { variant: ReturnType<typeof getLoginVariant> }) {
+  const t = useTranslations();
+  const { variant } = props;
+
+  return (
+    <>
+      <Text color="gray.200" fontSize="sm">
+        {t(`Login.variant-${variant.id}-description`)}
+      </Text>
+      <Stack gap={3} mt={4}>
+        {variant.perks.map((perk) => (
+          <HStack key={perk.id} gap={3} alignItems="flex-start">
+            <Flex
+              bg="teal.900"
+              color="teal.200"
+              borderRadius="md"
+              boxSize={8}
+              alignItems="center"
+              justifyContent="center"
+              flexShrink={0}
+            >
+              <Icon as={perk.icon} boxSize={4} />
+            </Flex>
+            <Box>
+              <Text fontSize="sm" fontWeight="medium">
+                {t(`Login.perk-${perk.id}-title`)}
+              </Text>
+              <Text fontSize="xs" color="gray.400">
+                {t(`Login.perk-${perk.id}-description`)}
+              </Text>
+            </Box>
+          </HStack>
+        ))}
+      </Stack>
+    </>
+  );
+}
 
 export default LoginModal;

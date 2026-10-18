@@ -2,9 +2,19 @@ import { atom } from 'jotai';
 
 /**
  * Where a login prompt was opened from. Also sent as `source` in the Umami login funnel and
- * accepted by the `?login=<source>` URL param. Add new sources here as callers are wired up.
+ * accepted by the `?login=<source>` URL param. A source can have its own modal copy in
+ * `LOGIN_VARIANTS` (components/Modal/loginModalVariants.ts).
  */
-export const LOGIN_SOURCES = ['header', 'login-page', 'restock-dashboard', 'url'] as const;
+export const LOGIN_SOURCES = [
+  'header',
+  'login-page',
+  'url',
+  'restock-dashboard',
+  'add-to-list',
+  'import',
+  'search',
+  'checklist',
+] as const;
 
 export type LoginSource = (typeof LOGIN_SOURCES)[number];
 
