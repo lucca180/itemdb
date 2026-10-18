@@ -3,6 +3,7 @@
 import { ChakraProvider } from '@chakra-ui/react';
 import { EmotionRegistry } from '@app/EmotionRegistry';
 import { Toaster } from '@components/ui/toaster';
+import { GlobalLoginModal } from '@components/Modal/GlobalLoginModal';
 import { Provider } from 'jotai';
 import type { ReactNode } from 'react';
 import { system } from '@utils/theme/theme';
@@ -26,6 +27,7 @@ export function Providers({ children }: ProvidersProps) {
           <ProgressProvider color="#718096">
             <AuthProvider clientAuthSync={false}>
               {children}
+              <GlobalLoginModal />
               <Toaster />
             </AuthProvider>
           </ProgressProvider>

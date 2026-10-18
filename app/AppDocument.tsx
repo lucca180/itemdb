@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { AppScripts } from '@app/AppScripts';
-import { Providers } from '@app/providers';
 import { inter } from '@utils/theme/fonts';
 import '@utils/global.css';
 
@@ -9,6 +8,10 @@ type AppDocumentProps = {
   children: ReactNode;
 };
 
+/**
+ * html/body shell. Callers render `<Providers>` inside their intl provider (not here), so
+ * AuthProvider and the global LoginModal can use translations.
+ */
 export function AppDocument({ locale, children }: AppDocumentProps) {
   return (
     <html
@@ -19,7 +22,7 @@ export function AppDocument({ locale, children }: AppDocumentProps) {
     >
       <body>
         <AppScripts />
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );

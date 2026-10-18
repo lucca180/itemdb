@@ -1,10 +1,11 @@
 import { useState, useEffect, useContext, createContext, useCallback, ReactNode } from 'react';
-import { atom, useAtom } from 'jotai';
+import { atom, useAtom, useSetAtom } from 'jotai';
 import { atomWithStorage, useHydrateAtoms } from 'jotai/utils';
 import { User, UserPreferences } from '@types';
 import axios from 'axios';
 import { notifyApiSessionSettled, waitForApiSession } from '@utils/api/apiSessionGate';
 import { bootstrapApiSession } from '@utils/api/turnstileSession';
+import { loginRequestAtom, type LoginSource, type OpenLoginOptions } from '@utils/loginModal';
 
 type AuthContextType = {
   user: User | null;
@@ -18,6 +19,8 @@ type AuthContextType = {
   updatePref: (key: keyof UserPreferences, value: UserPreferences[keyof UserPreferences]) => void;
   userPref: UserPreferences | null;
   resetUser: () => Promise<void>;
+  /** Opens the global login modal (rendered once by GlobalLoginModal). */
+  openLogin: (source: LoginSource, options?: OpenLoginOptions) => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -33,6 +36,7 @@ const AuthContext = createContext<AuthContextType>({
   updatePref: () => {},
   userPref: null,
   resetUser: async () => {},
+  openLogin: () => {},
 });
 
 const UserState = atom<User | null | undefined>(null);
@@ -56,6 +60,13 @@ export function AuthProvider({ children, initialUser, clientAuthSync = true }: A
     clientAuthSync && typeof initialUser === 'undefined'
   );
   const [apiSessionReady, setApiSessionReady] = useState(false);
+  const setLoginRequest = useSetAtom(loginRequestAtom);
+
+  // stable, and the modal state lives in its own atom: opening it doesn't re-render useAuth users
+  const openLogin = useCallback(
+    (source: LoginSource, options?: OpenLoginOptions) => setLoginRequest({ source, ...options }),
+    [setLoginRequest]
+  );
 
   const signout = async () => {
     await axios.post('/api/auth/logout');
@@ -141,6 +152,7 @@ export function AuthProvider({ children, initialUser, clientAuthSync = true }: A
         updatePref,
         userPref,
         resetUser,
+        openLogin,
       }}
     >
       {children}

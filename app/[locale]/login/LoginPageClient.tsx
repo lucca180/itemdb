@@ -1,13 +1,12 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { Center, Flex, Field, Input, Text, Spinner, Button, useDisclosure } from '@chakra-ui/react';
+import { Center, Flex, Field, Input, Text, Spinner, Button } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import logoIcon from '@assets/logo_white.svg';
 import axios from 'axios';
 import { useAuth } from '@utils/auth';
-import LoginModal from '@components/Modal/LoginModal';
 import { User } from '@types';
 import { useRouter } from '@i18n/navigation';
 import { getPathLocale, isLocalizableHref, stripLocalePrefix } from '@utils/locales';
@@ -57,11 +56,17 @@ export function LoginPageClient({
   const [needInfo, setNeedInfo] = useState<boolean>(false);
   const [neopetsUser, setNeopetsUser] = useState<string>('');
   const [username, setUsername] = useState<string>('');
-  const { user, authLoading, setUser } = useAuth();
-  const { open: isOpen, onOpen, onClose } = useDisclosure();
+  const { user, authLoading, setUser, openLogin } = useAuth();
   const submittedToken = useRef<string | null>(null);
   // pathname only: the query can carry tokens (e.g. importToken)
   const redirectPath = redirectTo ? resolveLoginRedirect(redirectTo).split('?')[0] : undefined;
+
+  // runs when the global login modal is closed
+  const closeLogin = () => {
+    router.replace(resolveLoginRedirect(redirectTo ?? '/'));
+  };
+
+  const openLoginModal = () => openLogin('login-page', { redirectPath, onClose: closeLogin });
 
   const init = async () => {
     const shouldConsumeToken = !!token && !!emailFromQuery && !user;
@@ -112,7 +117,7 @@ export function LoginPageClient({
 
       router.replace(resolveLoginRedirect(redirect));
     } else {
-      onOpen();
+      openLoginModal();
       setIsLoading(false);
     }
   };
@@ -196,19 +201,8 @@ export function LoginPageClient({
     }
   };
 
-  const closeLogin = () => {
-    onClose();
-    router.replace(resolveLoginRedirect(redirectTo ?? '/'));
-  };
-
   return (
     <>
-      <LoginModal
-        isOpen={isOpen}
-        onClose={closeLogin}
-        source="login-page"
-        redirectPath={redirectPath}
-      />
       <Center h="80vh" flexFlow="column">
         {isLoading && !error && <Spinner size="lg" />}
         {isLoading && !!error && (
@@ -223,7 +217,7 @@ export function LoginPageClient({
             <Text mt={4} color="red.400" textAlign="center">
               {linkError}
             </Text>
-            <Button onClick={onOpen}>{labels.requestNewLink}</Button>
+            <Button onClick={openLoginModal}>{labels.requestNewLink}</Button>
           </Flex>
         )}
 

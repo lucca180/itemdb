@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { routing } from '@i18n/routing';
 import { AppDocument } from '@app/AppDocument';
+import { Providers } from '@app/providers';
 import { buildAppMetadataDefaults } from '@app/utils/appPage';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 
@@ -23,7 +24,9 @@ export default async function LocaleLayout({ children }: LocaleLayoutProps) {
   return (
     <AppDocument locale={locale}>
       <NextIntlClientProvider>
-        <AppServerLayout locale={locale}>{children}</AppServerLayout>
+        <Providers>
+          <AppServerLayout locale={locale}>{children}</AppServerLayout>
+        </Providers>
       </NextIntlClientProvider>
     </AppDocument>
   );

@@ -3,17 +3,14 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDownIcon } from '@utils/theme/chakraIcons';
-import { Box, Button, Icon, Menu, Portal, Text, Flex, useDisclosure } from '@chakra-ui/react';
+import { Box, Button, Icon, Menu, Portal, Text, Flex } from '@chakra-ui/react';
 import { User } from '@types';
 import { refreshSessionCookie, useAuth } from '@utils/auth';
 import { getScriptStatus } from '@utils/scriptUtils';
 import { useTranslations } from 'next-intl';
-import dynamic from 'next/dynamic';
 import MainLink from '@components/Utils/MainLink';
 import { UmamiSessionData } from '@components/Utils/UmamiSessionData';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
-
-const LoginModal = dynamic(() => import('../Modal/LoginModal'));
 
 type AuthButtonProps = {
   initialUser?: User | null;
@@ -21,10 +18,8 @@ type AuthButtonProps = {
 
 export const AuthButton = (props: AuthButtonProps) => {
   const t = useTranslations();
-  const { user: authUser, signout, authLoading } = useAuth();
+  const { user: authUser, signout, authLoading, openLogin } = useAuth();
   const { initialUser } = props;
-
-  const { open: isOpen, onOpen, onClose } = useDisclosure();
 
   const user = authUser ?? initialUser;
   // Avoid SSR mismatch: LayoutAuthServer already resolved initialUser (User | null).
@@ -33,7 +28,6 @@ export const AuthButton = (props: AuthButtonProps) => {
   return (
     <>
       <UmamiSessionData loggedIn={isResolving ? undefined : !!user} />
-      {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} source="header" />}
       <Box
         display="flex"
         gap={{ base: 1, md: 3 }}
@@ -47,7 +41,7 @@ export const AuthButton = (props: AuthButtonProps) => {
             variant="subtle"
             colorPalette="whiteAlpha"
             _hover={{ bg: 'gray.600' }}
-            onClick={onOpen}
+            onClick={() => openLogin('header')}
             aria-label={t('Layout.login')}
             px={{ base: 0, md: 4 }}
             loading={isResolving}

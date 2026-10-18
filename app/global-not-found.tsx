@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { IntlProvider } from '@app/[locale]/IntlProvider';
 import { AppDocument } from '@app/AppDocument';
+import { Providers } from '@app/providers';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import { NotFoundContent } from '@components/Error/NotFoundContent';
@@ -34,10 +35,12 @@ async function GlobalNotFoundContent() {
   return (
     <AppDocument locale={locale}>
       <IntlProvider locale={locale} messages={messages}>
-        <AppServerLayout locale={locale} hardNavigation>
-          <SetMainColor color="#ff6464c7" />
-          <NotFoundContent />
-        </AppServerLayout>
+        <Providers>
+          <AppServerLayout locale={locale} hardNavigation>
+            <SetMainColor color="#ff6464c7" />
+            <NotFoundContent />
+          </AppServerLayout>
+        </Providers>
       </IntlProvider>
     </AppDocument>
   );

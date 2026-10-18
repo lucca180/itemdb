@@ -16,6 +16,7 @@ import { installApiSessionInterceptor } from '@utils/api/apiSessionInterceptor';
 import { getLocalizedHref, VALID_LOCALES, type AppLocale } from '@utils/locales';
 import { system } from '@utils/theme/theme';
 import { Toaster } from '@components/ui/toaster';
+import { GlobalLoginModal } from '@components/Modal/GlobalLoginModal';
 
 if (typeof window !== 'undefined') {
   installApiSessionInterceptor();
@@ -40,14 +41,15 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <ChakraProvider value={system}>
       <Provider>
-        <AuthProvider>
-          <NextIntlClientProvider
-            locale={locale}
-            messages={pageProps.messages}
-            timeZone={'America/Los_Angeles'}
-            now={new Date()}
-            onError={(e) => onIntlError(e, { path: router.asPath })}
-          >
+        {/* AuthProvider inside intl so the global LoginModal can translate */}
+        <NextIntlClientProvider
+          locale={locale}
+          messages={pageProps.messages}
+          timeZone={'America/Los_Angeles'}
+          now={new Date()}
+          onError={(e) => onIntlError(e, { path: router.asPath })}
+        >
+          <AuthProvider>
             <Head>
               {VALID_LOCALES.map((alternateLocale) => (
                 <link
@@ -63,6 +65,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             <NextNProgress color="#718096" showOnShallow={true} />
             <DefaultSeo {...getDefaultSEO(locale)} />
             {getLayout(<Component {...pageProps} />, pageProps)}
+            <GlobalLoginModal />
             <Toaster />
             <Script
               src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/plutonita.js'}
@@ -83,8 +86,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                     return payload;
                 }`}
             </Script>
-          </NextIntlClientProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </NextIntlClientProvider>
       </Provider>
     </ChakraProvider>
   );
