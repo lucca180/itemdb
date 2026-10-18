@@ -148,6 +148,16 @@ export function AuthProvider({ children, initialUser, clientAuthSync = true }: A
   );
 }
 
+/**
+ * App Router: re-issues the `session` cookie through /api/auth/me, which refreshes it when it's
+ * near expiry. Server Components can't set cookies, so the SSR refresh would be dropped.
+ */
+export const refreshSessionCookie = () =>
+  axios
+    .get('/api/auth/me')
+    .then(() => {})
+    .catch(() => {});
+
 export const useAuth = () => {
   return useContext(AuthContext);
 };

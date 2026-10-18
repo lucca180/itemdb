@@ -48,10 +48,12 @@ itemdb uses a **email magic link** flow. There are no passwords. Users receive a
 |-----------|-------|
 | Name      | `session` |
 | Algorithm | HS256 (via [jose](https://github.com/panva/jose)) |
-| Expiry    | 13 days |
-| Refresh   | Transparently reissued by `GET /api/auth/me` when < 7 days remain |
-| Flags     | `HttpOnly`, `Secure`, `SameSite=Strict` |
-| Payload   | `{ uid, email, role, iat, exp }` |
+| Expiry    | 100 days |
+| Refresh   | Reissued by `GET /api/auth/me` when < 30 days remain or `sessionVersion` is outdated |
+| Flags     | `HttpOnly`, `Secure`, `SameSite=Lax` |
+| Payload   | `{ uid, email, role, sessionVersion, iat, exp }` |
+
+App Router pages never call `/api/auth/me` on their own: `LayoutAuthServer` detects that the cookie needs a refresh (`getServerCurrentUser().refreshedSessionCookie`) and passes `needsSessionRefresh` to `LayoutAuth`, which calls `refreshSessionCookie()` (Server Components can't set cookies).
 
 The secret is read from the `JWT_SECRET` environment variable. See `.env.default` for the required format.
 
@@ -72,7 +74,7 @@ if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
 ## Client-side auth (`AuthProvider`)
 
-`utils/auth.tsx` wraps the app in an `AuthProvider`. On mount it calls `GET /api/auth/me` to bootstrap the user state. The result is stored in `sessionStorage` via Jotai (`UserState` atom) so it persists across client-side navigations but is cleared on tab close.
+`utils/auth.tsx` wraps the app in an `AuthProvider`. In the Pages Router it calls `GET /api/auth/me` on mount to bootstrap the user state; in the App Router (`clientAuthSync={false}`) the user comes from SSR via `LayoutAuth`. The result is stored in `sessionStorage` via Jotai (`UserState` atom) so it persists across client-side navigations but is cleared on tab close.
 
 ```
 page load
@@ -80,7 +82,7 @@ page load
     ▼
 GET /api/auth/me
     ├─ 200 → setUser(data), setAuthLoading(false)
-    │         (cookie silently refreshed if < 7 days remain)
+    │         (cookie silently refreshed if < 30 days remain)
     └─ 401 → setUser(null), setAuthLoading(false)
 ```
 

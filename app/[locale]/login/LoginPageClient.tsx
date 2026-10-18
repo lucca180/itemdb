@@ -11,9 +11,18 @@ import LoginModal from '@components/Modal/LoginModal';
 import { User } from '@types';
 import { useRouter } from '@i18n/navigation';
 import { getPathLocale, isLocalizableHref, stripLocalePrefix } from '@utils/locales';
+import { trackEventWhenReady } from '@utils/umami';
 import type { LoginPageLabels } from './buildLoginPageProps';
 
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Tokens are single-use: drop them from the URL so a reload doesn't resubmit (or track) them. */
+function dropTokenFromUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('token');
+  url.searchParams.delete('email');
+  window.history.replaceState(null, '', url.toString());
+}
 
 /** Internal app path for `@i18n/navigation` (locale applied by the router). */
 function resolveLoginRedirect(redirectTo: string | undefined) {
@@ -51,6 +60,8 @@ export function LoginPageClient({
   const { user, authLoading, setUser } = useAuth();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const submittedToken = useRef<string | null>(null);
+  // pathname only: the query can carry tokens (e.g. importToken)
+  const redirectPath = redirectTo ? resolveLoginRedirect(redirectTo).split('?')[0] : undefined;
 
   const init = async () => {
     const shouldConsumeToken = !!token && !!emailFromQuery && !user;
@@ -70,6 +81,9 @@ export function LoginPageClient({
         });
 
         const userData = userRes.data as User;
+        dropTokenFromUrl();
+        // no username yet = first sign-in, the profile step comes next
+        trackEventWhenReady('login-success', { needsProfile: !userData.username });
 
         if (!userData.neopetsUser || !userData.username) {
           setNeopetsUser(userData.neopetsUser || '');
@@ -82,13 +96,9 @@ export function LoginPageClient({
         router.replace(resolveLoginRedirect(redirect));
       } catch (e: any) {
         const isInvalidLink = e.response?.data?.code === 'invalid-token';
+        dropTokenFromUrl();
+        trackEventWhenReady('login-link-error', { invalidLink: isInvalidLink });
         setLinkError(isInvalidLink ? labels.invalidLink : (e.response?.data?.error ?? e.message));
-
-        // tokens are single-use: drop it from the URL so a reload doesn't resubmit it
-        const url = new URL(window.location.href);
-        url.searchParams.delete('token');
-        url.searchParams.delete('email');
-        window.history.replaceState(null, '', url.toString());
 
         setIsLoading(false);
       }
@@ -176,6 +186,7 @@ export function LoginPageClient({
         return setNeedInfo(true);
       }
 
+      trackEventWhenReady('login-profile-completed');
       setUser(userData);
       router.replace(resolveLoginRedirect(redirect));
     } catch (e: any) {
@@ -192,7 +203,12 @@ export function LoginPageClient({
 
   return (
     <>
-      <LoginModal isOpen={isOpen} onClose={closeLogin} />
+      <LoginModal
+        isOpen={isOpen}
+        onClose={closeLogin}
+        source="login-page"
+        redirectPath={redirectPath}
+      />
       <Center h="80vh" flexFlow="column">
         {isLoading && !error && <Spinner size="lg" />}
         {isLoading && !!error && (

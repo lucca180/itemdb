@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDownIcon } from '@utils/theme/chakraIcons';
 import { Box, Button, Icon, Menu, Portal, Text, Flex, useDisclosure } from '@chakra-ui/react';
 import { User } from '@types';
-import { useAuth } from '@utils/auth';
+import { refreshSessionCookie, useAuth } from '@utils/auth';
 import { getScriptStatus } from '@utils/scriptUtils';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -33,7 +33,7 @@ export const AuthButton = (props: AuthButtonProps) => {
   return (
     <>
       <UmamiSessionData loggedIn={isResolving ? undefined : !!user} />
-      {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
+      {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} source="header" />}
       <Box
         display="flex"
         gap={{ base: 1, md: 3 }}
@@ -199,9 +199,11 @@ const ScriptStatus = () => {
 
 type LayoutAuthProps = {
   initialUser?: User | null;
+  /** The SSR session cookie is near expiry (or outdated) and must be re-issued. */
+  needsSessionRefresh?: boolean;
 };
 
-export function LayoutAuth({ initialUser }: LayoutAuthProps) {
+export function LayoutAuth({ initialUser, needsSessionRefresh }: LayoutAuthProps) {
   const router = useRouter();
   const pathname = usePathname() ?? '/';
   const { user, hydrateFromSSR } = useAuth();
@@ -213,6 +215,10 @@ export function LayoutAuth({ initialUser }: LayoutAuthProps) {
       hydrateFromSSR(initialUser);
     }
   }, [hydrateFromSSR, initialUser]);
+
+  useEffect(() => {
+    if (needsSessionRefresh) void refreshSessionCookie();
+  }, [needsSessionRefresh]);
 
   useEffect(() => {
     if (!resolvedUser) {

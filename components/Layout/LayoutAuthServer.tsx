@@ -9,7 +9,9 @@ import prisma from '@utils/prisma';
 export async function LayoutAuthServer() {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('session')?.value;
-  const { user } = sessionCookie ? await getServerCurrentUser() : { user: null };
+  const { user, refreshedSessionCookie } = sessionCookie
+    ? await getServerCurrentUser()
+    : { user: null, refreshedSessionCookie: null };
 
   if (user) {
     // Request APIs can't be read inside `after` in Server Components, so grab headers first.
@@ -38,5 +40,6 @@ export async function LayoutAuthServer() {
     });
   }
 
-  return <LayoutAuth initialUser={user} />;
+  // Server Components can't set cookies, so the client re-issues it (see LayoutAuth).
+  return <LayoutAuth initialUser={user} needsSessionRefresh={!!refreshedSessionCookie} />;
 }

@@ -13,14 +13,19 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BsCheckCircleFill } from 'react-icons/bs';
 import logoIcon from '../../public/logo_white.svg';
 import { useTranslations } from 'next-intl';
+import { trackEventWhenReady } from '@utils/umami';
 
 export type LoginModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  /** Where the modal was opened from (Umami login funnel), e.g. `header` or `login-page`. */
+  source: string;
+  /** Page the user returns to after logging in (pathname only), when known. */
+  redirectPath?: string;
 };
 
 type SendLinkResponse = {
@@ -38,7 +43,7 @@ const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const LoginModal = (props: LoginModalProps) => {
   const t = useTranslations();
-  const { isOpen, onClose } = props;
+  const { isOpen, onClose, source, redirectPath } = props;
   const [cred, setCred] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -52,6 +57,24 @@ const LoginModal = (props: LoginModalProps) => {
       ? t('Login.title-create-account')
       : t('Login.title-sign-in');
 
+  // login funnel: open → (new-account prompt) → link sent; never send the typed credential
+  const funnelData: Record<string, string> = redirectPath
+    ? { source, redirect: redirectPath }
+    : { source };
+
+  // once per opening (effects run twice under StrictMode)
+  const trackedOpen = useRef(false);
+  useEffect(() => {
+    if (!isOpen) {
+      trackedOpen.current = false;
+      return;
+    }
+
+    if (trackedOpen.current) return;
+    trackedOpen.current = true;
+    trackEventWhenReady('login-open', funnelData);
+  }, [isOpen]);
+
   const doLogin = async (confirmNewAccount = false) => {
     if (isSent) return onClose();
 
@@ -62,6 +85,7 @@ const LoginModal = (props: LoginModalProps) => {
       const data = await sendEmail(cred, confirmNewAccount);
 
       if (data.needsConfirmation) {
+        trackEventWhenReady('login-new-account-prompt', funnelData);
         setNeedsConfirmation(true);
         setIsLoading(false);
         return;
@@ -69,12 +93,23 @@ const LoginModal = (props: LoginModalProps) => {
 
       if (cred.match(mailRegex)) window.localStorage.setItem('emailForSignIn', cred);
 
+      trackEventWhenReady('login-link-sent', {
+        ...funnelData,
+        mode: data.mode === 'username' ? 'username' : 'email',
+        newAccount: confirmNewAccount,
+      });
+
       setSentMode(data.mode === 'username' ? 'username' : 'email');
       setNeedsConfirmation(false);
       setIsSent(true);
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const data = e.response?.data as SendLinkResponse | undefined;
+        trackEventWhenReady('login-error', {
+          ...funnelData,
+          code: data?.code ?? String(e.response?.status ?? 'network'),
+        });
+
         if (e.response?.status === 429 || data?.code === 'rate-limited') {
           setError(t('Login.rate-limited'));
         } else {
