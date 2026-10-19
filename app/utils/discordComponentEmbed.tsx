@@ -81,7 +81,8 @@ export type DiscordComponentEmbedPayload = {
 };
 
 /** "#a1b2c3" -> 10597059, Discord's expected decimal color format. */
-export function hexToDiscordColor(hex: string): number | undefined {
+export function hexToDiscordColor(hex: string | null | undefined): number | undefined {
+  if (!hex) return undefined;
   const normalized = hex.replace('#', '');
   if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return undefined;
   return parseInt(normalized, 16);
