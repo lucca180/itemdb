@@ -4,8 +4,8 @@ import prisma from '@utils/prisma';
 import { CheckAuth } from '@utils/googleCloud';
 import { TradeData } from '@types';
 import { FEEDBACK_VOTE_TARGET, getVoteMultiplier } from '@pages/api/feedback/vote';
+import { isNewFeedbackAccount } from '@utils/feedback/voteRules';
 
-const MIN_ACCOUNT_AGE = 7 * 24 * 60 * 60 * 1000;
 const MAX_SUPPORTED_PRICE = 99999999999;
 
 type TradeFeedbackBody = {
@@ -24,7 +24,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (user.banned) return res.status(403).json({ success: false, message: 'Forbidden' });
 
   const isAdmin = user.role === 'ADMIN';
-  if (!isAdmin && Date.now() - new Date(user.createdAt).getTime() < MIN_ACCOUNT_AGE)
+  if (isNewFeedbackAccount(user))
     return res.status(403).json({ success: false, message: 'Account too new' });
 
   const body = req.body as TradeFeedbackBody;

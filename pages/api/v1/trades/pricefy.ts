@@ -5,6 +5,7 @@ import Chance from 'chance';
 const chance = new Chance();
 import { Prisma } from '@prisma/generated/client';
 import { subDays } from 'date-fns';
+import { CheckAuth } from '@utils/googleCloud';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -13,6 +14,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  const { user } = await CheckAuth(req);
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+  if (user.banned) return res.status(403).json({ error: 'Forbidden' });
 
   let order: Prisma.TradesOrderByWithRelationInput = { addedAt: 'asc' };
 

@@ -5,20 +5,16 @@ import { CheckAuth } from '@utils/googleCloud';
 import { Feedbacks } from '@prisma/generated/client';
 import { processTags } from '@pages/api/v1/items/[id_name]/index';
 import { processTradePrice } from '@pages/api/v1/trades';
+import {
+  FeedbackDecision,
+  getFeedbackDecision,
+  isNewFeedbackAccount,
+} from '@utils/feedback/voteRules';
 
+// also used for xp rewards/penalties and the admin vote weight (FEEDBACK_VOTE_TARGET * 2)
 export const FEEDBACK_VOTE_TARGET = 7;
 export const MAX_VOTE_MULTIPLIER = 3;
 export const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
-
-const isAutoFeedback = (feedback: Feedbacks) => {
-  if (feedback.user_id === AUTO_PRICE_UID) return true;
-  try {
-    const parsed = JSON.parse(feedback.json as string) as FeedbackParsed;
-    return parsed.pageRef === 'auto' || !!parsed.auto_ref;
-  } catch {
-    return false;
-  }
-};
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -27,6 +23,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const action = req.body.action as string;
 
   if (!feedback_id || !action) return res.status(400).json({ error: 'Missing required fields' });
+  if (action !== 'upvote' && action !== 'downvote')
+    return res.status(400).json({ error: 'Invalid action' });
 
   const { user } = await CheckAuth(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
@@ -34,8 +32,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const user_id = user.id;
   const isAdmin = user.role === 'ADMIN';
-  const isNewAccount =
-    !isAdmin && Date.now() - new Date(user.createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isNewAccount = isNewFeedbackAccount(user);
   let voteMultiplier = isAdmin
     ? FEEDBACK_VOTE_TARGET * 2
     : isNewAccount
@@ -53,10 +50,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           select: { vote_id: true },
           take: 1,
         },
+        user: { select: { role: true } },
       },
     });
 
     if (!feedbackRaw) return res.status(404).json({ error: 'Feedback not found' });
+
+    // new accounts can only help with auto priced feedbacks
+    if (isNewAccount && feedbackRaw.user_id !== AUTO_PRICE_UID)
+      return res.status(403).json({ error: 'Account too new' });
 
     if (feedbackRaw.vote.length)
       return res.status(409).json({ error: 'You have already voted on this feedback' });
@@ -100,11 +102,24 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     const [feedbacks] = await prisma.$transaction([feedback, vote]);
 
-    if (
-      !feedbacks.processed &&
-      (feedbacks.votes >= FEEDBACK_VOTE_TARGET || feedbacks.votes <= -FEEDBACK_VOTE_TARGET)
-    ) {
-      await commitChanges(feedbacks, req);
+    if (!feedbacks.processed) {
+      const allVotes = await prisma.feedbackVotes.findMany({
+        where: { feedback_id: feedbacks.feedback_id },
+        select: { user_id: true, approve: true, user: { select: { role: true } } },
+      });
+
+      const decision = getFeedbackDecision({
+        score: feedbacks.votes,
+        submitterId: feedbacks.user_id,
+        submitterIsAdmin: feedbackRaw.user?.role === 'ADMIN',
+        votes: allVotes.map((v) => ({
+          user_id: v.user_id,
+          approve: v.approve,
+          isAdmin: v.user?.role === 'ADMIN',
+        })),
+      });
+
+      if (decision) await commitChanges(feedbacks, decision, req);
     }
 
     res.json({ success: true });
@@ -122,9 +137,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 // ------- COMMIT CHANGES -------- //
 
 // so, race conditions could make this exec twice, but it's not a big deal (i guess)
-const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
+const commitChanges = async (
+  feedback: Feedbacks,
+  decision: NonNullable<FeedbackDecision>,
+  req?: NextApiRequest
+) => {
   // Feedback Rejected
-  if (feedback.votes <= -FEEDBACK_VOTE_TARGET) {
+  if (decision === 'reject') {
     // ------- Handlers -------- //
 
     if (feedback.type === 'tradePrice') await commitTradePrice(feedback, false, req);
@@ -155,9 +174,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
     });
 
-    // Auto rejection: harder hit for rubber-stamp ups, bonus for catching bad copies
-    const isAuto = isAutoFeedback(feedback);
-
+    // same hit as the submitter - upvoting everything must not pay off
     const approveVotes = prisma.user.updateMany({
       where: {
         votes: {
@@ -169,7 +186,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          decrement: isAuto ? 50 : FEEDBACK_VOTE_TARGET * 5,
+          decrement: FEEDBACK_VOTE_TARGET * 10, // -70
         },
       },
     });
@@ -185,7 +202,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          increment: isAuto ? 20 : 15,
+          increment: 15,
         },
       },
     });
@@ -196,7 +213,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
   }
 
   // Feedback Approved
-  if (feedback.votes >= FEEDBACK_VOTE_TARGET) {
+  if (decision === 'approve') {
     // ------- Handlers -------- //
 
     if (feedback.type === 'tradePrice') await commitTradePrice(feedback, true, req);

@@ -5,6 +5,7 @@ import { CheckAuth } from '@utils/googleCloud';
 import requestIp from 'request-ip';
 import { Feedbacks } from '@prisma/generated/client';
 import { AUTO_PRICE_UID } from '@pages/api/feedback/vote';
+import { isNewFeedbackAccount } from '@utils/feedback/voteRules';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -24,26 +25,37 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
+  if (user.banned) return res.status(403).json({ error: 'Forbidden' });
+
   const user_id = user.id;
+  // new accounts can only vote on auto priced feedbacks
+  const onlyAuto = isNewFeedbackAccount(user);
 
   let feedbackRaw: Feedbacks[] = [];
 
   if (order === 'wishlist' && !wishlist) {
     const wishlists = await getWishlists(parseInt(limit));
-    wishlist = wishlists[0].wishlist;
+    wishlist = wishlists[0]?.wishlist;
   }
 
   if (wishlist) {
-    feedbackRaw = await getTradeFeedbackWishlist(wishlist, parseInt(limit), user_id, skipList);
+    feedbackRaw = await getTradeFeedbackWishlist(
+      wishlist,
+      parseInt(limit),
+      user_id,
+      skipList,
+      onlyAuto
+    );
   }
 
   if (target) {
-    feedbackRaw = await getTradeFeedback(target, parseInt(limit), user_id, skipList);
+    feedbackRaw = await getTradeFeedback(target, parseInt(limit), user_id, skipList, onlyAuto);
   }
 
   if (!feedbackRaw.length) {
     feedbackRaw = await prisma.feedbacks.findMany({
       where: {
+        ...(onlyAuto ? { user_id: AUTO_PRICE_UID } : {}),
         processed: includeProcessed,
         OR: [{ user_id: { not: user_id } }, { user_id: null }],
         type: {
@@ -123,10 +135,11 @@ const getTradeFeedback = async (
   itemName: string,
   limit: number,
   user_id: string,
-  skipList: number[]
+  skipList: number[],
+  onlyAuto: boolean
 ) => {
   const feedbackIds = (await prisma.$queryRaw`
-    SELECT f.feedback_id FROM feedbacks f 
+    SELECT f.feedback_id FROM feedbacks f
     left join trades t on f.subject_id = t.trade_id and f.type = 'tradePrice'
     left join tradeitems ti on t.trade_id = ti.trade_id
     left join items i on ti.item_iid = i.internal_id
@@ -139,9 +152,7 @@ const getTradeFeedback = async (
         in: feedbackIds.map((f) => f.feedback_id),
         notIn: skipList.filter((id) => !Number.isNaN(id)),
       },
-      user_id: {
-        not: user_id,
-      },
+      user_id: onlyAuto ? AUTO_PRICE_UID : { not: user_id },
       vote: {
         none: {
           user_id: user_id,
@@ -159,10 +170,11 @@ const getTradeFeedbackWishlist = async (
   wishlist: string,
   limit: number,
   user_id: string,
-  skipList: number[]
+  skipList: number[],
+  onlyAuto: boolean
 ) => {
   const feedbackIds = (await prisma.$queryRaw`
-    SELECT f.feedback_id FROM feedbacks f 
+    SELECT f.feedback_id FROM feedbacks f
     left join trades t on f.subject_id = t.trade_id and f.type = 'tradePrice'
     left join tradeitems ti on t.trade_id = ti.trade_id
     where f.type = 'tradePrice' and t.wishlist = ${wishlist} and f.processed = 0
@@ -174,9 +186,7 @@ const getTradeFeedbackWishlist = async (
         in: feedbackIds.map((f) => f.feedback_id),
         notIn: skipList.filter((id) => !Number.isNaN(id)),
       },
-      user_id: {
-        not: user_id,
-      },
+      user_id: onlyAuto ? AUTO_PRICE_UID : { not: user_id },
       vote: {
         none: {
           user_id: user_id,
