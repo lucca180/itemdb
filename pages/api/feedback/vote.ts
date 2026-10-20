@@ -8,9 +8,10 @@ import { processTradePrice } from '@pages/api/v1/trades';
 
 export const FEEDBACK_VOTE_TARGET = 7;
 export const MAX_VOTE_MULTIPLIER = 3;
+export const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
 
 const isAutoFeedback = (feedback: Feedbacks) => {
-  if (feedback.user_id === 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1') return true;
+  if (feedback.user_id === AUTO_PRICE_UID) return true;
   try {
     const parsed = JSON.parse(feedback.json as string) as FeedbackParsed;
     return parsed.pageRef === 'auto' || !!parsed.auto_ref;

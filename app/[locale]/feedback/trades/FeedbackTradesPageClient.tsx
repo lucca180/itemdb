@@ -141,17 +141,10 @@ export function FeedbackTradesPageClient({
 
     if (user.role === 'ADMIN') return handleSubmitAdmin(trade);
 
-    const feedbackJSON = {
-      trade: trade,
-    };
-
     try {
-      const res = await axios.post('/api/feedback/send', {
-        pageInfo: '/feedback/trades',
-        subject_id: trade.trade_id,
-        user_id: user.id,
-        type: 'tradePrice',
-        json: JSON.stringify(feedbackJSON),
+      const res = await axios.post('/api/feedback/trade', {
+        trade_id: trade.trade_id,
+        items: trade.items.map((item) => ({ internal_id: item.internal_id, price: item.price })),
       });
 
       if (res.data.success) await handleSkip(true);

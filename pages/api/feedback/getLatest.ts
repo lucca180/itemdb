@@ -4,6 +4,7 @@ import { FeedbackParsed, TradeData } from '@types';
 import { CheckAuth } from '@utils/googleCloud';
 import requestIp from 'request-ip';
 import { Feedbacks } from '@prisma/generated/client';
+import { AUTO_PRICE_UID } from '@pages/api/feedback/vote';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -91,11 +92,32 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const parsed = JSON.parse(json) as FeedbackParsed;
 
     if (ip_address === parsed.ip) continue;
-    feedbacks.push(fixTrade(feedback, itemData));
+    feedbacks.push(sanitizeFeedback(fixTrade(feedback, itemData)));
   }
 
   res.json(feedbacks);
 }
+
+// voters must not see who sent it (ip, email, user id) - only whether it was the auto pricer
+const sanitizeFeedback = (feedback: Feedbacks) => {
+  const parsed = JSON.parse(feedback.json as string) as Partial<FeedbackParsed>;
+  delete parsed.ip;
+
+  const trade = parsed.content?.trade as
+    (TradeData & { ip_address?: unknown; ownerHash?: unknown }) | undefined;
+  if (trade) {
+    delete trade.ip_address;
+    delete trade.ownerHash;
+  }
+
+  return {
+    ...feedback,
+    json: JSON.stringify(parsed),
+    ip_address: '',
+    email: null,
+    user_id: feedback.user_id === AUTO_PRICE_UID ? feedback.user_id : null,
+  };
+};
 
 const getTradeFeedback = async (
   itemName: string,

@@ -40,7 +40,6 @@ export default function ReportFeedbackModal(props: ReportFeedbackModalProps) {
         json: JSON.stringify({
           message: reason,
           reportAuthor: user.id,
-          feedbackAuthor: feedback.user_id,
           feedbackId: feedback.feedback_id,
         }),
         type: 'reportFeedback',

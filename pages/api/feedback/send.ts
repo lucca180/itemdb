@@ -2,26 +2,37 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
 import { Resend } from 'resend';
-import { FEEDBACK_VOTE_TARGET, getVoteMultiplier, MAX_VOTE_MULTIPLIER } from './vote';
-import { TradeData } from '../../../types';
-import { processTradePrice } from '../v1/trades';
+import { FEEDBACK_VOTE_TARGET, getVoteMultiplier } from './vote';
+import { User } from '@types';
 import { Webhook, EmbedBuilder } from '@tycrek/discord-hookr';
 import { getItem } from '../v1/items/[id_name]';
-import { User } from '@prisma/generated/client';
-import { isUserBanned } from '@utils/auth/feedbackXp';
+import { CheckAuth } from '@utils/googleCloud';
+
+// tradePrice has its own endpoint (/api/feedback/trade)
+const ALLOWED_TYPES = [
+  'feedback',
+  'officialApply',
+  'reportFeedback',
+  'priceReport',
+  'saleStatus',
+  'itemChange',
+];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { email, json, user_id, type, subject_id } = req.body;
+  const { email, json, type, subject_id } = req.body;
   let { pageInfo } = req.body;
 
   if (!json || !type) return res.status(400).send('Missing required fields');
+  if (!ALLOWED_TYPES.includes(type)) return res.status(400).send('Invalid type');
 
-  if (type === 'tradePrice') {
-    if (!subject_id || isNaN(parseInt(subject_id)) || !user_id)
-      return res.status(400).send('Missing required fields');
-  }
+  // the author always comes from the session - body user_id is only checked against it
+  const { user } = await CheckAuth(req);
+  if (req.body.user_id && req.body.user_id !== user?.id)
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+  const user_id = user?.id;
 
   const parsed = JSON.parse(json ?? '{}');
 
@@ -35,46 +46,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     content: parsed,
   };
 
-  let shoudContinue = true;
   let voteMultiplier = 0;
-  let user = null;
-  if (user_id) {
-    user = await prisma.user.findUnique({
-      where: {
-        id: user_id,
-      },
-    });
+  if (user) {
+    if (user.role === 'ADMIN') voteMultiplier = FEEDBACK_VOTE_TARGET * 2;
+    else voteMultiplier = getVoteMultiplier(user.xp);
 
-    if (user) {
-      if (user.role === 'ADMIN') voteMultiplier = FEEDBACK_VOTE_TARGET * 2;
-      else voteMultiplier = getVoteMultiplier(user.xp);
-
-      if (isUserBanned(user) && type !== 'feedback') {
-        return res.status(403).send('Forbidden');
-      }
-
-      if (
-        type === 'tradePrice' &&
-        user.role !== 'ADMIN' &&
-        Date.now() - user.createdAt.getTime() < 7 * 24 * 60 * 60 * 1000
-      ) {
-        return res.status(403).json({ success: false, message: 'Account too new' });
-      }
+    if (user.banned && type !== 'feedback') {
+      return res.status(403).send('Forbidden');
     }
-  }
-
-  if (type === 'tradePrice') {
-    // cool neggs is an issue...
-    if (parsed.trade.wishlist.toLowerCase().includes('cool negg') && user?.role !== 'ADMIN') {
-      voteMultiplier = 1;
-    }
-
-    shoudContinue = await processTradeFeedback(
-      parsed.trade as TradeData,
-      parseInt(subject_id),
-      user_id,
-      voteMultiplier >= MAX_VOTE_MULTIPLIER
-    );
   }
 
   if (type === 'feedback') {
@@ -107,8 +86,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (count > 10) return res.status(429).json({ success: false, message: 'Too many requests' });
   }
 
-  if (!shoudContinue) return res.status(200).json({ success: true, message: 'already processed' });
-
   const result = await prisma.feedbacks.create({
     data: {
       email: email ?? '',
@@ -119,9 +96,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       ip_address: ip ?? '1',
       user_id: user_id ?? undefined,
     },
-    include: {
-      user: true,
-    },
+    select: { feedback_id: true },
   });
 
   if (type === 'feedback' || type === 'officialApply' || type === 'reportFeedback') {
@@ -139,57 +114,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
   }
 
-  return res.status(200).json({ success: true, message: result });
+  return res.status(200).json({ success: true, message: { feedback_id: result.feedback_id } });
 }
-
-const processTradeFeedback = async (
-  trade: TradeData,
-  trade_id: number,
-  user_id: string,
-  trust: boolean
-) => {
-  const tradeFeedback = await prisma.feedbacks.findFirst({
-    where: { type: 'tradePrice', subject_id: trade_id, processed: false },
-  });
-
-  await prisma.trades.update({
-    where: { trade_id: trade_id },
-    data: {
-      processed: true,
-    },
-  });
-
-  if (tradeFeedback) {
-    if (tradeFeedback.user_id === user_id) {
-      await prisma.feedbacks.delete({
-        where: {
-          feedback_id: tradeFeedback.feedback_id,
-        },
-      });
-
-      return true;
-    }
-
-    return false;
-  }
-
-  if (!trust || trade.items.length === 1) return true;
-
-  const isAllItemsTheSame = trade.items.every(
-    (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
-  );
-
-  const isAllSamePrice = trade.items.every((i) => i.price === trade.items[0].price && !!i.price);
-
-  const isAllEmpty = trade.items.every((item) => !item.price);
-
-  if ((isAllEmpty && !isAllItemsTheSame) || (isAllItemsTheSame && isAllSamePrice)) {
-    await processTradePrice(trade);
-    return false;
-  }
-
-  return true;
-};
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const resend = new Resend(RESEND_API_KEY);
