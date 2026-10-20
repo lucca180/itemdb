@@ -276,7 +276,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
-  await processTradePrice(trade, req);
+  await processTradePrice(trade, requestIp.getClientIp(req));
 
   return res.status(200).json({ success: true, message: false });
 };
@@ -285,7 +285,8 @@ const MAX_SUPPORTED_NUMBER = 99999999999;
 
 export const processTradePrice = async (
   trade: TradeData | (Trades & { items: TradeItems[] }),
-  req?: NextApiRequest
+  /** ip of whoever caused the pricing (stored on the price process rows) */
+  ip?: string | null
 ) => {
   let tradeHash = trade.hash;
 
@@ -445,7 +446,7 @@ export const processTradePrice = async (
       owner: item.trade.owner,
       ownerHash: item.trade.ownerHash,
       addedAt: item.trade.addedAt,
-      ip_address: req ? requestIp.getClientIp(req) : undefined,
+      ip_address: ip ?? undefined,
     });
   }
 

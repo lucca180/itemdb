@@ -1,7 +1,7 @@
 import { CheckAuth } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { submitMailFeedback } from '../feedback/send';
+import { submitMailFeedback } from '@services/feedback/feedbackNotify';
 import requestIp from 'request-ip';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);

@@ -1,3 +1,15 @@
+/** Base unit for xp rewards/penalties; the admin vote weight is FEEDBACK_VOTE_TARGET * 2. */
+export const FEEDBACK_VOTE_TARGET = 7;
+
+/** Max vote weight a regular user can reach from xp. */
+export const MAX_VOTE_MULTIPLIER = 3;
+
+/** Account used by the auto pricer to submit trade price feedbacks. */
+export const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
+
+export const getVoteMultiplier = (userXP: number) =>
+  Math.max(1, Math.min(Math.floor(userXP / 2000), MAX_VOTE_MULTIPLIER));
+
 /** Score needed (submitter's initial votes + vote weights) to approve a feedback. */
 export const APPROVE_VOTE_TARGET = 5;
 

@@ -1,32 +1,32 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextRequest } from 'next/server';
 import prisma from '@utils/prisma';
-import { FeedbackParsed, TradeData } from '@types';
-import { CheckAuth } from '@utils/googleCloud';
-import requestIp from 'request-ip';
-import { Feedbacks } from '@prisma/generated/client';
-import { AUTO_PRICE_UID } from '@pages/api/feedback/vote';
-import { isNewFeedbackAccount } from '@utils/feedback/voteRules';
+import type { FeedbackParsed, TradeData } from '@types';
+import type { Feedbacks } from '@prisma/generated/client';
+import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { getRequestClientIp } from '@utils/api/clientIp';
+import { AUTO_PRICE_UID, isNewFeedbackAccount } from '@utils/feedback/voteRules';
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+export async function GET(request: NextRequest) {
+  const query = request.nextUrl.searchParams;
 
-  const limit = (req.query.limit as string) ?? '30';
+  const limit = parseInt(query.get('limit') ?? '30') || 30;
+  const includeProcessed = query.get('includeProcessed') === 'true';
+  const target = query.get('itemName');
+  let wishlist = query.get('wishlist');
+  const order = query.get('order');
+  const skipList = query.get('skipList')
+    ? query
+        .get('skipList')!
+        .split(',')
+        .map(Number)
+        .filter((id) => !Number.isNaN(id))
+    : [];
 
-  const ip_address = requestIp.getClientIp(req);
+  const { user } = await getServerCurrentUser();
+  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (user.banned) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-  const includeProcessed = req.query.includeProcessed === 'true';
-  const target = req.query.itemName as string;
-  let wishlist = req.query.wishlist as string;
-  const order = req.query.order as string;
-  const skipList = req.query.skipList ? (req.query.skipList as string).split(',').map(Number) : [];
-
-  const user = (await CheckAuth(req)).user;
-  if (!user) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
-  }
-  if (user.banned) return res.status(403).json({ error: 'Forbidden' });
-
+  const ip_address = getRequestClientIp(request);
   const user_id = user.id;
   // new accounts can only vote on auto priced feedbacks
   const onlyAuto = isNewFeedbackAccount(user);
@@ -34,22 +34,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   let feedbackRaw: Feedbacks[] = [];
 
   if (order === 'wishlist' && !wishlist) {
-    const wishlists = await getWishlists(parseInt(limit));
-    wishlist = wishlists[0]?.wishlist;
+    const wishlists = await getWishlists(limit);
+    wishlist = wishlists[0]?.wishlist ?? null;
   }
 
   if (wishlist) {
-    feedbackRaw = await getTradeFeedbackWishlist(
-      wishlist,
-      parseInt(limit),
-      user_id,
-      skipList,
-      onlyAuto
-    );
+    feedbackRaw = await getTradeFeedbackWishlist(wishlist, limit, user_id, skipList, onlyAuto);
   }
 
   if (target) {
-    feedbackRaw = await getTradeFeedback(target, parseInt(limit), user_id, skipList, onlyAuto);
+    feedbackRaw = await getTradeFeedback(target, limit, user_id, skipList, onlyAuto);
   }
 
   if (!feedbackRaw.length) {
@@ -67,13 +61,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           },
         },
         feedback_id: {
-          notIn: skipList.filter((id) => !Number.isNaN(id)),
+          notIn: skipList,
         },
       },
       orderBy: { addedAt: 'asc' },
-      take: parseInt(limit),
+      take: limit,
     });
   }
+
   const itemIds = feedbackRaw
     .map((f) => {
       if (f.type !== 'tradePrice') return -1;
@@ -100,14 +95,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const feedbacks = [];
   for (const feedback of feedbackRaw) {
-    const json = feedback.json as string;
-    const parsed = JSON.parse(json) as FeedbackParsed;
+    const parsed = JSON.parse(feedback.json as string) as FeedbackParsed;
 
     if (ip_address === parsed.ip) continue;
     feedbacks.push(sanitizeFeedback(fixTrade(feedback, itemData)));
   }
 
-  res.json(feedbacks);
+  return Response.json(feedbacks);
 }
 
 // voters must not see who sent it (ip, email, user id) - only whether it was the auto pricer
@@ -146,11 +140,11 @@ const getTradeFeedback = async (
     where f.type = 'tradePrice' and i.name = ${itemName} and f.processed = 0
   `) as { feedback_id: number }[];
 
-  const feedbackRaw = await prisma.feedbacks.findMany({
+  return prisma.feedbacks.findMany({
     where: {
       feedback_id: {
         in: feedbackIds.map((f) => f.feedback_id),
-        notIn: skipList.filter((id) => !Number.isNaN(id)),
+        notIn: skipList,
       },
       user_id: onlyAuto ? AUTO_PRICE_UID : { not: user_id },
       vote: {
@@ -162,8 +156,6 @@ const getTradeFeedback = async (
     orderBy: { addedAt: 'asc' },
     take: limit,
   });
-
-  return feedbackRaw;
 };
 
 const getTradeFeedbackWishlist = async (
@@ -180,11 +172,11 @@ const getTradeFeedbackWishlist = async (
     where f.type = 'tradePrice' and t.wishlist = ${wishlist} and f.processed = 0
   `) as { feedback_id: number }[];
 
-  const feedbackRaw = await prisma.feedbacks.findMany({
+  return prisma.feedbacks.findMany({
     where: {
       feedback_id: {
         in: feedbackIds.map((f) => f.feedback_id),
-        notIn: skipList.filter((id) => !Number.isNaN(id)),
+        notIn: skipList,
       },
       user_id: onlyAuto ? AUTO_PRICE_UID : { not: user_id },
       vote: {
@@ -196,16 +188,14 @@ const getTradeFeedbackWishlist = async (
     orderBy: { addedAt: 'asc' },
     take: limit,
   });
-
-  return feedbackRaw;
 };
 
 const getWishlists = async (limit: number) => {
   const wishlists = (await prisma.$queryRaw`
-    select t.wishlist from feedbacks f 
-    left join trades t on f.subject_id = t.trade_id 
+    select t.wishlist from feedbacks f
+    left join trades t on f.subject_id = t.trade_id
     where f.type = 'tradePrice' and f.processed = 0
-    group by t.wishlist 
+    group by t.wishlist
     order by count(*) desc
     limit ${limit}
   `) as { wishlist: string }[];
@@ -218,6 +208,8 @@ const fixTrade = (
   feedback: Feedbacks,
   itemData: { internal_id: number; name: string; image: string | null }[]
 ) => {
+  if (feedback.type !== 'tradePrice') return feedback;
+
   const parsed = JSON.parse(feedback.json as string) as FeedbackParsed;
   const tradeInfo = parsed.content.trade as TradeData;
 

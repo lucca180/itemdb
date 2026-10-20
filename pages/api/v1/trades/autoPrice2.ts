@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import pMap from 'p-map';
 import prisma from '../../../../utils/prisma';
 import { processTradePrice } from '.';
-import { MAX_VOTE_MULTIPLIER } from '../../feedback/vote';
+import { AUTO_PRICE_UID, MAX_VOTE_MULTIPLIER } from '@utils/feedback/voteRules';
 import { getManyItems } from '../items/many';
 import { differenceInCalendarDays } from 'date-fns';
 import { ItemData } from '@types';
@@ -99,7 +99,7 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
   const feedbackArray: Prisma.FeedbacksCreateInput[] = filteredTrades.map(([t, originalId]) => ({
     type: 'tradePrice',
     subject_id: t.trade_id,
-    user_id: 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1',
+    user_id: AUTO_PRICE_UID,
     json: JSON.stringify({
       ip: 'auto',
       pageRef: 'auto',
