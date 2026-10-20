@@ -119,7 +119,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         })),
       });
 
-      if (decision) await commitChanges(feedbacks, decision, req);
+      if (decision) await commitChanges(feedbacks, decision, allVotes, req);
     }
 
     res.json({ success: true });
@@ -137,9 +137,46 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 // ------- COMMIT CHANGES -------- //
 
 // so, race conditions could make this exec twice, but it's not a big deal (i guess)
+type VoteRef = { user_id: string | null; approve: boolean };
+
+// updates by primary key: the old `votes: { some }` relation filter ran UPDATE ... IN (subquery),
+// which locked user rows and took seconds when the updates ran concurrently
+const applyVoteXp = async (
+  feedback: Feedbacks,
+  votes: VoteRef[],
+  xp: { creator: number; upvoters: number; downvoters: number }
+) => {
+  const ids = (approve: boolean) =>
+    votes.filter((v) => v.approve === approve && v.user_id).map((v) => v.user_id!);
+
+  const updates = [
+    { ids: feedback.user_id ? [feedback.user_id] : [], amount: xp.creator },
+    { ids: ids(true), amount: xp.upvoters },
+    { ids: ids(false), amount: xp.downvoters },
+  ]
+    .filter((u) => u.ids.length && u.amount)
+    .map((u) =>
+      prisma.user.updateMany({
+        where: { id: { in: u.ids } },
+        data: { xp: { increment: u.amount } },
+      })
+    );
+
+  // disjoint rows by primary key - safe to run in parallel (saves db round trips)
+  await Promise.all(updates);
+};
+
+// updateMany: no read-back select, one less round trip than update
+const markProcessed = (feedback: Feedbacks, approved: boolean) =>
+  prisma.feedbacks.updateMany({
+    where: { feedback_id: feedback.feedback_id },
+    data: { processed: true, approved, processedAt: new Date() },
+  });
+
 const commitChanges = async (
   feedback: Feedbacks,
   decision: NonNullable<FeedbackDecision>,
+  votes: VoteRef[],
   req?: NextApiRequest
 ) => {
   // Feedback Rejected
@@ -152,62 +189,15 @@ const commitChanges = async (
 
     // ------- End Handlers -------- //
 
-    await prisma.feedbacks.update({
-      where: {
-        feedback_id: feedback.feedback_id,
-      },
-      data: {
-        processed: true,
-        approved: false,
-        processedAt: new Date(),
-      },
-    });
-
-    const userCreator = prisma.user.update({
-      where: {
-        id: feedback.user_id ?? '-1',
-      },
-      data: {
-        xp: {
-          decrement: FEEDBACK_VOTE_TARGET * 10, // -70
-        },
-      },
-    });
-
-    // same hit as the submitter - upvoting everything must not pay off
-    const approveVotes = prisma.user.updateMany({
-      where: {
-        votes: {
-          some: {
-            feedback_id: feedback.feedback_id,
-            approve: true,
-          },
-        },
-      },
-      data: {
-        xp: {
-          decrement: FEEDBACK_VOTE_TARGET * 10, // -70
-        },
-      },
-    });
-
-    const reproveVotes = prisma.user.updateMany({
-      where: {
-        votes: {
-          some: {
-            feedback_id: feedback.feedback_id,
-            approve: false,
-          },
-        },
-      },
-      data: {
-        xp: {
-          increment: 15,
-        },
-      },
-    });
-
-    await Promise.all([userCreator, approveVotes, reproveVotes]);
+    await Promise.all([
+      markProcessed(feedback, false),
+      // upvoters take the same hit as the submitter - upvoting everything must not pay off
+      applyVoteXp(feedback, votes, {
+        creator: -FEEDBACK_VOTE_TARGET * 10, // -70
+        upvoters: -FEEDBACK_VOTE_TARGET * 10, // -70
+        downvoters: 15,
+      }),
+    ]);
 
     return;
   }
@@ -222,61 +212,14 @@ const commitChanges = async (
 
     // ------- End Handlers -------- //
 
-    await prisma.feedbacks.update({
-      where: {
-        feedback_id: feedback.feedback_id,
-      },
-      data: {
-        processed: true,
-        approved: true,
-        processedAt: new Date(),
-      },
-    });
-
-    const userCreator = prisma.user.update({
-      where: {
-        id: feedback.user_id ?? '-1',
-      },
-      data: {
-        xp: {
-          increment: FEEDBACK_VOTE_TARGET,
-        },
-      },
-    });
-
-    const approveVotes = prisma.user.updateMany({
-      where: {
-        votes: {
-          some: {
-            feedback_id: feedback.feedback_id,
-            approve: true,
-          },
-        },
-      },
-      data: {
-        xp: {
-          increment: 2,
-        },
-      },
-    });
-
-    const reproveVotes = prisma.user.updateMany({
-      where: {
-        votes: {
-          some: {
-            feedback_id: feedback.feedback_id,
-            approve: false,
-          },
-        },
-      },
-      data: {
-        xp: {
-          decrement: FEEDBACK_VOTE_TARGET,
-        },
-      },
-    });
-
-    await Promise.all([userCreator, approveVotes, reproveVotes]);
+    await Promise.all([
+      markProcessed(feedback, true),
+      applyVoteXp(feedback, votes, {
+        creator: FEEDBACK_VOTE_TARGET,
+        upvoters: 2,
+        downvoters: -FEEDBACK_VOTE_TARGET,
+      }),
+    ]);
   }
 };
 
