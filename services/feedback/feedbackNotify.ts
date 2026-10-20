@@ -1,9 +1,10 @@
 /**
  * Notifications sent when a feedback is submitted: e-mail (feedback, official list
  * applications, feedback reports) and a Discord webhook (price check requests).
+ *
+ * No `server-only` here: pages/api/auth/apikeys.ts imports it, and the Pages Router build
+ * rejects modules that depend on `server-only`.
  */
-import 'server-only';
-
 import { Resend } from 'resend';
 import { Webhook, EmbedBuilder } from '@tycrek/discord-hookr';
 import { getItem } from '@pages/api/v1/items/[id_name]';
