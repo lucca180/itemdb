@@ -82,6 +82,17 @@ export const siteAlerts = {
     bg: 'pink.300',
     color: 'blackAlpha.800',
   },
+  hiddenTowerPhp: {
+    message: 'hiddenTowerPhp',
+    link: '/lists/official/hidden-tower',
+    img: {
+      src: 'https://images.neopets.com/themes/h5/birthday/images/inventory-icon.png',
+      h: 28,
+      w: 28,
+    },
+    bg: 'pink.300',
+    color: 'blackAlpha.800',
+  },
   apiV2: {
     message: 'apiV2',
     link: 'https://itemdb.com.br/articles/recent-outages-and-api-v2',
@@ -121,6 +132,9 @@ export function getCurrentSiteAlert() {
   const todayNST = getDateNST();
   // until the start of Thursday 2026-10-15 (NST)
   if (todayNST.getTime() < 1792022400000) return siteAlerts.goalCounters;
+  // one-off joke message on 2026-10-21 (NST)
+  if (todayNST.getFullYear() === 2026 && todayNST.getMonth() === 9 && todayNST.getDate() === 21)
+    return siteAlerts.hiddenTowerPhp;
   if (isThirdWednesday(todayNST)) return siteAlerts.hiddenTower;
   if (todayNST.getDate() === 3) return siteAlerts.hpd;
   if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return siteAlerts.tyrannia;

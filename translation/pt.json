@@ -1606,6 +1606,7 @@
     "faerie-festival": "Festival das Fadas - <Link>Lojas do Mundo das Fadas</Link> com 50% de desconto (exceto Faerie Furniture e Faerie Weapon)",
     "halloween": "Halloween - <Link>Lojas dos Bosques Assombrados</Link> com 50% de desconto (exceto Neovia)",
     "hiddenTower": "3% de desconto na <Link>Torre Oculta</Link> hoje para contas com 60 meses ou mais!",
+    "hiddenTowerPhp": "3% de desconto na <Link>Torre Oculta</Link> hoje para contas com 60 meses ou mais! (Nós não usamos PHP 👍)",
     "apiChanges": "Userscripts pararam de funcionar? Confira a ferramenta de <Link>Solução de Problemas</Link>!",
     "newAuction": "Novas mudanças na Casa de Leilões podem afetar o histórico de leilões. Cheque essa <Link>atualização importante</Link>.",
     "apiV2": "Confira esta <Link>atualização rápida</Link> sobre API v2 e nossas quedas recentes",

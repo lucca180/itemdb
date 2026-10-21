@@ -1604,6 +1604,7 @@
     "faerie-festival": "Faerie Festival - <Link>Faerieland Shops</Link> with 50% off (except Faerie Furniture and Faerie Weapon)",
     "halloween": "Halloween - <Link>Haunted Woods Shops</Link> with 50% off (except Neovia)",
     "hiddenTower": "3% off at the <Link>Hidden Tower</Link> today for account age 60 months or older!",
+    "hiddenTowerPhp": "3% off at the <Link>Hidden Tower</Link> today for account age 60 months or older! (We don't use PHP 👍)",
     "apiChanges": "Userscripts not working? Please check our <Link>Troubleshooting Tool</Link>!",
     "newAuction": "New Auction House changes may affect auction price history. Check this <Link>important update</Link>.",
     "apiV2": "Check this <Link>quick update</Link> about API v2 and our recent outages",
