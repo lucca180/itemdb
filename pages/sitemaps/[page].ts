@@ -154,9 +154,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         : []),
     ]);
 
-  const officialListsCats: ISitemapField[] = Object.values(listCategoriesData)
+  // Keys are the route params of /lists/official/cat/[category]; ids may hold comma-separated tags.
+  const officialListsCats: ISitemapField[] = Object.keys(listCategoriesData)
     .slice(pageNum * 10, pageNum * 10 + 10)
-    .flatMap((cat) => bilingualSitemapFields(`/lists/official/cat/${slugify(cat.id)}`));
+    .flatMap((cat) => bilingualSitemapFields(`/lists/official/cat/${cat}`));
 
   const speciesOutfitsPaths: ISitemapField[] = Object.values(allSpecies)
     .slice(pageNum * 10, pageNum * 10 + 10)
