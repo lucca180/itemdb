@@ -109,3 +109,12 @@ export const splitOfficialTag = (officialTag: string | null) =>
     ?.split(',')
     .map((tag) => tag.trim())
     .filter(Boolean) ?? [];
+
+/** Lowercased tags from a category query that may hold several comma-separated tags. */
+export const parseOfficialTagQuery = (query: string) =>
+  splitOfficialTag(query).map((tag) => tag.toLowerCase());
+
+/** True when the list has any of `tags` (from parseOfficialTagQuery); `'uncategorized'` matches untagged lists. */
+export const hasAnyOfficialTag = (list: Pick<UserList, 'officialTag'>, tags: string[]) =>
+  (tags.includes('uncategorized') && list.officialTag.length === 0) ||
+  list.officialTag.some((tag) => tags.includes(tag.toLowerCase()));

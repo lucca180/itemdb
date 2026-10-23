@@ -31,7 +31,12 @@ import {
   type DynamicItemChanges,
   type PutListItemInput,
 } from '@services/list/listItemsWrite';
-import { rawToList, rawToListItems, splitOfficialTag } from '@services/list/listMappers';
+import {
+  hasAnyOfficialTag,
+  parseOfficialTagQuery,
+  rawToList,
+  rawToListItems,
+} from '@services/list/listMappers';
 import {
   queryUserLists,
   queryUserListsLite,
@@ -41,7 +46,12 @@ import {
 import { fetchListItemsV2, type FetchListItemsV2Result } from '@services/list/listItemsV2';
 import { adminListSeoWriteData, getListSeo } from '@services/list/listSeo';
 
-export { rawToList, rawToListItems } from '@services/list/listMappers';
+export {
+  hasAnyOfficialTag,
+  parseOfficialTagQuery,
+  rawToList,
+  rawToListItems,
+} from '@services/list/listMappers';
 export type { PutListItemInput, DynamicItemChanges };
 
 export class ListService {
@@ -163,7 +173,7 @@ export class ListService {
 
   /** `tag` accepts several comma-separated tags and returns lists matching any of them. */
   async getOfficialListsCat(tag: string, limit = 15) {
-    const tags = splitOfficialTag(tag).map((officialTag) => officialTag.toLowerCase());
+    const tags = parseOfficialTagQuery(tag);
 
     const lists = await this.getUserLists({
       username: 'official',
@@ -172,10 +182,7 @@ export class ListService {
     });
 
     const filteredLists = lists
-      .filter((list) => {
-        if (tags.includes('uncategorized') && list.officialTag.length === 0) return true;
-        return list.officialTag.some((officialTag) => tags.includes(officialTag.toLowerCase()));
-      })
+      .filter((list) => hasAnyOfficialTag(list, tags))
       .sort((a, b) => a.name.localeCompare(b.name));
 
     return filteredLists.splice(0, limit ?? 15);

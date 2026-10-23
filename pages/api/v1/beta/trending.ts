@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getManyItems } from '../items/many';
 import prisma from '../../../../utils/prisma';
 import { UserList } from '../../../../types';
-import { rawToList } from '@services/ListService';
+import { hasAnyOfficialTag, parseOfficialTagQuery, rawToList } from '@services/ListService';
 import { getClient } from '@umami/api-client';
 import { restockShopInfo, slugify } from '../../../../utils/utils';
 
@@ -221,11 +221,11 @@ export const getTVWLists = async (limit: number) => {
   return sortedLists.slice(0, limit);
 };
 
+/** `cat` accepts several comma-separated tags and returns lists matching any of them. */
 export const getTrendingCatLists = async (cat: string, limit: number) => {
+  const tags = parseOfficialTagQuery(cat);
   const lists = await getTrendingLists(10000);
-  const targetLists = lists.filter((list) =>
-    list.officialTag.some((officialTag) => officialTag.toLowerCase() === cat.toLowerCase())
-  );
+  const targetLists = lists.filter((list) => hasAnyOfficialTag(list, tags));
 
   const envKey = cat.split(' ').join('_').toUpperCase();
 
