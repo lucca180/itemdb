@@ -1,9 +1,8 @@
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import { getTrendingLists } from '@pages/api/v1/beta/trending';
+import { getTrendingCatLists, getTrendingLists } from '@pages/api/v1/beta/trending';
 import { ItemService } from '@services/ItemService';
-import { ListService } from '@services/ListService';
 import { loadRecentlyReleasedCombos } from '@app/server/rainbowPool';
 import { HomeCard } from '@components/Card/HomeCard';
 import { HalloweenHomeCard, HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
@@ -38,14 +37,16 @@ async function getCachedTrendingItems() {
   return ItemService.getTrending(20).catch(() => []);
 }
 
+// The event card shows these lists, so Featured Lists skips them.
+const FESTIVAL_OF_FEARS_TAG = 'Festival of Fears';
+const FESTIVAL_OF_FEARS_YEAR = 2026;
+
 async function getCachedFeaturedLists() {
   'use cache';
   cacheTag('home-trending-lists');
   cacheLife('homeSlow');
-  return getTrendingLists(3).catch(() => []);
+  return getTrendingLists(3, [FESTIVAL_OF_FEARS_TAG]).catch(() => []);
 }
-
-const FESTIVAL_OF_FEARS_YEAR = 2026;
 
 async function getCachedFestivalOfFearsLists() {
   'use cache';
@@ -53,8 +54,7 @@ async function getCachedFestivalOfFearsLists() {
   cacheLife('homeSlow');
 
   try {
-    const lists = await ListService.init().getOfficialListsCat('festival of fears', 100);
-    return lists.filter(
+    return (await getTrendingCatLists(FESTIVAL_OF_FEARS_TAG, 100)).filter(
       (list) => new Date(list.createdAt).getFullYear() === FESTIVAL_OF_FEARS_YEAR
     );
   } catch {
