@@ -1,4 +1,5 @@
 import {
+  Accordion,
   Button,
   Text,
   Input,
@@ -328,30 +329,56 @@ const CreateListModal = (props: CreateListModalProps) => {
                               </Field.Root>
                             </>
                           )}
+                          <Accordion.Root
+                            bg="gray.800"
+                            size="sm"
+                            px={2}
+                            borderRadius="md"
+                            collapsible
+                          >
+                            <Accordion.Item value="seo" border={0}>
+                              <Accordion.ItemTrigger>
+                                <Text flex="1" fontSize="sm" color="gray.300">
+                                  SEO
+                                </Text>
+                                <Accordion.ItemIndicator />
+                              </Accordion.ItemTrigger>
+                              <Accordion.ItemContent>
+                                <Accordion.ItemBody>
+                                  <Stack gap={3}>
+                                    <Field.Root>
+                                      <Field.Label color="gray.300">
+                                        {t('Lists.seo-title')}
+                                      </Field.Label>
+                                      <Input
+                                        variant="subtle"
+                                        name="seoTitle"
+                                        onChange={handleChange}
+                                        value={list.seoTitle ?? ''}
+                                        maxLength={255}
+                                      />
+                                      <Field.HelperText fontSize={'xs'}>
+                                        {t('Lists.seo-title-helper')}
+                                      </Field.HelperText>
+                                    </Field.Root>
+                                    <Field.Root>
+                                      <Field.Label color="gray.300">
+                                        {t('Lists.seo-description')}
+                                      </Field.Label>
+                                      <Textarea
+                                        variant="subtle"
+                                        name="seoDescription"
+                                        onChange={handleChange}
+                                        value={list.seoDescription ?? ''}
+                                      />
+                                    </Field.Root>
+                                  </Stack>
+                                </Accordion.ItemBody>
+                              </Accordion.ItemContent>
+                            </Accordion.Item>
+                          </Accordion.Root>
                         </>
                       )}
-                      <Field.Root>
-                        <Field.Label color="gray.300">{t('Lists.seo-title')}</Field.Label>
-                        <Input
-                          variant="subtle"
-                          name="seoTitle"
-                          onChange={handleChange}
-                          value={list.seoTitle ?? ''}
-                          maxLength={255}
-                        />
-                        <Field.HelperText fontSize={'xs'}>
-                          {t('Lists.seo-title-helper')}
-                        </Field.HelperText>
-                      </Field.Root>
-                      <Field.Root>
-                        <Field.Label color="gray.300">{t('Lists.seo-description')}</Field.Label>
-                        <Textarea
-                          variant="subtle"
-                          name="seoDescription"
-                          onChange={handleChange}
-                          value={list.seoDescription ?? ''}
-                        />
-                      </Field.Root>
                       <Separator />
                     </Stack>
                   )}
