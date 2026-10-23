@@ -3,9 +3,10 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import { getTrendingLists } from '@pages/api/v1/beta/trending';
 import { ItemService } from '@services/ItemService';
+import { ListService } from '@services/ListService';
 import { loadRecentlyReleasedCombos } from '@app/server/rainbowPool';
 import { HomeCard } from '@components/Card/HomeCard';
-import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
+import { HalloweenHomeCard, HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { FeaturedListsGrid } from '@components/Home/FeaturedListsGrid';
 import { ComboTile } from '@app/[locale]/rainbow-pool/components/ComboTile';
 
@@ -42,6 +43,23 @@ async function getCachedFeaturedLists() {
   cacheTag('home-trending-lists');
   cacheLife('homeSlow');
   return getTrendingLists(3).catch(() => []);
+}
+
+const FESTIVAL_OF_FEARS_YEAR = 2026;
+
+async function getCachedFestivalOfFearsLists() {
+  'use cache';
+  cacheTag('home-event-card-lists');
+  cacheLife('homeSlow');
+
+  try {
+    const lists = await ListService.init().getOfficialListsCat('festival of fears', 100);
+    return lists.filter(
+      (list) => new Date(list.createdAt).getFullYear() === FESTIVAL_OF_FEARS_YEAR
+    );
+  } catch {
+    return [];
+  }
 }
 
 export function LatestItemsHomeCard() {
@@ -144,6 +162,25 @@ async function FeaturedListsHomeCardContent() {
     >
       <FeaturedListsGrid lists={lists} />
     </HorizontalHomeCard>
+  );
+}
+
+export function FestivalOfFearsHomeCard() {
+  return (
+    <Suspense fallback={<HalloweenHomeCard>{null}</HalloweenHomeCard>}>
+      <FestivalOfFearsHomeCardContent />
+    </Suspense>
+  );
+}
+
+async function FestivalOfFearsHomeCardContent() {
+  const lists = await getCachedFestivalOfFearsLists();
+  if (!lists.length) return null;
+
+  return (
+    <HalloweenHomeCard>
+      <FeaturedListsGrid lists={lists.slice(0, 3)} utmContent="halloween-lists" isSmall />
+    </HalloweenHomeCard>
   );
 }
 

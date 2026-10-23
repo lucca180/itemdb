@@ -150,25 +150,29 @@ export async function FFHomeCard({ children }: { children: ReactNode }) {
   );
 }
 
-export function HalloweenHomeCard({ children }: { children: ReactNode }) {
+export async function HalloweenHomeCard({ children }: { children: ReactNode }) {
+  const t = await getTranslations();
   return (
     <HorizontalHomeCard
-      color="#54ACB4"
+      color="#D9773A"
+      bgOpacity="0.5"
       h={50}
       w={50}
-      image="https://images.neopets.com/festivaloffears/images/goodiebag-icon.png"
+      image="https://images.neopets.com/themes/h5/basic/images/fof-icon.png"
+      viewAllLink="/lists/official?cat=Festival%20of%20Fears"
       title={'Festival of Fears'}
       isSmall
       utm_content="halloween-lists"
+      viewAllText={t('General.view-all')}
       css={{
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
-        '& img': {
-          filter: 'drop-shadow(0 0 5px #54ACB4)',
+        '& .card-icon': {
+          filter: 'drop-shadow(0 0 5px #D9773A)',
         },
         '& h2': {
-          textShadow: '0 0 10px #54ACB4',
+          textShadow: '0 0 10px #D9773A',
         },
         '&::before': {
           content: "''",
@@ -180,13 +184,13 @@ export function HalloweenHomeCard({ children }: { children: ReactNode }) {
           backgroundImage: "url('https://images.neopets.com/festivaloffears/images/fof-bg.webp')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.5,
-          filter: 'blur(10px) brightness(0.5)',
+          opacity: 0.75,
+          filter: 'blur(10px) brightness(0.5) grayscale(0.3)',
           zIndex: -1,
         },
       }}
       innerStyle={{
-        border: '2px solid #54ACB47d',
+        border: `2px solid ${Color('#fff').alpha(0.1).hexa()}`,
       }}
     >
       {children}
