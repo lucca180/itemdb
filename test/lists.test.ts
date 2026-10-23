@@ -70,6 +70,48 @@ describe.concurrent('List Service tests', () => {
     });
   });
 
+  describe.concurrent('Official lists by category tests', () => {
+    const listService = ListService.init();
+    const hasTag = (tags: string[], tag: string) => tags.some((t) => t.toLowerCase() === tag);
+
+    test('Single tag only returns lists with that exact tag', async () => {
+      const lists = await listService.getOfficialListsCat('altador cup', 3000);
+
+      expect(lists.length).toBeGreaterThan(0);
+      for (const list of lists) {
+        expect(hasTag(list.officialTag, 'altador cup')).toBe(true);
+      }
+    });
+
+    test('Comma-separated tags return the union of each tag', async () => {
+      const [neggs, stamps, both] = await Promise.all([
+        listService.getOfficialListsCat('festival of neggs', 3000),
+        listService.getOfficialListsCat('stamps', 3000),
+        listService.getOfficialListsCat('festival of neggs, stamps', 3000),
+      ]);
+
+      const expectedIds = new Set([...neggs, ...stamps].map((list) => list.internal_id));
+
+      expect(neggs.length).toBeGreaterThan(0);
+      expect(stamps.length).toBeGreaterThan(0);
+      expect(both.map((list) => list.internal_id).sort()).toEqual([...expectedIds].sort());
+    });
+
+    test('Uncategorized returns only lists without a tag', async () => {
+      const [lists, allLists] = await Promise.all([
+        listService.getOfficialListsCat('uncategorized', 3000),
+        listService.getUserLists({ username: 'official', limit: -1 }),
+      ]);
+
+      const untagged = allLists.filter((list) => list.officialTag.length === 0);
+
+      expect(lists.length).toBe(untagged.length);
+      for (const list of lists) {
+        expect(list.officialTag).toEqual([]);
+      }
+    });
+  });
+
   describe.concurrent('Valid List as Guest tests', () => {
     const listService = ListService.init();
 

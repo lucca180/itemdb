@@ -104,7 +104,7 @@ export const rawToListItems = (items: ListItems[]): ListItemInfo[] => {
   }));
 };
 
-const splitOfficialTag = (officialTag: string | null) =>
+export const splitOfficialTag = (officialTag: string | null) =>
   officialTag
     ?.split(',')
     .map((tag) => tag.trim())

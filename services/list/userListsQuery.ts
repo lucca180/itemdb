@@ -11,13 +11,19 @@ import { getUser } from '@pages/api/v1/users/[username]';
 import { rawToList, rawToListLite } from '@services/list/listMappers';
 import type { User, UserList, UserListLite } from '@types';
 import prisma from '@utils/prisma';
-import type { ListItems, UserList as RawList, User as RawUser } from '@prisma/generated/client';
+import type {
+  ListItems,
+  Prisma,
+  UserList as RawList,
+  User as RawUser,
+} from '@prisma/generated/client';
 
 export type GetUserListsOptions = {
   /** Profile username or the literal `'official'`. */
   username: string;
   limit?: number;
-  officialTag?: string;
+  /** Official path only: lists matching any of these tags; `'uncategorized'` matches untagged lists. */
+  officialTags?: string[];
   /** When true, loads full list items inline instead of item counts. */
   includeItems?: boolean;
   /** Skip getUser when the caller already resolved the profile owner. */
@@ -111,12 +117,20 @@ export async function queryUserListsLite(
  * We avoid joining User on every row and batch-fetch unique owners instead.
  */
 async function queryOfficialLists(options: GetUserListsOptions) {
-  const { limit = -1, officialTag, includeItems = false } = options;
+  const { limit = -1, officialTags, includeItems = false } = options;
 
+  // `contains` is a substring match on the raw comma-joined column;
+  // callers still filter the parsed tags for an exact match.
   const listsRaw = await prisma.userList.findMany({
     where: {
       official: true,
-      official_tag: officialTag ? { contains: officialTag } : undefined,
+      OR: officialTags?.length
+        ? officialTags.flatMap<Prisma.UserListWhereInput>((tag) =>
+            tag === 'uncategorized'
+              ? [{ official_tag: null }, { official_tag: '' }]
+              : [{ official_tag: { contains: tag } }]
+          )
+        : undefined,
     },
     include: includeItems ? { items: true } : undefined,
     orderBy: { createdAt: 'desc' },

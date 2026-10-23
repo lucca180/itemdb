@@ -31,7 +31,7 @@ import {
   type DynamicItemChanges,
   type PutListItemInput,
 } from '@services/list/listItemsWrite';
-import { rawToList, rawToListItems } from '@services/list/listMappers';
+import { rawToList, rawToListItems, splitOfficialTag } from '@services/list/listMappers';
 import {
   queryUserLists,
   queryUserListsLite,
@@ -161,19 +161,20 @@ export class ListService {
     });
   }
 
+  /** `tag` accepts several comma-separated tags and returns lists matching any of them. */
   async getOfficialListsCat(tag: string, limit = 15) {
+    const tags = splitOfficialTag(tag).map((officialTag) => officialTag.toLowerCase());
+
     const lists = await this.getUserLists({
       username: 'official',
       limit: -1,
-      officialTag: tag,
+      officialTags: tags,
     });
-
-    tag = tag.toLowerCase();
 
     const filteredLists = lists
       .filter((list) => {
-        if (tag === 'uncategorized') return list.officialTag.length === 0;
-        return list.officialTag.some((officialTag) => officialTag.toLowerCase() === tag);
+        if (tags.includes('uncategorized') && list.officialTag.length === 0) return true;
+        return list.officialTag.some((officialTag) => tags.includes(officialTag.toLowerCase()));
       })
       .sort((a, b) => a.name.localeCompare(b.name));
 
