@@ -19,6 +19,12 @@ import { EditProfileModalProps } from '@components/Modal/EditProfileModal';
 import { SortableListsProps } from '@components/Sortable/SortableLists';
 import UserListCard from '@components/UserLists/ListCard';
 import type { ProfileListMatches } from '@app/[locale]/lists/[username]/loadUserProfile';
+import {
+  buildListsRows,
+  buildListsState,
+  type ListsEditState,
+  useListsRowSize,
+} from '@app/[locale]/lists/[username]/userListsRows';
 import { useRouter } from '@i18n/navigation';
 import type { User, UserList } from '@types';
 import axios from 'axios';
@@ -27,6 +33,7 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
+import { ViewportList } from 'react-viewport-list';
 import MainLink from '@components/Utils/MainLink';
 import { canDeleteList } from '@utils/list/listPermissions';
 
@@ -52,15 +59,6 @@ const SortableLists = dynamic<SortableListsProps>(
   }
 );
 
-type ExtendedUserList = UserList & {
-  hasChanged?: boolean;
-};
-
-type ListsEditState = {
-  lists: { [list_id: number]: ExtendedUserList };
-  listsIds: number[];
-};
-
 export type UserListsPageClientProps = {
   owner: User;
   viewer: User | null;
@@ -69,44 +67,6 @@ export type UserListsPageClientProps = {
   matches: ProfileListMatches;
   profileColor: string;
 };
-
-function buildListsState(lists: UserList[]): ListsEditState {
-  const listsIds = lists.map((list) => list.internal_id);
-  const listsMap: { [list_id: number]: ExtendedUserList } = {};
-
-  lists.forEach((list) => {
-    listsMap[list.internal_id] = list;
-  });
-
-  return { listsIds, lists: listsMap };
-}
-
-function groupUserLists(
-  lists: { [list_id: number]: ExtendedUserList },
-  listsIds: number[]
-): { group: string; lists: ExtendedUserList[] }[] {
-  const groups: { [key: string]: ExtendedUserList[] } = {};
-
-  listsIds.forEach((id) => {
-    const list = lists[id];
-    if (!list) return;
-    const groupTag = list.userTag ?? '';
-
-    if (!groups[groupTag]) groups[groupTag] = [];
-    groups[groupTag].push(list);
-  });
-
-  return Object.entries(groups)
-    .map(([group, groupLists]) => ({
-      group,
-      lists: groupLists,
-    }))
-    .sort((a, b) => {
-      if (a.group === '') return 1;
-      if (b.group === '') return -1;
-      return a.group.localeCompare(b.group);
-    });
-}
 
 export function UserListsPageClient({
   owner,
@@ -133,9 +93,11 @@ export function UserListsPageClient({
   const color = Color(profileColor);
   const rgb = color.rgb().array();
   const isGroupMode = owner.profileMode === 'groups';
-  const listGroups = useMemo(
-    () => (isGroupMode ? groupUserLists(lists, listsIds) : []),
-    [isGroupMode, lists, listsIds]
+  // group boxes add px={4} on each side
+  const [rowsRef, rowSize] = useListsRowSize(isGroupMode ? 32 : 0);
+  const listsRows = useMemo(
+    () => buildListsRows(lists, listsIds, isGroupMode, rowSize),
+    [lists, listsIds, isGroupMode, rowSize]
   );
 
   const handleRefresh = () => {
@@ -372,8 +334,8 @@ export function UserListsPageClient({
         </Center>
       )}
 
-      <Flex mt={5} gap={4} flexWrap="wrap" justifyContent="center">
-        {isEdit && (
+      {isEdit && (
+        <Flex mt={5} gap={4} flexWrap="wrap" justifyContent="center">
           <SortableLists
             cardProps={{ matches }}
             lists={lists}
@@ -384,42 +346,52 @@ export function UserListsPageClient({
             onClick={selectItem}
             onSort={handleSort}
           />
-        )}
+        </Flex>
+      )}
 
-        {isGroupMode &&
-          listGroups.map(({ group, lists: groupLists }) => (
-            <Box key={group} width="100%" bg="blackAlpha.400" p={4} borderRadius="md">
-              <Text fontSize="lg" fontWeight="bold" mb={2}>
-                {group}
-              </Text>
-              <Flex gap={4} flexWrap="wrap" justifyContent="center">
-                {groupLists.map((list) => (
-                  <UserListCard
-                    canEdit={isOwner}
-                    key={list.internal_id}
-                    list={list}
-                    isSelected={selectedLists.includes(list.internal_id)}
-                    matches={matches}
-                    refresh={handleRefresh}
-                  />
-                ))}
-              </Flex>
-            </Box>
-          ))}
+      {(isGroupMode || !isEdit) && (
+        <Flex ref={rowsRef} mt={5} flexFlow="column" gap={isGroupMode ? 0 : 4}>
+          <ViewportList items={listsRows} viewportRef={null} initialPrerender={3} overscan={3}>
+            {(row) => {
+              if (row.type === 'group') {
+                return (
+                  <Box key={row.key} bg="blackAlpha.400" px={4} pt={4} pb={2} borderTopRadius="md">
+                    <Text fontSize="lg" fontWeight="bold">
+                      {row.group}
+                    </Text>
+                  </Box>
+                );
+              }
 
-        {!isEdit &&
-          !isGroupMode &&
-          listsIds.map((id) => (
-            <UserListCard
-              canEdit={isOwner}
-              key={id}
-              list={lists[id]}
-              isSelected={selectedLists.includes(id)}
-              matches={matches}
-              refresh={handleRefresh}
-            />
-          ))}
-      </Flex>
+              // padding (not margin) between groups so ViewportList measures row heights right
+              return (
+                <Box key={row.key} pb={row.isLast ? 4 : undefined}>
+                  <Flex
+                    gap={4}
+                    flexWrap="wrap"
+                    justifyContent="center"
+                    bg={row.inGroup ? 'blackAlpha.400' : undefined}
+                    px={row.inGroup ? 4 : undefined}
+                    pb={row.inGroup ? 4 : undefined}
+                    borderBottomRadius={row.isLast ? 'md' : undefined}
+                  >
+                    {row.lists.map((list) => (
+                      <UserListCard
+                        canEdit={isOwner}
+                        key={list.internal_id}
+                        list={list}
+                        isSelected={selectedLists.includes(list.internal_id)}
+                        matches={matches}
+                        refresh={handleRefresh}
+                      />
+                    ))}
+                  </Flex>
+                </Box>
+              );
+            }}
+          </ViewportList>
+        </Flex>
+      )}
     </>
   );
 }
