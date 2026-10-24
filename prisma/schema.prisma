@@ -144,6 +144,7 @@ model ItemProcess {
 
   @@index([name, image_id])
   @@index([manual_check, processed])
+  @@index([processed, addedAt])
 }
 
 model HashValidationKey {
@@ -295,6 +296,7 @@ model Trades {
   @@index([hash, addedAt])
   @@index([wishlist(length: 200)])
   @@index([priced, auto_ignore_pricing, wishlist(length: 100), addedAt(sort: Desc)])
+  @@index([isCanonical, isAllItemsEqual, itemsCount])
 }
 
 model TradeItems {
@@ -456,6 +458,7 @@ model Feedbacks {
 
   @@index([type, processed])
   @@index([feedback_id, subject_id])
+  @@index([processed, processedAt])
 }
 
 model FeedbackVotes {

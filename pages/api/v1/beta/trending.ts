@@ -123,15 +123,6 @@ export const getTrendingLists = async (limit: number, excludeCats: string[] = []
     },
     include: {
       user: true,
-      _count: {
-        select: {
-          items: {
-            where: {
-              isHidden: false,
-            },
-          },
-        },
-      },
     },
   });
 

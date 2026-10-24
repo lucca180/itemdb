@@ -76,6 +76,7 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
   const similarCache = new Map<string, (Trades & { items: TradeItems[] }) | null>();
   const similarInflight = new Map<string, Promise<(Trades & { items: TradeItems[] }) | null>>();
   const itemDataCache = new Map<string, ItemData>();
+  const canonicalCache = new Map<string, Promise<number | null>>();
 
   const promResult = await pMap(
     tradeRaw,
@@ -87,7 +88,7 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
         return null;
       }
 
-      const afterCanonical = await findCanonical(trade);
+      const afterCanonical = await findCanonical(trade, canonicalCache);
       if (!afterCanonical) return null;
       return findSimilar(afterCanonical, similarCache, similarInflight, itemDataCache);
     },
@@ -238,8 +239,7 @@ const findSimilar = async (
   ];
 };
 
-const findCanonical = async (trade: Trades & { items: TradeItems[] }) => {
-  const normalizedWishlist = normalizeCanonicalWishlist(trade.wishlist);
+const fetchCanonicalTradeId = async (normalizedWishlist: string, trade: Trades) => {
   const [canonicalMatch] = (await prisma.$queryRaw`
     SELECT trade_id FROM Trades
     WHERE isCanonical = 1
@@ -250,11 +250,30 @@ const findCanonical = async (trade: Trades & { items: TradeItems[] }) => {
     LIMIT 1
   `) as { trade_id: number }[];
 
-  if (!canonicalMatch) return trade;
+  return canonicalMatch?.trade_id ?? null;
+};
+
+// Almost every lot has no canonical match, so the lookup result (including "none") is
+// shared by every trade in the batch with the same normalized wishlist/size/mix.
+const findCanonical = async (
+  trade: Trades & { items: TradeItems[] },
+  canonicalCache: Map<string, Promise<number | null>>
+) => {
+  const normalizedWishlist = normalizeCanonicalWishlist(trade.wishlist);
+  const key = `${normalizedWishlist}\0${trade.itemsCount}\0${trade.isAllItemsEqual}`;
+
+  let lookup = canonicalCache.get(key);
+  if (!lookup) {
+    lookup = fetchCanonicalTradeId(normalizedWishlist, trade);
+    canonicalCache.set(key, lookup);
+  }
+
+  const canonicalTradeId = await lookup;
+  if (canonicalTradeId === null) return trade;
 
   const canonical = await prisma.trades.findUnique({
     where: {
-      trade_id: canonicalMatch.trade_id,
+      trade_id: canonicalTradeId,
     },
     include: {
       items: {
