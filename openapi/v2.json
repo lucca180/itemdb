@@ -463,7 +463,7 @@
       "get": {
         "operationId": "getListItemsV2",
         "summary": "Get a list's items",
-        "description": "ItemV2 counterpart of the v1 `itemdata` endpoint.\n\n**Cache:** Reuses the shared per-item Redis cache for payloads. Public views may be CDN-cached (official lists longer than user lists). Requests with `includeHidden=true` or `fresh=1` stay private (`Cache-Control: no-store`). Default `intent` is `card`.",
+        "description": "ItemV2 counterpart of the v1 `itemdata` endpoint.\n\n**Cache:** Reuses the shared per-item Redis cache for payloads. Public views may be CDN-cached (official lists longer than user lists). Requests with `includeHidden=true` or `fresh=1` stay private (`Cache-Control: no-store`). Default `intent` is `card`.\n\n**Pagination:** At most 5,000 items are returned per request (also the default `limit`). When more items remain after the requested page, the response sets the `x-itemdb-has-next-page: true` header — request `page + 1` to continue.",
         "tags": ["Lists"],
         "parameters": [
           { "name": "username", "in": "path", "required": true, "schema": { "type": "string" } },
@@ -473,6 +473,20 @@
             "required": true,
             "schema": { "type": "string" },
             "description": "List id or slug."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "default": 1 },
+            "description": "1-based page number."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 5000, "default": 5000 },
+            "description": "Items per page. Values above 5,000 are clamped to 5,000."
           },
           {
             "name": "intent",
@@ -506,6 +520,12 @@
         "responses": {
           "200": {
             "description": "List items as `ItemV2`. Shape depends on `asObject`.",
+            "headers": {
+              "x-itemdb-has-next-page": {
+                "description": "`true` when the list has more items after the requested page, `false` otherwise.",
+                "schema": { "type": "string", "enum": ["true", "false"] }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {

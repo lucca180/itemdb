@@ -201,24 +201,26 @@ export class ListService {
   }
 
   // overloaded function signatures
-  async getListItems(params: GetListItemsParams & { asObject?: false }): Promise<ItemData[] | null>;
+  async getListItems(
+    params: GetListItemsParams & { asObject?: false; limit?: number }
+  ): Promise<ItemData[] | null>;
 
   async getListItems(
-    params: GetListItemsParams & { asObject: true }
+    params: GetListItemsParams & { asObject: true; limit?: number }
   ): Promise<Record<string, ItemData> | null>;
 
   async getListItems(
-    params: GetListItemsParams & { asObject: boolean }
+    params: GetListItemsParams & { asObject: boolean; limit?: number }
   ): Promise<Record<string, ItemData> | ItemData[] | null>;
 
-  async getListItems(params: GetListItemsParams & { asObject?: boolean }) {
+  async getListItems(params: GetListItemsParams & { asObject?: boolean; limit?: number }) {
     const list =
       params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
     if (!list || list.dynamicType === 'search') return null;
 
     const canViewHidden = this.canViewHiddenListItems(list);
 
-    const filters = { ...defaultFilters, limit: 100000 };
+    const filters = { ...defaultFilters, limit: params.limit ?? 100000 };
 
     const queryRes = await doSearch('', filters, false, list.internal_id, canViewHidden);
 
@@ -237,8 +239,9 @@ export class ListService {
    * resolves/authorizes the list, skips dynamic search lists, and decides
    * hidden-item authorization here — the caller only owns HTTP concerns. Returns
    * `null` when the list is missing or not visible. `includeHidden` is an opt-in
-   * request flag, still gated to the owner/admin. The resolved `list` is returned
-   * so the route can pick the right `Cache-Control`.
+   * request flag, still gated to the owner/admin. Items are paginated (`page` is
+   * 1-based, `limit` is the page size). The resolved `list` is returned so the
+   * route can pick the right `Cache-Control`.
    */
   async getListItemsV2<I extends ItemIntent = 'card'>(
     params: GetListItemsParams & {
@@ -246,6 +249,8 @@ export class ListService {
       asObject?: boolean;
       includeHidden?: boolean;
       fresh?: boolean;
+      page: number;
+      limit: number;
     }
   ): Promise<(FetchListItemsV2Result<I> & { list: UserList }) | null> {
     const list =
@@ -260,6 +265,8 @@ export class ListService {
       intent: params.intent ?? ('card' as I),
       asObject: params.asObject ?? false,
       fresh: params.fresh ?? false,
+      page: params.page,
+      limit: params.limit,
     });
 
     return { ...result, list };

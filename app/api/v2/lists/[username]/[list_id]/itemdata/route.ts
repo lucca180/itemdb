@@ -1,5 +1,6 @@
 import { wantsFresh } from '@app/server/items/itemV2Cache';
 import { ListService } from '@services/ListService';
+import { LIST_ITEMS_MAX_LIMIT } from '@services/list/listItemsV2';
 import { parseItemIntent } from '@types';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { trackItemQuota } from '@utils/api/redis';
@@ -19,7 +20,9 @@ type RouteContext = {
  * opt-in via `?includeHidden=true` and still gated to the owner/admin.
  *
  * Query params: `intent` (default `card`), `asObject` (v1 parity),
- * `includeHidden`, `fresh`.
+ * `includeHidden`, `fresh`, `page` (1-based, default 1) and `limit` (default and
+ * max {@link LIST_ITEMS_MAX_LIMIT}). When more items remain after the requested
+ * page, the response sets `x-itemdb-has-next-page: true`.
  */
 export async function GET(request: NextRequest, context: RouteContext) {
   const { username, list_id } = await context.params;
@@ -36,6 +39,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const asObject = searchParams.get('asObject') === 'true';
   const includeHidden = searchParams.get('includeHidden') === 'true';
   const fresh = wantsFresh(request.url);
+  const page = Math.max(parseInt(searchParams.get('page') ?? '') || 1, 1);
+  const limit = Math.min(
+    Math.max(parseInt(searchParams.get('limit') ?? '') || LIST_ITEMS_MAX_LIMIT, 1),
+    LIST_ITEMS_MAX_LIMIT
+  );
 
   // List resolution, visibility (`canSeeList`), the dynamic-search guard and
   // hidden-item authorization all live in `ListService.getListItemsV2`; the
@@ -49,6 +57,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     asObject,
     includeHidden,
     fresh,
+    page,
+    limit,
   });
 
   if (!result) {
@@ -59,7 +69,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const { data, dbCount, list } = result;
+  const { data, dbCount, hasNextPage, list } = result;
 
   // Only Prisma-backed items count; quota is off the hot path.
   if (dbCount > 0) {
@@ -72,6 +82,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       // Any `includeHidden` request stays private — never let the CDN cache a
       // hidden-items variant (even when the flag ends up ungranted).
       'Cache-Control': cacheControl({ includeHidden, fresh, official: !!list.official }),
+      'x-itemdb-has-next-page': String(hasNextPage),
     },
   });
 }

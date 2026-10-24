@@ -137,6 +137,16 @@ describe.concurrent('List Service tests', () => {
       expect(listItemsRes?.find((i) => i.internal_id === testList.hiddenItem)).toBeUndefined();
     });
 
+    test('Get List Item Data respects limit', async () => {
+      const listItemsRes = await listService.getListItems({
+        listId: testList.list_id,
+        username: testList.username,
+        limit: 4,
+      });
+
+      expect(listItemsRes?.length).toBe(4);
+    });
+
     test('Get List Item Info', async () => {
       const listItemsProm = listService.getListItemInfo({
         listId: testList.list_id,

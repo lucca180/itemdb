@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { redis_setDataCount } from '@utils/api/redis';
 import { ListService } from '@services/ListService';
+import { LIST_ITEMS_MAX_LIMIT } from '@services/list/listItemsV2';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -34,6 +35,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       username,
       list_id_or_slug,
       asObject: asObject === 'true',
+      limit: LIST_ITEMS_MAX_LIMIT,
     });
 
     startTime = updateServerTime('get-item-data', startTime, res);
