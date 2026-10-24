@@ -1,6 +1,5 @@
 import { wantsFresh } from '@app/server/items/itemV2Cache';
-import { ListService } from '@services/ListService';
-import { LIST_ITEMS_MAX_LIMIT } from '@services/list/listItemsV2';
+import { ListService, LIST_ITEMS_MAX_LIMIT } from '@services/ListService';
 import { parseItemIntent } from '@types';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { trackItemQuota } from '@utils/api/redis';

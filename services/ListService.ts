@@ -44,6 +44,8 @@ import {
   type GetUserListsOptions,
 } from '@services/list/userListsQuery';
 import { fetchListItemsV2, type FetchListItemsV2Result } from '@services/list/listItemsV2';
+
+export { LIST_ITEMS_MAX_LIMIT } from '@services/list/listItemsV2';
 import { adminListSeoWriteData, getListSeo } from '@services/list/listSeo';
 
 export {

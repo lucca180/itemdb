@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { redis_setDataCount } from '@utils/api/redis';
-import { ListService } from '@services/ListService';
-import { LIST_ITEMS_MAX_LIMIT } from '@services/list/listItemsV2';
+import { ListService, LIST_ITEMS_MAX_LIMIT } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
