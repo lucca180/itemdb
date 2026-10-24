@@ -202,45 +202,68 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
-  const today = new Date().getDate();
+  const history = await prisma.priceProcessHistory.deleteMany({});
+  const priceProcess2 = await cleanupPriceProcess();
 
-  // only clean up every 15 days
-  if ((today % 15) - 1 !== 0) {
-    const result = await prisma.priceProcessHistory.deleteMany({});
-    return res.send(result);
+  return res.send({ priceProcessHistory: history.count, priceProcess2 });
+};
+
+// Each statement has to stay far below the pool statement timeout (a single big DELETE gets
+// killed and rolled back, deleting nothing), so the cleanup runs in small LIMIT batches.
+const CLEANUP_BATCH_SIZE = 5000;
+// Keeps the whole request under the proxy timeout; what is left is picked up by the next call.
+const CLEANUP_TIME_BUDGET_MS = 75 * 1000;
+
+/**
+ * Deletes stale PriceProcess2 rows in batches until nothing is left to delete or the time
+ * budget runs out. Safe to call as often as wanted, `done: false` means there is more to do.
+ */
+export const cleanupPriceProcess = async (timeBudgetMs = CLEANUP_TIME_BUDGET_MS) => {
+  const deadline = Date.now() + timeBudgetMs;
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  const maxAgeCutoff = new Date(Date.now() - (MAX_PAST_DAYS + 7) * dayMs);
+  const processedCutoff = new Date(Date.now() - 45 * dayMs);
+  const supersededCutoff = new Date(Date.now() - 30 * dayMs);
+
+  const limit = Prisma.raw(String(CLEANUP_BATCH_SIZE));
+
+  const steps = {
+    // anything older than the max lookback is useless, processed or not
+    expired: () =>
+      prisma.$executeRaw`DELETE FROM PriceProcess2 WHERE addedAt < ${maxAgeCutoff} LIMIT ${limit}`,
+    processed: () =>
+      prisma.$executeRaw`
+        DELETE FROM PriceProcess2
+        WHERE processed = true AND addedAt < ${processedCutoff}
+        LIMIT ${limit}
+      `,
+    // rows older than a newer price of the same item
+    superseded: () =>
+      prisma.$executeRaw`
+        DELETE FROM PriceProcess2
+        WHERE addedAt < ${supersededCutoff}
+          AND EXISTS (
+            SELECT 1 FROM ItemPrices i
+            WHERE i.item_iid = PriceProcess2.item_iid AND i.addedAt > PriceProcess2.addedAt
+          )
+        LIMIT ${limit}
+      `,
+  };
+
+  const deleted = { expired: 0, processed: 0, superseded: 0 };
+
+  for (const step of Object.keys(steps) as (keyof typeof steps)[]) {
+    let count: number;
+    do {
+      if (Date.now() >= deadline) return { ...deleted, done: false };
+
+      count = await steps[step]();
+      deleted[step] += count;
+    } while (count >= CLEANUP_BATCH_SIZE);
   }
 
-  const result = await Promise.all([
-    prisma.priceProcessHistory.deleteMany({}),
-    prisma.priceProcess2.deleteMany({
-      where: {
-        OR: [
-          {
-            processed: true,
-            addedAt: {
-              lt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-            },
-          },
-          {
-            addedAt: {
-              lt: new Date(Date.now() - (MAX_PAST_DAYS + 7) * 24 * 60 * 60 * 1000),
-            },
-          },
-        ],
-      },
-    }),
-  ]);
-
-  const formatedErase = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-  await prisma.$executeRaw`
-    delete from priceprocess2 p 
-    where 
-      exists (select 1 from itemprices i where i.addedAt > p.addedAt and i.item_iid = p.item_iid) and
-      addedAt < ${formatedErase}
-  `;
-
-  return res.send(result);
+  return { ...deleted, done: true };
 };
 
 export const doProcessPrices = async (
@@ -354,8 +377,7 @@ export const doProcessPrices = async (
 };
 
 type UpdateOrAddResult =
-  | { data: Prisma.ItemPricesUncheckedCreateInput }
-  | { reason: PriceSkipReason };
+  { data: Prisma.ItemPricesUncheckedCreateInput } | { reason: PriceSkipReason };
 
 async function updateOrAddDB(
   priceData: PriceProcess2,
