@@ -1,16 +1,14 @@
-import { Menu, Button, Badge, Tooltip, Portal, useDisclosure, Icon } from '@chakra-ui/react';
-import { BsBoxArrowInRight } from 'react-icons/bs';
+import { Button, useDisclosure } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ItemData, ListItemInfo, UserListLite } from '../../types';
 import { useAuth } from '../../utils/auth';
-import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
-import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
 import { isDynamicActionDisabled } from '../../utils/utils';
 import { useLists } from '../../utils/useLists';
+import ListMenu from '@components/UserLists/ListMenu';
 
 const DuplicatedItemModal = dynamic(() => import('../Modal/DuplicatedItemModal'));
 
@@ -24,14 +22,12 @@ type Props = {
 const AddToListSelect = (props: Props) => {
   const t = useTranslations();
   const { item } = props;
-  const { user, authLoading, openLogin } = useAuth();
-  const { lists, isLoading, revalidate } = useLists();
+  const { user } = useAuth();
+  const { lists, revalidate } = useLists();
   const { open, onOpen, onClose } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserListLite | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
   const toast = useToast();
-
-  const sorted = useMemo(() => [...lists].sort((a, b) => SortListByChange(a, b)), [lists]);
 
   const addItemToList = async (list_id: number) => {
     if (!user) return;
@@ -115,131 +111,20 @@ const AddToListSelect = (props: Props) => {
           itemInfo={duplicatedItem}
         />
       )}
-      <Menu.Root
-        lazyMount
-        onOpenChange={({ open }) => {
-          if (open) window.umami?.track(TRACK_EVENT, { label: 'open' });
-        }}
+      <ListMenu
+        onSelect={(list) => addItemToList(list.internal_id)}
+        onCreateNew={createNewList}
+        isItemDisabled={(list) => isDynamicActionDisabled('add', list.dynamicType)}
+        trackEvent={TRACK_EVENT}
+        loginSource="add-to-list"
+        loginTrigger="item-page-list-menu"
       >
-        <Menu.Trigger asChild>
-          <Button colorPalette="whiteAlpha" variant="subtle" w="100%">
-            {t('Lists.add-to-list')}
-          </Button>
-        </Menu.Trigger>
-        <Portal>
-          <Menu.Positioner>
-            <Menu.Content maxH="50vh" overflow="auto">
-              {sorted.length !== 0 && (
-                <>
-                  {sorted.map((list) => (
-                    <Menu.Item
-                      _hover={{ bg: 'blackAlpha.300' }}
-                      cursor="pointer"
-                      key={list.internal_id}
-                      value={String(list.internal_id)}
-                      onClick={() => {
-                        window.umami?.track(TRACK_EVENT, { label: 'select' });
-                        addItemToList(list.internal_id);
-                      }}
-                      disabled={isDynamicActionDisabled('add', list.dynamicType)}
-                      whiteSpace={'wrap'}
-                      maxW={'90vw'}
-                    >
-                      {list.name}
-                      {list.purpose !== 'none' && !list.official && (
-                        <Tooltip.Root positioning={{ placement: 'top' }}>
-                          <Tooltip.Trigger asChild>
-                            <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-                          </Tooltip.Trigger>
-                          <Tooltip.Positioner>
-                            <Tooltip.Content fontSize="sm">{list.purpose}</Tooltip.Content>
-                          </Tooltip.Positioner>
-                        </Tooltip.Root>
-                      )}
-                      {list.official && (
-                        <Tooltip.Root positioning={{ placement: 'top' }}>
-                          <Tooltip.Trigger asChild>
-                            <Badge ml={1} colorPalette="blue">
-                              ✓
-                            </Badge>
-                          </Tooltip.Trigger>
-                          <Tooltip.Positioner>
-                            <Tooltip.Content fontSize="sm">official</Tooltip.Content>
-                          </Tooltip.Positioner>
-                        </Tooltip.Root>
-                      )}
-                      {list.dynamicType && (
-                        <Tooltip.Root positioning={{ placement: 'top' }}>
-                          <Tooltip.Trigger asChild>
-                            <Badge
-                              ml={1}
-                              colorPalette="orange"
-                              display={'inline-flex'}
-                              alignItems="center"
-                              p={'2px'}
-                            >
-                              <NextImage
-                                src={DynamicIcon}
-                                alt="lightning bolt"
-                                width={8}
-                                style={{ display: 'inline' }}
-                              />
-                            </Badge>
-                          </Tooltip.Trigger>
-                          <Tooltip.Positioner>
-                            <Tooltip.Content fontSize="sm">
-                              {list.dynamicType} {t('General.dynamic-list')}
-                            </Tooltip.Content>
-                          </Tooltip.Positioner>
-                        </Tooltip.Root>
-                      )}
-                    </Menu.Item>
-                  ))}
-                  <Menu.Separator />
-                </>
-              )}
-
-              {user && !authLoading && !isLoading && (
-                <Menu.Item
-                  value="create-new"
-                  onClick={() => {
-                    window.umami?.track(TRACK_EVENT, { label: 'create-new' });
-                    createNewList();
-                  }}
-                >
-                  + {t('Lists.create-new-list')}
-                </Menu.Item>
-              )}
-
-              {(authLoading || isLoading) && (
-                <Menu.Item value="loading" justifyContent="center" disabled>
-                  {t('Layout.loading')}....
-                </Menu.Item>
-              )}
-              {!user && !authLoading && (
-                <Menu.Item
-                  value="login-required"
-                  justifyContent="center"
-                  cursor="pointer"
-                  onClick={() => openLogin('add-to-list', { trigger: 'item-page-list-menu' })}
-                >
-                  <Icon as={BsBoxArrowInRight} />
-                  {t('Lists.login-to-use-lists')}
-                </Menu.Item>
-              )}
-            </Menu.Content>
-          </Menu.Positioner>
-        </Portal>
-      </Menu.Root>
+        <Button colorPalette="whiteAlpha" variant="subtle" w="100%">
+          {t('Lists.add-to-list')}
+        </Button>
+      </ListMenu>
     </>
   );
 };
 
 export default AddToListSelect;
-
-function SortListByChange(a: UserListLite, b: UserListLite) {
-  const dateA = new Date(a.updatedAt);
-  const dateB = new Date(b.updatedAt);
-
-  return dateB.getTime() - dateA.getTime();
-}

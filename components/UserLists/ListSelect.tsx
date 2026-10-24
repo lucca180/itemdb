@@ -1,6 +1,5 @@
 import { ChevronDownIcon } from '@utils/theme/chakraIcons';
-import { Menu, Button, Badge, Tooltip, Portal, Text, Input, Box, Icon } from '@chakra-ui/react';
-import { BsBoxArrowInRight } from 'react-icons/bs';
+import { Button, Badge, Text } from '@chakra-ui/react';
 import axios from 'axios';
 import type { RefObject } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -12,7 +11,7 @@ import NextImage from 'next/image';
 import { useLists } from '@utils/useLists';
 import { useToast } from '@utils/theme/toast';
 import { useTranslations } from 'next-intl';
-import { ViewportList } from 'react-viewport-list';
+import ListMenu from '@components/UserLists/ListMenu';
 
 type Props = {
   onChange?: (list: UserListLite) => void;
@@ -31,28 +30,15 @@ type Props = {
   loginTrigger?: string;
 };
 
-const LIST_SEARCH_THRESHOLD = 8;
-
 const ListSelect = (props: Props) => {
   const t = useTranslations();
-  const { user, authLoading, openLogin } = useAuth();
+  const { user, authLoading } = useAuth();
   const toast = useToast();
   const [forceSelected, setSelected] = useState<UserListLite | undefined>(props.defaultValue);
-  const [listSearch, setListSearch] = useState('');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { lists, isLoading, revalidate } = useLists();
   const sorted = useMemo(() => [...lists].sort((a, b) => SortListByChange(a, b)), [lists]);
-  const showSearch = sorted.length >= (props.searchThreshold ?? LIST_SEARCH_THRESHOLD);
-  const filteredLists = useMemo(() => {
-    const search = listSearch.trim().toLowerCase();
-    if (!showSearch || !search) return sorted;
-
-    return sorted.filter((list) => list.name.toLowerCase().includes(search));
-  }, [listSearch, showSearch, sorted]);
   const prevDefaultValue = useRef(props.defaultValue);
-  const menuListRef = useRef<HTMLDivElement | null>(null);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedList = useMemo(() => {
     if (props.defaultValue && prevDefaultValue.current !== props.defaultValue) {
@@ -69,17 +55,6 @@ const ListSelect = (props: Props) => {
     const recommended = sorted.find((l) => l.linkedListId === props.recommended_id);
     if (recommended) handleSelect(recommended);
   }, [sorted, props.recommended_id, forceSelected]);
-
-  useEffect(() => {
-    if (!isMenuOpen || !showSearch) return;
-
-    const timeout = window.setTimeout(() => {
-      searchInputRef.current?.focus();
-      searchInputRef.current?.select();
-    }, 0);
-
-    return () => window.clearTimeout(timeout);
-  }, [isMenuOpen, showSearch]);
 
   const handleSelect = (list: UserListLite) => {
     setSelected(list);
@@ -125,226 +100,67 @@ const ListSelect = (props: Props) => {
   };
 
   return (
-    <Menu.Root
-      lazyMount
-      open={isMenuOpen}
-      onOpenChange={(details) => {
-        setIsMenuOpen(details.open);
-        if (!details.open) setListSearch('');
-      }}
+    <ListMenu
+      onSelect={handleSelect}
+      onCreateNew={props.createNew ? createNewList : undefined}
+      searchThreshold={props.searchThreshold}
+      portalRef={props.portalRef}
+      trackEvent={props.trackEvent}
+      loginSource={props.loginSource}
+      loginTrigger={props.loginTrigger}
     >
-      <Menu.Trigger asChild>
-        <Button
-          whiteSpace={'normal'}
-          colorPalette={'whiteAlpha'}
-          variant="subtle"
-          size={props.size}
-          fontSize={{ base: 'xs', md: 'sm' }}
-          loading={isLoading || authLoading || isCreating}
-          data-umami-event={props.trackEvent}
-          data-umami-event-label={props.trackEvent ? 'open' : undefined}
-        >
-          {selectedList && (
-            <>
-              <Text
-                as="span"
-                display="inline-block"
-                maxW={{ base: '140px', md: '220px' }}
-                overflow="hidden"
-                textOverflow="ellipsis"
-                verticalAlign="bottom"
-                whiteSpace="nowrap"
-                title={selectedList.name}
+      <Button
+        whiteSpace={'normal'}
+        colorPalette={'whiteAlpha'}
+        variant="subtle"
+        size={props.size}
+        fontSize={{ base: 'xs', md: 'sm' }}
+        loading={isLoading || authLoading || isCreating}
+      >
+        {selectedList && (
+          <>
+            <Text
+              as="span"
+              display="inline-block"
+              maxW={{ base: '140px', md: '220px' }}
+              overflow="hidden"
+              textOverflow="ellipsis"
+              verticalAlign="bottom"
+              whiteSpace="nowrap"
+              title={selectedList.name}
+            >
+              {selectedList.name}
+            </Text>
+            {selectedList.purpose !== 'none' && !selectedList.official && (
+              <Badge ml={1}>{selectedList.purpose === 'seeking' ? 's' : 't'}</Badge>
+            )}
+            {selectedList.official && (
+              <Badge ml={1} colorPalette="blue">
+                ✓
+              </Badge>
+            )}
+            {selectedList.dynamicType && (
+              <Badge
+                ml={1}
+                colorPalette="orange"
+                display={'inline-flex'}
+                alignItems="center"
+                p={'2px'}
               >
-                {selectedList.name}
-              </Text>
-              {selectedList.purpose !== 'none' && !selectedList.official && (
-                <Badge ml={1}>{selectedList.purpose === 'seeking' ? 's' : 't'}</Badge>
-              )}
-              {selectedList.official && (
-                <Badge ml={1} colorPalette="blue">
-                  ✓
-                </Badge>
-              )}
-              {selectedList.dynamicType && (
-                <Badge
-                  ml={1}
-                  colorPalette="orange"
-                  display={'inline-flex'}
-                  alignItems="center"
-                  p={'2px'}
-                >
-                  <NextImage
-                    src={DynamicIcon}
-                    alt="lightning bolt"
-                    width={8}
-                    style={{ display: 'inline' }}
-                  />
-                </Badge>
-              )}
-            </>
-          )}
-          {!selectedList && (props.defaultText ?? t('Lists.select-list'))}
-          <ChevronDownIcon />
-        </Button>
-      </Menu.Trigger>
-      <Portal container={props.portalRef}>
-        <Menu.Positioner>
-          <Menu.Content ref={menuListRef} zIndex="popover" maxH="30vh" overflow="auto">
-            {showSearch && (
-              <Box p={2}>
-                <Input
-                  ref={searchInputRef}
-                  size="sm"
-                  value={listSearch}
-                  placeholder={t('Search.search')}
-                  variant={'subtle'}
-                  bg="blackAlpha.300"
-                  borderRadius={'md'}
-                  onChange={(e) => setListSearch(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  onFocus={(e) => e.target.select()}
-                  onKeyDown={(e) => e.stopPropagation()}
+                <NextImage
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={8}
+                  style={{ display: 'inline' }}
                 />
-              </Box>
+              </Badge>
             )}
-            {sorted.length !== 0 && (
-              <>
-                <ViewportList
-                  items={filteredLists}
-                  viewportRef={menuListRef}
-                  itemSize={40}
-                  initialPrerender={8}
-                  overscan={8}
-                >
-                  {(list) => (
-                    <Menu.Item
-                      key={list.internal_id}
-                      value={String(list.internal_id)}
-                      onClick={() => {
-                        if (props.trackEvent)
-                          window.umami?.track(props.trackEvent, { label: 'select' });
-                        handleSelect(list);
-                      }}
-                      _hover={{ bg: 'whiteAlpha.100' }}
-                      cursor="pointer"
-                    >
-                      <Text
-                        as="span"
-                        flex="1"
-                        maxW={'220px'}
-                        minW={0}
-                        overflow="hidden"
-                        textOverflow="ellipsis"
-                        whiteSpace="nowrap"
-                        title={list.name}
-                      >
-                        {list.name}
-                      </Text>
-                      {list.purpose !== 'none' && !list.official && (
-                        <Tooltip.Root positioning={{ placement: 'top' }}>
-                          <Tooltip.Trigger asChild>
-                            <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-                          </Tooltip.Trigger>
-                          <Tooltip.Positioner>
-                            <Tooltip.Content fontSize="sm">{list.purpose}</Tooltip.Content>
-                          </Tooltip.Positioner>
-                        </Tooltip.Root>
-                      )}
-                      {list.official && (
-                        <Tooltip.Root positioning={{ placement: 'top' }}>
-                          <Tooltip.Trigger asChild>
-                            <Badge ml={1} colorPalette="blue">
-                              ✓
-                            </Badge>
-                          </Tooltip.Trigger>
-                          <Tooltip.Positioner>
-                            <Tooltip.Content fontSize="sm">official</Tooltip.Content>
-                          </Tooltip.Positioner>
-                        </Tooltip.Root>
-                      )}
-                      {list.dynamicType && (
-                        <Tooltip.Root positioning={{ placement: 'top' }}>
-                          <Tooltip.Trigger asChild>
-                            <Badge
-                              ml={1}
-                              colorPalette="orange"
-                              display={'inline-flex'}
-                              alignItems="center"
-                              p={'2px'}
-                            >
-                              <NextImage
-                                src={DynamicIcon}
-                                alt="lightning bolt"
-                                width={8}
-                                style={{ display: 'inline' }}
-                              />
-                            </Badge>
-                          </Tooltip.Trigger>
-                          <Tooltip.Positioner>
-                            <Tooltip.Content fontSize="sm">
-                              {list.dynamicType} Dynamic List
-                            </Tooltip.Content>
-                          </Tooltip.Positioner>
-                        </Tooltip.Root>
-                      )}
-                    </Menu.Item>
-                  )}
-                </ViewportList>
-                {filteredLists.length === 0 && (
-                  <Menu.Item value="no-lists" disabled justifyContent="center">
-                    {t('ItemPage.no-lists-found')}
-                  </Menu.Item>
-                )}
-                {props.createNew && <Menu.Separator />}
-              </>
-            )}
-
-            {user && !isLoading && lists.length === 0 && (
-              <Menu.Item value="empty-lists" disabled justifyContent="center">
-                {t('ItemPage.no-lists-found')}
-              </Menu.Item>
-            )}
-
-            {isLoading && (
-              <Menu.Item value="loading" disabled justifyContent="center">
-                {t('Layout.loading')}...
-              </Menu.Item>
-            )}
-
-            {!user && !authLoading && (
-              <Menu.Item
-                value="login-required"
-                justifyContent="center"
-                cursor="pointer"
-                _hover={{ bg: 'whiteAlpha.100' }}
-                onClick={() =>
-                  openLogin(props.loginSource ?? 'add-to-list', {
-                    trigger: props.loginTrigger ?? 'list-select',
-                  })
-                }
-              >
-                <Icon as={BsBoxArrowInRight} />
-                {t('Lists.login-to-use-lists')}
-              </Menu.Item>
-            )}
-
-            {user && !isLoading && props.createNew && (
-              <Menu.Item
-                value="create-new"
-                onClick={createNewList}
-                _hover={{ bg: 'whiteAlpha.100' }}
-                cursor="pointer"
-                data-umami-event={props.trackEvent}
-                data-umami-event-label={props.trackEvent ? 'create-new' : undefined}
-              >
-                + {t('Lists.create-new-list')}
-              </Menu.Item>
-            )}
-          </Menu.Content>
-        </Menu.Positioner>
-      </Portal>
-    </Menu.Root>
+          </>
+        )}
+        {!selectedList && (props.defaultText ?? t('Lists.select-list'))}
+        <ChevronDownIcon />
+      </Button>
+    </ListMenu>
   );
 };
 
