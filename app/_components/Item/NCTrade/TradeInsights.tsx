@@ -289,18 +289,20 @@ async function ListReleaseCard({ release, parentData, itemData, item, now }: Lis
           </Link>
         </Text>
       )}
-      <Text>
-        <Link asChild>
-          <I18nLink
-            href={`/lists/official/${release.slug}`}
-            prefetch={false}
-            data-umami-event="nc-insights"
-            data-umami-event-label="nc-list"
-          >
-            {release.name}
-          </I18nLink>
-        </Link>
-      </Text>
+      {!capItem && (
+        <Text>
+          <Link asChild>
+            <I18nLink
+              href={`/lists/official/${release.slug}`}
+              prefetch={false}
+              data-umami-event="nc-insights"
+              data-umami-event-label="nc-list"
+            >
+              {release.name}
+            </I18nLink>
+          </Link>
+        </Text>
+      )}
       <Text fontSize="xs" color="whiteAlpha.700">
         {format.dateTime(new Date(seriesStart ?? 0), { dateStyle: 'medium' })}
         {seriesEnd && <> - {format.dateTime(new Date(seriesEnd), { dateStyle: 'medium' })}</>}
