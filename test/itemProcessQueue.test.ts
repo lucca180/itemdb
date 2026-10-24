@@ -71,6 +71,38 @@ describe('buildItemProcessRows', () => {
     expect(rows[0].hash).toBeTruthy();
   });
 
+  test('drops trading and auctioned special types', () => {
+    const [row] = buildItemProcessRows(
+      [
+        {
+          itemId: 99975,
+          name: 'Some Item',
+          img: 'https://images.neopets.com/items/some_item.gif',
+          subText: '(wearable) (trading) (Auctioned)',
+        },
+      ],
+      { language: 'en' }
+    );
+
+    expect(row.specialType).toBe('wearable');
+    expect(row.isWearable).toBe(true);
+  });
+
+  test('leaves specialType empty when only ignored types are present', () => {
+    const [row] = buildItemProcessRows(
+      [
+        {
+          name: 'Some Item',
+          img: 'https://images.neopets.com/items/some_item.gif',
+          subText: '(trading)',
+        },
+      ],
+      { language: 'en' }
+    );
+
+    expect(row.specialType).toBeUndefined();
+  });
+
   test('skips invalid images and empty names', () => {
     const rows = buildItemProcessRows([
       {

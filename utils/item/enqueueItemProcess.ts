@@ -3,6 +3,7 @@ import hash from 'object-hash';
 import prisma from '@utils/prisma';
 import { allCategories } from '@utils/allCats';
 import { getImageId } from '@utils/item/imageId';
+import { stripIgnoredSpecialTypes } from '@utils/item/itemFieldMerge';
 import {
   processItemProcessQueue,
   type ProcessItemQueueOptions,
@@ -115,7 +116,7 @@ export function buildItemProcessRows(
 
     status = status ?? 'active';
 
-    specialTypes = specialTypes?.length > 0 ? specialTypes?.toString() : undefined;
+    specialTypes = stripIgnoredSpecialTypes(specialTypes.toString());
 
     if (category && !allCategories.includes(category.toLowerCase())) continue;
 

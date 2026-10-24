@@ -9,7 +9,11 @@ import { processOpenableItems } from '@pages/api/v1/items/open';
 import { sendNewItemsHook } from '@utils/discord-hooks';
 import { syncAllDynamicLists } from '@pages/api/v1/lists/sync';
 import { LogService } from '@services/ActionLogService';
-import { mergeItemFieldKey, decodeItemTextFields } from '@utils/item/itemFieldMerge';
+import {
+  mergeItemFieldKey,
+  decodeItemTextFields,
+  stripIgnoredSpecialTypes,
+} from '@utils/item/itemFieldMerge';
 import { parseConflictField } from '@utils/manualCheck/itemProcessDiff';
 import type { ItemData } from '@types';
 
@@ -84,18 +88,13 @@ export async function processItemProcessQueue(
 
   for (const item of uniqueNames) {
     const allItemData = processList.filter((x) => genItemKey(x, true) === genItemKey(item, true));
-    const itemData = { ...item } as ItemProcess;
 
-    for (const itemOtherData of allItemData) {
-      for (const key of Object.keys(itemData) as Array<keyof ItemProcess>) {
-        (itemData as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ||=
-          itemOtherData[key] ?? itemData[key];
-      }
+    deleteIds.push(...allItemData.map((x) => x.internal_id));
 
-      deleteIds.push(itemOtherData.internal_id);
-    }
-
-    groupsToProcess.push({ merged: decodeItemTextFields(itemData), rows: allItemData });
+    groupsToProcess.push({
+      merged: decodeItemTextFields(mergeItemProcessRows(item, allItemData)),
+      rows: allItemData,
+    });
   }
 
   let itemAddList = (
@@ -158,6 +157,22 @@ export async function processItemProcessQueue(
 }
 
 /**
+ * Folds same-item queue rows into `base`: fields `base` is missing are filled from the other rows,
+ * the first row holding a value wins.
+ */
+export function mergeItemProcessRows(base: ItemProcess, rows: ItemProcess[]): ItemProcess {
+  const merged = { ...base } as ItemProcess;
+
+  for (const row of rows) {
+    for (const key of Object.keys(merged) as Array<keyof ItemProcess>) {
+      (merged as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ||= row[key] ?? merged[key];
+    }
+  }
+
+  return merged;
+}
+
+/**
  * Field mapping for a brand-new Items row from a queued ItemProcess entry.
  * Shared by the normal ingest create-path and the admin "force create" manual-check action.
  */
@@ -168,7 +183,7 @@ export function buildNewItemFields(item: ItemProcess, itemSlug: string): Partial
     image_id: item.image_id,
     image: item.image,
     item_id: item.item_id,
-    specialType: item.specialType,
+    specialType: stripIgnoredSpecialTypes(item.specialType),
     category: item.category,
     rarity: item.rarity,
     weight: item.weight,

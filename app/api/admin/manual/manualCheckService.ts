@@ -12,7 +12,7 @@ import {
 import prisma from '@utils/prisma';
 import { slugify } from '@utils/utils';
 import { decodeItemTextFields } from '@utils/item/itemFieldMerge';
-import { buildNewItemFields } from '@utils/item/processItemQueue';
+import { buildNewItemFields, mergeItemProcessRows } from '@utils/item/processItemQueue';
 import { detectWearable } from '@utils/item/detectWearable';
 import { getImageId } from '@utils/item/imageId';
 import type { User } from '@types';
@@ -348,9 +348,24 @@ async function handleItemUpdate(id: number, field: string, value: unknown, user:
  * Items row (optionally linked to `targetId` via canonical_id) and leaves the target untouched.
  */
 async function handleForceCreate(targetId: number, checkID: number, user: User, asClone: boolean) {
-  const process = decodeItemTextFields(
-    await prisma.itemProcess.findUniqueOrThrow({ where: { internal_id: checkID } })
-  );
+  const checkedProcess = await prisma.itemProcess.findUniqueOrThrow({
+    where: { internal_id: checkID },
+  });
+
+  // Same-item reports stuck on this conflict hold data the clicked one may lack (e.g. item_id),
+  // and they're all marked processed below, so fold them in before creating.
+  const siblings = await prisma.itemProcess.findMany({
+    where: {
+      processed: false,
+      manual_check: { contains: `(${targetId})` },
+      name: checkedProcess.name,
+      image_id: checkedProcess.image_id,
+      internal_id: { not: checkID },
+    },
+    orderBy: { internal_id: 'asc' },
+  });
+
+  const process = decodeItemTextFields(mergeItemProcessRows(checkedProcess, siblings));
 
   if (!process.isWearable) {
     process.isWearable = await detectWearable(process.image ?? '').catch(() => false);

@@ -38,14 +38,28 @@ export function decodeItemTextFields<T extends Items | ItemProcess>(record: T): 
   return decoded;
 }
 
-export function cleanSpecialType(specialType: string): string {
-  const skipTypes = ['trading', 'auctioned'];
+/** Transient shop/trade flags shown next to items that say nothing about the item itself. */
+export const IGNORED_SPECIAL_TYPES = ['trading', 'auctioned'];
 
+export function cleanSpecialType(specialType: string): string {
   return specialType
     .split(',')
     .map((x) => x.trim().toLowerCase())
-    .filter((x) => !skipTypes.includes(x))
+    .filter((x) => !IGNORED_SPECIAL_TYPES.includes(x))
     .join(',');
+}
+
+/** Drops the ignored special types but keeps the casing of the rest. Empty result is `undefined`. */
+export function stripIgnoredSpecialTypes(specialType?: string | null): string | undefined {
+  if (!specialType) return undefined;
+
+  const stripped = specialType
+    .split(',')
+    .map((x) => x.trim())
+    .filter((x) => x && !IGNORED_SPECIAL_TYPES.includes(x.toLowerCase()))
+    .join(',');
+
+  return stripped || undefined;
 }
 
 function mergeSpecialType(dbItem: Items, incoming: ItemProcess): void {
@@ -131,6 +145,10 @@ export function mergeItemFieldKey(
   incoming: ItemProcess,
   key: keyof Items
 ): MergeItemFieldResult {
+  if (key === 'specialType' && incoming.specialType) {
+    incoming = { ...incoming, specialType: stripIgnoredSpecialTypes(incoming.specialType) ?? null };
+  }
+
   if (!dbItem[key]) {
     // @ts-expect-error dynamic field assignment mirrors process.ts
     dbItem[key] ||= incoming[key as keyof ItemProcess] ?? dbItem[key];
