@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "itemdb API v2",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "OpenAPI document for /api/v2.",
     "license": {
       "name": "MPL-2.0",
