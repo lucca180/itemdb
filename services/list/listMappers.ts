@@ -1,3 +1,7 @@
+/**
+ * INTERNAL MODULE — do not import this file directly. Go through `@services/ListService`
+ * (enforced by `test/listItemsWrite.guard.test.ts`).
+ */
 import { startOfDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import type { ListItemInfo, User, UserList, UserListLite } from '@types';

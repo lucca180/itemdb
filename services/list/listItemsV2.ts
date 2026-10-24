@@ -1,3 +1,7 @@
+/**
+ * INTERNAL MODULE — do not import this file directly. Go through `@services/ListService`
+ * (enforced by `test/listItemsWrite.guard.test.ts`).
+ */
 import { ItemService } from '@services/ItemService';
 import type { ItemIntent, ItemV2For, UserList } from '@types';
 import { defaultFilters } from '@utils/parseFilters';

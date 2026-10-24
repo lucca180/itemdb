@@ -1,4 +1,8 @@
 /**
+ * INTERNAL MODULE — do not import this file directly. Go through `@services/ListService`
+ * (enforced by `test/listItemsWrite.guard.test.ts`).
+ */
+/**
  * Sole authorized module for mutating `ListItems` rows.
  *
  * Every exported write runs inside a transaction and refreshes `UserList.visibleItemCount`

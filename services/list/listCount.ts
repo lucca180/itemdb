@@ -1,3 +1,7 @@
+/**
+ * INTERNAL MODULE — do not import this file directly. Go through `@services/ListService`
+ * (enforced by `test/listItemsWrite.guard.test.ts`).
+ */
 import { Prisma } from '@prisma/generated/client';
 import type { UserList as RawList } from '@prisma/generated/client';
 import pMap from 'p-map';

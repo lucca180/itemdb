@@ -1,3 +1,7 @@
+/**
+ * INTERNAL MODULE — do not import this file directly. Go through `@services/ListService`
+ * (enforced by `test/listItemsWrite.guard.test.ts`).
+ */
 import prisma from '@utils/prisma';
 
 export const SEO_TITLE_MAX = 255;

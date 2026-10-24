@@ -1,4 +1,8 @@
 /**
+ * INTERNAL MODULE — do not import this file directly. Go through `@services/ListService`
+ * (enforced by `test/listItemsWrite.guard.test.ts`).
+ */
+/**
  * Queries for loading user list collections.
  *
  * Two paths:

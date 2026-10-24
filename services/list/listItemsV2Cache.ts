@@ -1,4 +1,8 @@
 /**
+ * INTERNAL MODULE — do not import this file directly. Go through `@services/ListService`
+ * (enforced by `test/listItemsWrite.guard.test.ts`).
+ */
+/**
  * Redis cache for a list's member item ids (used by `/api/v2/lists/.../itemdata`).
  *
  * We cache only the ORDERED `internal_id`s of a list — not the item payloads.
