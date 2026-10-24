@@ -5,4 +5,5 @@ export const PRICE_CHECKER_ACCENT_RGB = '101, 133, 91';
 
 /** Matches Dynamic Lists icon / orange accent. */
 export const DYNAMIC_LIST_ACCENT = '#e9a23b';
+export const DYNAMIC_LIST_ACCENT_LIGHT = '#f6cd88';
 export const DYNAMIC_LIST_ACCENT_RGB = '233, 162, 59';

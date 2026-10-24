@@ -27,7 +27,7 @@ function stepHref(step: StepKey) {
   return step === 'step-1' ? TAMPERMONKEY_URL : PRICE_CHECKER_SCRIPT_URL;
 }
 
-function StepNumber({ n }: { n: number }) {
+export function StepNumber({ n }: { n: number }) {
   return (
     <Flex
       boxSize="32px"

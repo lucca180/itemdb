@@ -9,9 +9,17 @@ import { DYNAMIC_LIST_ACCENT_RGB } from './priceCheckerTheme';
 
 type PriceCheckerPageCardProps = {
   page: PriceCheckerPage;
+  /** Overrides the default price-checker description (used by the import page). */
+  description?: string;
+  /** Umami event name, defaults to the price checker one. */
+  trackEvent?: string;
 };
 
-export function PriceCheckerPageCard({ page }: PriceCheckerPageCardProps) {
+export function PriceCheckerPageCard({
+  page,
+  description,
+  trackEvent = 'price-checker-page',
+}: PriceCheckerPageCardProps) {
   const t = useTranslations();
   const isChecklist = page.isChecklist;
   const label = t(page.labelKey);
@@ -38,7 +46,7 @@ export function PriceCheckerPageCard({ page }: PriceCheckerPageCardProps) {
         href={page.href}
         target="_blank"
         rel="noopener noreferrer"
-        data-umami-event="price-checker-page"
+        data-umami-event={trackEvent}
         data-umami-event-label={page.id}
         data-umami-event-type={isChecklist ? 'checklist' : 'inventory'}
         color={isChecklist ? 'inherit' : 'white'}
@@ -85,7 +93,7 @@ export function PriceCheckerPageCard({ page }: PriceCheckerPageCardProps) {
               />
             </Flex>
             <Text fontSize="xs" color={mutedColor} lineHeight="1.45">
-              {t(page.descriptionKey)}
+              {description ?? t(page.descriptionKey)}
             </Text>
           </Flex>
         </Flex>
