@@ -61,6 +61,23 @@ function useOfficialListsPage() {
   return context;
 }
 
+// series dates when set, otherwise createdAt
+const getListDate = (list: UserList) =>
+  new Date(list.seriesStart ?? list.seriesEnd ?? list.createdAt);
+
+const sortByListDateDesc = (a: UserList, b: UserList) =>
+  getListDate(b).getTime() - getListDate(a).getTime();
+
+const chunkLists = (lists: UserList[], size: number) =>
+  lists.reduce((acc, cur, i) => {
+    const groupIndex = Math.floor(i / size);
+    if (!acc[groupIndex]) acc[groupIndex] = [];
+    acc[groupIndex].push(cur);
+    return acc;
+  }, [] as UserList[][]);
+
+type ListRow = { type: 'year'; year: number } | { type: 'lists'; lists: UserList[] };
+
 type PageProps = {
   initialCat?: string;
   /** Opens the apply modal on load (`?apply`). */
@@ -94,14 +111,12 @@ export function OfficialListsPageClient({ initialCat, initialApplyOpen, children
     if (selectedCategory === 'all') return allLists;
 
     if (selectedCategory === 'Uncategorized') {
-      return allLists
-        .filter((x) => x.officialTag.length === 0)
-        .sort((a, b) => a.name.localeCompare(b.name));
+      return allLists.filter((x) => x.officialTag.length === 0).sort(sortByListDateDesc);
     }
 
     return allLists
       .filter((x) => x.officialTag.includes(selectedCategory))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort(sortByListDateDesc);
   }, [listsData, selectedCategory]);
 
   const actualLists = filteredLists ?? categoryFilteredLists;
@@ -249,9 +264,16 @@ type AllListsSlotProps = {
   allLists: UserList[];
   categories: string[];
   canEdit: boolean;
+  /** `?groupBy=year` splits the lists under a heading per year. */
+  groupByYear?: boolean;
 };
 
-export function OfficialAllListsSlot({ allLists, categories, canEdit }: AllListsSlotProps) {
+export function OfficialAllListsSlot({
+  allLists,
+  categories,
+  canEdit,
+  groupByYear,
+}: AllListsSlotProps) {
   const t = useTranslations();
   const router = useRouter();
   const { selectedCategory, isSearch, actualLists, setListsData } = useOfficialListsPage();
@@ -261,16 +283,25 @@ export function OfficialAllListsSlot({ allLists, categories, canEdit }: AllLists
     setListsData({ allLists, categories });
   }, [allLists, categories, setListsData]);
 
-  const groupedLists = useMemo(
-    () =>
-      actualLists.reduce((acc, cur, i) => {
-        const groupIndex = Math.floor(i / (rowSize ?? 3));
-        if (!acc[groupIndex]) acc[groupIndex] = [];
-        acc[groupIndex].push(cur);
-        return acc;
-      }, [] as UserList[][]),
-    [actualLists, rowSize]
-  );
+  const rows = useMemo((): ListRow[] => {
+    const size = rowSize ?? 3;
+    if (!groupByYear) {
+      return chunkLists(actualLists, size).map((lists) => ({ type: 'lists', lists }));
+    }
+
+    const byYear = new Map<number, UserList[]>();
+    for (const list of actualLists) {
+      const year = getListDate(list).getUTCFullYear();
+      byYear.set(year, [...(byYear.get(year) ?? []), list]);
+    }
+
+    return [...byYear]
+      .sort(([a], [b]) => b - a)
+      .flatMap(([year, lists]): ListRow[] => [
+        { type: 'year', year },
+        ...chunkLists(lists, size).map((lists): ListRow => ({ type: 'lists', lists })),
+      ]);
+  }, [actualLists, rowSize, groupByYear]);
 
   const refresh = useCallback(() => {
     router.refresh();
@@ -284,19 +315,25 @@ export function OfficialAllListsSlot({ allLists, categories, canEdit }: AllLists
         </Heading>
       )}
 
-      <ViewportList items={groupedLists} viewportRef={null} initialPrerender={3} overscan={3}>
-        {(group, index) => (
-          <Flex gap={[3]} key={index} justifyContent="center" flexWrap={'wrap'}>
-            {group.map((list) => (
-              <UserListCard
-                canEdit={canEdit}
-                key={list.internal_id}
-                list={list}
-                refresh={refresh}
-              />
-            ))}
-          </Flex>
-        )}
+      <ViewportList items={rows} viewportRef={null} initialPrerender={3} overscan={3}>
+        {(row, index) =>
+          row.type === 'year' ? (
+            <Heading key={`year-${row.year}`} size="sm" color="gray.300" mt={index ? 3 : 0}>
+              {row.year}
+            </Heading>
+          ) : (
+            <Flex gap={[3]} key={index} justifyContent="center" flexWrap={'wrap'}>
+              {row.lists.map((list) => (
+                <UserListCard
+                  canEdit={canEdit}
+                  key={list.internal_id}
+                  list={list}
+                  refresh={refresh}
+                />
+              ))}
+            </Flex>
+          )
+        }
       </ViewportList>
 
       {!actualLists.length && (

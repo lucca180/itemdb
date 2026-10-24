@@ -100,9 +100,22 @@ async function OfficialTrendingLists({ canEdit }: { canEdit: boolean }) {
   return <OfficialTrendingListsSlot trendingLists={trendingLists} canEdit={canEdit} />;
 }
 
-async function OfficialAllLists({ canEdit }: { canEdit: boolean }) {
+async function OfficialAllLists({
+  canEdit,
+  groupByYear,
+}: {
+  canEdit: boolean;
+  groupByYear?: boolean;
+}) {
   const { allLists, categories } = await loadOfficialAllLists();
-  return <OfficialAllListsSlot allLists={allLists} categories={categories} canEdit={canEdit} />;
+  return (
+    <OfficialAllListsSlot
+      allLists={allLists}
+      categories={categories}
+      canEdit={canEdit}
+      groupByYear={groupByYear}
+    />
+  );
 }
 
 type OfficialListsPageBodyProps = {
@@ -111,6 +124,8 @@ type OfficialListsPageBodyProps = {
   canEdit: boolean;
   /** `?apply` opens the apply modal on load (linked from the "make your list official" CTAs). */
   initialApplyOpen?: boolean;
+  /** `?groupBy=year` groups the lists by year. */
+  groupByYear?: boolean;
 };
 
 export async function OfficialListsPageBody({
@@ -118,17 +133,23 @@ export async function OfficialListsPageBody({
   initialCat,
   canEdit,
   initialApplyOpen,
+  groupByYear,
 }: OfficialListsPageBodyProps) {
   return (
     <>
       <OfficialListsHeader locale={locale} />
       <Separator />
-      <OfficialListsPageClient initialCat={initialCat} initialApplyOpen={initialApplyOpen}>
+      {/* keyed by category so navigating between ?cat= values resets the client state */}
+      <OfficialListsPageClient
+        key={initialCat ?? 'all'}
+        initialCat={initialCat}
+        initialApplyOpen={initialApplyOpen}
+      >
         <Suspense fallback={<OfficialTrendingListsSkeleton />}>
           <OfficialTrendingLists canEdit={canEdit} />
         </Suspense>
         <Suspense fallback={<OfficialAllListsSkeleton />}>
-          <OfficialAllLists canEdit={canEdit} />
+          <OfficialAllLists canEdit={canEdit} groupByYear={groupByYear} />
         </Suspense>
       </OfficialListsPageClient>
     </>

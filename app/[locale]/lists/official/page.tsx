@@ -17,7 +17,7 @@ const ogImage = {
 
 type OfficialListsPageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ cat?: string; apply?: string }>;
+  searchParams: Promise<{ cat?: string; apply?: string; groupBy?: string }>;
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,7 +47,7 @@ export default function OfficialListsPage({ params, searchParams }: OfficialList
 
 async function OfficialListsPageContent({ params, searchParams }: OfficialListsPageProps) {
   const { locale } = await params;
-  const { cat, apply } = await searchParams;
+  const { cat, apply, groupBy } = await searchParams;
   const { user } = await getServerCurrentUser();
   const canEdit = user?.isAdmin ?? false;
 
@@ -59,6 +59,7 @@ async function OfficialListsPageContent({ params, searchParams }: OfficialListsP
         initialCat={cat}
         canEdit={canEdit}
         initialApplyOpen={apply !== undefined}
+        groupByYear={groupBy === 'year'}
       />
     </>
   );

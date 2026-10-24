@@ -159,7 +159,7 @@ export async function HalloweenHomeCard({ children }: { children: ReactNode }) {
       h={50}
       w={50}
       image="https://images.neopets.com/themes/h5/basic/images/fof-icon.png"
-      viewAllLink="/lists/official?cat=Festival%20of%20Fears"
+      viewAllLink="/lists/official?cat=Festival%20of%20Fears&groupBy=year"
       title={'Festival of Fears'}
       isSmall
       utm_content="halloween-lists"
