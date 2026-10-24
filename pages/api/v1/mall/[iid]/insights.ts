@@ -5,6 +5,7 @@ import { getManyItems } from '../../items/many';
 import { InsightsResponse } from '@types';
 import { rawToList } from '@services/ListService';
 import { OpenableItems } from '@prisma/generated/client';
+import { isAuthoritativeDrop } from '@utils/item/itemDropEvidence';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -53,6 +54,7 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
     [parent_iid: number]: {
       isLE: boolean;
       count: number;
+      isAuthoritative: boolean;
     };
   } = {};
 
@@ -63,8 +65,12 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
       parentData[report.parent_iid] = {
         isLE: false,
         count: 0,
+        isAuthoritative: false,
       };
     }
+
+    if (isAuthoritativeDrop(report)) parentData[report.parent_iid].isAuthoritative = true;
+
     const isManual = report.isManual || report.prizePool;
     parentData[report.parent_iid].count += isManual ? 10 : 1;
 
@@ -77,9 +83,10 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
     }
   });
 
-  // filter parentData to only include items with at least 2 reports
+  // filter parentData to only include items with at least 2 reports (authoritative drops skip this)
   Object.keys(parentData).forEach((key) => {
-    if (parentData[Number(key)].count < 2) {
+    const parent = parentData[Number(key)];
+    if (!parent.isAuthoritative && parent.count < 2) {
       delete parentData[Number(key)];
     }
   });
@@ -114,6 +121,9 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
 
   const itemDataRaw = getManyItems({ id: Object.keys(parentData) });
 
+  // events where the item is listed directly or through one of its parents (e.g. a capsule)
+  const eventItemIds = [Number(item_iid), ...parent_iids];
+
   const ncEventsRaw = prisma.userList.findMany({
     where: {
       official: true,
@@ -122,7 +132,7 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
       },
       items: {
         some: {
-          item_iid: Number(item_iid),
+          item_iid: { in: eventItemIds },
         },
       },
       OR: [
@@ -145,7 +155,7 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
     include: {
       items: {
         where: {
-          item_iid: Number(item_iid),
+          item_iid: { in: eventItemIds },
         },
       },
       user: true,
@@ -189,7 +199,10 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
     return release;
   });
 
-  const lists = ncEvents.map((event) => rawToList(event, event.user, true));
+  // one release per (list, list item) so each entry has a single itemInfo
+  const lists = ncEvents.flatMap((event) =>
+    event.items.map((listItem) => rawToList({ ...event, items: [listItem] }, event.user, true))
+  );
 
   return {
     releases: newReleases.map((release) => {

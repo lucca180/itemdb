@@ -36,7 +36,7 @@ type Props = {
 function getReleaseKey(release: TradeInsightRelease) {
   if (isStudioAvailability(release)) return `studio-${release.internal_id}`;
   if (isMallRelease(release)) return `mall-${release.internal_id}`;
-  return `event-${release.internal_id}`;
+  return `event-${release.internal_id}-${release.itemInfo?.[0]?.item_iid}`;
 }
 
 export async function TradeInsights({ item, insights }: Props) {
@@ -112,7 +112,15 @@ function ReleaseRow({ release, item, insights, now }: ReleaseRowProps) {
           now={now}
         />
       )}
-      {isEventRelease(release) && <ListReleaseCard release={release} item={item} now={now} />}
+      {isEventRelease(release) && (
+        <ListReleaseCard
+          release={release}
+          parentData={insights.parentData}
+          itemData={insights.itemData}
+          item={item}
+          now={now}
+        />
+      )}
       {isStudioAvailability(release) && <StudioReleaseCard release={release} now={now} />}
     </Flex>
   );
@@ -235,28 +243,52 @@ async function getDiscountTooltipLabel(discountBegin: number, discountEnd: numbe
 
 type ListReleaseCardProps = {
   release: UserList;
+  parentData: InsightsResponse['parentData'];
+  itemData: InsightsResponse['itemData'];
   item: ItemData;
   now: number;
 };
 
-async function ListReleaseCard({ release, item, now }: ListReleaseCardProps) {
+async function ListReleaseCard({ release, parentData, itemData, item, now }: ListReleaseCardProps) {
   const t = await getTranslations();
   const format = await getFormatter();
   const isActive = isEventActive(release, now);
   const releaseItem = release.itemInfo?.[0];
+  // the list item is either this item or one of its parents (e.g. a capsule)
+  const parentIid =
+    releaseItem && releaseItem.item_iid !== item.internal_id ? releaseItem.item_iid : null;
+  const capItem = parentIid ? itemData[parentIid.toString()] : undefined;
+  const isLE = parentIid ? (parentData[parentIid]?.isLE ?? false) : false;
   const seriesStart =
     releaseItem?.seriesStart ||
-    dateMax(new Date(release.seriesStart || 0), new Date(item.firstSeen || 0));
+    dateMax(new Date(release.seriesStart || 0), new Date((capItem ?? item).firstSeen || 0));
   const seriesEnd = releaseItem?.seriesEnd || release.seriesEnd;
 
   return (
     <>
       <HStack>
         {isActive && <Badge colorPalette="yellow">{t('ItemPage.buyable-now')}</Badge>}
+        {parentIid && (
+          <Badge colorPalette={isLE ? 'green' : 'gray'}>{isLE ? 'LE' : 'Cap'} Prize</Badge>
+        )}
         {release.officialTag.length > 0 && (
           <Badge colorPalette="orange">{release.officialTag[0]}</Badge>
         )}
       </HStack>
+      {capItem && (
+        <Text>
+          <Link asChild>
+            <I18nLink
+              href={`/item/${capItem.slug}`}
+              prefetch={false}
+              data-umami-event="nc-insights"
+              data-umami-event-label="nc-list-parent"
+            >
+              {capItem.name}
+            </I18nLink>
+          </Link>
+        </Text>
+      )}
       <Text>
         <Link asChild>
           <I18nLink
