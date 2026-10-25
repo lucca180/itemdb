@@ -15,7 +15,7 @@ import type { ImportSummary } from '@utils/list/computeImportSummary';
 import type { ImportItemBadge } from '@utils/list/importItemBadges';
 import type { ImportAmbiguity } from '@utils/list/resolveImportItems';
 
-export const IMPORT_V2_PAGE_SIZE = 30;
+export const IMPORT_V2_PAGE_SIZE = 90;
 
 export type ImportPreviewItemV2 = ImportPreviewItem & {
   badges: ImportItemBadge[];
@@ -64,8 +64,7 @@ export type ImportItemsPageResult = {
  * since thrown server action errors reach the client with a redacted message in production.
  */
 export type ImportActionResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: ImportErrorCode };
+  { success: true; data: T } | { success: false; error: ImportErrorCode };
 
 /** Quantities are handled by `quantityMode` in v2. */
 export type ImportIgnoreV2 = Exclude<ImportIgnore, 'quantity'>;

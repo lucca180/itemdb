@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Price Checker & List Importer
-// @version      2.1.0
+// @version      2.2.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Price check your items, filter, sort and import to your wishlists
@@ -60,7 +60,7 @@ const itemdb_importer = function() {
     `);
   }
 
-  function submitImport({ items, indexType, meta }) {
+  function submitImport({ items, indexType, meta, source }) {
     const form = document.createElement('form');
     form.action = 'https://itemdb.com.br/api/v1/lists/import-session';
     form.method = 'POST';
@@ -71,6 +71,10 @@ const itemdb_importer = function() {
       itemDataJson: JSON.stringify(items),
       indexType,
     };
+
+    if (source) {
+      fields.source = source;
+    }
 
     if (meta) {
       fields.meta = JSON.stringify(meta);
@@ -108,6 +112,7 @@ const itemdb_importer = function() {
     return {
       items: collectSDBItems(),
       indexType: 'item_id',
+      source: 'sdb',
     };
   }
 
@@ -115,6 +120,7 @@ const itemdb_importer = function() {
     return {
       items: collectGalleryRemoveItems(),
       indexType: 'item_id',
+      source: 'gallery',
     };
   }
 
@@ -122,6 +128,7 @@ const itemdb_importer = function() {
     return {
       items: collectClosetItems(),
       indexType: 'item_id',
+      source: 'closet',
     };
   }
 
@@ -132,6 +139,7 @@ const itemdb_importer = function() {
     return {
       items: collectStampItems(),
       indexType: 'image_id',
+      source: 'stamps',
       meta: Number.isFinite(albumID) ? { albumID } : undefined,
     };
   }
@@ -144,6 +152,7 @@ const itemdb_importer = function() {
     return {
       items: collectImageItems(images),
       indexType: 'image_id',
+      source: 'gourmet',
       // food variants may share one image (e.g. the 4 Pinannas) - the page shows it once per food eaten
       meta: { list_id: 72, keyCounts: countRepeatedImages(images) },
     };
@@ -153,6 +162,7 @@ const itemdb_importer = function() {
     return {
       items: collectNeoDeckItems(),
       indexType: 'name',
+      source: 'neodeck',
       meta: { list_id: 248 },
     };
   }
@@ -163,11 +173,12 @@ const itemdb_importer = function() {
     const namedItems = !URLHas('moon') && nl === 'en' ? collectNamedBookItems() : null;
 
     if (namedItems)
-      return { items: namedItems, indexType: 'name_image_id', meta };
+      return { items: namedItems, indexType: 'name_image_id', meta, source: 'books' };
 
     return {
       items: collectImageItems($(".content table img")),
       indexType: 'image_id',
+      source: 'books',
       meta,
     };
   }
@@ -320,6 +331,7 @@ const itemdb_importer = function() {
     return {
       items: item_list,
       indexType: 'item_id',
+      source: 'quickstock',
     };
   }
 
@@ -327,6 +339,7 @@ const itemdb_importer = function() {
     return {
       items: collectMyShopItems(),
       indexType: 'item_id',
+      source: 'shop',
     };
   }
 
@@ -334,6 +347,7 @@ const itemdb_importer = function() {
     return {
       items: collectShed(),
       indexType: 'item_id',
+      source: 'shed',
     };
   }
 

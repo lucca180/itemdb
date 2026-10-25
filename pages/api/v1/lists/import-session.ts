@@ -27,6 +27,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       : null;
     // Old userscripts posted `list_id` as a form field instead of `meta`.
     const list_id = body?.list_id ?? null;
+    const source =
+      typeof body?.source === 'string' && /^[a-z0-9_-]{1,32}$/i.test(body.source)
+        ? body.source.toLowerCase()
+        : null;
 
     if (!items || typeof items !== 'object' || Array.isArray(items)) {
       return res.status(400).json({ error: 'Invalid import data' });
@@ -37,6 +41,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       indexType,
       meta,
       list_id,
+      source,
     });
 
     const locale = resolvePageLocale(

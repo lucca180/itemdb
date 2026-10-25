@@ -10,6 +10,8 @@ export type ListImportSession = {
   /** @deprecated Old userscripts sent this as a form field. Prefer `meta`. */
   list_id?: string | number | null;
   meta?: ListImportMeta | null;
+  /** Where the import came from (e.g. `stamps`, `shop`, `sdb`). Absent on old userscripts. */
+  source?: string | null;
   createdAt: number;
 };
 

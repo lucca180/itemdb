@@ -35,6 +35,8 @@ import { setLastImportListId } from './lastImportList';
 type ImportItemsV2Props = {
   importToken: string;
   itemCount: number;
+  /** Where the import came from (stamps, shop, sdb...); `null` for old userscripts. */
+  source?: string | null;
   recommended_list?: UserList | null;
 };
 
@@ -59,20 +61,28 @@ function getImportErrorCode(err: unknown): ImportErrorCode | null {
   return err instanceof ImportActionError ? err.code : null;
 }
 
-export function ImportItemsV2({ importToken, itemCount, recommended_list }: ImportItemsV2Props) {
+export function ImportItemsV2({
+  importToken,
+  itemCount,
+  source,
+  recommended_list,
+}: ImportItemsV2Props) {
   const t = useTranslations();
   const router = useRouter();
   const toast = useToast();
+  const importSource = source ?? 'unknown';
 
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<ImportSortKey>('price_qty');
-  const [sortDir, setSortDir] = useState<ImportSortDir>('desc');
+  // shop imports open in item id order
+  const [sortBy, setSortBy] = useState<ImportSortKey>(source === 'shop' ? 'item_id' : 'price');
+  const [sortDir, setSortDir] = useState<ImportSortDir>(source === 'shop' ? 'asc' : 'desc');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<ImportFilterType>('all');
   const [result, setResult] = useState<ImportItemsPageResult | null>(null);
   const [loadError, setLoadError] = useState<ImportErrorCode | 'UNKNOWN' | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // key of the last settled request; loading is whatever the current params haven't settled yet
+  const [settledKey, setSettledKey] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [list, setList] = useState<UserListLite | undefined>();
@@ -85,6 +95,8 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
   const hasTrackedSearch = useRef(false);
   const hasTrackedLoad = useRef(false);
   const isTooLarge = itemCount > MAX_IMPORT_ITEMS;
+  const requestKey = JSON.stringify([importToken, page, sortBy, sortDir, search, filter, listId]);
+  const isLoading = !isTooLarge && settledKey !== requestKey;
   const canSubmit = Boolean(list) && !isTooLarge && !loadError && !isSubmitting;
 
   const describeImportError = (code: ImportErrorCode | 'UNKNOWN' | null, actionLabel: string) => {
@@ -109,64 +121,69 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
     }
   };
 
-  const fetchPage = useCallback(async () => {
+  const fetchPage = useCallback(() => {
     if (isTooLarge) {
-      window.umami?.track('import-v2-error', { stage: 'load', code: IMPORT_ERROR.TOO_LARGE });
-      setLoadError(IMPORT_ERROR.TOO_LARGE);
-      setResult(null);
-      setIsLoading(false);
+      window.umami?.track('import-v2-error', {
+        stage: 'load',
+        code: IMPORT_ERROR.TOO_LARGE,
+        source: importSource,
+      });
       return;
     }
 
     const id = ++requestId.current;
-    setIsLoading(true);
-    try {
-      const next = unwrapImportResult(
-        await loadImportItemsPage({
-          importToken,
-          page,
-          pageSize: IMPORT_V2_PAGE_SIZE,
-          sortBy,
-          sortDir,
-          search,
-          filter,
-          listId,
-        })
-      );
-      if (id !== requestId.current) return;
+    const key = requestKey;
 
-      if (!hasTrackedLoad.current) {
-        hasTrackedLoad.current = true;
-        window.umami?.track('import-v2-loaded', {
-          itemCount: next.totalCount,
-          notFound: next.notFoundCount,
-          ambiguous: next.ambiguous.length,
-          hasRecommended: Boolean(recommended_list),
+    // state is only set in the promise callbacks, never synchronously from the calling effect
+    void loadImportItemsPage({
+      importToken,
+      page,
+      pageSize: IMPORT_V2_PAGE_SIZE,
+      sortBy,
+      sortDir,
+      search,
+      filter,
+      listId,
+    })
+      .then((res) => {
+        const next = unwrapImportResult(res);
+        if (id !== requestId.current) return;
+
+        if (!hasTrackedLoad.current) {
+          hasTrackedLoad.current = true;
+          window.umami?.track('import-v2-loaded', {
+            source: importSource,
+            itemCount: next.totalCount,
+            notFound: next.notFoundCount,
+            ambiguous: next.ambiguous.length,
+            hasRecommended: Boolean(recommended_list),
+          });
+        }
+
+        setResult(next);
+        setLoadError(null);
+        if (next.page !== page) setPage(next.page);
+      })
+      .catch((err) => {
+        if (id !== requestId.current) return;
+        console.error(err);
+        const code = getImportErrorCode(err) ?? 'UNKNOWN';
+        window.umami?.track('import-v2-error', { stage: 'load', code, source: importSource });
+        setLoadError(code);
+        setResult(null);
+        toast({
+          id: 'import-v2-load-error',
+          title: t('General.error'),
+          description:
+            code === 'UNKNOWN' ? t('Lists.import-error-load') : describeImportError(code, ''),
+          status: 'error',
+          duration: 10000,
+          isClosable: true,
         });
-      }
-
-      setResult(next);
-      setLoadError(null);
-      if (next.page !== page) setPage(next.page);
-    } catch (err) {
-      if (id !== requestId.current) return;
-      console.error(err);
-      const code = getImportErrorCode(err) ?? 'UNKNOWN';
-      window.umami?.track('import-v2-error', { stage: 'load', code });
-      setLoadError(code);
-      setResult(null);
-      toast({
-        id: 'import-v2-load-error',
-        title: t('General.error'),
-        description:
-          code === 'UNKNOWN' ? t('Lists.import-error-load') : describeImportError(code, ''),
-        status: 'error',
-        duration: 10000,
-        isClosable: true,
+      })
+      .finally(() => {
+        if (id === requestId.current) setSettledKey(key);
       });
-    } finally {
-      if (id === requestId.current) setIsLoading(false);
-    }
   }, [
     importToken,
     page,
@@ -177,12 +194,14 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
     listId,
     isTooLarge,
     recommended_list,
+    importSource,
+    requestKey,
     t,
     toast,
   ]);
 
   useEffect(() => {
-    void fetchPage();
+    fetchPage();
   }, [fetchPage]);
 
   useEffect(() => {
@@ -284,6 +303,7 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
       setLastImportListId(list.internal_id);
 
       window.umami?.track('import-v2-success', {
+        source: importSource,
         action,
         processed: applyResult.processedCount,
         notFound: applyResult.notFoundCount,
@@ -343,7 +363,12 @@ export function ImportItemsV2({ importToken, itemCount, recommended_list }: Impo
     } catch (e) {
       console.error(e);
       const code = getImportErrorCode(e);
-      window.umami?.track('import-v2-error', { stage: 'apply', code: code ?? 'UNKNOWN', action });
+      window.umami?.track('import-v2-error', {
+        stage: 'apply',
+        code: code ?? 'UNKNOWN',
+        action,
+        source: importSource,
+      });
       if (code === IMPORT_ERROR.EXPIRED || code === IMPORT_ERROR.TOO_LARGE) {
         setLoadError(code);
       }

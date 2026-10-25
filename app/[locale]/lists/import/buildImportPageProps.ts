@@ -14,6 +14,8 @@ export type ImportPageLabels = {
   importToken: string | null;
   itemCount: number;
   indexType?: string;
+  /** Import origin sent by the userscript; `null` for old userscripts. */
+  source: string | null;
   recommended_list: UserList | null;
   /** Token was present in the URL but the Redis/dev session is gone. */
   sessionExpired: boolean;
@@ -54,6 +56,7 @@ export async function buildImportPageProps(
     importToken: items ? (importToken ?? null) : null,
     itemCount: items ? Object.keys(items).length : 0,
     indexType: items ? indexType : undefined,
+    source: importSession?.source ?? null,
     recommended_list,
     sessionExpired: Boolean(importToken && !items),
   };

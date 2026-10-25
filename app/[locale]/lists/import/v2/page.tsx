@@ -97,6 +97,7 @@ async function ImportV2PageContent({ params, searchParams }: ImportV2PageProps) 
           <ImportItemsV2
             importToken={labels.importToken}
             itemCount={labels.itemCount}
+            source={labels.source}
             recommended_list={labels.recommended_list}
           />
         </Box>

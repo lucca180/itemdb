@@ -46,6 +46,7 @@ export function AdvancedImportForm({
         <form method="POST" target="_blank" action="/api/v1/lists/import-session">
           <input type="hidden" name="itemDataJson" value={itemDataJson} />
           <input type="hidden" name="indexType" value="name_image_id" />
+          <input type="hidden" name="source" value="advanced" />
           <input type="hidden" name="locale" value={locale} />
           <Textarea
             placeholder={pastePlaceholder}
