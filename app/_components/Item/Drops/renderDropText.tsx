@@ -11,6 +11,17 @@ function getChance(openings: number, totalOpenings: number): string {
   return chance;
 }
 
+const MIN_GUARANTEED_OPENINGS = 10;
+
+export function isGuaranteedPool(pool: PrizePoolData, itemOpenable: ItemOpenable): boolean {
+  if (pool.isLE || pool.isChance || pool.name === 'bonus') return false;
+  if (itemOpenable.isGBC || itemOpenable.isGram) return false;
+  if (pool.openings < MIN_GUARANTEED_OPENINGS) return false;
+
+  const drops = pool.items.map((id) => itemOpenable.drops[id]).filter(Boolean);
+  return drops.length > 0 && drops.every((drop) => drop.dropRate >= 100);
+}
+
 export function renderDropText(
   t: TFunction,
   pool: PrizePoolData | null,
@@ -18,6 +29,14 @@ export function renderDropText(
   isFirst?: boolean
 ): ReactNode {
   const isGram = itemOpenable.isGram;
+
+  if (pool && isGuaranteedPool(pool, itemOpenable)) {
+    return t.rich('Drops.guaranteed', {
+      b: (text) => <b>{text}</b>,
+      isFirst: Boolean(isFirst).toString(),
+      count: pool.items.filter((id) => itemOpenable.drops[id]).length,
+    });
+  }
 
   if (!pool || !pool.isChance || (isGram && !pool.isLE)) {
     const openable = pool ?? itemOpenable;
