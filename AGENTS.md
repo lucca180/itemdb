@@ -35,7 +35,7 @@
 - `@utils` -> `/utils`
 - `@prisma/generated` -> `/prisma/generated`
 - `@types` -> `/types` (`types/index.ts`)
-- `@translations` -> `/translations`
+- `@translations` -> `/translation`
 - `@services` -> `/services`
 - `@assets` -> `/public`
 - `@pages` -> `/pages`

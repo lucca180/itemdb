@@ -42,7 +42,7 @@
         "./types/index.ts"
       ],
       "@translations/*": [
-        "./translations/*"
+        "./translation/*"
       ],
       "@services/*": [
         "./services/*"
