@@ -17,9 +17,12 @@ import {
 import { maybeMarkNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenableFromDrops';
 import { getItemDropSources } from '@utils/item/itemDropSources';
 import { slugifyPoolBase } from '@utils/item/prizePoolName';
+import { doesLeReplaceSlot } from '@utils/item/leSlotReplacement';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
+const isCategoryNote = (note: string) =>
+  catType.includes(note) || !!note.match(/cat\d+y\d+/gim) || !!note.match(/cat\d+/gim);
 const giftBoxes = [65354, 17434, 860];
 
 export const SKIP_ITEMS = [61696, 65743];
@@ -205,6 +208,22 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
   const openingCount = Object.keys(openingSet).length;
   let activePoolOpenings = openingCount;
 
+  // LE that takes the place of a regular drop belongs to the same pool, not to a separate LE one
+  const hasCategoryNotes = drops.some((drop) =>
+    (drop.notes?.toLowerCase().split(',') ?? []).some(
+      (note) => note !== 'le' && isCategoryNote(note)
+    )
+  );
+  const leReplacesSlot =
+    !isNoUnknown &&
+    !hasCategoryNotes &&
+    doesLeReplaceSlot(
+      drops.filter(
+        (drop) =>
+          !isAuthoritativeDrop(drop) && !drop.notes?.toLowerCase().includes(GRAM_OPTION_NOTE)
+      )
+    );
+
   const authoritativeItems: number[] = [];
   let isChoice = false;
   let isZoneCat = false;
@@ -257,7 +276,8 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
         let val = 1;
 
         if (notesList.length === 1) val = 10;
-        if (catType.includes(note) || note.match(/cat\d+y\d+/gim) || note.match(/cat\d+/gim)) {
+        if (isCategoryNote(note)) {
+          if (note === 'le' && leReplacesSlot && !drop.prizePool) return;
           if (note !== 'le') isChoice = true;
           if (catTypeZone.includes(note)) isZoneCat = true;
 

@@ -203,3 +203,84 @@ describe('getItemDrops statistical filtering', () => {
     ]);
   });
 });
+
+describe('getItemDrops limited edition pools', () => {
+  const REGULAR_IDS = [201, 202, 203];
+  const LE_ID = 204;
+
+  const regularOpenings = (perItem: number, extra?: (opening: string) => number[]) =>
+    REGULAR_IDS.flatMap((id) =>
+      Array.from({ length: perItem }, (_, index) => {
+        const opening = `regular-${id}-${index}`;
+        return [
+          drop(opening, id),
+          ...(extra?.(opening) ?? []).map((extraId) => drop(opening, extraId)),
+        ];
+      }).flat()
+    );
+
+  const leOpenings = (count: number, withRegular: boolean) =>
+    Array.from({ length: count }, (_, index) => {
+      const opening = `le-${index}`;
+      return [
+        ...(withRegular ? [drop(opening, REGULAR_IDS[0])] : []),
+        drop(opening, LE_ID, { limitedEdition: true }),
+      ];
+    }).flat();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prismaMock.wearableData.findMany.mockResolvedValue([]);
+    getManyItemsMock.mockResolvedValue({});
+    prismaMock.items.findFirst.mockResolvedValue(item(false));
+  });
+
+  test('keeps a LE that replaces a regular drop in the same pool', async () => {
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      ...regularOpenings(10),
+      ...leOpenings(6, false),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(Object.keys(result?.pools ?? {})).toEqual(['unknown']);
+    expect(result?.pools.unknown.items).toContain(LE_ID);
+    expect(result?.drops[LE_ID].isLE).toBe(true);
+  });
+
+  test('keeps a separate LE pool when the LE is an extra roll', async () => {
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      ...regularOpenings(10),
+      ...leOpenings(6, true),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.pools.le.items).toEqual([LE_ID]);
+    expect(result?.pools.unknown.items).not.toContain(LE_ID);
+  });
+
+  test('keeps a separate LE pool while there are too few LE openings to compare', async () => {
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      ...regularOpenings(10),
+      ...leOpenings(2, false),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.pools.le.items).toEqual([LE_ID]);
+  });
+
+  test('does not override a LE pinned to a pool by name', async () => {
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      ...regularOpenings(10),
+      ...leOpenings(6, false),
+      drop(AUTHORITATIVE_OPENING_IDS[0], LE_ID, { prizePool: 'le-chance-1-1', isManual: true }),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.pools['le-chance-1-1'].items).toEqual([LE_ID]);
+    expect(result?.pools['le-chance-1-1'].isLE).toBe(true);
+  });
+});
