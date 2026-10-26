@@ -265,6 +265,7 @@ function buildOfficialTab(t: T) {
         })}
       </Text>
       <OfficialListCriteria />
+      <Text>{t.rich('Feedback.ol-2', { b: (chunk) => <b>{chunk}</b> })}</Text>
       <Text>
         {t.rich('Feedback.ol-3', {
           Link1: (chunk) => <I18nLink href="/lists/official">{chunk}</I18nLink>,

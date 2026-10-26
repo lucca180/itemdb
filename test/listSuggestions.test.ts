@@ -83,7 +83,10 @@ import {
   submitListSuggestion,
   SuggestionInputError,
 } from '@services/ListSuggestionService';
-import { LIST_SUGGESTION_TYPE } from '@utils/list/listSuggestionsConstants';
+import {
+  LIST_SUGGESTION_TYPE,
+  normalizeSuggestionSource,
+} from '@utils/list/listSuggestionsConstants';
 import { POST as resolvePOST } from '@app/api/admin/list-suggestions/route';
 import type { User } from '@types';
 
@@ -347,5 +350,19 @@ describe('POST /api/admin/list-suggestions', () => {
     const res = await resolvePOST(request({ listId: 7, itemIids: [1], action: 'reject' }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ success: true, resolved: 1 });
+  });
+});
+
+describe('normalizeSuggestionSource', () => {
+  test('keeps known sources', () => {
+    expect(normalizeSuggestionSource('item-page-card')).toBe('item-page-card');
+    expect(normalizeSuggestionSource('item-page-menu')).toBe('item-page-menu');
+    expect(normalizeSuggestionSource('list-page')).toBe('list-page');
+  });
+
+  test('falls back to the list page for unknown values', () => {
+    expect(normalizeSuggestionSource('hacked')).toBe('list-page');
+    expect(normalizeSuggestionSource(undefined)).toBe('list-page');
+    expect(normalizeSuggestionSource(42)).toBe('list-page');
   });
 });

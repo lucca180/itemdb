@@ -9,8 +9,12 @@ import { useTranslations } from 'next-intl';
 import { isDynamicActionDisabled } from '../../utils/utils';
 import { useLists } from '../../utils/useLists';
 import ListMenu from '@components/UserLists/ListMenu';
+import type { SuggestItemToListModalProps } from '@components/Modal/SuggestItemToListModal';
 
 const DuplicatedItemModal = dynamic(() => import('../Modal/DuplicatedItemModal'));
+const SuggestItemToListModal = dynamic<SuggestItemToListModalProps>(
+  () => import('@components/Modal/SuggestItemToListModal')
+);
 
 /** Item page "Add to list" menu: open / select / create-new. */
 const TRACK_EVENT = 'item-add-to-list';
@@ -25,6 +29,7 @@ const AddToListSelect = (props: Props) => {
   const { user } = useAuth();
   const { lists, revalidate } = useLists();
   const { open, onOpen, onClose } = useDisclosure();
+  const { open: isOpenSuggest, onOpen: onOpenSuggest, onClose: onCloseSuggest } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserListLite | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
   const toast = useToast();
@@ -111,9 +116,18 @@ const AddToListSelect = (props: Props) => {
           itemInfo={duplicatedItem}
         />
       )}
+      {isOpenSuggest && (
+        <SuggestItemToListModal
+          isOpen={isOpenSuggest}
+          onClose={onCloseSuggest}
+          item={item}
+          source="item-page-menu"
+        />
+      )}
       <ListMenu
         onSelect={(list) => addItemToList(list.internal_id)}
         onCreateNew={createNewList}
+        onSuggestOfficial={onOpenSuggest}
         isItemDisabled={(list) => isDynamicActionDisabled('add', list.dynamicType)}
         trackEvent={TRACK_EVENT}
         loginSource="add-to-list"

@@ -13,6 +13,7 @@ import {
   type ListSuggestionErrorCode,
   type SubmitListSuggestionResult,
 } from '@services/ListSuggestionService';
+import type { ListSuggestionSource } from '@utils/list/listSuggestionsConstants';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { normalizeIP } from '@utils/api/api-utils';
 import { getFilteredListItems, getListCore, getListFullItems, getListStats } from './loadListPage';
@@ -88,7 +89,8 @@ export async function refreshListData(
 export async function suggestMissingListItems(
   listId: number,
   itemIids: number[],
-  note?: string
+  note?: string,
+  source?: ListSuggestionSource
 ): Promise<
   | ({ success: true } & SubmitListSuggestionResult)
   | { success: false; error: ListSuggestionErrorCode | 'unknown' }
@@ -106,6 +108,7 @@ export async function suggestMissingListItems(
       note,
       user,
       ip: ip ? normalizeIP(ip) : null,
+      source,
     });
 
     return { success: true, ...result };

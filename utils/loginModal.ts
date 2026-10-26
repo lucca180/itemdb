@@ -16,6 +16,7 @@ export const LOGIN_SOURCES = [
   'checklist',
   'nc-report',
   'troubleshooting',
+  'suggest-official-list',
 ] as const;
 
 export type LoginSource = (typeof LOGIN_SOURCES)[number];

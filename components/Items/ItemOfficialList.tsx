@@ -20,6 +20,7 @@ export default async function ItemOfficialLists(props: Props) {
   const { item, lists } = props;
   const officialLists = lists.filter((list) => list.official && list.visibility === 'public');
   const color = Color(item.color.hex);
+  const excludeListIds = lists.map((list) => list.internal_id);
 
   const title = (
     <Link asChild>
@@ -36,7 +37,12 @@ export default async function ItemOfficialLists(props: Props) {
           <Text fontSize="sm" color="whiteAlpha.700">
             {t('ItemPage.no-official-list')}
           </Text>
-          <ItemOfficialListCTA linkColor={linkColor} placement="empty" />
+          <ItemOfficialListCTA
+            item={item}
+            excludeListIds={excludeListIds}
+            linkColor={linkColor}
+            placement="empty"
+          />
         </Flex>
       </CardBase>
     );
@@ -124,7 +130,12 @@ export default async function ItemOfficialLists(props: Props) {
           </Flex>
         ))}
       </Flex>
-      <ItemOfficialListCTA linkColor={linkColor} placement="footer" />
+      <ItemOfficialListCTA
+        item={item}
+        excludeListIds={excludeListIds}
+        linkColor={linkColor}
+        placement="footer"
+      />
     </CardBase>
   );
 }

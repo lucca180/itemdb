@@ -27,6 +27,8 @@ import {
   LIST_SUGGESTION_TYPE,
   MAX_SUGGESTION_ITEMS,
   MAX_SUGGESTION_NOTE_LENGTH,
+  normalizeSuggestionSource,
+  type ListSuggestionSource,
 } from '@utils/list/listSuggestionsConstants';
 
 /** Expected validation failures; returned to the client as-is so it can show a message. */
@@ -67,6 +69,8 @@ type SubmitListSuggestionParams = {
   note?: string | null;
   user: User | null;
   ip?: string | null;
+  /** Untrusted client value; unknown values count as `list-page`. */
+  source?: unknown;
 };
 
 export type SubmitListSuggestionResult = {
@@ -89,6 +93,7 @@ export async function submitListSuggestion({
   note,
   user,
   ip,
+  source,
 }: SubmitListSuggestionParams): Promise<SubmitListSuggestionResult> {
   // --- permission & input validation ---
   if (!user) throw new SuggestionInputError('unauthorized');
@@ -175,6 +180,7 @@ export async function submitListSuggestion({
     itemNames: toCreate.map((iid) => items[iid]?.name ?? `#${iid}`),
     note: trimmedNote,
     username: user.username,
+    source: normalizeSuggestionSource(source),
   }).catch(console.error);
 
   return { created: toCreate, skipped };
@@ -359,10 +365,17 @@ type SuggestionWebhookParams = {
   itemNames: string[];
   note: string | null;
   username: string | null;
+  source: ListSuggestionSource;
 };
 
 /** Posts a Discord embed to FEEDBACK_WEBHOOK (no-op when it's not configured). */
-async function sendSuggestionWebhook({ list, itemNames, note, username }: SuggestionWebhookParams) {
+async function sendSuggestionWebhook({
+  list,
+  itemNames,
+  note,
+  username,
+  source,
+}: SuggestionWebhookParams) {
   if (!process.env.FEEDBACK_WEBHOOK) return;
   const hook = new Webhook(process.env.FEEDBACK_WEBHOOK);
 
@@ -383,6 +396,11 @@ async function sendSuggestionWebhook({ list, itemNames, note, username }: Sugges
     .addField({
       name: 'Nota',
       value: note ? note.slice(0, 1024) : 'Nenhuma nota',
+      inline: true,
+    })
+    .addField({
+      name: 'Origem',
+      value: source,
       inline: true,
     })
     .addField({

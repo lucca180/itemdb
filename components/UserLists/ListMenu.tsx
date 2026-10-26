@@ -17,6 +17,8 @@ type Props = {
   onSelect: (list: UserListLite) => void;
   /** When provided, shows the "+ create new list" entry for logged-in users. */
   onCreateNew?: () => void;
+  /** When provided, shows a "suggest to an official list" entry (for everyone, logged in or not). */
+  onSuggestOfficial?: () => void;
   isItemDisabled?: (list: UserListLite) => boolean;
   searchThreshold?: number;
   portalRef?: RefObject<HTMLElement | null>;
@@ -227,6 +229,24 @@ const ListMenu = (props: Props) => {
               >
                 + {t('Lists.create-new-list')}
               </Menu.Item>
+            )}
+
+            {props.onSuggestOfficial && !isLoading && (
+              <>
+                {(sorted.length !== 0 || !!props.onCreateNew || !user) && <Menu.Separator />}
+                <Menu.Item
+                  value="suggest-official"
+                  onClick={() => {
+                    if (props.trackEvent)
+                      window.umami?.track(props.trackEvent, { label: 'suggest-official' });
+                    props.onSuggestOfficial?.();
+                  }}
+                  _hover={{ bg: 'whiteAlpha.100' }}
+                  cursor="pointer"
+                >
+                  {t('Lists.suggest-to-list-menu')}
+                </Menu.Item>
+              </>
             )}
           </Menu.Content>
         </Menu.Positioner>
