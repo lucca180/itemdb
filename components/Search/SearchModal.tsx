@@ -22,6 +22,7 @@ import { IoSearchOutline } from 'react-icons/io5';
 import { MdArrowDownward, MdArrowUpward, MdOutlineKeyboardReturn } from 'react-icons/md';
 import queryString from 'query-string';
 import { getFiltersDiff, parseFilters } from '@utils/parseFilters';
+import { useSearchListScope } from '@components/Search/searchListScope';
 import { useTranslations } from 'next-intl';
 import type { ItemData, UserList, ShopInfo } from '@types';
 import type { SearchCard } from '@components/Search/SearchModalContent';
@@ -70,6 +71,7 @@ const SearchModal = (props: SearchModalProps) => {
   });
   // Defer heavy results UI only on the first open (INP); keep mounted afterward.
   const [showContent, setShowContent] = useState(false);
+  const listScope = useSearchListScope();
 
   // Reset modal state from the header query when it opens.
   useEffect(() => {
@@ -90,18 +92,23 @@ const SearchModal = (props: SearchModalProps) => {
     return () => cancelAnimationFrame(raf);
   }, [isOpen, showContent]);
 
+  // Filters and sort of the current search carry over to a new query; the page never does.
+  const getUrlFilters = useCallback(() => {
+    const currentPath =
+      router?.asPath ??
+      (typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '');
+    const queryStrings = queryString.parse(currentPath.split('?')[1] || '', {
+      arrayFormat: 'bracket',
+    });
+
+    const urlFilters = getFiltersDiff(queryStrings);
+    delete urlFilters.page;
+    return urlFilters;
+  }, [router?.asPath]);
+
   const buildSearchUrl = useCallback(
     (searchQuery: string) => {
-      const currentPath =
-        router?.asPath ??
-        (typeof window !== 'undefined'
-          ? `${window.location.pathname}${window.location.search}`
-          : '');
-      const queryStrings = queryString.parse(currentPath.split('?')[1] || '', {
-        arrayFormat: 'bracket',
-      });
-
-      const queryFilters = getFiltersDiff(queryStrings);
+      const queryFilters = getUrlFilters();
       const [filters, query] = parseFilters(searchQuery);
       const params = getFiltersDiff(filters);
 
@@ -116,8 +123,13 @@ const SearchModal = (props: SearchModalProps) => {
 
       return `/search?s=${encodeURIComponent(query)}${paramsString}`;
     },
-    [router?.asPath]
+    [getUrlFilters]
   );
+
+  // Read when the modal opens: the URL can change between openings without a re-render here.
+  const urlFilters = useMemo(() => (isOpen ? getUrlFilters() : {}), [isOpen, getUrlFilters]);
+  const listName =
+    listScope && Number(urlFilters.list_id) === listScope.id ? listScope.name : undefined;
 
   const deferredSearch = useDeferredValue(search);
   const liveSearchUrl = useMemo(
@@ -276,6 +288,8 @@ const SearchModal = (props: SearchModalProps) => {
             loading={loading}
             liveSearchUrl={liveSearchUrl}
             buildSearchUrl={buildSearchUrl}
+            inheritedFilters={urlFilters}
+            listName={listName}
             onClose={onClose}
             inputRef={inputRef}
             focusedIndexRef={focusedIndexRef}

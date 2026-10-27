@@ -17,7 +17,7 @@ import {
 import { ItemCardBadge } from '@components/Items/ItemCardBadge';
 import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
 import { getListLink } from '@utils/list/listLink';
-import { ItemData, UserList, ShopInfo } from '@types';
+import { ItemData, UserList, ShopInfo, SearchFilters } from '@types';
 import { slugify } from '@utils/utils';
 import dynamic from 'next/dynamic';
 import { Link } from '@i18n/navigation';
@@ -37,6 +37,8 @@ import { useRouter } from 'next/compat/router';
 import { GrSearchAdvanced } from 'react-icons/gr';
 import { useLocale, useTranslations } from 'next-intl';
 import { getLocalizedHref, type AppLocale } from '@utils/locales';
+import { countActiveFilters, defaultFilters } from '@utils/parseFilters';
+import queryString from 'query-string';
 
 const ItemCtxMenu = dynamic(() => import('@components/Menus/ItemCtxMenu'), { ssr: false });
 
@@ -54,6 +56,10 @@ export type SearchModalContentProps = {
   loading: boolean;
   liveSearchUrl: string;
   buildSearchUrl: (searchQuery: string) => string;
+  /** Filters and sort the new query inherits from the current search URL. */
+  inheritedFilters: Partial<SearchFilters>;
+  /** Name of the list the current search is scoped to, if any. */
+  listName?: string;
   onClose: () => void;
   inputRef: RefObject<HTMLInputElement | null>;
   focusedIndexRef: MutableRefObject<number>;
@@ -67,6 +73,8 @@ const SearchModalContent = (props: SearchModalContentProps) => {
     searchCards,
     loading,
     buildSearchUrl,
+    inheritedFilters,
+    listName,
     onClose,
     inputRef,
     focusedIndexRef,
@@ -76,6 +84,14 @@ const SearchModalContent = (props: SearchModalContentProps) => {
   const locale = useLocale() as AppLocale;
   const router = useRouter();
   const [latestVersion, setLatestVersion] = useState(0);
+
+  // Empty when the new query carries nothing over from the current search.
+  const searchHint = [
+    describeSearchFilters(inheritedFilters, t),
+    listName && t('Search.in-list', { name: listName }),
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   const { items, lists, shops, myLists } = useMemo(() => {
     const next = {
@@ -97,7 +113,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
     if (typeof window === 'undefined') return [];
     try {
       const arrRaw = localStorage.getItem('omni_latestSearches') || '[]';
-      const arr = JSON.parse(arrRaw) as SearchCard[];
+      const arr = sanitizeLatestSearches(JSON.parse(arrRaw) as SearchCard[]);
 
       return arr.map((card, index) => {
         return { ...card, index: index + 1 };
@@ -178,7 +194,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
     if (card.type === 'search' && card.query.trim().length === 0) return;
     try {
       const arrRaw = localStorage.getItem('omni_latestSearches') || '[]';
-      const arr = JSON.parse(arrRaw) as SearchCard[];
+      const arr = sanitizeLatestSearches(JSON.parse(arrRaw) as SearchCard[]);
 
       const duplicateIndex = arr.findIndex((c) => {
         if (c.type !== card.type) return false;
@@ -366,6 +382,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
               query={search}
               index={0}
               url={buildSearchUrl(search)}
+              hint={searchHint}
               onSelect={onSelectCard}
               selectCard={{
                 type: 'search',
@@ -389,7 +406,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
                   <SearchItem
                     showLabel
                     key={`recent-item-${card.data.internal_id}`}
-                    index={index + 1}
+                    index={card.index}
                     item={card.data}
                     onSelect={onSelectCard}
                     selectCard={card}
@@ -402,7 +419,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
                   <SearchList
                     showLabel
                     key={`recent-list-${card.data.internal_id}`}
-                    index={index + 1}
+                    index={card.index}
                     list={card.data}
                     onSelect={onSelectCard}
                     selectCard={card}
@@ -414,7 +431,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
                   <SearchShop
                     showLabel
                     key={`recent-shop-${card.data.id}`}
-                    index={index + 1}
+                    index={card.index}
                     shop={card.data}
                     onSelect={onSelectCard}
                     selectCard={card}
@@ -425,8 +442,9 @@ const SearchModalContent = (props: SearchModalContentProps) => {
                 return (
                   <SearchQuery
                     key={`recent-search-${card.query}-${index}`}
-                    index={index + 1}
+                    index={card.index}
                     url={card.url}
+                    hint={describeSearchFilters(getUrlQuery(card.url), t)}
                     query={card.query}
                     onSelect={onSelectCard}
                     selectCard={card}
@@ -597,6 +615,68 @@ const SearchModalContent = (props: SearchModalContentProps) => {
 };
 
 export default SearchModalContent;
+
+// Recent searches used to keep the page of the search they were made from (`page=5`), which
+// sends a new query straight to an empty page. A query always starts on page 1.
+const sanitizeLatestSearches = (cards: SearchCard[]): SearchCard[] =>
+  cards.map((card) =>
+    card.type === 'search'
+      ? {
+          ...card,
+          url: card.url.replace(/([?&])page=[^&]*(&|$)/, (_, sep, next) => (next ? sep : '')),
+        }
+      : card
+  );
+
+const getUrlQuery = (url: string) =>
+  queryString.parse(url.split('?')[1] ?? '', { arrayFormat: 'bracket' });
+
+// "2 filters · sorted by price (descending)", or empty when there is nothing to tell. The sort
+// only shows when it isn't the default (name, ascending).
+const describeSearchFilters = (
+  filters: { [key: string]: unknown },
+  t: ReturnType<typeof useTranslations>
+) => {
+  const count = countActiveFilters(filters);
+  const sortBy = String(filters.sortBy || defaultFilters.sortBy);
+  const sortDir = String(filters.sortDir || defaultFilters.sortDir);
+  const isDefaultSort = sortBy === defaultFilters.sortBy && sortDir === defaultFilters.sortDir;
+
+  return [
+    count > 0 && t('Search.x-filters', { count }),
+    !isDefaultSort &&
+      t('Search.sorted-by', {
+        field: getSortLabel(sortBy, t),
+        dir: (sortDir === 'desc' ? t('General.descending') : t('General.ascending')).toLowerCase(),
+      }),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+};
+
+// Same labels as the sort select on the search page.
+const getSortLabel = (sortBy: string, t: ReturnType<typeof useTranslations>) => {
+  switch (sortBy) {
+    case 'name':
+      return t('General.name');
+    case 'price':
+      return t('General.price');
+    case 'ncValue':
+      return t('ItemPage.nc-value');
+    case 'rarity':
+      return t('General.rarity');
+    case 'color':
+      return t('General.color');
+    case 'weight':
+      return t('General.weight');
+    case 'estVal':
+      return t('General.est-val');
+    case 'id':
+      return t('General.id');
+    default:
+      return sortBy;
+  }
+};
 
 export const SearchSkeleton = () => {
   return (
@@ -821,12 +901,14 @@ const SearchQuery = memo(function SearchQuery({
   query,
   index,
   url,
+  hint,
   onSelect,
   selectCard,
 }: {
   query: string;
   index: number;
   url: string;
+  hint?: string;
   onSelect: (card: SearchCard) => void;
   selectCard: Extract<SearchCard, { type: 'search' }>;
 }) {
@@ -854,6 +936,7 @@ const SearchQuery = memo(function SearchQuery({
           <VStack alignItems="flex-start" gap={0}>
             <Text fontSize="xs" color="whiteAlpha.600">
               {t('Layout.advanced-search')}
+              {hint && ` · ${hint}`}
             </Text>
             <Text>{query}</Text>
           </VStack>

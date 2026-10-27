@@ -335,6 +335,37 @@ function removeInvalidParentheses(s: string) {
   return chars.join('');
 }
 
+// Keys that only change how results are shown (or scope them to a list), not which items match.
+const displayFilterKeys: string[] = [
+  'page',
+  'limit',
+  'sortBy',
+  'sortDir',
+  'list_id',
+  'colorTolerance',
+  'colorType',
+  'restockIncludeUnpriced',
+];
+
+const isFilledValue = (value: unknown) => value !== '' && value !== null && value !== undefined;
+
+// Number of active filters that narrow the results: one per list value (e.g. each category)
+// and one per range, however many of its bounds are set.
+export const countActiveFilters = (filters: { [id: string]: any }) => {
+  let count = 0;
+
+  for (const [key, value] of Object.entries(getFiltersDiff(filters))) {
+    if (displayFilterKeys.includes(key)) continue;
+
+    if (!Array.isArray(value)) count += isFilledValue(value) ? 1 : 0;
+    else if ((rangeFilters as readonly string[]).includes(key))
+      count += value.some(isFilledValue) ? 1 : 0;
+    else count += value.filter(isFilledValue).length;
+  }
+
+  return count;
+};
+
 export const getFiltersDiff = (
   a: { [id: string]: any },
   b?: SearchFilters

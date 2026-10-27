@@ -1232,6 +1232,10 @@
   "Search": {
     "search": "Pesquisa",
     "showing": "Exibindo {val1} - {val2} de {val3} resultados",
+    "zero-results": "0 resultados",
+    "x-filters": "{count, plural, one {# filtro} other {# filtros}}",
+    "sorted-by": "ordenado por {field} ({dir})",
+    "in-list": "em: {name}",
     "apply-filters": "Aplicar Filtros",
     "color-type": "Tipo de Cor",
     "custom-color": "Cor Personalizada",

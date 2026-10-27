@@ -1230,6 +1230,10 @@
   "Search": {
     "search": "Search",
     "showing": "Showing {val1} - {val2} of {val3} results",
+    "zero-results": "0 results",
+    "x-filters": "{count, plural, one {# filter} other {# filters}}",
+    "sorted-by": "sorted by {field} ({dir})",
+    "in-list": "in: {name}",
     "search-filters": "Search Filters",
     "apply-filters": "Apply Filters",
     "show-less": "Show less",

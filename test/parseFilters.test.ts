@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseFilters } from '@utils/parseFilters';
+import { countActiveFilters, parseFilters } from '@utils/parseFilters';
 
 const toBoolean = (query: string) => parseFilters(query, false)[1];
 
@@ -108,5 +108,33 @@ describe('parseFilters inline filters', () => {
 
   it('ignores unknown modes', () => {
     expect(parseFilters('foo mode:whatever')[0].mode).toBe('name');
+  });
+});
+
+describe('countActiveFilters', () => {
+  it('ignores sort, page size, page and list scope', () => {
+    expect(
+      countActiveFilters({ sortBy: 'price', sortDir: 'desc', limit: 96, page: 5, list_id: 12 })
+    ).toBe(0);
+  });
+
+  it('counts each list value and each range once', () => {
+    expect(
+      countActiveFilters({
+        category: ['medicine', '!food'],
+        price: ['1000', '5000'],
+        rarity: ['', '100'],
+        mode: 'description',
+      })
+    ).toBe(5);
+  });
+
+  it('skips empty values and defaults from parsed queries', () => {
+    expect(countActiveFilters(parseFilters('faerie')[0])).toBe(0);
+    expect(countActiveFilters({ price: ['', ''], category: [''], mode: 'name' })).toBe(0);
+  });
+
+  it('reads filters parsed from the URL', () => {
+    expect(countActiveFilters({ s: 'faerie', category: ['medicine'], price: [1000, ''] })).toBe(2);
   });
 });

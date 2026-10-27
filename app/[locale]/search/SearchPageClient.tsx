@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Badge,
   Box,
   Center,
   Flex,
@@ -25,7 +26,8 @@ import { SearchFilterModalProps } from '@components/Search/SearchFiltersModal';
 import { BsFilter } from 'react-icons/bs';
 import { SelectItemsCheckbox } from '@components/Input/SelectItemsCheckbox';
 import ListSelect from '@components/UserLists/ListSelect';
-import { defaultFilters, getFiltersDiff } from '@utils/parseFilters';
+import { countActiveFilters, defaultFilters, getFiltersDiff } from '@utils/parseFilters';
+import { setSearchListScope } from '@components/Search/searchListScope';
 import { CreateDynamicListButton } from '@components/DynamicLists/CreateButton';
 import Color from 'color';
 import MainLink from '@components/Utils/MainLink';
@@ -91,6 +93,8 @@ export function SearchPageClient(props: SearchPageClientProps) {
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
   const prevFilter = useRef<SearchFiltersType>(null);
+  // Set when the page is corrected (out of range) so the fix doesn't add a history entry.
+  const replaceHistoryRef = useRef(false);
   const statsKeyRef = useRef<string | null>(null);
   const searchGenerationRef = useRef(0);
   const countGenerationRef = useRef(0);
@@ -157,11 +161,13 @@ export function SearchPageClient(props: SearchPageClientProps) {
     // Next.js dispatches server actions sequentially per client. Run the page
     // of results first so cards are not stuck behind count + facet queries.
     const searchGeneration = ++searchGenerationRef.current;
+    let resultPage: Pick<SearchPageResult, 'page' | 'resultsPerPage'> | null = null;
 
     try {
       const result = await runSearch(query, filters, props.listJWT);
       if (searchGenerationRef.current !== searchGeneration) return;
       setResult(result);
+      resultPage = result;
     } catch (err) {
       if (searchGenerationRef.current !== searchGeneration) return;
       console.error(err);
@@ -183,6 +189,15 @@ export function SearchPageClient(props: SearchPageClientProps) {
         .then((count) => {
           if (countGenerationRef.current !== countGeneration) return;
           setTotalResults(count);
+
+          // A page past the end (old link or recent search) shows nothing: move to the last
+          // page with results, replacing the history entry instead of adding one.
+          if (!resultPage) return;
+          const lastPage = Math.max(1, Math.ceil(count / resultPage.resultsPerPage));
+          if (resultPage.page <= lastPage) return;
+
+          replaceHistoryRef.current = true;
+          setFilters((oldFilters) => ({ ...oldFilters, page: lastPage }));
         })
         .catch((error) => {
           if (countGenerationRef.current !== countGeneration) return;
@@ -206,7 +221,7 @@ export function SearchPageClient(props: SearchPageClientProps) {
     }
   };
 
-  const changeQueryString = () => {
+  const changeQueryString = (replace = false) => {
     const query = getSearchQuery(searchParamsString);
 
     if (!prevFilter.current) return;
@@ -233,7 +248,9 @@ export function SearchPageClient(props: SearchPageClientProps) {
     // Query-only History API: App Router equivalent of Pages `shallow: true`.
     // `router.push` is a real navigation (RSC + action queue). `pathname + query`
     // with next-intl's locale-stripped pathname would also drop `/pt`.
-    window.history.pushState(null, '', '?s=' + encodeURIComponent(query) + paramsString);
+    const url = '?s=' + encodeURIComponent(query) + paramsString;
+    if (replace) window.history.replaceState(null, '', url);
+    else window.history.pushState(null, '', url);
   };
 
   // Mirror Pages effect on `router.query`: only sync filters from the URL.
@@ -246,10 +263,20 @@ export function SearchPageClient(props: SearchPageClientProps) {
   useEffect(() => {
     if (!prevFilter.current && !parseQueryString()) return;
 
+    const replaceHistory = replaceHistoryRef.current;
+    replaceHistoryRef.current = false;
+
     doSearch(undefined, shouldUpdateCount(filters, prevFilter.current));
-    changeQueryString();
+    changeQueryString(replaceHistory);
     prevFilter.current = filters;
   }, [filters]);
+
+  useEffect(() => {
+    if (!props.userList) return;
+
+    setSearchListScope({ id: props.userList.internal_id, name: props.userList.name });
+    return () => setSearchListScope(null);
+  }, [props.userList]);
 
   const selectItem = (id?: number, checkAll?: boolean) => {
     if (!id && !checkAll) setSelectedItems([]);
@@ -322,6 +349,23 @@ export function SearchPageClient(props: SearchPageClientProps) {
       });
   };
 
+  const activeFilterCount = countActiveFilters(filters);
+
+  // Hidden while a page past the end is being corrected, so it never reads "Showing 193 - 1".
+  const showingRange = (() => {
+    if (totalResults === null || !searchResult) return null;
+
+    const first = searchResult.resultsPerPage * (searchResult.page - 1) + 1;
+    if (totalResults > 0 && first > totalResults) return null;
+
+    return {
+      first,
+      last: Math.min(searchResult.resultsPerPage * searchResult.page, totalResults),
+      total: totalResults,
+      pageSize: searchResult.content.length,
+    };
+  })();
+
   const onItemClick = (_e: React.MouseEvent, id: number) => {
     if (selectedItems.length <= 0) return;
     selectItem(id);
@@ -354,21 +398,33 @@ export function SearchPageClient(props: SearchPageClientProps) {
       >
         <HStack justifyContent="space-between">
           <Flex color="gray.300" fontSize={{ base: 'xs', sm: 'sm' }} gap={3}>
-            {totalResults !== null && searchResult && (
+            {showingRange && (
               <SelectItemsCheckbox
                 checked={selectedItems}
-                allChecked={selectedItems.length === searchResult.content.length}
+                allChecked={selectedItems.length === showingRange.pageSize}
                 onClick={(checkAll) => selectItem(undefined, checkAll)}
-                defaultText={t('Search.showing', {
-                  val1: format.number(searchResult.resultsPerPage * (searchResult.page - 1) + 1),
-                  val2: format.number(
-                    Math.min(searchResult.resultsPerPage * searchResult.page, totalResults)
-                  ),
-                  val3: format.number(totalResults),
-                })}
+                defaultText={
+                  showingRange.total === 0
+                    ? t('Search.zero-results')
+                    : t('Search.showing', {
+                        val1: format.number(showingRange.first),
+                        val2: format.number(showingRange.last),
+                        val3: format.number(showingRange.total),
+                      })
+                }
               />
             )}
-            {(!searchResult || totalResults === null) && <Skeleton width="100px" h="15px" />}
+            {!showingRange && <Skeleton width="100px" h="15px" />}
+            {activeFilterCount > 0 && (
+              <Badge
+                alignSelf="center"
+                size="sm"
+                colorPalette={totalResults === 0 ? 'orange' : 'gray'}
+                flexShrink={0}
+              >
+                {t('Search.x-filters', { count: activeFilterCount })}
+              </Badge>
+            )}
             {selectedItems.length > 0 && (
               <ListSelect
                 defaultText={t('Lists.add-to-list')}
