@@ -5,6 +5,7 @@ import {
   Textarea,
   Text,
   Flex,
+  List,
   Dialog,
   CloseButton,
   Portal,
@@ -30,9 +31,11 @@ export default function IncreaseAPIModal(props: IncreaseAPIModalProps) {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    window.umami?.track('api-keys-limit-request', { label: 'submit' });
     setLoading(true);
     try {
       await axios.post('/api/auth/apikeys', { key_id, newLimit, justification });
+      window.umami?.track('api-keys-limit-request', { label: 'submit-success', newLimit });
       toast({
         id: 'api-limit-increase-success',
         title: 'API Limit Increase Requested',
@@ -43,6 +46,7 @@ export default function IncreaseAPIModal(props: IncreaseAPIModalProps) {
       onClose();
     } catch (e) {
       console.error(e);
+      window.umami?.track('api-keys-limit-request', { label: 'submit-error', newLimit });
       toast({
         id: 'api-limit-increase-error',
         title: 'Error requesting API limit increase',
@@ -60,7 +64,9 @@ export default function IncreaseAPIModal(props: IncreaseAPIModalProps) {
     <Dialog.Root
       open={isOpen}
       onOpenChange={({ open }) => {
-        if (!open) onClose();
+        if (open) return;
+        window.umami?.track('api-keys-limit-request', { label: 'dismiss' });
+        onClose();
       }}
       placement="center"
     >
@@ -75,12 +81,27 @@ export default function IncreaseAPIModal(props: IncreaseAPIModalProps) {
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>
             <Dialog.Body fontSize={'sm'}>
-              <Text color="whiteAlpha.800">
-                If your application is already tested you can request an API Limit increase.
-                <br />
-                <br />
-                We review all requests manually and will get back to you as soon as possible.
-              </Text>
+              <Flex flexFlow={'column'} gap={3} color="whiteAlpha.800">
+                <Text>
+                  Higher limits are granted to projects that are <b>public</b> and{' '}
+                  <b>benefit the whole community</b>, such as open-source tools, public websites,
+                  apps that other Neopets players can use, or data analyses and research whose
+                  results are shared publicly.
+                </Text>
+                <Text>
+                  The following will <b>not</b> receive a limit increase:
+                </Text>
+                <List.Root ps={5} gap={1}>
+                  <List.Item>Private or closed personal projects</List.Item>
+                  <List.Item>
+                    Userscripts (they should not use an API Key in the first place, as it would be
+                    exposed to anyone using the script)
+                  </List.Item>
+                </List.Root>
+                <Text>
+                  We review all requests manually and will get back to you as soon as possible.
+                </Text>
+              </Flex>
               <Flex bg="blackAlpha.400" flexFlow={'column'} p={4} mt={4} borderRadius="md" gap={3}>
                 <Field.Root invalid={newLimit < 0}>
                   <Field.Label color="gray.300">New Limit</Field.Label>
@@ -105,13 +126,22 @@ export default function IncreaseAPIModal(props: IncreaseAPIModalProps) {
                     onChange={(e) => setJustification(e.target.value)}
                   />
                   <Field.HelperText>
-                    Please explain why you need the increase and how you are using the API.
+                    Please explain why you need the increase, how you are using the API and link to
+                    the public project (repository or website).
                   </Field.HelperText>
                 </Field.Root>
               </Flex>
             </Dialog.Body>
             <Dialog.Footer>
-              <Button size="sm" variant="ghost" onClick={onClose} disabled={loading}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  window.umami?.track('api-keys-limit-request', { label: 'close' });
+                  onClose();
+                }}
+                disabled={loading}
+              >
                 {t('General.close')}
               </Button>
               <Button

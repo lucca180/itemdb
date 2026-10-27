@@ -17,7 +17,8 @@ import MainLink from '@components/Utils/MainLink';
 import Layout from '@components/Layout';
 import { useFormatter } from 'next-intl';
 import { APIKeyData } from '@types';
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
+import { trackEventWhenReady } from '@utils/umami';
 import axios, { isAxiosError } from 'axios';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import { CheckAuth } from '@utils/googleCloud';
@@ -44,11 +45,22 @@ const APIKeysPage = (props: APIKeysPageProps) => {
 
   const isCreateDisabled = !props.canCreateKeys || keys.length >= 3;
 
+  useEffect(() => {
+    trackEventWhenReady('api-keys-view', {
+      keys: props.apiKeys.length,
+      activeKeys: props.apiKeys.filter((key) => key.active).length,
+      canCreate: props.canCreateKeys,
+    });
+  }, []);
+
   const createKey = async () => {
     const name = (document.getElementById('api-key-name') as HTMLInputElement)?.value;
     const description = (document.getElementById('api-key-description') as HTMLInputElement)?.value;
 
+    window.umami?.track('api-keys-create', { label: 'click' });
+
     if (!name || !description) {
+      window.umami?.track('api-keys-create', { label: 'missing-fields' });
       toast({
         id: 'api-key-missing-fields',
         title: 'Missing fields',
@@ -65,11 +77,16 @@ const APIKeysPage = (props: APIKeysPageProps) => {
     try {
       const res = await axios.put('/api/auth/apikeys', { name, description });
       setApiCreateResult(res.data);
+      window.umami?.track('api-keys-create', { label: 'success' });
     } catch (e) {
       console.error(e);
       const errorMessage = isAxiosError(e)
         ? (e.response?.data?.error as string | undefined)
         : undefined;
+      window.umami?.track('api-keys-create', {
+        label: 'error',
+        status: isAxiosError(e) ? (e.response?.status ?? 0) : 0,
+      });
       toast({
         id: 'api-key-create-error',
         title: 'Error creating API Key',
@@ -84,9 +101,18 @@ const APIKeysPage = (props: APIKeysPageProps) => {
   };
 
   const deleteKey = async (key_id: number) => {
-    const prom = axios.delete('/api/auth/apikeys', { data: { key_id } }).then(() => {
-      window.location.reload();
-    });
+    window.umami?.track('api-keys-delete', { label: 'click' });
+
+    const prom = axios
+      .delete('/api/auth/apikeys', { data: { key_id } })
+      .then(() => {
+        window.umami?.track('api-keys-delete', { label: 'success' });
+        window.location.reload();
+      })
+      .catch((e) => {
+        window.umami?.track('api-keys-delete', { label: 'error' });
+        throw e;
+      });
 
     toast.promise(prom, {
       loading: {
@@ -170,6 +196,7 @@ const APIKeysPage = (props: APIKeysPageProps) => {
                         size="sm"
                         value={apiKey.api_key}
                         readOnly
+                        onCopy={() => window.umami?.track('api-keys-copy')}
                         variant={'subtle'}
                         maxW="400px"
                       />
@@ -190,7 +217,10 @@ const APIKeysPage = (props: APIKeysPageProps) => {
                   <Button
                     variant={'outline'}
                     size={'xs'}
-                    onClick={() => setSelectedKeyId(apiKey.key_id)}
+                    onClick={() => {
+                      window.umami?.track('api-keys-limit-request', { label: 'open' });
+                      setSelectedKeyId(apiKey.key_id);
+                    }}
                   >
                     Request Limit Increase
                   </Button>
@@ -254,7 +284,9 @@ const APIKeysPage = (props: APIKeysPageProps) => {
           <Text fontSize={'xs'} color="whiteAlpha.500" textAlign={'center'}>
             By creating an API key, you agree to use our resources responsibly and follow our{' '}
             <Link asChild color="purple.400">
-              <MainLink href="/terms">Terms of Service</MainLink>
+              <MainLink href="/terms" trackEvent="api-keys-link" trackEventLabel="terms">
+                Terms of Service
+              </MainLink>
             </Link>{' '}
             and{' '}
             <Link
@@ -262,6 +294,8 @@ const APIKeysPage = (props: APIKeysPageProps) => {
               color="purple.400"
               target="_blank"
               rel="noreferrer"
+              data-umami-event="api-keys-link"
+              data-umami-event-label="rules"
             >
               Rules
             </Link>
