@@ -69,7 +69,8 @@ function parseSearchQuery(search: string) {
 }
 
 function getSearchQuery(search: string): string {
-  const s = parseSearchQuery(search).s;
+  // without parseNumbers: `?s=13` must stay the text "13", not the number 13
+  const s = queryString.parse(search, { arrayFormat: 'bracket' }).s;
   if (typeof s === 'string') return s;
   if (Array.isArray(s) && typeof s[0] === 'string') return s[0];
   return '';

@@ -2,10 +2,11 @@
 
 import { SearchIcon } from '@utils/theme/chakraIcons';
 import { InputGroup, useDisclosure, Button, Flex, Kbd, Text } from '@chakra-ui/react';
-import React from 'react';
+import React, { Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/compat/router';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { isValidLocale, stripLocalePrefix } from '@utils/locales';
 import SearchMenu from '../Menus/SearchMenu';
 
 const SearchModal = dynamic(() => import('@components/Search/SearchModal'), {
@@ -13,35 +14,35 @@ const SearchModal = dynamic(() => import('@components/Search/SearchModal'), {
   ssr: false,
 });
 
+// The bar only mirrors `?s=` on the search page itself; anywhere else it is a plain placeholder.
+function isSearchPage(pathname: string | null | undefined) {
+  if (!pathname) return false;
+  const locale = pathname.split('/')[1];
+  const path = isValidLocale(locale) ? stripLocalePrefix(pathname, locale) : pathname;
+  return path === '/search';
+}
+
+// The platform never changes during a session, so there is nothing to subscribe to.
+const noopSubscribe = () => () => {};
+const getIsMac = () => /Mac|iPhone|iPad/i.test(navigator.userAgent);
+const getServerIsMac = () => false;
+
 function getSearchQueryFromUrl() {
-  if (typeof window === 'undefined') return '';
+  if (typeof window === 'undefined' || !isSearchPage(window.location.pathname)) return '';
   return new URLSearchParams(window.location.search).get('s') ?? '';
 }
 
 export const SearchBar = () => {
   const t = useTranslations();
-  const [search, setSearch] = React.useState<string>('');
+  const [initialQuery, setInitialQuery] = React.useState<string>('');
   const { open: isOpen, onOpen, onClose } = useDisclosure();
-  const router = useRouter();
 
-  const [isMac, setIsMac] = React.useState(false);
+  // Only drives the ⌘/Ctrl hint; the shortcut itself accepts both modifiers.
+  const isMac = React.useSyncExternalStore(noopSubscribe, getIsMac, getServerIsMac);
 
-  React.useEffect(() => {
-    setIsMac(/Mac/i.test(navigator.userAgent));
-  }, []);
-
-  // Mirror the current ?s= query in the read-only bar (Pages Router or App Router fallback).
-  React.useEffect(() => {
-    if (router?.isReady) {
-      setSearch((router.query.s as string) ?? '');
-      return;
-    }
-
-    // compat router is null on App Router — read directly from the browser URL.
-    setSearch(getSearchQueryFromUrl());
-  }, [router?.isReady, router?.query.s]);
-
+  // Read the URL at open time so the modal never starts from a query the page has moved past.
   const openSearch = () => {
+    setInitialQuery(getSearchQueryFromUrl());
     onOpen();
   };
 
@@ -49,10 +50,8 @@ export const SearchBar = () => {
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
       return;
 
-    if (
-      (isMac && event.metaKey && event.key === 'k') ||
-      (!isMac && event.ctrlKey && event.key === 'k')
-    ) {
+    // toLowerCase: Caps Lock reports 'K'; `key` is missing on Chrome autofill keydowns
+    if ((event.metaKey || event.ctrlKey) && event.key?.toLowerCase() === 'k') {
       event.preventDefault();
       openSearch();
     }
@@ -63,13 +62,13 @@ export const SearchBar = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isMac, onOpen]);
+  }, [onOpen]);
 
   const label = t('Layout.search-by');
 
   return (
     <>
-      <SearchModal isOpen={isOpen} onClose={onClose} initialQuery={search} />
+      <SearchModal isOpen={isOpen} onClose={onClose} initialQuery={initialQuery} />
       <InputGroup
         maxW="700px"
         w="100%"
@@ -123,24 +122,39 @@ export const SearchBar = () => {
           data-sentry-label="HeaderSearch"
           cursor="text"
         >
-          <Text
-            as="span"
-            display="block"
-            w="100%"
-            maxW="100%"
-            minW={0}
-            overflow="hidden"
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
-            textAlign="left"
-            color={search ? 'inherit' : 'whiteAlpha.400'}
-            userSelect="none"
-            pointerEvents="none"
-          >
-            {search || label}
-          </Text>
+          {/* useSearchParams opts the layout out of prerendering up to the closest Suspense */}
+          <Suspense fallback={<SearchBarText label={label} />}>
+            <SearchBarQuery label={label} />
+          </Suspense>
         </Button>
       </InputGroup>
     </>
   );
 };
+
+const SearchBarQuery = (props: { label: string }) => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = isSearchPage(pathname) ? (searchParams?.get('s') ?? '') : '';
+
+  return <SearchBarText label={props.label} search={search} />;
+};
+
+const SearchBarText = (props: { label: string; search?: string }) => (
+  <Text
+    as="span"
+    display="block"
+    w="100%"
+    maxW="100%"
+    minW={0}
+    overflow="hidden"
+    textOverflow="ellipsis"
+    whiteSpace="nowrap"
+    textAlign="left"
+    color={props.search ? 'inherit' : 'whiteAlpha.400'}
+    userSelect="none"
+    pointerEvents="none"
+  >
+    {props.search || props.label}
+  </Text>
+);
