@@ -48,6 +48,7 @@ const SearchFilterCard = (props: Props) => {
         noPadding
         // overflow: hidden would stop the footer from sticking to the viewport
         chakraWrapper={{ overflow: 'visible' }}
+        chakra={{ boxShadow: 'none' }}
         chakraTitle={{ borderTopRadius: 'md' }}
       >
         <SearchFilters
