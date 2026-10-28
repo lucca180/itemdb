@@ -54,9 +54,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (!isDev && !process.env.RESEND_API_KEY)
     return res.status(500).json({ success: false, message: 'Bad server' });
   if (!cred || typeof cred !== 'string')
-    return res.status(400).json({ success: false, message: 'No credential provided' });
+    return res
+      .status(400)
+      .json({ success: false, code: 'missing-cred', message: 'No credential provided' });
   if (cred.length > MAX_CRED_LENGTH)
-    return res.status(400).json({ success: false, message: 'Invalid credential' });
+    return res
+      .status(400)
+      .json({ success: false, code: 'invalid-cred', message: 'Invalid credential' });
 
   const ip = requestIp.getClientIp(req);
   const rate = await consumeLoginRateLimit(ip);
