@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { countActiveFilters, parseFilters } from '@utils/parseFilters';
+import {
+  countActiveFilters,
+  defaultFilters,
+  getChangedFilterKeys,
+  parseFilters,
+} from '@utils/parseFilters';
 
 const toBoolean = (query: string) => parseFilters(query, false)[1];
 
@@ -136,5 +141,25 @@ describe('countActiveFilters', () => {
 
   it('reads filters parsed from the URL', () => {
     expect(countActiveFilters({ s: 'faerie', category: ['medicine'], price: [1000, ''] })).toBe(2);
+  });
+});
+
+describe('getChangedFilterKeys', () => {
+  it('lists the fields that differ, ignoring page', () => {
+    expect(
+      getChangedFilterKeys(
+        { ...defaultFilters, category: ['food'], price: ['', '5000'], page: 3 },
+        defaultFilters
+      )
+    ).toEqual(['category', 'price']);
+  });
+
+  it('treats empty ranges and URL numbers as unchanged', () => {
+    expect(
+      getChangedFilterKeys(
+        { ...defaultFilters, price: [], rarity: ['100', ''] },
+        { ...defaultFilters, price: ['', ''], rarity: [100, ''] }
+      )
+    ).toEqual([]);
   });
 });

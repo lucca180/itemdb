@@ -91,6 +91,7 @@ export const getSearchStats = async (resQuery: string, params?: SearchStatsParam
     const groupResult = result[groupKey] as { [id: string]: number };
     let name = value?.toString() || 'Unknown';
     name = name === '0' ? 'false' : name === '1' ? 'true' : name;
+    if (CAPITALIZED_FACETS.includes(groupKey)) name = capitalize(name);
     groupResult[name] = (groupResult[name] ?? 0) + 1;
   };
 
@@ -118,3 +119,13 @@ export const getSearchStats = async (resQuery: string, params?: SearchStatsParam
 
   return result;
 };
+
+// Free-text facets are shown capitalized ("book" and "Book" become one "Book" entry). The columns
+// use a case-insensitive collation, so filtering by either spelling already matched both.
+// The other facets keep their raw keys (np, true, ets…), which the UI reads directly.
+const CAPITALIZED_FACETS = ['category', 'zone_label'];
+
+const capitalize = (name: string) =>
+  name
+    .toLowerCase()
+    .replace(/(^|\s)(\S)/g, (_, space: string, char: string) => space + char.toUpperCase());

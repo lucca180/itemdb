@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/preserve-manual-memoization */
+ 
 import { NumberInput } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import debounce from 'lodash/debounce';
@@ -100,6 +100,12 @@ const CustomNumberInput = (props: Props) => {
         placeholder={inputProps.placeholder ?? wrapperPlaceholder}
         textAlign="center"
         {...inputProps}
+        onBlur={(e) => {
+          // Commit the last keystrokes right away: clicking "Apply" blurs the input first, so
+          // the value can't be lost to the debounce.
+          debouncedOnChange.flush();
+          inputProps.onBlur?.(e);
+        }}
       />
     </NumberInput.Root>
   );

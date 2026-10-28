@@ -20,8 +20,11 @@ const NegCheckbox = (props: Props) => {
 
     const checklist = props.checklist.map((i) => i.toLowerCase());
 
-    if (checklist.includes(props.value.toLowerCase())) setValue(true);
-    else if (checklist?.includes(`!${props.value.toLowerCase()}`)) {
+    if (checklist.includes(props.value.toLowerCase())) {
+      // also clears a previous "excluded" state when the filters change from outside (Back, undo)
+      setValue(true);
+      setIsIndefinite(false);
+    } else if (checklist?.includes(`!${props.value.toLowerCase()}`)) {
       setValue(true);
       setIsIndefinite(true);
     } else {

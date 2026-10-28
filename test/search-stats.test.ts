@@ -34,6 +34,12 @@ describe('Search Stats API tests', () => {
         expect(typeof stats[group]).toBe('object');
       }
 
+      // "Book" and "book" are one facet value (case-insensitive collation)
+      for (const group of comparableGroups) {
+        const keys = Object.keys(stats[group]).map((key) => key.toLowerCase());
+        expect(new Set(keys).size).toBe(keys.length);
+      }
+
       expect(sumStats(stats.category)).toBe(searchResult.totalResults);
       expect(sumStats(stats.type)).toBe(searchResult.totalResults);
       expect(sumStats(stats.status)).toBe(searchResult.totalResults);

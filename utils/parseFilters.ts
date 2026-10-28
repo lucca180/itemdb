@@ -366,6 +366,23 @@ export const countActiveFilters = (filters: { [id: string]: any }) => {
   return count;
 };
 
+// Comparable form of a filter value: empty ranges/lists/strings all read as '' and numbers
+// parsed from the URL match the strings typed in the inputs.
+const normalizeFilterValue = (value: unknown): string => {
+  if (Array.isArray(value))
+    return value.some(isFilledValue)
+      ? JSON.stringify(value.map((v) => (isFilledValue(v) ? String(v) : '')))
+      : '';
+
+  return isFilledValue(value) && value !== false ? String(value) : '';
+};
+
+// Filter fields that differ between two filter sets, e.g. the sidebar draft vs. the applied ones.
+export const getChangedFilterKeys = (a: { [id: string]: any }, b: { [id: string]: any }) =>
+  (Object.keys(defaultFilters) as (keyof SearchFilters)[]).filter(
+    (key) => key !== 'page' && normalizeFilterValue(a[key]) !== normalizeFilterValue(b[key])
+  );
+
 export const getFiltersDiff = (
   a: { [id: string]: any },
   b?: SearchFilters
