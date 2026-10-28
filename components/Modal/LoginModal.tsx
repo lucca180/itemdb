@@ -57,6 +57,7 @@ const LoginModal = (props: LoginModalProps) => {
   const [needsConfirmation, setNeedsConfirmation] = useState<boolean>(false);
 
   const variant = getLoginVariant(source);
+  const hasCred = cred.trim().length > 0;
 
   const title = isSent
     ? t('Login.title-link-sent')
@@ -210,7 +211,7 @@ const LoginModal = (props: LoginModalProps) => {
                     onChange={onEmailChange}
                     disabled={isLoading}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !isLoading) void doLogin(false);
+                      if (e.key === 'Enter' && !isLoading && hasCred) void doLogin(false);
                     }}
                   />
                   <Field.ErrorText>{error}</Field.ErrorText>
@@ -230,7 +231,11 @@ const LoginModal = (props: LoginModalProps) => {
                   <Button onClick={onClose} variant="ghost" mr={3} disabled={isLoading}>
                     {t('General.cancel')}
                   </Button>
-                  <Button loading={isLoading} onClick={() => void doLogin(false)}>
+                  <Button
+                    loading={isLoading}
+                    disabled={!hasCred}
+                    onClick={() => void doLogin(false)}
+                  >
                     {t('Login.send-link')}
                   </Button>
                 </>
