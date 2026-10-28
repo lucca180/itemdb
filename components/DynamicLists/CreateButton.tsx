@@ -66,8 +66,10 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
           // mt={3}
           data-umami-event="dynamic-list-create"
           data-umami-event-from="search"
+          // icon-only on mobile: screen readers get the desktop label
+          aria-label={`${t('General.create')} ${t('General.dynamic-list')}`}
         >
-          <Image src={DynamicIcon} alt="lightning bolt" width={12} />
+          <Image src={DynamicIcon} alt="" width={12} />
         </Button>
       )}
     </>

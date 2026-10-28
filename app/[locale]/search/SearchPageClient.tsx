@@ -5,6 +5,7 @@ import {
   Box,
   Center,
   Flex,
+  Float,
   HStack,
   IconButton,
   Image,
@@ -350,6 +351,8 @@ export function SearchPageClient(props: SearchPageClientProps) {
   };
 
   const activeFilterCount = countActiveFilters(filters);
+  // Read from the URL so it shows on the first render, before the search runs.
+  const urlQuery = getSearchQuery(searchParamsString).trim();
 
   // Hidden while a page past the end is being corrected, so it never reads "Showing 193 - 1".
   const showingRange = (() => {
@@ -449,13 +452,24 @@ export function SearchPageClient(props: SearchPageClientProps) {
                     isMobile
                   />
                 )}
-                <IconButton
-                  aria-label="search filters"
-                  onClick={onOpen}
-                  display={{ base: 'inherit', lg: 'none' }}
-                >
-                  <BsFilter />
-                </IconButton>
+                <Box position="relative" display={{ base: 'inherit', lg: 'none' }}>
+                  <IconButton aria-label="search filters" onClick={onOpen}>
+                    <BsFilter />
+                  </IconButton>
+                  {activeFilterCount > 0 && (
+                    <Float placement="top-end" offset={1}>
+                      <Badge
+                        size="xs"
+                        variant="solid"
+                        colorPalette={totalResults === 0 ? 'orange' : 'blue'}
+                        borderRadius="full"
+                        pointerEvents="none"
+                      >
+                        {activeFilterCount}
+                      </Badge>
+                    </Float>
+                  )}
+                </Box>
               </HStack>
             )}
           </Box>
@@ -558,15 +572,38 @@ export function SearchPageClient(props: SearchPageClientProps) {
             </Flex>
           )}
         </Box>
-        <Box flex="1">
-          <Text
-            textAlign="center"
-            fontSize="xs"
-            color="whiteAlpha.600"
-            display={{ base: 'none', lg: 'block' }}
-          >
-            <SearchTips searchTip={props.searchTip} />
-          </Text>
+        {/* full width so a long query line truncates instead of widening the page on mobile */}
+        <Box flex="1" w="100%" minW={0}>
+          {/* The query takes the tip's spot (the tip moves to the bottom); no query keeps the tip */}
+          {urlQuery ? (
+            <Text
+              as="h1"
+              textAlign="center"
+              fontSize="sm"
+              color="whiteAlpha.600"
+              truncate
+              px={2}
+              title={urlQuery}
+            >
+              {t.rich('Search.results-for', {
+                query: urlQuery,
+                Query: (chunk) => (
+                  <Text as="span" color="whiteAlpha.800">
+                    {chunk}
+                  </Text>
+                ),
+              })}
+            </Text>
+          ) : (
+            <Text
+              textAlign="center"
+              fontSize="xs"
+              color="whiteAlpha.600"
+              display={{ base: 'none', lg: 'block' }}
+            >
+              <SearchTips searchTip={props.searchTip} />
+            </Text>
+          )}
           {!isLargerThanLG && props.userList && <SpecialListSearch userList={props.userList} />}
           {searchResult && (
             <Pagination
@@ -615,6 +652,17 @@ export function SearchPageClient(props: SearchPageClientProps) {
             />
           )}
           {!searchResult && <Pagination />}
+          {urlQuery && (
+            <Text
+              mt={4}
+              textAlign="center"
+              fontSize="xs"
+              color="whiteAlpha.600"
+              display={{ base: 'none', lg: 'block' }}
+            >
+              <SearchTips searchTip={props.searchTip} />
+            </Text>
+          )}
         </Box>
       </Flex>
     </>

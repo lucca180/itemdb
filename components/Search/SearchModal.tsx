@@ -45,6 +45,12 @@ type SearchModalProps = {
   initialQuery?: string;
 };
 
+// Previews start at 3 characters, except numbers ("13", "#1", "+1"): short words match too much.
+const canPreview = (value: string) => {
+  const query = value.trim();
+  return query.length >= 3 || /^[#+]?\d+$/.test(query);
+};
+
 const SearchModalBodySkeleton = () => (
   <Flex as="section" flexFlow="column" gap={2} py={2}>
     <Box w="70px" h="14px" bg="whiteAlpha.200" borderRadius="sm" />
@@ -138,7 +144,7 @@ const SearchModal = (props: SearchModalProps) => {
   );
 
   const preSearch = async (newSearch: string) => {
-    if (newSearch.trim().length < 3) {
+    if (!canPreview(newSearch)) {
       setSearchCards([]);
       focusedIndexRef.current = 0;
       return;
@@ -207,7 +213,7 @@ const SearchModal = (props: SearchModalProps) => {
 
     debouncedPreSearch.cancel();
 
-    if (newValue.trim().length < 3) {
+    if (!canPreview(newValue)) {
       setSearchCards([]);
       setLoading(false);
       return;
@@ -243,6 +249,11 @@ const SearchModal = (props: SearchModalProps) => {
         <Input
           ref={inputRef}
           autoComplete="off"
+          // mobile keyboards: "Search" return key, and no autocorrect mangling item names
+          enterKeyHint="search"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           id="omni-search"
           variant="subtle"
           placeholder={t('Search.omni-placeholder')}

@@ -39,10 +39,12 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
           <LayoutAuthServer />
         </Suspense>
       }
+      // Keyed: this fragment reaches the client component as a list, and React warns about
+      // children without keys ("Check the render method of `chakra(div)`").
       footerActions={
         <>
-          <LayoutFeedback size="xs" flex="1" h="25px" borderRadius="md" />
-          <Suspense fallback={null}>
+          <LayoutFeedback key="feedback" size="xs" flex="1" h="25px" borderRadius="md" />
+          <Suspense key="locale" fallback={null}>
             <LayoutLocalePages />
           </Suspense>
         </>

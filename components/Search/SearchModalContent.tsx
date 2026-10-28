@@ -12,6 +12,7 @@ import {
   Icon,
   SkeletonText,
   Skeleton,
+  IconButton,
   Link as ChakraLink,
 } from '@chakra-ui/react';
 import { ItemCardBadge } from '@components/Items/ItemCardBadge';
@@ -35,6 +36,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/compat/router';
 import { GrSearchAdvanced } from 'react-icons/gr';
+import { IoClose } from 'react-icons/io5';
 import { useLocale, useTranslations } from 'next-intl';
 import { getLocalizedHref, type AppLocale } from '@utils/locales';
 import { countActiveFilters, defaultFilters } from '@utils/parseFilters';
@@ -196,25 +198,7 @@ const SearchModalContent = (props: SearchModalContentProps) => {
       const arrRaw = localStorage.getItem('omni_latestSearches') || '[]';
       const arr = sanitizeLatestSearches(JSON.parse(arrRaw) as SearchCard[]);
 
-      const duplicateIndex = arr.findIndex((c) => {
-        if (c.type !== card.type) return false;
-        if (c.type === 'item' && card.type === 'item') {
-          return c.data.internal_id === card.data.internal_id;
-        }
-        if (
-          (c.type === 'list' && card.type === 'list') ||
-          (c.type === 'my-lists' && card.type === 'my-lists')
-        ) {
-          return c.data.internal_id === card.data.internal_id;
-        }
-        if (c.type === 'shop' && card.type === 'shop') {
-          return c.data.id === card.data.id;
-        }
-        if (c.type === 'search' && card.type === 'search') {
-          return c.query === card.query;
-        }
-        return false;
-      });
+      const duplicateIndex = arr.findIndex((c) => isSameCard(c, card));
 
       if (duplicateIndex !== -1) {
         arr.splice(duplicateIndex, 1);
@@ -232,6 +216,26 @@ const SearchModalContent = (props: SearchModalContentProps) => {
       setLatestVersion((v) => v + 1);
     }
   }, []);
+
+  const removeLatest = (card?: SearchCard) => {
+    try {
+      if (!card) localStorage.removeItem('omni_latestSearches');
+      else {
+        const arrRaw = localStorage.getItem('omni_latestSearches') || '[]';
+        const arr = (JSON.parse(arrRaw) as SearchCard[]).filter((c) => !isSameCard(c, card));
+        localStorage.setItem('omni_latestSearches', JSON.stringify(arr));
+      }
+    } catch (e) {
+      console.error('Failed to remove latest search', e);
+      localStorage.removeItem('omni_latestSearches');
+    }
+
+    // the removed row may have been the focused one; keep typing/arrows working from the input
+    applyFocusDom(0, { scroll: false });
+    inputRef.current?.focus();
+    setLatestVersion((v) => v + 1);
+    track('omni-recent', card ? 'remove-' + card.type : 'clear');
+  };
 
   const navStateRef = useRef({
     search,
@@ -396,59 +400,97 @@ const SearchModalContent = (props: SearchModalContentProps) => {
       )}
       {!loading && searchCards.length === 0 && latestSearches.length > 0 && (
         <Flex flexFlow="column" gap={4} py={4}>
-          <Heading fontSize={'sm'} color="whiteAlpha.700">
-            {t('Search.recent-searches')}
-          </Heading>
+          <Flex justifyContent="space-between" alignItems="center">
+            <Heading fontSize={'sm'} color="whiteAlpha.700">
+              {t('Search.recent-searches')}
+            </Heading>
+            <Button
+              size="xs"
+              variant="ghost"
+              color="whiteAlpha.600"
+              _hover={{ color: 'whiteAlpha.900' }}
+              onClick={() => removeLatest()}
+            >
+              {t('Search.clear-recent')}
+            </Button>
+          </Flex>
           <Flex role="listbox" aria-labelledby="omni-search-label" flexFlow={'column'} gap={2}>
             {latestSearches.map((card, index) => {
+              const removeButton = (
+                <RemoveRecentButton
+                  label={t('Search.remove-recent')}
+                  onClick={() => removeLatest(card)}
+                />
+              );
+
               if (card.type === 'item') {
                 return (
-                  <SearchItem
-                    showLabel
+                  <Box
                     key={`recent-item-${card.data.internal_id}`}
-                    index={card.index}
-                    item={card.data}
-                    onSelect={onSelectCard}
-                    selectCard={card}
-                    isMobile={isMobile}
-                  />
+                    position="relative"
+                    css={RECENT_ROW_CSS}
+                  >
+                    <SearchItem
+                      showLabel
+                      index={card.index}
+                      item={card.data}
+                      onSelect={onSelectCard}
+                      selectCard={card}
+                      isMobile={isMobile}
+                    />
+                    {removeButton}
+                  </Box>
                 );
               }
               if (card.type === 'list' || card.type === 'my-lists') {
                 return (
-                  <SearchList
-                    showLabel
+                  <Box
                     key={`recent-list-${card.data.internal_id}`}
-                    index={card.index}
-                    list={card.data}
-                    onSelect={onSelectCard}
-                    selectCard={card}
-                  />
+                    position="relative"
+                    css={RECENT_ROW_CSS}
+                  >
+                    <SearchList
+                      showLabel
+                      index={card.index}
+                      list={card.data}
+                      onSelect={onSelectCard}
+                      selectCard={card}
+                    />
+                    {removeButton}
+                  </Box>
                 );
               }
               if (card.type === 'shop') {
                 return (
-                  <SearchShop
-                    showLabel
-                    key={`recent-shop-${card.data.id}`}
-                    index={card.index}
-                    shop={card.data}
-                    onSelect={onSelectCard}
-                    selectCard={card}
-                  />
+                  <Box key={`recent-shop-${card.data.id}`} position="relative" css={RECENT_ROW_CSS}>
+                    <SearchShop
+                      showLabel
+                      index={card.index}
+                      shop={card.data}
+                      onSelect={onSelectCard}
+                      selectCard={card}
+                    />
+                    {removeButton}
+                  </Box>
                 );
               }
               if (card.type === 'search') {
                 return (
-                  <SearchQuery
+                  <Box
                     key={`recent-search-${card.query}-${index}`}
-                    index={card.index}
-                    url={card.url}
-                    hint={describeSearchFilters(getUrlQuery(card.url), t)}
-                    query={card.query}
-                    onSelect={onSelectCard}
-                    selectCard={card}
-                  />
+                    position="relative"
+                    css={RECENT_ROW_CSS}
+                  >
+                    <SearchQuery
+                      index={card.index}
+                      url={card.url}
+                      hint={describeSearchFilters(getUrlQuery(card.url), t)}
+                      query={card.query}
+                      onSelect={onSelectCard}
+                      selectCard={card}
+                    />
+                    {removeButton}
+                  </Box>
                 );
               }
             })}
@@ -677,6 +719,38 @@ const getSortLabel = (sortBy: string, t: ReturnType<typeof useTranslations>) => 
       return sortBy;
   }
 };
+
+const isSameCard = (a: SearchCard, b: SearchCard) => {
+  if (a.type !== b.type) return false;
+  if (a.type === 'item' && b.type === 'item') return a.data.internal_id === b.data.internal_id;
+  if ((a.type === 'list' || a.type === 'my-lists') && (b.type === 'list' || b.type === 'my-lists'))
+    return a.data.internal_id === b.data.internal_id;
+  if (a.type === 'shop' && b.type === 'shop') return a.data.id === b.data.id;
+  if (a.type === 'search' && b.type === 'search') return a.query === b.query;
+  return false;
+};
+
+// Room on the right of a recent row for the remove button drawn over it.
+const RECENT_ROW_CSS = { '& [data-omni-row]': { paddingRight: '40px' } };
+
+// Sits inside the row's card but is a sibling of its link, so clicking it never navigates.
+const RemoveRecentButton = (props: { label: string; onClick: () => void }) => (
+  <IconButton
+    aria-label={props.label}
+    title={props.label}
+    position="absolute"
+    right={1.5}
+    top="50%"
+    transform="translateY(-50%)"
+    size="xs"
+    variant="ghost"
+    color="whiteAlpha.500"
+    _hover={{ color: 'whiteAlpha.900', bg: 'whiteAlpha.200' }}
+    onClick={props.onClick}
+  >
+    <IoClose />
+  </IconButton>
+);
 
 export const SearchSkeleton = () => {
   return (

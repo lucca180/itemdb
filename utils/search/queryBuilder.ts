@@ -704,9 +704,12 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   else if (sortBy === 'estVal') sortQuery = Prisma.sql`ORDER BY temp.est_val`;
   else if (sortBy === 'id') sortQuery = Prisma.sql`ORDER BY temp.item_id`;
   else if (sortBy === 'rarity') sortQuery = Prisma.sql`ORDER BY temp.rarity`;
-  else if (sortBy === 'match')
-    sortQuery = Prisma.sql`ORDER BY temp.name = ${originalQuery} DESC, MATCH (temp.name) AGAINST (${originalQuery} IN NATURAL LANGUAGE MODE) desc, temp.name`;
-  else {
+  else if (sortBy === 'match') {
+    // Fulltext relevance is 0 for words under the minimum token size ("7", "13", "ne"), so ties
+    // go to names starting with the query, then names with a word starting with it, before A–Z.
+    const likeQuery = originalQuery.replace(/[\\%_]/g, '\\$&');
+    sortQuery = Prisma.sql`ORDER BY temp.name = ${originalQuery} DESC, MATCH (temp.name) AGAINST (${originalQuery} IN NATURAL LANGUAGE MODE) desc, CASE WHEN temp.name LIKE ${`${likeQuery}%`} THEN 0 WHEN temp.name LIKE ${`% ${likeQuery}%`} THEN 1 ELSE 2 END, temp.name`;
+  } else {
     sortQuery = isColorSearch ? Prisma.sql`ORDER BY dist` : Prisma.sql`ORDER BY temp.name`;
     sortByDist = isColorSearch;
   }

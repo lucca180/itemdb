@@ -1236,6 +1236,7 @@
     "x-filters": "{count, plural, one {# filtro} other {# filtros}}",
     "sorted-by": "ordenado por {field} ({dir})",
     "in-list": "em: {name}",
+    "results-for": "Resultados para <Query>{query}</Query>",
     "apply-filters": "Aplicar Filtros",
     "x-pending-changes": "{count, plural, one {# alteração não aplicada} other {# alterações não aplicadas}}",
     "discard": "Descartar",
@@ -1258,6 +1259,8 @@
     "navigate": "Navegar",
     "omni-placeholder": "Procure por itens, listas e lojas de restock",
     "recent-searches": "Buscas Recentes",
+    "remove-recent": "Remover das buscas recentes",
+    "clear-recent": "Limpar tudo",
     "select": "Selecionar"
   },
   "DynamicList": {

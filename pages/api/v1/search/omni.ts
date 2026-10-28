@@ -52,7 +52,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     only && !only.includes('userLists') ? Promise.resolve([]) : userListsRaw,
   ]);
 
-  if (!searchRes.content.length && (!only || only.includes('items'))) {
+  // Fuzzy matches anything for 1–2 characters ("#9" → Ada, Dal…), so short queries skip it.
+  if (!searchRes.content.length && query.length >= 3 && (!only || only.includes('items'))) {
     searchFilters.sortBy = 'name';
     searchFilters.mode = 'fuzzy';
     searchRes = await doSearch(query, searchFilters, false);
