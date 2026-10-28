@@ -3,12 +3,10 @@
 import {
   Badge,
   Box,
-  Center,
   Flex,
   Float,
   HStack,
   IconButton,
-  Image,
   NativeSelect,
   Skeleton,
   Text,
@@ -48,6 +46,8 @@ const SearchFilterModal = dynamic<SearchFilterModalProps>(
 );
 
 const SearchFilterCard = dynamic(() => import('@components/Search/SearchFiltersCard'));
+
+const SearchEmptyState = dynamic(() => import('@components/Search/SearchEmptyState'));
 
 const color = Color('#4A5568');
 const rgb = color.rgb().round().array();
@@ -350,6 +350,18 @@ export function SearchPageClient(props: SearchPageClientProps) {
       });
   };
 
+  // Clears what hides the results; keeps the display choices and the list scope.
+  const clearFilters = () => {
+    setFilters({
+      ...defaultFilters,
+      sortBy: filters.sortBy,
+      sortDir: filters.sortDir,
+      limit: filters.limit,
+      list_id: filters.list_id,
+      page: 1,
+    });
+  };
+
   const activeFilterCount = countActiveFilters(filters);
   // Read from the URL so it shows on the first render, before the search runs.
   const urlQuery = getSearchQuery(searchParamsString).trim();
@@ -634,14 +646,15 @@ export function SearchPageClient(props: SearchPageClientProps) {
             {!searchResult &&
               [...Array(48)].map((_, i) => <ItemCardV2 uniqueID="search" key={i} />)}
             {searchResult && searchResult.content.length === 0 && (
-              <Center h="60vh" flexFlow="column" gap={3}>
-                <Image
-                  src="https://images.neopets.com/halloween/tot/2020/1_5WhOgu.png"
-                  alt="no results found coltzan"
-                  maxW="75%"
-                />
-                <Text color="gray.400">{t('Layout.no-results-found')} :(</Text>
-              </Center>
+              <SearchEmptyState
+                query={urlQuery}
+                filters={filters}
+                stats={searchStatus}
+                totalResults={totalResults}
+                isColorSearch={isColorSearch}
+                listJWT={props.listJWT}
+                onClearFilters={clearFilters}
+              />
             )}
           </Flex>
           {searchResult && (
