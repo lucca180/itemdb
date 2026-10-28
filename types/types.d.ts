@@ -90,12 +90,7 @@ export type ItemMallData = {
 };
 
 export type ColorType =
-  | 'vibrant'
-  | 'darkvibrant'
-  | 'lightvibrant'
-  | 'muted'
-  | 'darkmuted'
-  | 'lightmuted';
+  'vibrant' | 'darkvibrant' | 'lightvibrant' | 'muted' | 'darkmuted' | 'lightmuted';
 
 // The colorthief accent pair (card/page wash), separate from the 6 named swatches above.
 export type AccentColorType = 'main' | 'secondary';
@@ -569,6 +564,9 @@ type ContributeWallData = {
   success: boolean;
   needTrades: number;
   needVotes: number;
+  /** Goals after the caller's multiplier, so the UI can show progress. */
+  tradeGoal?: number;
+  voteGoal?: number;
 };
 
 type ItemMMEData = {
@@ -931,15 +929,7 @@ export interface BattleDefense extends BattleDmg {
 }
 
 export type BDIconTypes =
-  | 'air'
-  | 'darkness'
-  | 'dark'
-  | 'earth'
-  | 'fire'
-  | 'light'
-  | 'water'
-  | 'hp'
-  | 'physical';
+  'air' | 'darkness' | 'dark' | 'earth' | 'fire' | 'light' | 'water' | 'hp' | 'physical';
 
 export type BDData = {
   attack?: { type: BDIconTypes; key: string; value: number | string }[];

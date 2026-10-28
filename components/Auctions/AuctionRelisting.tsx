@@ -4,7 +4,7 @@ import { Badge, Box, Flex, Icon, Text } from '@chakra-ui/react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState, type KeyboardEvent } from 'react';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
-import { LuChevronDown, LuMinus } from 'react-icons/lu';
+import { LuChevronDown, LuLock, LuMinus } from 'react-icons/lu';
 import { getPercentChange } from '@app/_components/Item/Price/itemPriceUtils';
 import type { ListingRelisting } from '@types';
 
@@ -95,11 +95,21 @@ export const AuctionPriceChange = ({
 };
 
 /** Kept muted on purpose so it doesn't compete with the price for attention. */
-export const AuctionRelistedTag = ({ count, open }: { count: number; open: boolean }) => {
+export const AuctionRelistedTag = ({
+  count,
+  open,
+  locked,
+}: {
+  count: number;
+  open: boolean;
+  /** The history is behind the contribute gate. */
+  locked?: boolean;
+}) => {
   const t = useTranslations();
 
   return (
     <Badge colorPalette="gray" size="xs" variant="subtle" gap={1}>
+      {locked && <Icon as={LuLock} boxSize={3} />}
       {t('ItemPage.auction-relisted', { count })}
       <Icon
         as={LuChevronDown}

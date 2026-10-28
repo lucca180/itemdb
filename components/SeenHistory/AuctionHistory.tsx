@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge, Table, Text, Flex, HStack, Tabs, Spinner } from '@chakra-ui/react';
-import type { ItemAuctionData, ItemData } from '@types';
+import type { ContributeWallData, ItemAuctionData, ItemData } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
 import useSWR from 'swr';
 import useSWRImmutable from 'swr/immutable';
@@ -14,12 +14,22 @@ import {
   AuctionRelistingHistory,
   useAuctionRelistingToggle,
 } from '@components/Auctions/AuctionRelisting';
+import {
+  AuctionRelistingGate,
+  useAuctionRelistingGate,
+} from '@components/Auctions/AuctionRelistingGate';
 
 /** Re-check contribute gate / sold auctions periodically while the modal is open. */
 const GATED_REFRESH_MS = 60_000;
 
 type Props = {
   data: ItemAuctionData[];
+  relistingGate?: RelistingGateProps;
+};
+
+type RelistingGateProps = {
+  wall: ContributeWallData | null;
+  onClose: () => void;
 };
 
 export type AuctionHistoryProps = {
@@ -51,6 +61,7 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
   const data = recentResult?.ok ? recentResult.data : null;
   const soldData = soldResult?.ok ? soldResult.data : null;
   const wall = soldResult && !soldResult.ok ? soldResult.wall : null;
+  const { gate: relistingWall, dismiss: dismissRelistingGate } = useAuctionRelistingGate(wall);
 
   return (
     <Flex flexFlow="column">
@@ -116,7 +127,12 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
                 {t('General.error')}
               </Text>
             )}
-            {!loading && !recentError && <AuctionHistoryTable data={data?.recent ?? []} />}
+            {!loading && !recentError && (
+              <AuctionHistoryTable
+                data={data?.recent ?? []}
+                relistingGate={{ wall: relistingWall, onClose: dismissRelistingGate }}
+              />
+            )}
             {loading && <Spinner />}
           </Tabs.Content>
           <Tabs.Content value="sold" pb={0} px={1}>
@@ -146,7 +162,7 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
 export default AuctionHistory;
 
 const AuctionHistoryTable = (props: Props) => {
-  const { data: sortedData } = props;
+  const { data: sortedData, relistingGate } = props;
   const t = useTranslations();
 
   return (
@@ -156,6 +172,8 @@ const AuctionHistoryTable = (props: Props) => {
       w="100%"
       maxW="1000px"
       borderRadius="md"
+      // Lets the relisting gate size itself to the visible width (cqi units).
+      css={{ containerType: 'inline-size' }}
     >
       <Table.Root h="100%" variant="outline" size="md" bg="gray.600" striped>
         <Table.Header>
@@ -179,7 +197,12 @@ const AuctionHistoryTable = (props: Props) => {
         </Table.Header>
         <Table.Body fontSize="xs">
           {sortedData.map((auction, index) => (
-            <AuctionItem key={auction.internal_id} auction={auction} index={index} />
+            <AuctionItem
+              key={auction.internal_id}
+              auction={auction}
+              index={index}
+              relistingGate={relistingGate}
+            />
           ))}
         </Table.Body>
       </Table.Root>
@@ -187,8 +210,13 @@ const AuctionHistoryTable = (props: Props) => {
   );
 };
 
-const AuctionItem = (props: { auction: ItemAuctionData; index: number }) => {
-  const { auction } = props;
+const AuctionItem = (props: {
+  auction: ItemAuctionData;
+  index: number;
+  relistingGate?: RelistingGateProps;
+}) => {
+  const { auction, relistingGate } = props;
+  const gateWall = relistingGate?.wall;
   const { relisting } = auction;
   const format = useFormatter();
   const t = useTranslations();
@@ -207,7 +235,9 @@ const AuctionItem = (props: { auction: ItemAuctionData; index: number }) => {
               />
             )}
           </Flex>
-          {relisting && <AuctionRelistedTag count={relisting.count} open={open} />}
+          {relisting && (
+            <AuctionRelistedTag count={relisting.count} open={open} locked={!!gateWall} />
+          )}
         </Table.Cell>
         <Table.Cell>
           <Text>
@@ -241,7 +271,15 @@ const AuctionItem = (props: { auction: ItemAuctionData; index: number }) => {
       {relisting && open && (
         <Table.Row>
           <Table.Cell colSpan={5} bg="blackAlpha.300">
-            <AuctionRelistingHistory relisting={relisting} />
+            {gateWall && relistingGate ? (
+              <AuctionRelistingGate
+                wall={gateWall}
+                count={relisting.count}
+                onClose={relistingGate.onClose}
+              />
+            ) : (
+              <AuctionRelistingHistory relisting={relisting} />
+            )}
           </Table.Cell>
         </Table.Row>
       )}

@@ -27,21 +27,21 @@ export const contributeCheck = async (uid?: string, goalMultiplier = 1) => {
   const voteGoal = Math.floor(VOTE_GOAL * goalMultiplier);
 
   if (!uid) {
-    return { success: false, needTrades: tradeGoal, needVotes: voteGoal };
+    return { success: false, needTrades: tradeGoal, needVotes: voteGoal, tradeGoal, voteGoal };
   }
 
   const user = await getUserById(uid);
 
   if (!user) {
-    return { success: false, needTrades: tradeGoal, needVotes: voteGoal };
+    return { success: false, needTrades: tradeGoal, needVotes: voteGoal, tradeGoal, voteGoal };
   }
 
   if (user?.isAdmin) {
-    return { success: true, needTrades: 0, needVotes: 0 };
+    return { success: true, needTrades: 0, needVotes: 0, tradeGoal, voteGoal };
   }
 
   if (user.banned) {
-    return { success: false, needTrades: 0, needVotes: 0 };
+    return { success: false, needTrades: 0, needVotes: 0, tradeGoal, voteGoal };
   }
 
   // check if user precified TRADE_GOAL prices in the last 24hrs
@@ -56,7 +56,7 @@ export const contributeCheck = async (uid?: string, goalMultiplier = 1) => {
   });
 
   if (prices >= tradeGoal) {
-    return { success: true, needTrades: 0, needVotes: 0 };
+    return { success: true, needTrades: 0, needVotes: 0, tradeGoal, voteGoal };
   }
 
   // check if user voted VOTE_GOAL times in the last 24 hrs
@@ -70,7 +70,7 @@ export const contributeCheck = async (uid?: string, goalMultiplier = 1) => {
   });
 
   if (votes >= voteGoal) {
-    return { success: true, needTrades: 0, needVotes: 0 };
+    return { success: true, needTrades: 0, needVotes: 0, tradeGoal, voteGoal };
   }
 
   // check if there is trades or feedbacks to vote
@@ -102,7 +102,8 @@ export const contributeCheck = async (uid?: string, goalMultiplier = 1) => {
   if (tradeQueue < 50) needTrades = 0;
   if (feedbacks < 50) needVotes = 0;
 
-  if (!needTrades && !needVotes) return { success: true, needTrades: 0, needVotes: 0 };
+  if (!needTrades && !needVotes)
+    return { success: true, needTrades: 0, needVotes: 0, tradeGoal, voteGoal };
 
-  return { success: false, needTrades, needVotes };
+  return { success: false, needTrades, needVotes, tradeGoal, voteGoal };
 };
