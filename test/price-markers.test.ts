@@ -123,7 +123,7 @@ describe('resolveOfficialListMarkers', () => {
     expect(markers[0].endAt).toBeNull();
   });
 
-  it('hides series that start or end in the future', () => {
+  it('hides series that start in the future', () => {
     const markers = resolveOfficialListMarkers(
       [
         listFixture({
@@ -156,7 +156,7 @@ describe('resolveOfficialListMarkers', () => {
     expect(markers[0].endAt).toBe(new Date('2024-06-15T18:00:00.000Z').toJSON());
   });
 
-  it('hides series whose endDate is a future LA calendar day', () => {
+  it('drops an endDate on a future LA calendar day and keeps the open range', () => {
     const markers = resolveOfficialListMarkers(
       [
         listFixture({
@@ -169,7 +169,63 @@ describe('resolveOfficialListMarkers', () => {
       now
     );
 
+    expect(markers).toHaveLength(1);
+    expect(markers[0]).toMatchObject({
+      startAt: new Date('2024-03-01T18:00:00.000Z').toJSON(),
+      endAt: null,
+      isPoint: false,
+    });
+  });
+
+  it('hides series where both start and end are future LA calendar days', () => {
+    const markers = resolveOfficialListMarkers(
+      [
+        listFixture({
+          name: 'Next Week',
+          seriesStart: '2024-06-20T18:00:00.000Z',
+          seriesEnd: '2024-06-25T18:00:00.000Z',
+        }),
+      ],
+      { firstSeen: '2020-01-01T00:00:00.000Z' },
+      now
+    );
+
     expect(markers).toHaveLength(0);
+  });
+
+  it('keeps an ongoing itemAddition window as a range instead of a point', () => {
+    const markers = resolveOfficialListMarkers(
+      [
+        listFixture({
+          name: 'Ongoing Addition',
+          seriesType: 'itemAddition',
+          seriesStart: null,
+          seriesEnd: '2024-06-20T18:00:00.000Z',
+          itemInfo: [
+            {
+              internal_id: 10,
+              list_id: 1,
+              item_iid: 99,
+              addedAt: '2024-06-01T00:00:00.000Z',
+              updatedAt: '2024-06-01T00:00:00.000Z',
+              amount: 1,
+              capValue: null,
+              imported: false,
+              order: null,
+              isHighlight: false,
+              isHidden: false,
+              seriesStart: null,
+              seriesEnd: null,
+            },
+          ],
+        }),
+      ],
+      { firstSeen: '2020-01-01T00:00:00.000Z' },
+      now
+    );
+
+    expect(markers).toHaveLength(1);
+    expect(markers[0]).toMatchObject({ endAt: null, isPoint: false });
   });
 
   it('skips series whose end is before the item firstSeen', () => {

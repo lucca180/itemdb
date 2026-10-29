@@ -121,7 +121,8 @@ function resolveManualMarker(
 
 /**
  * Maps official list series into {@link PriceMarker}s: validates dates, clamps
- * to `item.firstSeen`, and sets `isPoint` (single-day or open itemAddition).
+ * to `item.firstSeen`, drops ends on a future LA day (ongoing series), and sets
+ * `isPoint` (single-day or open itemAddition).
  */
 export function resolveOfficialListMarkers(
   lists: UserList[] | undefined,
@@ -159,12 +160,13 @@ function resolveOfficialListMarker(
 
   const startDate = new Date(startAt);
   const rawEndAt = itemInfo?.seriesEnd || list.seriesEnd;
-  const endDate = rawEndAt ? new Date(rawEndAt) : null;
+  let endDate = rawEndAt ? new Date(rawEndAt) : null;
 
   if (!isValidDate(startDate) || (endDate && !isValidDate(endDate))) return null;
-  // A range on a future LA calendar day is hidden as a whole instead of
-  // displaying an event or availability period that has not happened yet.
-  if (isFutureLaDay(startDate, now) || (endDate && isFutureLaDay(endDate, now))) return null;
+  // A series that starts on a future LA calendar day has not happened yet.
+  if (isFutureLaDay(startDate, now)) return null;
+  // Ongoing series: drop the future end so it renders as an open range.
+  if (endDate && isFutureLaDay(endDate, now)) endDate = null;
 
   const isSingleDay = !!endDate && isSameDay(startDate, endDate, { in: LA });
 
@@ -178,7 +180,8 @@ function resolveOfficialListMarker(
   if (endDate && endDate <= itemAdded) return null;
 
   const clampedStart = dateMax(itemAdded, startDate);
-  const isOpenItemAddition = list.seriesType === 'itemAddition' && !endDate;
+  // Uses the stored end: an ongoing itemAddition window stays a range, not a point.
+  const isOpenItemAddition = list.seriesType === 'itemAddition' && !rawEndAt;
 
   return {
     id: `officialList-${list.internal_id}`,
