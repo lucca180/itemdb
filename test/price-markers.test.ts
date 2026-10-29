@@ -559,7 +559,7 @@ describe('buildPriceTableData', () => {
     expect(new Set(rows.map((row) => `${row.markerId}-${row.markerEdge}`)).size).toBe(2);
   });
 
-  it('drops markers entirely outside the price window when data is truncated', () => {
+  it('drops markers older than the price window when data is truncated', () => {
     const oldMarker: PriceMarker = {
       id: 'officialList-old',
       type: 'officialList',
@@ -593,7 +593,30 @@ describe('buildPriceTableData', () => {
     expect(fullRows.filter((row) => row.marker)).toHaveLength(2);
   });
 
-  it('renders only the in-range edge for a range marker that straddles a truncated window', () => {
+  it('keeps markers newer than the latest price when data is truncated', () => {
+    const data = [priceOn('2024-05-01T00:00:00.000Z'), priceOn('2024-04-01T00:00:00.000Z', 2)];
+    const ongoing: PriceMarker = {
+      id: 'officialList-ongoing',
+      type: 'officialList',
+      title: 'Ongoing Event',
+      description: null,
+      slug: 'ongoing-event',
+      color: '#abc',
+      startAt: '2024-06-01T18:00:00.000Z',
+      endAt: null,
+      isPoint: false,
+    };
+
+    const rows = buildPriceTableData(data, [ongoing], tableT, true);
+
+    expect(rows[0]).toMatchObject({
+      marker: true,
+      markerId: 'officialList-ongoing',
+      markerEdge: 'start',
+    });
+  });
+
+  it('renders only the in-window edge for a range marker that started before a truncated window', () => {
     const data = [priceOn('2024-04-20T00:00:00.000Z'), priceOn('2024-04-10T00:00:00.000Z', 2)];
 
     const startedBeforeWindow: PriceMarker = {
@@ -622,13 +645,20 @@ describe('buildPriceTableData', () => {
     const rows = buildPriceTableData(data, [startedBeforeWindow, endingAfterWindow], tableT, true);
     const markerRows = rows.filter((row) => row.marker);
 
-    expect(markerRows).toHaveLength(2);
+    expect(markerRows).toHaveLength(3);
 
-    const beforeRow = markerRows.find((row) => row.markerId === 'range-started-before');
-    expect(beforeRow).toMatchObject({ markerEdge: 'end', addedAt: '2024-04-15T00:00:00.000Z' });
+    const beforeRows = markerRows.filter((row) => row.markerId === 'range-started-before');
+    expect(beforeRows).toHaveLength(1);
+    expect(beforeRows[0]).toMatchObject({
+      markerEdge: 'end',
+      addedAt: '2024-04-15T00:00:00.000Z',
+    });
 
-    const afterRow = markerRows.find((row) => row.markerId === 'range-ending-after');
-    expect(afterRow).toMatchObject({ markerEdge: 'start', addedAt: '2024-04-12T00:00:00.000Z' });
+    const afterRows = markerRows.filter((row) => row.markerId === 'range-ending-after');
+    expect(afterRows.map((row) => row.markerEdge)).toEqual(['end', 'start']);
+    expect(afterRows.find((row) => row.markerEdge === 'start')).toMatchObject({
+      hasEnding: true,
+    });
   });
 });
 

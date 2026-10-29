@@ -121,9 +121,11 @@ through as-is.
 | Collapsed, same day | "Only Available On" |
 | Collapsed, multiple days | "Available at" |
 
-- On truncated tables (summary slice), edges outside the visible price range
-  are dropped. A lone start row whose end was dropped does not tint the rows
-  below it.
+- On truncated tables (summary slice), edges **older than the earliest visible
+  price** are dropped so old markers don't pile up at the bottom. Edges newer
+  than the latest price are kept and render at the top (e.g. an event that
+  started after the last recorded price). A range that started before the
+  slice shows only its end row.
 
 ---
 
