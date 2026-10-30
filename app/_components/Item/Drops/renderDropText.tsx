@@ -63,6 +63,9 @@ export function renderDropText(
   }
 
   if (pool.isChance && (!isGram || pool.isLE)) {
+    const chance =
+      pool.offerChance ?? (pool.openings ? getChance(pool.openings, itemOpenable.openings) : 0);
+
     if (pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop) {
       return t.rich('Drops.chance-multiple', {
         b: (text) => <b>{text}</b>,
@@ -71,7 +74,7 @@ export function renderDropText(
         max: pool.maxDrop,
         type: pool.isLE ? 'le' : pool.name,
         isGram: Boolean(isGram).toString(),
-        chance: pool.openings ? getChance(pool.openings, itemOpenable.openings) : 0,
+        chance,
       });
     }
 
@@ -81,7 +84,7 @@ export function renderDropText(
       min: pool.minDrop || pool.maxDrop,
       type: pool.isLE ? 'le' : pool.name,
       isGram: Boolean(isGram).toString(),
-      chance: pool.openings ? getChance(pool.openings, itemOpenable.openings) : 0,
+      chance,
     });
   }
 

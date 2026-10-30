@@ -97,6 +97,20 @@ describe('renderDropText message selection', () => {
     expect(render(pool({ minDrop: 2, maxDrop: 2 }), random).key).toBe('Drops.single');
     expect(render(pool({ minDrop: 2, maxDrop: 3 }), random).key).toBe('Drops.multiple');
   });
+
+  test('gram LE pools show the offer chance; other gram pools stay a choice', () => {
+    const gram = openable({ 1: 0, 2: 0 }, { isGram: true });
+    const single = { minDrop: 1, maxDrop: 1, isChance: true };
+
+    const le = render(
+      pool({ ...single, name: 'le', isLE: true, offerChance: 21.9, openings: 3 }),
+      gram
+    );
+    expect(le.key).toBe('Drops.chance-single');
+    expect(le.values).toMatchObject({ chance: 21.9, isGram: 'true', type: 'le' });
+
+    expect(render(pool({ ...single, name: 'gram-1-1' }), gram).key).toBe('Drops.gram-single');
+  });
 });
 
 describe('Drops messages', () => {

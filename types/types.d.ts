@@ -380,6 +380,8 @@ export type PrizePoolData = {
   totalDrops: number;
   isChance: boolean;
   isLE: boolean;
+  /** Gram pools: % of openings that offered one of the pool's items. */
+  offerChance?: number;
 };
 
 export type ItemDrop = {

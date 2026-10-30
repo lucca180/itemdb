@@ -18,12 +18,20 @@ import { maybeMarkNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenable
 import { getItemDropSources } from '@utils/item/itemDropSources';
 import { ALL_ITEMS_POOL, slugifyPoolBase } from '@utils/item/prizePoolName';
 import { doesLeReplaceSlot } from '@utils/item/leSlotReplacement';
+import {
+  buildGramOfferStats,
+  getOfferChance,
+  getRotatingOptions,
+  isGramOptionRow,
+} from '@utils/item/gramOffers';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
 const isCategoryNote = (note: string) =>
   catType.includes(note) || !!note.match(/cat\d+y\d+/gim) || !!note.match(/cat\d+/gim);
 const giftBoxes = [65354, 17434, 860];
+/** Note the userscript sets on the item picked from a gram. */
+const GRAM_CHOICE_NOTE = 'gram';
 
 export const SKIP_ITEMS = [61696, 65743];
 
@@ -238,6 +246,10 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
   const hasGramInName = !!item?.name.toLowerCase().split(' ').includes('gram');
   const hasGBCInName = !!item?.name.toLowerCase().includes('gift box mystery capsule');
 
+  // read before the loop below rewrites the notes of LE rows
+  const gramOptionRows = rawDrops.filter(isGramOptionRow);
+  const offerStats = gramOptionRows.length ? await getGramOfferStats(gramOptionRows) : null;
+
   drops
     .sort((a, b) => (a.notes?.length ?? 0) - (b.notes?.length ?? 0))
     .map((drop) => {
@@ -250,7 +262,8 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
         pool: dropsData[drop.item_iid]?.pool ?? null,
       };
 
-      if (!drop.isManual) dropData.dropRate += 1;
+      // gram options were only offered, not received
+      if (!drop.isManual && !isGramOptionRow(drop)) dropData.dropRate += 1;
 
       const pool = drop.prizePool?.toLowerCase();
       if (pool) {
@@ -308,7 +321,11 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
         }
       });
 
-      if (notesList.includes('gramOption') && hasGramInName) isGram = true;
+      if (
+        hasGramInName &&
+        (notesList.includes(GRAM_OPTION_NOTE) || notesList.includes(GRAM_CHOICE_NOTE))
+      )
+        isGram = true;
 
       dropsData[drop.item_iid] = dropData;
     });
@@ -325,6 +342,15 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
     isChoice: isChoice,
     isGram: isGram,
   };
+
+  // Without manual pools, options offered in only some openings are treated as the gram's LE.
+  // Weak business rule: grams have usually been "X regular items + 1 rotating LE", but Neopets
+  // may change that, so a rare option isn't guaranteed to be an LE. Revisit if grams change.
+  const hasManualPools = drops.some((drop) => !!drop.prizePool);
+  const rotatingItems =
+    isGram && offerStats && !hasManualPools
+      ? getRotatingOptions(Array.from(new Set(gramOptionRows.map((a) => a.item_iid))), offerStats)
+      : new Set<number>();
 
   const zoneData = isZoneCat
     ? await prisma.wearableData.findMany({
@@ -359,6 +385,11 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
       if (hasGBCInName && moreCommonCat === 'unknown' && giftBoxes.includes(drop.item_iid))
         moreCommonCat = 'giftbox';
 
+      if (rotatingItems.has(drop.item_iid)) {
+        moreCommonCat = 'le';
+        drop.isLE = true;
+      }
+
       if (isNoUnknown && moreCommonCat === 'unknown') return;
 
       if (!prizePools[moreCommonCat])
@@ -377,6 +408,8 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
       drop.pool = moreCommonCat;
       dropsData[drop.item_iid] = drop;
     });
+
+  if (prizePools.le && rotatingItems.size) prizePools.le.isChance = true;
 
   let openingMinMax = {
     min: { val: 1000, repeat: 0, prev: 0, prevRepeat: 0 },
@@ -474,6 +507,13 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
     });
   }
 
+  // a gram's chance is how often the pool is offered, not how often it was picked
+  if (isGram && offerStats) {
+    Object.values(prizePools).forEach((pool) => {
+      if (pool.isLE) pool.offerChance = getOfferChance(pool.items, offerStats);
+    });
+  }
+
   Object.values(dropsData)
     .filter((a) => evidence.acceptedItemIds.has(a.item_iid))
     .map((drop) => {
@@ -508,6 +548,15 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
   if (!Object.keys(openableData.drops).length) return null;
 
   return openableData;
+};
+
+const getGramOfferStats = async (optionRows: OpenableItems[]) => {
+  const items = await prisma.items.findMany({
+    where: { internal_id: { in: Array.from(new Set(optionRows.map((row) => row.item_iid))) } },
+    select: { internal_id: true, addedAt: true },
+  });
+
+  return buildGramOfferStats(optionRows, new Map(items.map((a) => [a.internal_id, a.addedAt])));
 };
 
 type ParentOpenableItem = OpenableItems & {

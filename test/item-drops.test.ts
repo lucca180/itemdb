@@ -284,3 +284,76 @@ describe('getItemDrops limited edition pools', () => {
     expect(result?.pools['le-chance-1-1'].isLE).toBe(true);
   });
 });
+
+describe('getItemDrops grams', () => {
+  const REGULAR_IDS = [301, 302, 303, 304];
+  const ROTATING_ID = 305;
+
+  /** Each opening offers the regulars (and the rotating option in the first `rotating` ones). */
+  const gramOpenings = (count: number, rotating = 0) =>
+    Array.from({ length: count }, (_, index) => {
+      const opening = `gram-${index}`;
+      const offered = [...REGULAR_IDS, ...(index < rotating ? [ROTATING_ID] : [])];
+      const picked = index < rotating ? ROTATING_ID : REGULAR_IDS[index % REGULAR_IDS.length];
+
+      return [
+        drop(opening, picked, { notes: 'gram' }),
+        ...offered.map((id) => drop(opening, id, { notes: 'gramOption' })),
+      ];
+    }).flat();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prismaMock.wearableData.findMany.mockResolvedValue([]);
+    prismaMock.items.findFirst.mockResolvedValue({ ...item(true), name: 'Test Right Hand Gram' });
+    prismaMock.items.findMany.mockResolvedValue(
+      [...REGULAR_IDS, ROTATING_ID].map((id) => ({ internal_id: id, addedAt: new Date(0) }))
+    );
+  });
+
+  test('detects a gram without pools and does not count options as drops', async () => {
+    prismaMock.openableItems.findMany.mockResolvedValue(gramOpenings(12));
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.isGram).toBe(true);
+    expect(Object.keys(result?.pools ?? {})).toEqual(['unknown']);
+    expect(result?.pools.unknown).toMatchObject({ minDrop: 1, maxDrop: 1 });
+    expect(Object.values(result?.drops ?? {}).every((d) => d.dropRate === 0)).toBe(true);
+  });
+
+  test('treats options offered in only some openings as the LE chance pool', async () => {
+    prismaMock.openableItems.findMany.mockResolvedValue(gramOpenings(20, 4));
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.drops[ROTATING_ID].isLE).toBe(true);
+    expect(result?.hasLE).toBe(true);
+    expect(result?.pools.le).toMatchObject({
+      items: [ROTATING_ID],
+      isChance: true,
+      isLE: true,
+      offerChance: 20,
+    });
+    expect(result?.pools.unknown.items).not.toContain(ROTATING_ID);
+  });
+
+  test('keeps manual pools and uses the offer rate as the LE chance', async () => {
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      ...gramOpenings(20, 4),
+      ...REGULAR_IDS.map((id) =>
+        drop(AUTHORITATIVE_OPENING_IDS[0], id, { prizePool: 'gram-1-1', isManual: true })
+      ),
+      drop(AUTHORITATIVE_OPENING_IDS[0], ROTATING_ID, {
+        prizePool: 'gram-le-1-1',
+        isManual: true,
+      }),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.pools.le).toBeUndefined();
+    expect(result?.pools['gram-le-1-1'].offerChance).toBe(20);
+    expect(result?.pools['gram-1-1'].offerChance).toBeUndefined();
+  });
+});
