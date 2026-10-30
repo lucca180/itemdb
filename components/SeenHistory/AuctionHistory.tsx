@@ -29,6 +29,7 @@ type Props = {
 
 type RelistingGateProps = {
   wall: ContributeWallData | null;
+  itemId: number;
   onClose: () => void;
 };
 
@@ -130,7 +131,11 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
             {!loading && !recentError && (
               <AuctionHistoryTable
                 data={data?.recent ?? []}
-                relistingGate={{ wall: relistingWall, onClose: dismissRelistingGate }}
+                relistingGate={{
+                  wall: relistingWall,
+                  itemId: item.internal_id,
+                  onClose: dismissRelistingGate,
+                }}
               />
             )}
             {loading && <Spinner />}
@@ -274,6 +279,7 @@ const AuctionItem = (props: {
             {gateWall && relistingGate ? (
               <AuctionRelistingGate
                 wall={gateWall}
+                itemId={relistingGate.itemId}
                 count={relisting.count}
                 onClose={relistingGate.onClose}
               />

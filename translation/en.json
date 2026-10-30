@@ -192,6 +192,8 @@
     "relisting-gate-price-label": "Price trade lots",
     "relisting-gate-price": "Price",
     "relisting-gate-close": "Close",
+    "relisting-gate-login-text": "Voting and pricing need an itemdb account. It's free!",
+    "relisting-gate-login": "Log in",
     "auction-price-change": "Change from this owner's previous listing",
     "unspecified-price": "Unspecified Price",
     "wishlist": "Wishlist",

@@ -6,10 +6,31 @@ import { useEffect, useState } from 'react';
 import { LuLock } from 'react-icons/lu';
 import MainLink from '@components/Utils/MainLink';
 import type { ContributeWallData } from '@types';
+import { useAuth } from '@utils/auth';
 
 // Tells which wall drove a landing; every wall shares utm_content=cta-wall.
 const VOTE_HREF = '/feedback/vote?utm_content=cta-wall&utm_term=auction-relisting';
 const PRICE_HREF = '/feedback/trades?utm_content=cta-wall&utm_term=auction-relisting';
+
+const VIEWED_KEY = 'relisting-gate-viewed';
+const viewedItems = new Set<number>();
+
+/** Tracks `relisting-gate-view` once per item per browser session, not on every expand. */
+function trackGateView(itemId: number, count: number) {
+  try {
+    const stored: number[] = JSON.parse(sessionStorage.getItem(VIEWED_KEY) ?? '[]');
+    stored.forEach((id) => viewedItems.add(id));
+  } catch {}
+
+  if (viewedItems.has(itemId)) return;
+  viewedItems.add(itemId);
+
+  try {
+    sessionStorage.setItem(VIEWED_KEY, JSON.stringify([...viewedItems]));
+  } catch {}
+
+  window.umami?.track('relisting-gate-view', { count, itemId });
+}
 
 /**
  * Soft contribute gate on the auction relisting history. It only measures acceptance for
@@ -32,18 +53,25 @@ export function useAuctionRelistingGate(wall: ContributeWallData | null) {
 
 type AuctionRelistingGateProps = {
   wall: ContributeWallData;
+  itemId: number;
   count: number;
   onClose: () => void;
 };
 
 /** Shown in place of the relisting history: blurred placeholder rows + contribute CTAs. */
-export const AuctionRelistingGate = ({ wall, count, onClose }: AuctionRelistingGateProps) => {
+export const AuctionRelistingGate = ({
+  wall,
+  itemId,
+  count,
+  onClose,
+}: AuctionRelistingGateProps) => {
   const t = useTranslations();
+  const { user, openLogin } = useAuth();
   const showVote = wall.needVotes > 0;
   const showPrice = wall.needTrades > 0;
 
   useEffect(() => {
-    window.umami?.track('relisting-gate-view', { count });
+    trackGateView(itemId, count);
   }, []);
 
   return (
@@ -97,7 +125,25 @@ export const AuctionRelistingGate = ({ wall, count, onClose }: AuctionRelistingG
                 b: (chunk) => <b>{chunk}</b>,
               })}
             </Text>
-            {showVote && (
+            {/* Contributing needs an account, so logged-out users get a login prompt instead. */}
+            {!user && (
+              <HStack gap={3}>
+                <Text fontSize="xs" color="whiteAlpha.700" flex={1}>
+                  {t('ItemPage.relisting-gate-login-text')}
+                </Text>
+                <Button
+                  size="xs"
+                  colorPalette="green"
+                  variant="surface"
+                  flexShrink={0}
+                  minW="88px"
+                  onClick={() => openLogin('auction-relisting', { trigger: 'relisting-gate' })}
+                >
+                  {t('ItemPage.relisting-gate-login')}
+                </Button>
+              </HStack>
+            )}
+            {user && showVote && (
               <GateOption
                 label={t('ItemPage.relisting-gate-vote-label')}
                 cta={t('ItemPage.relisting-gate-vote')}
@@ -107,14 +153,14 @@ export const AuctionRelistingGate = ({ wall, count, onClose }: AuctionRelistingG
                 goal={wall.voteGoal}
               />
             )}
-            {showVote && showPrice && (
+            {user && showVote && showPrice && (
               <HStack gap={2} color="whiteAlpha.500" fontSize="2xs" textTransform="uppercase">
                 <Box flex={1} borderTopWidth="1px" borderColor="whiteAlpha.200" />
                 {t('ItemPage.relisting-gate-or')}
                 <Box flex={1} borderTopWidth="1px" borderColor="whiteAlpha.200" />
               </HStack>
             )}
-            {showPrice && (
+            {user && showPrice && (
               <GateOption
                 label={t('ItemPage.relisting-gate-price-label')}
                 cta={t('ItemPage.relisting-gate-price')}

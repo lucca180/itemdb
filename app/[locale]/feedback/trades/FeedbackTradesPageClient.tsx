@@ -147,8 +147,10 @@ export function FeedbackTradesPageClient({
         items: trade.items.map((item) => ({ internal_id: item.internal_id, price: item.price })),
       });
 
-      if (res.data.success) await handleSkip(true);
-      else throw res.data;
+      if (res.data.success) {
+        window.umami?.track('feedback-trade-submit');
+        await handleSkip(true);
+      } else throw res.data;
 
       setIsLoading(false);
     } catch (e: any) {

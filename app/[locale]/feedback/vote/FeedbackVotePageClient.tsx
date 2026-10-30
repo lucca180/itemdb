@@ -59,9 +59,7 @@ type FeedbackVotePageClientProps = {
 
 type VoteCriterion = {
   titleKey:
-    | 'vote-criteria-accept-title'
-    | 'vote-criteria-reject-title'
-    | 'vote-criteria-skip-title';
+    'vote-criteria-accept-title' | 'vote-criteria-reject-title' | 'vote-criteria-skip-title';
   descKey: 'vote-criteria-accept-desc' | 'vote-criteria-reject-desc' | 'vote-criteria-skip-desc';
   shortcut: string;
   icon: IconType;
@@ -181,6 +179,7 @@ export function FeedbackVotePageClient({
         });
 
         if (res.data.success) {
+          window.umami?.track('feedback-vote-submit', { action, type: currentFeedback.type });
           if (currentFeedback.type === 'tradePrice') {
             const trade = currentFeedback.parsed?.content.trade as TradeData | undefined;
             if (trade?.trade_id) setLastVotedTradeId(trade.trade_id);
