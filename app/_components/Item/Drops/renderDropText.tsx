@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ItemOpenable, PrizePoolData } from '@types';
 import type { getTranslations } from 'next-intl/server';
+import { isDeclaredAllPool } from '@utils/item/prizePoolName';
 
 type TFunction = Awaited<ReturnType<typeof getTranslations>>;
 
@@ -16,6 +17,7 @@ const MIN_GUARANTEED_OPENINGS = 10;
 export function isGuaranteedPool(pool: PrizePoolData, itemOpenable: ItemOpenable): boolean {
   if (pool.isLE || pool.isChance || pool.name === 'bonus') return false;
   if (itemOpenable.isGBC || itemOpenable.isGram) return false;
+  if (isDeclaredAllPool(pool)) return true;
   if (pool.openings < MIN_GUARANTEED_OPENINGS) return false;
 
   const drops = pool.items.map((id) => itemOpenable.drops[id]).filter(Boolean);

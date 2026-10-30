@@ -9,7 +9,7 @@ import type { ItemOpenable, PrizePoolData } from '@types';
 type TFunction = Parameters<typeof renderDropText>[0];
 
 const pool = (overrides: Partial<PrizePoolData> = {}): PrizePoolData => ({
-  name: 'normal',
+  name: 'regular',
   items: [1, 2],
   openings: 108,
   minDrop: 2,
@@ -57,6 +57,18 @@ describe('isGuaranteedPool', () => {
     expect(isGuaranteedPool(pool(), openable({ 1: 100, 2: 100 }, { isGBC: true }))).toBe(false);
     expect(isGuaranteedPool(pool(), openable({ 1: 100, 2: 100 }, { isGram: true }))).toBe(false);
     expect(isGuaranteedPool(pool({ openings: 9 }), all)).toBe(false);
+  });
+
+  test('trusts pool names that declare every item, without opening data', () => {
+    const noData = openable({ 1: 0, 2: 0 }, { openings: 0 });
+
+    expect(isGuaranteedPool(pool({ name: 'normal', openings: 0 }), noData)).toBe(true);
+    expect(isGuaranteedPool(pool({ name: 'normal-2-2', openings: 3 }), noData)).toBe(true);
+    expect(isGuaranteedPool(pool({ name: 'normal-1-1', openings: 3 }), noData)).toBe(false);
+    expect(isGuaranteedPool(pool({ name: 'normal-2-2-chance', openings: 3 }), noData)).toBe(false);
+    expect(
+      isGuaranteedPool(pool({ name: 'normal' }), openable({ 1: 0, 2: 0 }, { isGram: true }))
+    ).toBe(false);
   });
 });
 

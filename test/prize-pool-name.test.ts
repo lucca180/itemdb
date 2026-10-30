@@ -4,6 +4,7 @@ import {
   decomposePoolName,
   emptyPoolNameOptions,
   getPoolNameWarnings,
+  isDeclaredAllPool,
   parsePoolName,
   validatePoolNameOptions,
 } from '@utils/item/prizePoolName';
@@ -76,5 +77,25 @@ describe('prize pool names', () => {
       getPoolNameWarnings({ ...emptyPoolNameOptions, base: 'programs', isGram: true })
     ).toEqual([]);
     expect(getPoolNameWarnings({ ...emptyPoolNameOptions, base: 'cat1-2' })).toHaveLength(1);
+  });
+
+  test('warns that a bare "normal" pool grants every item', () => {
+    expect(getPoolNameWarnings({ ...emptyPoolNameOptions, base: 'Normal' })).toHaveLength(1);
+    expect(
+      getPoolNameWarnings({ ...emptyPoolNameOptions, base: 'normal', minDrop: 1, maxDrop: 1 })
+    ).toEqual([]);
+  });
+
+  test('detects pool names that declare every item', () => {
+    expect(isDeclaredAllPool({ name: 'normal', items: [1, 2, 3] })).toBe(true);
+    expect(isDeclaredAllPool({ name: '3-3-toys', items: [1, 2, 3] })).toBe(true);
+    // duplicated manual rows still count as one item
+    expect(isDeclaredAllPool({ name: 'normal-1-1', items: [1, 1] })).toBe(true);
+    expect(isDeclaredAllPool({ name: 'normal-5-5', items: [1] })).toBe(false);
+    expect(isDeclaredAllPool({ name: 'normal-1-2', items: [1, 2] })).toBe(false);
+    expect(isDeclaredAllPool({ name: 'normal-1-1', items: [1, 2] })).toBe(false);
+    expect(isDeclaredAllPool({ name: 'gram-1-1', items: [1] })).toBe(false);
+    expect(isDeclaredAllPool({ name: 'le-1-1', items: [1] })).toBe(false);
+    expect(isDeclaredAllPool({ name: 'normal-chance', items: [1] })).toBe(false);
   });
 });

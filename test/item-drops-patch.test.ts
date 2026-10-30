@@ -4,6 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 const prismaMock = vi.hoisted(() => ({
   items: { findFirst: vi.fn() },
   openableItems: {
+    findFirst: vi.fn(),
     findMany: vi.fn(),
     create: vi.fn(),
     updateMany: vi.fn(),
@@ -73,6 +74,7 @@ describe('PATCH /api/v1/items/[id_name]/drops', () => {
     checkAuthMock.mockResolvedValue({ user: { isAdmin: true } });
     getItemMock.mockResolvedValue({ internal_id: PARENT_ITEM_ID });
     prismaMock.items.findFirst.mockResolvedValue(null);
+    prismaMock.openableItems.findFirst.mockResolvedValue(null);
     prismaMock.openableItems.findMany.mockResolvedValue([]);
     prismaMock.openableItems.updateMany.mockResolvedValue({ count: 0 });
   });
@@ -100,6 +102,18 @@ describe('PATCH /api/v1/items/[id_name]/drops', () => {
     expect(prismaMock.openableItems.create).toHaveBeenCalledWith({
       data: { ...manualPool('normal'), item_iid: DROP_ID, limitedEdition: true },
     });
+  });
+
+  test('adding a drop already in the pool creates no duplicate row', async () => {
+    prismaMock.openableItems.findFirst.mockResolvedValue({ item_iid: DROP_ID });
+
+    const res = await patch({ action: 'add', poolName: 'normal', drop_id: DROP_ID });
+
+    expect(res.statusCode).toBe(200);
+    expect(prismaMock.openableItems.findFirst).toHaveBeenCalledWith({
+      where: { ...manualPool('normal'), item_iid: DROP_ID },
+    });
+    expect(prismaMock.openableItems.create).not.toHaveBeenCalled();
   });
 
   test('set-le updates the manual row of the pool', async () => {

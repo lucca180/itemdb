@@ -16,7 +16,7 @@ import {
 } from '@utils/item/itemDropEvidence';
 import { maybeMarkNcItemOpenableFromDrops } from '@utils/item/markNcItemOpenableFromDrops';
 import { getItemDropSources } from '@utils/item/itemDropSources';
-import { slugifyPoolBase } from '@utils/item/prizePoolName';
+import { ALL_ITEMS_POOL, slugifyPoolBase } from '@utils/item/prizePoolName';
 import { doesLeReplaceSlot } from '@utils/item/leSlotReplacement';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
@@ -95,13 +95,19 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   };
 
   if (action === 'add') {
-    await prisma.openableItems.create({
-      data: {
-        ...manualPoolRows,
-        item_iid: drop_id,
-        limitedEdition: !!isLE,
-      },
+    const existing = await prisma.openableItems.findFirst({
+      where: { ...manualPoolRows, item_iid: drop_id },
     });
+
+    if (!existing) {
+      await prisma.openableItems.create({
+        data: {
+          ...manualPoolRows,
+          item_iid: drop_id,
+          limitedEdition: !!isLE,
+        },
+      });
+    }
   }
 
   if (action === 'remove') {
@@ -264,7 +270,9 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
           };
         }
 
-        prizePools[pool].items.push(drop.item_iid);
+        // duplicated manual rows must not count the same item twice
+        if (!prizePools[pool].items.includes(drop.item_iid))
+          prizePools[pool].items.push(drop.item_iid);
         if (isAuthoritativeDrop(drop)) authoritativeItems.push(drop.item_iid);
         dropData.pool = pool;
       }
@@ -422,6 +430,11 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
       pool.maxDrop = Number(max);
     }
 
+    if (pool.name === ALL_ITEMS_POOL) {
+      pool.minDrop = pool.items.length;
+      pool.maxDrop = pool.items.length;
+    }
+
     if (pool.isLE) openableData.hasLE = true;
   });
 
@@ -434,6 +447,7 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
   Object.values(prizePools).map((pool) => {
     if (
       !pool.isChance &&
+      pool.name !== ALL_ITEMS_POOL &&
       pool.openings / activePoolOpenings <= 0.9 &&
       (!openableData.isChoice || pool.name === 'le')
     )

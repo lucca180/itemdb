@@ -29,6 +29,9 @@ export type ParsedPoolName = {
 const MIN_MAX_REGEX = /\d+-\d+/;
 const FLAG_SEGMENTS = ['le', 'chance', 'gram'];
 
+/** Bare pool name meaning every item of the pool is granted. */
+export const ALL_ITEMS_POOL = 'normal';
+
 export const emptyPoolNameOptions: PoolNameOptions = {
   base: '',
   isLE: false,
@@ -58,6 +61,21 @@ export const parsePoolName = (rawName: string): ParsedPoolName => {
     minDrop,
     maxDrop,
   };
+};
+
+/**
+ * Pools whose name states that every item drops: bare `normal`, or a fixed `N-N` range where N is
+ * the pool's item count. These don't need opening data to be shown as guaranteed.
+ */
+export const isDeclaredAllPool = (pool: { name: string; items: number[] }) => {
+  const name = pool.name.toLowerCase();
+  if (name === ALL_ITEMS_POOL) return true;
+
+  const parsed = parsePoolName(name);
+  if (parsed.isLE || parsed.isChance || parsed.isGram || parsed.isBonus) return false;
+
+  const itemCount = new Set(pool.items).size;
+  return parsed.minDrop === parsed.maxDrop && parsed.minDrop === itemCount && itemCount > 0;
 };
 
 /**
@@ -133,6 +151,8 @@ export const getPoolNameWarnings = (options: PoolNameOptions) => {
     warnings.push(
       `"${base}" contains "${parsed.minDrop}-${parsed.maxDrop}": read as min/max drops`
     );
+  if (composePoolName(options) === ALL_ITEMS_POOL)
+    warnings.push(`"${ALL_ITEMS_POOL}" without min/max: every item of the pool is granted`);
 
   return warnings;
 };
