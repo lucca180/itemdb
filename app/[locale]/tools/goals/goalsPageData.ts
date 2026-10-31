@@ -29,6 +29,7 @@ export const SAMPLE_COLLECTIONS: readonly GoalCollectionSlug[] = [
   'neodeck',
   'book-award',
   'booktastic-book-award',
+  'all-collectibles',
 ];
 
 export const STAMP_ALBUMS_HREF = '/lists/official/cat/stamps';

@@ -33,6 +33,7 @@ import {
   type GoalConfig,
   type GoalVariant,
 } from '@utils/goalCounter/config';
+import { GOAL_COLLECTIONS } from '@utils/goalCounter/collections';
 import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
 import {
   PREVIEW_BACKGROUNDS,
@@ -64,7 +65,13 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
     goalCounter.kind === 'collection'
       ? goalCounter.collection
       : `stamps-${goalCounter.albumListId}`;
-  const variants: readonly GoalVariant[] = isCollection ? COLLECTION_VARIANTS : STAMP_VARIANTS;
+  // the trophy style only for collections that have a trophy different from their icon
+  const variants: readonly GoalVariant[] =
+    goalCounter.kind === 'collection'
+      ? COLLECTION_VARIANTS.filter(
+          (v) => v !== 'classic-trophy' || !!GOAL_COLLECTIONS[goalCounter.collection].trophy
+        )
+      : STAMP_VARIANTS;
 
   const [variant, setVariant] = useState<GoalVariant>(variants[0]);
   const [bg, setBg] = useState<GoalBackground>('transparent');
@@ -256,7 +263,9 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
                     )}
                   </Box>
 
-                  {(variant === 'classic' || variant === 'stamp-classic') && (
+                  {(variant === 'classic' ||
+                    variant === 'classic-trophy' ||
+                    variant === 'stamp-classic') && (
                     <Field.Root>
                       <Switch.Root
                         checked={showNumber}

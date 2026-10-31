@@ -13,6 +13,7 @@ import {
   getFonts,
   getIcon,
   getPalette,
+  loadImageBuffer,
   pngUri,
   pressStart,
   readableOnLight,
@@ -32,7 +33,7 @@ type AvatarAssets = {
 };
 
 async function prepareAvatar(url: string): Promise<AvatarAssets> {
-  const buf = await fetchBuffer(url);
+  const buf = await loadImageBuffer(url);
   const img = await loadImage(buf);
 
   const color = drawScaled(img, 50);
@@ -93,9 +94,12 @@ type Ctx = {
   icon: string;
   paper: boolean;
   showNumber: boolean;
+  /** Positions with a stamp released; null on complete pages (every position counts) */
+  released: Set<number> | null;
 };
 
 const owns = (ctx: Ctx, pos: number) => (ctx.data.ownedMask & (1 << (pos - 1))) !== 0;
+const isReleased = (ctx: Ctx, pos: number) => !ctx.released || ctx.released.has(pos);
 
 const Brand = ({ ctx, light }: { ctx: Ctx; light?: boolean }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 2, height: 15 }}>
@@ -179,9 +183,14 @@ const Avatar = ({ ctx }: { ctx: Ctx }) => (
 
 const MosaicGrid = ({ ctx }: { ctx: Ctx }) => (
   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 1, width: 54, height: 54 }}>
-    {ctx.avatar.tiles.map((t, i) => (
-      <img key={i} alt="" src={owns(ctx, i + 1) ? t.on : t.off} width={10} height={10} />
-    ))}
+    {ctx.avatar.tiles.map((t, i) =>
+      isReleased(ctx, i + 1) ? (
+        <img key={i} alt="" src={owns(ctx, i + 1) ? t.on : t.off} width={10} height={10} />
+      ) : (
+        // not released yet: a faded tile, so the page still reads as 5x5
+        <img key={i} alt="" src={t.off} width={10} height={10} style={{ opacity: 0.3 }} />
+      )
+    )}
   </div>
 );
 
@@ -238,6 +247,18 @@ const PageGrid = ({ ctx }: { ctx: Ctx }) => (
       const thumb = ctx.thumbs.get(pos);
       if (owns(ctx, pos) && thumb)
         return <img key={pos} alt="" src={thumb} width={10} height={10} />;
+      if (!isReleased(ctx, pos))
+        return (
+          <div
+            key={pos}
+            style={{
+              display: 'flex',
+              width: 10,
+              height: 10,
+              border: `1px dashed ${ctx.paper ? '#ddd2bb' : 'rgba(128,128,128,.35)'}`,
+            }}
+          />
+        );
       return (
         <div
           key={pos}
@@ -491,6 +512,7 @@ export async function renderStampGoal(data: StampGoalData, config: GoalConfig): 
     icon,
     paper: normalized.bg === 'paper',
     showNumber: normalized.showNumber,
+    released: data.unfinished ? new Set(data.stamps.map((s) => s.pos)) : null,
   };
 
   const [width, height] = GOAL_SIZES[variant];

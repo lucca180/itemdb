@@ -24,11 +24,18 @@ export const isGoalSample = (value: string): value is GoalSample =>
 const SAMPLE_OWNED_POSITIONS = [1, 2, 3, 5, 6, 8, 11, 13, 14, 19, 20, 23];
 const SAMPLE_OWNED_MASK = SAMPLE_OWNED_POSITIONS.reduce((mask, pos) => mask | (1 << (pos - 1)), 0);
 
-/** The album page's real avatar, title and stamps, with a fixed set of owned stamps. */
+/**
+ * The album page's real avatar, title and stamps, with a fixed set of owned stamps.
+ * Unfinished pages own every other released stamp instead, so the sample never shows a stamp
+ * that doesn't exist yet.
+ */
 export async function getStampSampleData(albumListId: number): Promise<StampGoalData | null> {
   const data = await getStampGoalData(albumListId, { officialOnly: true });
   if (!data) return null;
-  return { ...data, ownedMask: SAMPLE_OWNED_MASK, ownedCount: countBits(SAMPLE_OWNED_MASK) };
+  const ownedMask = data.unfinished
+    ? data.stamps.reduce((mask, s, i) => (i % 2 ? mask : mask | (1 << (s.pos - 1))), 0)
+    : SAMPLE_OWNED_MASK;
+  return { ...data, ownedMask, ownedCount: countBits(ownedMask) };
 }
 
 // roughly a third of each collection; totals are illustrative, not live
@@ -37,6 +44,7 @@ const SAMPLE_PROGRESS: Record<GoalCollectionSlug, { owned: number; total: number
   neodeck: { owned: 187, total: 365 },
   'book-award': { owned: 1204, total: 3695 },
   'booktastic-book-award': { owned: 96, total: 216 },
+  'all-collectibles': { owned: 327, total: 978 },
 };
 
 export const sampleCollectionData = (collection: GoalCollectionSlug): CollectionGoalData => ({

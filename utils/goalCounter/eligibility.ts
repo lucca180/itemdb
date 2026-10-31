@@ -1,7 +1,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import prisma from '@utils/prisma';
 import { goalCounterAlbumTag } from '@utils/appCacheTags';
-import { isStampAlbum, toAvatarUrl } from './stampGoalData';
+import { UNFINISHED_ALBUM_IMAGE, isStampAlbum, toAvatarUrl } from './stampGoalData';
 import { GOAL_COLLECTIONS, isGoalCollectionSlug, type GoalCollectionSlug } from './collections';
 
 type GoalCounterBase = {
@@ -17,8 +17,9 @@ export type GoalCounterInfo =
   | (GoalCounterBase & { kind: 'collection'; collection: GoalCollectionSlug });
 
 /**
- * Whether an official list can back a goal counter: a stamp album page with an avatar, or one
- * of the collection checklists (Gourmet Food, NeoDeck, Book Awards).
+ * Whether an official list can back a goal counter: a stamp album page with stamps (unfinished
+ * pages have no avatar yet and use a stand-in image), or one of the collection checklists
+ * (Gourmet Food, NeoDeck, Book Awards, Stamp Collector).
  * Keyed by the official list, so every checklist linked to it shares the cached answer.
  * Avatars rarely change; the avatar sync (/api/v1/avatars) revalidates the tag of every list it
  * touches.
@@ -41,8 +42,13 @@ export async function getGoalCounterAlbum(albumListId: number): Promise<GoalCoun
       orderBy: { internal_id: 'asc' },
       select: { name: true, image: true },
     });
-    if (!avatar) return null;
-    return { kind: 'stamps', albumListId, name: avatar.name, image: toAvatarUrl(avatar.image) };
+    if (avatar) {
+      return { kind: 'stamps', albumListId, name: avatar.name, image: toAvatarUrl(avatar.image) };
+    }
+
+    const stamps = await prisma.listItems.count({ where: { list_id: albumListId } });
+    if (!stamps) return null;
+    return { kind: 'stamps', albumListId, name: album.name.trim(), image: UNFINISHED_ALBUM_IMAGE };
   }
 
   if (isGoalCollectionSlug(album.slug)) {
@@ -50,7 +56,7 @@ export async function getGoalCounterAlbum(albumListId: number): Promise<GoalCoun
       kind: 'collection',
       collection: album.slug,
       albumListId,
-      name: album.name,
+      name: GOAL_COLLECTIONS[album.slug].name ?? album.name,
       image: GOAL_COLLECTIONS[album.slug].icon,
     };
   }

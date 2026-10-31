@@ -184,10 +184,10 @@ export function GoalsPageClient() {
             {SAMPLE_COLLECTIONS.map((slug) => (
               <SampleCard
                 key={slug}
-                src={goalSampleImagePath(slug, configFor('classic', bg))}
+                src={goalSampleImagePath(slug, configFor('classic-trophy', bg))}
                 surface={surface}
                 title={GOAL_COLLECTIONS[slug].title}
-                variant="classic"
+                variant="classic-trophy"
                 collection={slug}
               />
             ))}

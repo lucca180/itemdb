@@ -27,7 +27,7 @@ const GOAL_SAMPLES: { sample: string; config: GoalConfig; alt: string }[] = [
   },
   {
     sample: 'gourmet-food',
-    config: { variant: 'classic', bg: 'transparent' },
+    config: { variant: 'classic-trophy', bg: 'transparent' },
     alt: 'Gourmet Food progress',
   },
 ];

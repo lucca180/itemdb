@@ -46,6 +46,10 @@ export const fetchBuffer = async (url: string) => {
   return Buffer.from(await res.arrayBuffer());
 };
 
+/** Remote image URL, or a path under /public (e.g. "/img/goal/x.png") for images we host. */
+export const loadImageBuffer = (src: string) =>
+  src.startsWith('/') ? publicFile(...src.split('/').filter(Boolean)) : fetchBuffer(src);
+
 export const drawScaled = (img: Image, size: number) => {
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext('2d');

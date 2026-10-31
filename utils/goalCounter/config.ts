@@ -16,6 +16,7 @@ export const GOAL_VARIANTS = [
   'page-legend',
   'classic',
   'stamp-classic',
+  'classic-trophy',
 ] as const;
 
 export const GOAL_BACKGROUNDS = ['transparent', 'paper'] as const;
@@ -51,9 +52,13 @@ const V1_VARIANTS: readonly GoalVariant[] = [
 ];
 
 /** Variants with the classic bar layout, which can hide the number. */
-const CLASSIC_VARIANTS: readonly GoalVariant[] = ['classic', 'stamp-classic'];
+const CLASSIC_VARIANTS: readonly GoalVariant[] = ['classic', 'stamp-classic', 'classic-trophy'];
 
-export const COLLECTION_VARIANTS = ['classic'] as const satisfies readonly GoalVariant[];
+/** `classic-trophy` is the classic bar with the collection's trophy instead of its icon. */
+export const COLLECTION_VARIANTS = [
+  'classic',
+  'classic-trophy',
+] as const satisfies readonly GoalVariant[];
 
 export type StampVariant = (typeof STAMP_VARIANTS)[number];
 export type CollectionVariant = (typeof COLLECTION_VARIANTS)[number];
@@ -69,6 +74,7 @@ export const VARIANT_BACKGROUNDS: Record<GoalVariant, readonly GoalBackground[]>
   'page-legend': ['transparent', 'paper'],
   classic: ['transparent', 'paper'],
   'stamp-classic': ['transparent', 'paper'],
+  'classic-trophy': ['transparent', 'paper'],
 };
 
 /** Image size of each variant, in pixels. */
@@ -80,6 +86,7 @@ export const GOAL_SIZES: Record<GoalVariant, [number, number]> = {
   'page-legend': [152, 72],
   classic: [168, 48],
   'stamp-classic': [174, 56],
+  'classic-trophy': [168, 48],
 };
 
 export const isStampVariant = (variant: GoalVariant): variant is StampVariant =>
