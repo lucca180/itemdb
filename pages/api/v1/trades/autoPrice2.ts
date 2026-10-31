@@ -9,6 +9,12 @@ import { differenceInCalendarDays } from 'date-fns';
 import { ItemData } from '@types';
 import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/item/tradeCanonical';
 import { omitOwnerHash } from '@utils/ownerHash';
+import { reportBackgroundError } from '@utils/api/reportBackgroundError';
+import { FeedbackCommitError } from '@services/feedback/feedbackCommit';
+import {
+  autoApproveTradeFeedback,
+  isTradeAutoApproveEnabled,
+} from '@services/feedback/tradeAutoApprove';
 import {
   buildSimilarTradeLookupKey,
   buildTradeItemSignature,
@@ -125,7 +131,46 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
     },
   });
 
-  return await prisma.$transaction([feedbacks, updateTrades]);
+  const result = await prisma.$transaction([feedbacks, updateTrades]);
+
+  await autoApproveCreatedFeedbacks(filteredTrades.map(([t]) => t.trade_id));
+
+  return result;
+};
+
+// auto priced suggestions that follow the guidelines skip the vote queue too
+const autoApproveCreatedFeedbacks = async (tradeIds: number[]) => {
+  if (!tradeIds.length || !isTradeAutoApproveEnabled()) return;
+
+  const created = await prisma.feedbacks.findMany({
+    where: {
+      type: 'tradePrice',
+      user_id: AUTO_PRICE_UID,
+      processed: false,
+      subject_id: { in: tradeIds },
+    },
+    select: { feedback_id: true, subject_id: true },
+  });
+
+  await pMap(
+    created,
+    async ({ feedback_id, subject_id }) => {
+      try {
+        await autoApproveTradeFeedback(feedback_id);
+      } catch (e) {
+        reportBackgroundError(e, {
+          task: 'feedback.tradeAutoApprove',
+          tags: { feedback_id, trade_id: subject_id },
+          data: {
+            feedback_id,
+            trade_id: subject_id,
+            ...(e instanceof FeedbackCommitError ? e.details : {}),
+          },
+        });
+      }
+    },
+    { concurrency: AUTO_PRICE_CONCURRENCY }
+  );
 };
 
 const fetchSimilarTrade = async (trade: Trades & { items: TradeItems[] }) => {

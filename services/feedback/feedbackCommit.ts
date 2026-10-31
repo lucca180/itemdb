@@ -61,6 +61,26 @@ export const commitFeedbackIfDecided = async (
 
   if (!decision) return null;
 
+  return commitFeedbackDecision(feedback, decision, { ip });
+};
+
+type CommitOptions = {
+  ip?: string | null;
+  /** replaces the feedback json when finalizing (e.g. to record why it was auto approved) */
+  json?: string;
+};
+
+/**
+ * Commits an already taken decision: claims the lease, applies the side effects, finalizes and
+ * pays xp. Returns the decision, or null when another worker holds the lease.
+ */
+export const commitFeedbackDecision = async (
+  feedback: Feedbacks & { vote: VoteRef[] },
+  decision: NonNullable<FeedbackDecision>,
+  { ip, json }: CommitOptions = {}
+): Promise<FeedbackDecision> => {
+  const { feedback_id } = feedback;
+
   // atomic claim: only one worker gets the lease
   const leaseAt = new Date();
   const claim = await prisma.feedbacks.updateMany({
@@ -89,7 +109,7 @@ export const commitFeedbackIfDecided = async (
     step = 'finalize';
     await prisma.feedbacks.updateMany({
       where: { feedback_id },
-      data: { processed: true, approved, processedAt: new Date() },
+      data: { processed: true, approved, processedAt: new Date(), ...(json ? { json } : {}) },
     });
 
     // fresh votes: whoever voted while the side effects ran also gets their xp
@@ -154,13 +174,21 @@ export const retryStaleFeedbackCommits = async () => {
       processed: false,
       processedAt: { lt: new Date(Date.now() - FEEDBACK_COMMIT_LEASE_MS) },
     },
-    select: { feedback_id: true },
+    select: { feedback_id: true, processedAt: true },
     take: STALE_RETRY_LIMIT,
   });
 
-  for (const { feedback_id } of stale) {
+  for (const { feedback_id, processedAt } of stale) {
     try {
-      await commitFeedbackIfDecided(feedback_id);
+      const decision = await commitFeedbackIfDecided(feedback_id);
+      if (decision) continue;
+
+      // no vote decision to redo (e.g. an interrupted auto approval): back to the queue, or it
+      // would hold a retry slot forever. Only while the stale lease is still the same one.
+      await prisma.feedbacks.updateMany({
+        where: { feedback_id, processed: false, processedAt },
+        data: { processedAt: null },
+      });
     } catch (e) {
       reportBackgroundError(e, {
         task: 'feedback.retryStaleCommit',

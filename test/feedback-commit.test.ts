@@ -20,6 +20,7 @@ vi.mock('@utils/api/reportBackgroundError', () => ({ reportBackgroundError }));
 
 import {
   FeedbackCommitError,
+  commitFeedbackDecision,
   commitFeedbackIfDecided,
   retryStaleFeedbackCommits,
 } from '@services/feedback/feedbackCommit';
@@ -194,9 +195,40 @@ describe('commitFeedbackIfDecided', () => {
   });
 });
 
+describe('commitFeedbackDecision', () => {
+  test('commits a decision taken without votes and stores the given json', async () => {
+    prismaMock.feedbackVotes.findMany.mockResolvedValue([]);
+    const json = JSON.stringify({ content: { trade }, autoApprove: { by: 'wishlist-parser' } });
+
+    await expect(
+      commitFeedbackDecision(feedbackRow(1, []) as any, 'approve', { ip: '2.2.2.2', json })
+    ).resolves.toBe('approve');
+
+    const [claim, finalize] = prismaMock.feedbacks.updateMany.mock.calls.map(([args]) => args);
+    expect(claim.where).toMatchObject({ feedback_id: 1, processed: false });
+    expect(finalize.data).toMatchObject({ processed: true, approved: true, json });
+    expect(processTradePrice).toHaveBeenCalledWith(trade, '2.2.2.2');
+    expect(xpUpdates()).toEqual([{ ids: ['submitter'], amount: 7 }]);
+  });
+
+  test('keeps the json when none is given', async () => {
+    prismaMock.feedbackVotes.findMany.mockResolvedValue([]);
+
+    await commitFeedbackDecision(feedbackRow(1, []) as any, 'approve');
+
+    const finalize = prismaMock.feedbacks.updateMany.mock.calls[1][0];
+    expect(finalize.data).not.toHaveProperty('json');
+  });
+});
+
 describe('retryStaleFeedbackCommits', () => {
+  const staleAt = new Date('2026-10-30T00:00:00Z');
+
   test('re-runs each stale commit and reports failures to Sentry', async () => {
-    prismaMock.feedbacks.findMany.mockResolvedValue([{ feedback_id: 1 }, { feedback_id: 2 }]);
+    prismaMock.feedbacks.findMany.mockResolvedValue([
+      { feedback_id: 1, processedAt: staleAt },
+      { feedback_id: 2, processedAt: staleAt },
+    ]);
     prismaMock.feedbacks.findUnique
       .mockRejectedValueOnce(new Error('boom'))
       .mockResolvedValueOnce(null);
@@ -211,6 +243,38 @@ describe('retryStaleFeedbackCommits', () => {
     expect(reportBackgroundError.mock.calls[0][1]).toMatchObject({
       task: 'feedback.retryStaleCommit',
       tags: { feedback_id: 1 },
+    });
+  });
+
+  test('releases a stale lease that has no vote decision (interrupted auto approval)', async () => {
+    prismaMock.feedbacks.findMany.mockResolvedValue([{ feedback_id: 1, processedAt: staleAt }]);
+    prismaMock.feedbacks.findUnique.mockResolvedValue(feedbackRow(1, []));
+
+    await retryStaleFeedbackCommits();
+
+    expect(prismaMock.feedbacks.updateMany).toHaveBeenCalledTimes(1);
+    expect(prismaMock.feedbacks.updateMany).toHaveBeenCalledWith({
+      where: { feedback_id: 1, processed: false, processedAt: staleAt },
+      data: { processedAt: null },
+    });
+    expect(processTradePrice).not.toHaveBeenCalled();
+  });
+
+  test('does not release the lease when the votes decided the commit', async () => {
+    const votes = [
+      { user_id: 'a', approve: true },
+      { user_id: 'b', approve: true },
+    ];
+    prismaMock.feedbacks.findMany.mockResolvedValue([{ feedback_id: 1, processedAt: staleAt }]);
+    prismaMock.feedbacks.findUnique.mockResolvedValue(feedbackRow(5, votes));
+    prismaMock.feedbackVotes.findMany.mockResolvedValue(votes);
+
+    await retryStaleFeedbackCommits();
+
+    // claim + finalize, no release
+    expect(prismaMock.feedbacks.updateMany).toHaveBeenCalledTimes(2);
+    expect(prismaMock.feedbacks.updateMany.mock.calls[1][0].data).toMatchObject({
+      processed: true,
     });
   });
 });

@@ -1,5 +1,9 @@
+import { after } from 'next/server';
 import prisma from '@utils/prisma';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { reportBackgroundError } from '@utils/api/reportBackgroundError';
+import { FeedbackCommitError } from '@services/feedback/feedbackCommit';
+import { autoApproveTradeFeedback } from '@services/feedback/tradeAutoApprove';
 import { getRequestClientIp } from '@utils/api/clientIp';
 import type { TradeData } from '@types';
 import {
@@ -76,6 +80,23 @@ export async function POST(request: Request) {
     });
 
     const [feedback] = await prisma.$transaction([create, markProcessed, ...deleteOwn]);
+
+    // prices that follow the guidelines skip the vote queue - doesn't block the response
+    after(async () => {
+      try {
+        await autoApproveTradeFeedback(feedback.feedback_id, ip);
+      } catch (e) {
+        reportBackgroundError(e, {
+          task: 'feedback.tradeAutoApprove',
+          tags: { feedback_id: feedback.feedback_id, trade_id },
+          data: {
+            feedback_id: feedback.feedback_id,
+            trade_id,
+            ...(e instanceof FeedbackCommitError ? e.details : {}),
+          },
+        });
+      }
+    });
 
     return Response.json({ success: true, message: { feedback_id: feedback.feedback_id } });
   } catch (e) {
