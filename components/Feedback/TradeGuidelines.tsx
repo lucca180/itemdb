@@ -29,24 +29,6 @@ export function TradeGuidelines({ forVoting = false }: TradeGuidelinesProps) {
           })}
         </Text>
       )}
-      <Alert.Root mt={forVoting ? 0 : 6} mb={6} variant="subtle" borderRadius={'md'}>
-        <Alert.Indicator />
-        <Alert.Content w="100%">
-          <Alert.Title>{t('Feedback.20-12-2025-new-baby-paint-brush-policy')}</Alert.Title>
-          <Alert.Description fontSize="xs">
-            <Text mb={2}>
-              {t.rich('Feedback.new-policy-2025-1', {
-                b: (chunk) => <b>{chunk}</b>,
-              })}
-            </Text>
-            <Text>
-              {t.rich('Feedback.new-policy-2025-2', {
-                b: (chunk) => <b>{chunk}</b>,
-              })}
-            </Text>
-          </Alert.Description>
-        </Alert.Content>
-      </Alert.Root>
       <Heading size="md" mt={6} color="red.300">
         <Icon as={BsXLg} verticalAlign="middle" /> {t('Feedback.donts')}
       </Heading>
@@ -114,6 +96,49 @@ export function TradeGuidelines({ forVoting = false }: TradeGuidelinesProps) {
           </Text>
           <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-15')}
+          </Text>
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
+          {t('Feedback.pt-20')}
+          <br />
+          <Text fontSize="xs" color="gray.400">
+            {t('Feedback.pt-21')}
+          </Text>
+          <Text fontSize="xs" color="gray.400">
+            {t('Feedback.pt-22')}
+          </Text>
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
+          {t('Feedback.pt-23')}
+          <br />
+          <Text fontSize="xs" color="gray.400">
+            {t('Feedback.pt-24')}
+          </Text>
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
+          {t('Feedback.pt-25')}
+          <br />
+          <Text fontSize="xs" color="gray.400">
+            {t('Feedback.pt-26')}
+          </Text>
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
+          {t('Feedback.pt-27')}
+          <br />
+          <Text fontSize="xs" color="gray.400">
+            {t('Feedback.pt-28')}
           </Text>
         </List.Item>
         <List.Item>
