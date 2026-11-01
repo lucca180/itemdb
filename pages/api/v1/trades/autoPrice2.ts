@@ -11,9 +11,12 @@ import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/item/tra
 import { omitOwnerHash } from '@utils/ownerHash';
 import { reportBackgroundError } from '@utils/api/reportBackgroundError';
 import { FeedbackCommitError } from '@services/feedback/feedbackCommit';
+import * as Sentry from '@sentry/nextjs';
 import {
   autoApproveTradeFeedback,
+  getTradeConfirmedBlank,
   isTradeAutoApproveEnabled,
+  isTradeBlankPrefilterEnabled,
 } from '@services/feedback/tradeAutoApprove';
 import {
   buildSimilarTradeLookupKey,
@@ -173,6 +176,32 @@ const autoApproveCreatedFeedbacks = async (tradeIds: number[]) => {
   );
 };
 
+// lots the guidelines surely leave all blank are closed here instead of going to the pricing
+// queue. Returns true when closed
+export const closeConfirmedBlank = async (trade: Trades & { items: TradeItems[] }) => {
+  if (!isTradeBlankPrefilterEnabled()) return false;
+
+  try {
+    const reason = await getTradeConfirmedBlank(trade);
+    if (!reason) return false;
+
+    await processTradePrice({
+      ...trade,
+      items: trade.items.map((item) => ({ ...item, price: null })),
+    });
+
+    Sentry.metrics.count('trade.blank_prefilter', 1, { attributes: { reason } });
+    return true;
+  } catch (e) {
+    reportBackgroundError(e, {
+      task: 'trade.blankPrefilter',
+      tags: { trade_id: trade.trade_id },
+      data: { trade_id: trade.trade_id },
+    });
+    return false;
+  }
+};
+
 const fetchSimilarTrade = async (trade: Trades & { items: TradeItems[] }) => {
   const isAllItemsEqual = getTradeIsAllItemsEqual(trade);
 
@@ -227,7 +256,11 @@ const findSimilar = async (
   similarInflight: Map<string, Promise<(Trades & { items: TradeItems[] }) | null>>,
   itemDataCache: Map<string, ItemData>
 ) => {
-  if (isWishlistBanned(trade.wishlist)) return null;
+  // the two exits below leave the lot in the pricing queue, unless it is surely all blank
+  if (isWishlistBanned(trade.wishlist)) {
+    await closeConfirmedBlank(trade);
+    return null;
+  }
 
   // Handlers first: true means the lot was priced or closed — do not similar-match.
   const shouldSkip =
@@ -235,7 +268,10 @@ const findSimilar = async (
   if (shouldSkip) return null;
 
   const similar = await getCachedSimilarTrade(trade, similarCache, similarInflight);
-  if (!similar) return null;
+  if (!similar) {
+    await closeConfirmedBlank(trade);
+    return null;
+  }
 
   const isAllItemsTheSame = getTradeIsAllItemsEqual(trade);
 

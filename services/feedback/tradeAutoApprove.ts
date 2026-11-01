@@ -10,6 +10,7 @@ import prisma from '@utils/prisma';
 import type { Feedbacks } from '@prisma/generated/client';
 import type { FeedbackParsed, TradeData } from '@types';
 import {
+  getConfirmedBlank,
   getWishlistNameCandidates,
   getWishlistPrices,
   wishlistPricesMatch,
@@ -51,7 +52,9 @@ const findWishlistItemNames = async (wishlist: string) => {
 };
 
 // auto priced feedbacks store raw TradeItems (no names)
-const withItemNames = async (items: TradeFeedbackItem[]) => {
+const withItemNames = async <T extends { item_iid?: number | null; name?: string | null }>(
+  items: T[]
+) => {
   const missing = items.filter((i) => !i.name && i.item_iid).map((i) => i.item_iid!);
   if (!missing.length) return items;
 
@@ -80,6 +83,23 @@ export const checkTradeFeedback = async (trade: {
   const match = 'prices' in expected && wishlistPricesMatch(sent, expected.prices);
 
   return { match, sent, expected };
+};
+
+/** Kill switch: TRADE_BLANK_PREFILTER=off (+ restart) sends confirmed blank lots to the queue. */
+export const isTradeBlankPrefilterEnabled = () => process.env.TRADE_BLANK_PREFILTER !== 'off';
+
+/**
+ * Reason when the guidelines surely leave every slot of the lot blank, so it can be closed
+ * without going to the pricing queue. Null when a human should check it.
+ */
+export const getTradeConfirmedBlank = async (trade: {
+  wishlist: string;
+  instantBuy?: number | null;
+  items: { item_iid?: number | null; amount?: number | null; name?: string | null }[];
+}) => {
+  const items = await withItemNames(trade.items);
+  const knownItemNames = await findWishlistItemNames(trade.wishlist ?? '');
+  return getConfirmedBlank(trade.wishlist ?? '', items, trade.instantBuy, knownItemNames);
 };
 
 const parseFeedback = (feedback: Feedbacks) => {

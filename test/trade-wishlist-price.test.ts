@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
+  getConfirmedBlank,
   getWishlistNameCandidates,
   getWishlistPrices,
   wishlistPricesMatch,
@@ -200,6 +201,15 @@ describe('getWishlistPrices', () => {
       'abstain: multiple values'
     );
     expect(prices('10m pure or 10m in neggs or 10m in items', mixed)).toBe('abstain: mixed lot');
+    expect(prices('2b each', mixed)).toBe('abstain: mixed lot');
+    const named = [
+      { item_iid: 1, amount: 1, name: 'Kacheek Plushie' },
+      { item_iid: 2, amount: 1, name: 'Rubber Duck' },
+    ];
+    // pt-5: the wishlist points at one of the items
+    expect(prices('NM offers, Kacheek 100M is Auto', named)).toBe('abstain: mixed lot');
+    // naming every item is still the lot total
+    expect(prices('Kacheek and Duck bundle 10m', named)).toEqual([null, null]);
   });
 
   test('Instant Buy on a mixed lot is a total too', () => {
@@ -222,6 +232,74 @@ describe('getWishlistPrices', () => {
     expect(prices('Pink 3,700,000, Red 2m and Fire 1.5m', mixed, noNames, 7 * M)).toBe(
       'abstain: mixed lot'
     );
+  });
+});
+
+describe('getConfirmedBlank', () => {
+  const confirmed = (
+    wishlist: string,
+    items: WishlistLotItem[] = one,
+    instantBuy: number | null = null
+  ) => getConfirmedBlank(wishlist, items, instantBuy, noNames);
+  const mixed = [1, 2, 3].map((item_iid) => ({ item_iid, amount: 1 }));
+
+  test.each([
+    ['5 cool neggs', 'no np value'], // pt-10
+    ['NM me for offers, 2 full maps!', 'no np value'],
+    ['20m + 2 cool neggs', 'item payment without np value'], // pt-9
+    ['20 mil and a cool negg. Online Daily!', 'item payment without np value'],
+    ['baby pb for 1np merry christmas', 'symbolic'],
+    ['700k lower than lowest', 'relative price'],
+  ])('confirms: %s', (wishlist, reason) => {
+    expect(confirmed(wishlist)).toBe(reason);
+  });
+
+  test('confirms mixed lot totals, with or without Instant Buy (pt-6)', () => {
+    expect(confirmed('9 mil', mixed)).toBe('mixed lot total');
+    expect(confirmed('[MIX OF EVIL COCONUTS - 20M]', mixed, 20 * M)).toBe('instant buy mixed lot');
+  });
+
+  test.each([
+    '17.5 please', // bare value, usually millions
+    '39.5 pure',
+    "I'd prefer 12, but I'll take 10.",
+    '120Mi pure or combo',
+    'oh looky a deal......7.5 mil and its yours',
+    'Quicksale13m',
+    'See my auctions. 40+M',
+    'Free to good home (1 bill rehoming fee)',
+  ])('leaves numbers it cannot read to the queue: %s', (wishlist) => {
+    expect(confirmed(wishlist)).toBeNull();
+  });
+
+  test.each([
+    "12.5M in NP's and items if needed", // a mixed payment total
+    '10 mil. I like nps and stamps/coins/charms',
+    '70mil? open to haggle and trade for album items',
+    '50m - 20m NP + 6 Cool Neggs', // a total and its breakdown
+    '140M - 20M pure + Cool Neggs or fully pure',
+    '250m obo. Saving for golden shell',
+    '17m please, 6.5+x2 cool negg or equiv',
+  ])('leaves item payments that may not be an addition to the queue: %s', (wishlist) => {
+    expect(confirmed(wishlist)).toBeNull();
+  });
+
+  test('leaves symbolic decimals and relative prices with a value to the queue', () => {
+    expect(confirmed('16.5 NP!!! Online all day')).toBeNull();
+    expect(confirmed('willing to do 120mil - 7mil below current tp price')).toBeNull();
+  });
+
+  test('leaves mixed lots that may price one item to the queue (pt-5)', () => {
+    expect(confirmed('9 mil for the Blumaroo Slingshot and the codestone free', mixed)).toBeNull();
+    expect(confirmed('8.5M, TCG card included as a bonus', mixed, 8.5 * M)).toBeNull();
+    const two = mixed.slice(0, 2);
+    expect(confirmed('14M', two)).toBeNull();
+  });
+
+  test('never confirms a lot that gets a price or abstains', () => {
+    expect(confirmed('20m')).toBeNull();
+    expect(confirmed('10m', one, 10 * M)).toBeNull(); // instant buy
+    expect(confirmed('10m | nm | nm', mixed)).toBeNull(); // list by slot
   });
 });
 

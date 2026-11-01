@@ -162,18 +162,28 @@ const evalOption = (o: string, mentionsItem: (s: string) => boolean): Option | n
   return { value: sum, pure };
 };
 
+const words = (s: string) =>
+  new Set(
+    s
+      .toLowerCase()
+      .split(/[^a-z]+/)
+      .filter((x) => x.length >= 4)
+  );
+
+// lot items the wishlist names ("Kacheek 100M is Auto"), by marker or by a word of their name
+const namedLotItems = (l: string, items: WishlistLotItem[]) => {
+  const lWords = words(l);
+  return items.filter(
+    (it, i) =>
+      l.includes(`lotitem${i} `) || (it.name && [...words(it.name)].some((x) => lWords.has(x)))
+  ).length;
+};
+
 const mapListToItems = (
   bars: string[],
   items: WishlistLotItem[],
   mentionsItem: (s: string) => boolean
 ): WishlistPrices => {
-  const words = (s: string) =>
-    new Set(
-      s
-        .toLowerCase()
-        .split(/[^a-z]+/)
-        .filter((x) => x.length >= 4)
-    );
   const unitWords = new RegExp(`\\b(${UNIT_RE}|nps?|pure|each)\\b`, 'g');
 
   // -1: the part names something but no single lot item; null: the part has no names
@@ -203,6 +213,15 @@ const mapListToItems = (
   return { prices, reason: byName ? 'list by item' : 'list by slot' };
 };
 
+const prepare = (wishlist: string, items: WishlistLotItem[]) => {
+  let l = normalize(wishlist);
+  // the lot's own items are not payment ("Baby Aisha Goodie Bag 250m")
+  items.forEach((it, i) => {
+    if (it.name) l = l.split(it.name.toLowerCase()).join(` lotitem${i} `);
+  });
+  return l;
+};
+
 /**
  * Expected price per lot slot (unit price, null = blank) according to the guidelines.
  * `knownItemNames`: lowercase names of tradeable items the wishlist mentions.
@@ -221,18 +240,20 @@ export const getWishlistPrices = (
   const mentionsItem = createItemMatcher(knownItemNames);
   const blank = (reason: string): WishlistPrices => ({ prices: items.map(() => null), reason });
 
-  let l = normalize(wishlist);
-  // the lot's own items are not payment ("Baby Aisha Goodie Bag 250m")
-  items.forEach((it, i) => {
-    if (it.name) l = l.split(it.name.toLowerCase()).join(` lotitem${i} `);
-  });
+  let l = prepare(wishlist, items);
 
-  // pt-6: a mixed lot's total (wishlist or Instant Buy) is not split between its items. As many
-  // values as items may be prices per item instead (pt-16: "Maraquan 1.8m, Island 2.5m...")
-  const mixedLotTotal = (reason: string): WishlistPrices =>
-    amounts(l).length >= items.length || l.split('|').length === items.length
+  // pt-6: a mixed lot's total (wishlist or Instant Buy) is not split between its items. Not a
+  // plain total: as many values as items (pt-16: "Maraquan 1.8m, Island 2.5m..."), "2b each",
+  // or naming some of the items (pt-5: "Kacheek 100M is Auto")
+  const mixedLotTotal = (reason: string): WishlistPrices => {
+    const named = namedLotItems(l, items);
+    return amounts(l).length >= items.length ||
+      l.split('|').length === items.length ||
+      EACH.test(l) ||
+      (named > 0 && named < items.length)
       ? { abstain: 'mixed lot' }
       : blank(reason);
+  };
 
   if (instantBuy) return mixedLotTotal('instant buy mixed lot');
 
@@ -286,6 +307,85 @@ export const getWishlistPrices = (
   if (qty > 1 && !each && options.some((o) => o.each)) return { abstain: 'unit or total' };
   const unit = each ? value : Math.round(value / qty);
   return { prices: items.map(() => unit), reason: qty > 1 ? 'unit price' : 'single value' };
+};
+
+// blank answers trusted without a human check; list blanks ("nm | nm") are left to the queue
+const CONFIRMED_BLANK_REASONS = new Set([
+  'no np value',
+  'item payment without np value',
+  'symbolic',
+  'relative price',
+  'mixed lot total',
+  'instant buy mixed lot',
+]);
+
+// "......7.5 mil" and ".9 mil" count, the "5" of "3.5" doesn't
+const NUMBER_RE = /(?<![a-z\d_#]|\d[.,])\d+(?:[.,]\d+)*/g;
+// what follows a number that is a price the parser couldn't read: "17.5 please", "12 obo"
+const VALUE_AFTER =
+  /^\s*(?:$|[^\sa-z]|(?:pure|obo|please|pls|plz|only|auto|firm|each|ea|or|for|n\w*p\w*|neo\w*|mil\w*|mi+|ml|nm|bil\w*)\b)/;
+const GLUED_VALUE = new RegExp(`[a-z]\\d+(?:\\.\\d+)?\\s*(?:${UNIT_RE})\\b`); // quicksale13m
+// an item payment that may be a mix, an alternative or a wish, not an addition (pt-9); or a
+// total followed by its breakdown ("50m - 20m np + 6 cool neggs")
+const PAYMENT_DOUBT = new RegExp(
+  `\\b(?:in|if|open|also|like|p(?:er|re)f(?:er)?\\w*|mix(?:ed)?|combo|combination|equiv\\w*|worth|valued?|values?|total|lowest|cheapest|discount|free|saving|looking|willing|happy|negotiat\\w*|trad(?:e|ing)|accept\\w*|apprecia\\w*|around|min|consider\\w*|not)\\b|` +
+    `\\bnps?\\s*(?:and|&|\\+)|\\d\\s*(?:${UNIT_RE})?\\s*(?:nps?|pure)?\\s*[-=~]\\s`
+);
+// a mixed lot total that comes with a free item, or prices some items (pt-5, pt-16)
+const MIXED_DOUBT = /\b(?:free|bonus|included|separate\w*|for the|lowest)\b/;
+
+// numbers the parser didn't read as NP ("39.5 pure", "120mi", "40+m"); item counts are fine
+const hasUnreadNumber = (l: string) => {
+  const read: [number, number][] = [];
+  for (const m of l.matchAll(AMOUNT_RE)) {
+    const n = parseFloat(m[1]);
+    if (m[2] || m[3] || n >= 1000) read.push([m.index, m.index + m[0].length]);
+  }
+
+  for (const m of l.matchAll(NUMBER_RE)) {
+    if (read.some(([a, b]) => m.index >= a && m.index < b)) continue;
+    const after = l.slice(m.index + m[0].length);
+    if (/[.,]/.test(m[0]) || VALUE_AFTER.test(after)) return true;
+    // glued letters other than "2x" and ordinals ("22nd")
+    if (/^[a-z]/.test(after) && !/^(?:x|st|nd|rd|th)\b/.test(after)) return true;
+  }
+
+  return GLUED_VALUE.test(l.replace(/lotitem\d+/g, ' '));
+};
+
+/**
+ * Reason when the guidelines leave every slot of the lot blank with no room for doubt, so it
+ * can skip the pricing queue. Null when anything is unclear: a human checks it.
+ */
+export const getConfirmedBlank = (
+  wishlist: string,
+  items: WishlistLotItem[],
+  instantBuy: number | null | undefined,
+  knownItemNames: Set<string>
+): string | null => {
+  const expected = getWishlistPrices(wishlist, items, instantBuy, knownItemNames);
+  if (!('prices' in expected) || expected.prices.some((p) => p != null)) return null;
+
+  const { reason } = expected;
+  if (!CONFIRMED_BLANK_REASONS.has(reason)) return null;
+
+  const l = prepare(wishlist, items);
+  // before normalize turns "140m - 20m" into a range
+  const raw = ` ${wishlist.toLowerCase()} `;
+  if (hasUnreadNumber(l)) return null;
+  if (
+    reason === 'item payment without np value' &&
+    (PAYMENT_DOUBT.test(l) || PAYMENT_DOUBT.test(raw))
+  )
+    return null;
+  // two items: the total is often for the obvious one (pt-5, "14M - BONUS ITEM INCLUDED")
+  if (reason.includes('mixed lot') && (MIXED_DOUBT.test(l) || items.length === 2)) return null;
+  // "16.5 np" is 16.5m, not a symbolic 17 NP
+  if (reason === 'symbolic' && /\d\.\d/.test(l)) return null;
+  // "120mil - 7mil below current tp price"
+  if (reason === 'relative price' && amounts(raw).length > 1) return null;
+
+  return reason;
 };
 
 /** True when every slot got the expected price (1 NP tolerance for rounding). */
