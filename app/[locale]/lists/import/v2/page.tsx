@@ -8,6 +8,7 @@ import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
 import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getTranslations } from 'next-intl/server';
+import { getGoalCounterAlbum } from '@utils/goalCounter/eligibility';
 import { buildImportPageProps } from '../buildImportPageProps';
 import { ImportItemsV2 } from './ImportItemsV2';
 import { ImportSessionAlert } from './ImportSessionAlert';
@@ -56,6 +57,9 @@ async function ImportV2PageContent({ params, searchParams }: ImportV2PageProps) 
   const { locale } = await params;
   const query = await searchParams;
   const labels = await buildImportPageProps(locale, query.importToken);
+  const goalCounter = labels.recommended_list
+    ? await getGoalCounterAlbum(labels.recommended_list.internal_id)
+    : null;
   const t = await getTranslations();
 
   const breadcrumbList = [
@@ -99,6 +103,7 @@ async function ImportV2PageContent({ params, searchParams }: ImportV2PageProps) 
             itemCount={labels.itemCount}
             source={labels.source}
             recommended_list={labels.recommended_list}
+            goalCounter={goalCounter}
           />
         </Box>
       )}

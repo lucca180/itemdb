@@ -21,6 +21,7 @@ import {
   encodeGoalConfig,
 } from '@utils/goalCounter/config';
 import {
+  UNFINISHED_ALBUM_IMAGE,
   getStampGoalData,
   stampAlbumTitle,
   type StampGoalData,
@@ -131,7 +132,7 @@ describe('goal counter config', () => {
         }
       }
     }
-    expect(codes.size).toBe(2 * 4 * 2);
+    expect(codes.size).toBe(COLLECTION_VARIANTS.length * 2 * 4 * 2);
   });
 
   test('normalizes unsupported options', () => {
@@ -225,12 +226,42 @@ describe('getStampGoalData', () => {
     expect(prismaMock.avatarSolution.findFirst).not.toHaveBeenCalled();
   });
 
-  test('returns null when the album has no avatar', async () => {
+  test('uses the stand-in image on unfinished album pages (no avatar yet)', async () => {
+    const released = albumRows.filter((r) => r.order % 3 === 0);
     prismaMock.userList.findUnique.mockResolvedValue(userList());
     prismaMock.avatarSolution.findFirst.mockResolvedValue(null);
-    prismaMock.listItems.findMany.mockResolvedValueOnce(albumRows);
+    prismaMock.listItems.findMany
+      .mockResolvedValueOnce(released)
+      .mockResolvedValueOnce([{ item_iid: released[0].item_iid }]);
+
+    const data = await getStampGoalData(USER_LIST_ID);
+
+    expect(data).toMatchObject({ avatarImage: UNFINISHED_ALBUM_IMAGE, unfinished: true });
+    expect(data!.stamps.map((s) => s.pos)).toEqual(released.map((r) => r.order));
+    expect(data!.ownedMask).toBe(1 << (released[0].order - 1));
+  });
+
+  test('returns null when the album page has no stamps yet', async () => {
+    prismaMock.userList.findUnique.mockResolvedValue(userList());
+    prismaMock.avatarSolution.findFirst.mockResolvedValue(null);
+    prismaMock.listItems.findMany.mockResolvedValueOnce([]);
 
     expect(await getStampGoalData(USER_LIST_ID)).toBeNull();
+  });
+
+  test('does not treat All Collectibles (also tagged "Stamps") as an album page', async () => {
+    prismaMock.userList.findUnique.mockResolvedValue(
+      userList({
+        internal_id: 9882,
+        name: 'All Collectibles',
+        official: true,
+        official_tag: 'Stamps',
+        slug: 'all-collectibles',
+      })
+    );
+
+    expect(await getStampGoalData(USER_LIST_ID)).toBeNull();
+    expect(prismaMock.avatarSolution.findFirst).not.toHaveBeenCalled();
   });
 });
 
@@ -321,7 +352,42 @@ describe('goal counter eligibility', () => {
     expect(prismaMock.avatarSolution.findFirst).not.toHaveBeenCalled();
   });
 
-  test('rejects other lists and stamp albums without an avatar', async () => {
+  test('offers unfinished album pages with the stand-in image', async () => {
+    prismaMock.userList.findUnique.mockResolvedValue({
+      official: true,
+      official_tag: 'Stamps',
+      slug: 'stamp-album-tyrannia-ii',
+      name: 'Stamp Album - Tyrannia II',
+    });
+    prismaMock.avatarSolution.findFirst.mockResolvedValue(null);
+    prismaMock.listItems.count.mockResolvedValue(7);
+
+    expect(await getGoalCounterAlbum(ALBUM_ID)).toEqual({
+      kind: 'stamps',
+      albumListId: ALBUM_ID,
+      name: 'Stamp Album - Tyrannia II',
+      image: UNFINISHED_ALBUM_IMAGE,
+    });
+  });
+
+  test('offers All Collectibles as a collection', async () => {
+    prismaMock.userList.findUnique.mockResolvedValue({
+      official: true,
+      official_tag: 'Stamps',
+      slug: 'all-collectibles',
+      name: 'All Collectibles',
+    });
+
+    expect(await getGoalCounterAlbum(9882)).toMatchObject({
+      kind: 'collection',
+      collection: 'all-collectibles',
+      name: 'Stamp Collector',
+      image: '/img/goal/stamp-collector.png',
+    });
+    expect(prismaMock.avatarSolution.findFirst).not.toHaveBeenCalled();
+  });
+
+  test('rejects other lists and album pages without stamps', async () => {
     prismaMock.userList.findUnique.mockResolvedValue({
       official: true,
       official_tag: 'Gallery',
@@ -337,6 +403,7 @@ describe('goal counter eligibility', () => {
       name: 'x',
     });
     prismaMock.avatarSolution.findFirst.mockResolvedValue(null);
+    prismaMock.listItems.count.mockResolvedValue(0);
     expect(await getGoalCounterAlbum(ALBUM_ID)).toBeNull();
   });
 });
@@ -370,6 +437,7 @@ const sampleData = (ownedMask: number): StampGoalData => ({
   avatarImage: 'https://images.neopets.com/neoboards/avatars/test.gif',
   title: 'HAUNTED WOODS',
   stamps: albumRows.map((r) => ({ pos: r.order, image: r.item.image })),
+  unfinished: false,
   ownedMask,
   ownedCount: 0, // recomputed by the renderer
 });
@@ -392,6 +460,22 @@ describe('renderStampGoal', () => {
       const [width, height] = GOAL_SIZES[variant];
       expect(pngSize(png)).toEqual({ width, height });
     }
+
+    fetchSpy.mockRestore();
+  });
+
+  test.each(STAMP_VARIANTS)('renders %s for an unfinished album page', async (variant) => {
+    const fetchSpy = stubFetch();
+    const data: StampGoalData = {
+      ...sampleData(0b101),
+      avatarImage: UNFINISHED_ALBUM_IMAGE,
+      stamps: sampleData(0).stamps.filter((s) => s.pos % 2 === 1),
+      unfinished: true,
+    };
+
+    const png = await renderStampGoal(data, { variant, bg: VARIANT_BACKGROUNDS[variant][0] });
+    const [width, height] = GOAL_SIZES[variant];
+    expect(pngSize(png)).toEqual({ width, height });
 
     fetchSpy.mockRestore();
   });
@@ -418,6 +502,60 @@ describe('renderCollectionGoal', () => {
         expect(pngSize(png)).toEqual({ width, height });
       }
     }
+
+    fetchSpy.mockRestore();
+  });
+
+  test('renders the Stamp Collector icon from /public', async () => {
+    const fetchSpy = stubFetch();
+
+    for (const bg of VARIANT_BACKGROUNDS.classic) {
+      const png = await renderCollectionGoal(
+        {
+          collection: 'all-collectibles',
+          title: 'STAMP COLLECTOR',
+          iconImage: '/img/goal/stamp-collector.png',
+          owned: 327,
+          total: 978,
+        },
+        { variant: 'classic', bg }
+      );
+      expect(pngSize(png)).toEqual({ width: 168, height: 48 });
+    }
+
+    fetchSpy.mockRestore();
+  });
+
+  test('classic-trophy draws the trophy from /public instead of the icon', async () => {
+    const fetchSpy = stubFetch();
+    const data = collectionData(1204);
+    const fetched = () => fetchSpy.mock.calls.map(([input]) => String(input));
+
+    await renderCollectionGoal(data, { variant: 'classic', bg: 'paper' });
+    expect(fetched()).toContain(data.iconImage);
+    fetchSpy.mockClear();
+
+    const png = await renderCollectionGoal(data, { variant: 'classic-trophy', bg: 'paper' });
+    expect(pngSize(png)).toEqual({ width: 168, height: 48 });
+    expect(fetched()).not.toContain(data.iconImage);
+
+    fetchSpy.mockRestore();
+  });
+
+  test('classic-trophy keeps the icon of a collection without a trophy', async () => {
+    const fetchSpy = stubFetch();
+
+    const png = await renderCollectionGoal(
+      {
+        collection: 'all-collectibles',
+        title: 'STAMP COLLECTOR',
+        iconImage: '/img/goal/stamp-collector.png',
+        owned: 327,
+        total: 978,
+      },
+      { variant: 'classic-trophy', bg: 'transparent' }
+    );
+    expect(pngSize(png)).toEqual({ width: 168, height: 48 });
 
     fetchSpy.mockRestore();
   });

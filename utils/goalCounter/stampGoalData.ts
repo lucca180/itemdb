@@ -1,6 +1,13 @@
 import prisma from '@utils/prisma';
+import { isGoalCollectionSlug } from './collections';
 
 export const STAMPS_PER_PAGE = 25;
+
+/**
+ * Stand-in avatar for unfinished album pages, which get their avatar once all 25 stamps are out.
+ * images.neopets.com/icons/ul/ul_stamp.gif cropped to 50x50, without its white background.
+ */
+export const UNFINISHED_ALBUM_IMAGE = '/img/goal/unfinished-album.png';
 
 export type StampGoalData = {
   avatarImage: string;
@@ -8,6 +15,8 @@ export type StampGoalData = {
   title: string;
   /** Album positions 1..25 with the stamp image (null if the official list has no image) */
   stamps: { pos: number; image: string | null }[];
+  /** No avatar yet: some positions have no stamp released (the goal is still 25) */
+  unfinished: boolean;
   /** Bit `pos - 1` is set when the user owns the stamp at that position */
   ownedMask: number;
   ownedCount: number;
@@ -15,9 +24,12 @@ export type StampGoalData = {
 
 const AVATAR_BASE_URL = 'https://images.neopets.com/neoboards/avatars/';
 
-// official_tag casing varies in the DB ("Stamps"/"stamps")
-export const isStampAlbum = (l: { official: boolean; official_tag: string | null } | null) =>
-  !!l && l.official && l.official_tag?.toLowerCase() === 'stamps';
+// official_tag casing varies in the DB ("Stamps"/"stamps"); All Collectibles is also tagged
+// "Stamps" but has its own collection counter
+export const isStampAlbum = (
+  l: { official: boolean; official_tag: string | null; slug: string | null } | null
+) =>
+  !!l && l.official && l.official_tag?.toLowerCase() === 'stamps' && !isGoalCollectionSlug(l.slug);
 
 /** "Stamp Album - Haunted Woods" -> "HAUNTED WOODS" */
 export const stampAlbumTitle = (listName: string) =>
@@ -40,7 +52,8 @@ export const toAvatarUrl = (image: string) =>
  *   hid in their list (the checklist convention).
  * - An official `stamps` list resolves to itself with nothing owned.
  * - `officialOnly` rejects user lists (used by the sample images, which take an album id).
- * - The album page must have an avatar (AvatarSolution) — otherwise there is no goal to show.
+ * - Album pages without an avatar (AvatarSolution) are unfinished: the avatar is a stand-in image
+ *   and positions without a released stamp are drawn faded.
  */
 export async function getStampGoalData(
   listId: number,
@@ -53,7 +66,10 @@ export async function getStampGoalData(
       name: true,
       official: true,
       official_tag: true,
-      linkedList: { select: { internal_id: true, name: true, official: true, official_tag: true } },
+      slug: true,
+      linkedList: {
+        select: { internal_id: true, name: true, official: true, official_tag: true, slug: true },
+      },
     },
   });
 
@@ -78,7 +94,7 @@ export async function getStampGoalData(
     }),
   ]);
 
-  if (!avatar || albumItems.length === 0) return null;
+  if (albumItems.length === 0) return null;
 
   // positions come from the album order; fall back to the row order when it is missing
   const stamps = albumItems.slice(0, STAMPS_PER_PAGE).map((row, i) => ({
@@ -103,9 +119,10 @@ export async function getStampGoalData(
   }
 
   return {
-    avatarImage: toAvatarUrl(avatar.image),
+    avatarImage: avatar ? toAvatarUrl(avatar.image) : UNFINISHED_ALBUM_IMAGE,
     title: stampAlbumTitle(album.name ?? ''),
     stamps: stamps.map(({ pos, image }) => ({ pos, image })),
+    unfinished: !avatar,
     ownedMask,
     ownedCount: countBits(ownedMask),
   };

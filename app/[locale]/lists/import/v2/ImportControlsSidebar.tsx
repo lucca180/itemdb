@@ -33,12 +33,16 @@ import type {
   ImportQuantityMode,
 } from '@app/[locale]/lists/import/v2/importV2Shared';
 import { ImportQuantityModePicker } from '@app/[locale]/lists/import/v2/ImportQuantityModePicker';
+import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
+import { ImportGoalCounterCard } from './ImportGoalCounterCard';
 import { useLastImportListId } from './lastImportList';
 
 export type ImportControlsSidebarProps = {
   list: UserListLite | undefined;
   onListChange: (list: UserListLite) => void;
   recommended_list?: UserList | null;
+  /** Goal counter of the recommended list, when it can have one */
+  goalCounter?: GoalCounterInfo | null;
   onLinkedList: (list: UserList) => void;
   action: ImportAction;
   onActionChange: (action: ImportAction) => void;
@@ -58,6 +62,7 @@ export function ImportControlsSidebar({
   list,
   onListChange,
   recommended_list,
+  goalCounter,
   onLinkedList,
   action,
   onActionChange,
@@ -269,6 +274,10 @@ export function ImportControlsSidebar({
                 : t('Lists.importV2-select-list-hint')}
             </Text>
           </VStack>
+
+          {goalCounter && list?.linkedListId === goalCounter.albumListId && (
+            <ImportGoalCounterCard goalCounter={goalCounter} />
+          )}
 
           <Box
             bg="blackAlpha.300"

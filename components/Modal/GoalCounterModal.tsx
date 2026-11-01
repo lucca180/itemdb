@@ -10,6 +10,7 @@ import {
   Grid,
   Group,
   HStack,
+  Icon,
   Image,
   Input,
   Link,
@@ -21,11 +22,9 @@ import {
 import { useTranslations } from 'next-intl';
 import { useToast } from '@utils/theme/toast';
 import {
-  COLLECTION_VARIANTS,
   GOAL_SITE_URL,
   GOAL_SIZES,
   GOAL_TARGET_MAX,
-  STAMP_VARIANTS,
   VARIANT_BACKGROUNDS,
   goalListImagePath,
   goalSampleImagePath,
@@ -34,6 +33,13 @@ import {
   type GoalVariant,
 } from '@utils/goalCounter/config';
 import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
+import { goalCounterSample, goalCounterVariants } from '@utils/goalCounter/sample';
+import {
+  GOALS_ACCENT,
+  GOALS_ACCENT_LIGHT,
+  GoalCounterIcon,
+  goalsAccentAlpha,
+} from '@utils/goalCounter/theme';
 import {
   PREVIEW_BACKGROUNDS,
   PREVIEW_BACKGROUND_KEYS,
@@ -60,11 +66,8 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
   const { isOpen, onClose, listId, goalCounter } = props;
   const isCollection = goalCounter.kind === 'collection';
   // style thumbnails use fixed sample data (same for everyone, cached); only the large preview is live
-  const sample =
-    goalCounter.kind === 'collection'
-      ? goalCounter.collection
-      : `stamps-${goalCounter.albumListId}`;
-  const variants: readonly GoalVariant[] = isCollection ? COLLECTION_VARIANTS : STAMP_VARIANTS;
+  const sample = goalCounterSample(goalCounter);
+  const variants = goalCounterVariants(goalCounter);
 
   const [variant, setVariant] = useState<GoalVariant>(variants[0]);
   const [bg, setBg] = useState<GoalBackground>('transparent');
@@ -139,11 +142,19 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
     }
   };
 
+  // every way out (footer button, Esc, backdrop) is tracked once, here; the dialog also reports
+  // a close after the parent sets `open` to false, which the `isOpen` check skips
+  const close = (via: 'button' | 'dismiss') => {
+    if (!isOpen) return;
+    window.umami?.track('goal-counter-close', { label: sample, via });
+    onClose();
+  };
+
   return (
     <Dialog.Root
       open={isOpen}
       onOpenChange={({ open }) => {
-        if (!open) onClose();
+        if (!open) close('dismiss');
       }}
       placement="center"
       size="xl"
@@ -157,7 +168,10 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
                 <Image src={goalCounter.image} alt="" w="50px" h="50px" borderRadius="md" />
                 <Box>
                   <Dialog.Title fontSize="lg" fontWeight="bold">
-                    {t('GoalCounter.title')}
+                    <HStack gap={2}>
+                      <Icon as={GoalCounterIcon} color={GOALS_ACCENT_LIGHT} />
+                      {t('GoalCounter.title')}
+                    </HStack>
                   </Dialog.Title>
                   <Text fontSize="sm" color="whiteAlpha.700">
                     {goalCounter.name}
@@ -193,7 +207,8 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
                             p={2}
                             flexDirection="column"
                             gap={2}
-                            borderColor={selected ? 'green.300' : 'whiteAlpha.300'}
+                            borderColor={selected ? GOALS_ACCENT_LIGHT : 'whiteAlpha.300'}
+                            bg={selected ? goalsAccentAlpha(0.12) : undefined}
                             borderWidth={selected ? '2px' : '1px'}
                             aria-pressed={selected}
                             data-umami-event="goal-counter-variant"
@@ -256,7 +271,9 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
                     )}
                   </Box>
 
-                  {(variant === 'classic' || variant === 'stamp-classic') && (
+                  {(variant === 'classic' ||
+                    variant === 'classic-trophy' ||
+                    variant === 'stamp-classic') && (
                     <Field.Root>
                       <Switch.Root
                         checked={showNumber}
@@ -376,7 +393,9 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
                       </Link>
                       <Button
                         size="sm"
-                        colorPalette="green"
+                        bg={GOALS_ACCENT}
+                        color="white"
+                        _hover={{ opacity: 0.9 }}
                         onClick={copyCode}
                         disabled={targetInvalid}
                         data-umami-event="goal-counter-copy"
@@ -407,13 +426,7 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
               </Grid>
             </Dialog.Body>
             <Dialog.Footer>
-              <Button
-                onClick={onClose}
-                data-umami-event="goal-counter-close"
-                data-umami-event-label={sample}
-              >
-                {t('General.close')}
-              </Button>
+              <Button onClick={() => close('button')}>{t('General.close')}</Button>
             </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Positioner>

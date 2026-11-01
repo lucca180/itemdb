@@ -37,6 +37,7 @@ import { defaultFilters } from '@utils/parseFilters';
 import { AddListItemsModalProps } from '@components/Modal/AddListItemsModal';
 import { SuggestListItemModalProps } from '@components/Modal/SuggestListItemModal';
 import type { GoalCounterModalProps } from '@components/Modal/GoalCounterModal';
+import type { GoalCounterInfoModalProps } from '@components/Modal/GoalCounterInfoModal';
 import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
 import { ItemList } from '@components/UserLists/ItemList';
 import { BiHelpCircle } from 'react-icons/bi';
@@ -66,6 +67,10 @@ const AddListItemsModal = dynamic<AddListItemsModalProps>(
 );
 const GoalCounterModal = dynamic<GoalCounterModalProps>(
   () => import('@components/Modal/GoalCounterModal'),
+  { ssr: false }
+);
+const GoalCounterInfoModal = dynamic<GoalCounterInfoModalProps>(
+  () => import('@components/Modal/GoalCounterInfoModal'),
   { ssr: false }
 );
 const SuggestListItemModal = dynamic<SuggestListItemModalProps>(
@@ -222,11 +227,19 @@ export function ListPageClient({
       {isOpenInsert && (
         <AddListItemsModal isOpen={isOpenInsert} onClose={onCloseInsert} list={state.list} />
       )}
-      {isOpenGoal && goalCounter && (
+      {isOpenGoal && goalCounter && !state.list.official && (
         <GoalCounterModal
           isOpen={isOpenGoal}
           onClose={onCloseGoal}
           listId={state.list.internal_id}
+          goalCounter={goalCounter}
+        />
+      )}
+      {isOpenGoal && goalCounter && state.list.official && (
+        <GoalCounterInfoModal
+          isOpen={isOpenGoal}
+          onClose={onCloseGoal}
+          list={state.list}
           goalCounter={goalCounter}
         />
       )}
@@ -246,6 +259,8 @@ export function ListPageClient({
         itemInfo={state.itemInfo}
         isLoading={state.isLoading}
         setOpenCreateModal={state.setOpenCreateModal}
+        goalCounter={goalCounter}
+        onOpenGoalCounter={onOpenGoal}
       />
 
       <Flex mt={5} gap={6} flexFlow="column">
@@ -280,20 +295,6 @@ export function ListPageClient({
               )}
               {(state.isOwner || state.list.official || state.list.canBeLinked) && (
                 <CreateLinkedListButton list={state.list} isLoading={state.isLoading} />
-              )}
-              {goalCounter && state.isOwner && (
-                <Button
-                  onClick={onOpenGoal}
-                  variant="ghost"
-                  data-umami-event="goal-counter-open"
-                  data-umami-event-label={
-                    goalCounter.kind === 'collection'
-                      ? goalCounter.collection
-                      : `stamps-${goalCounter.albumListId}`
-                  }
-                >
-                  {t('GoalCounter.button')}
-                </Button>
               )}
               <HStack gap={1}>
                 <Text as="div" color="gray.300" fontSize="sm">

@@ -37,6 +37,8 @@ import { AiOutlineAreaChart } from 'react-icons/ai';
 import Image from '../Utils/Image';
 import { ListBreadcrumb } from '../Breadcrumbs/ListBreadcrumb';
 import { LuFileSpreadsheet } from 'react-icons/lu';
+import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
+import { GoalCounterButton } from '@components/UserLists/GoalCounterButton';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
@@ -54,6 +56,9 @@ type ListHeaderProps = {
   canEdit: boolean;
   isLoading?: boolean;
   setOpenCreateModal?: (value: boolean) => void;
+  /** Checklist owner (code modal) or anyone on an official list (info modal) */
+  goalCounter?: GoalCounterInfo | null;
+  onOpenGoalCounter?: () => void;
 };
 
 function HeaderActionButtons({
@@ -62,17 +67,28 @@ function HeaderActionButtons({
   onOpenDynamic,
   onCopyLink,
   onOpenExport,
+  goalCounter,
+  onOpenGoalCounter,
 }: {
   list: UserList;
   isOwner: boolean;
   onOpenDynamic: () => void;
   onCopyLink: () => void;
   onOpenExport: () => void;
+  goalCounter?: GoalCounterInfo | null;
+  onOpenGoalCounter?: () => void;
 }) {
   const t = useTranslations();
 
   return (
     <Flex gap={2} flexWrap="wrap" alignItems="center" justifyContent="center" flex="0 0 auto">
+      {goalCounter && onOpenGoalCounter && (
+        <GoalCounterButton
+          goalCounter={goalCounter}
+          onOpen={onOpenGoalCounter}
+          kind={list.official ? 'info' : 'code'}
+        />
+      )}
       {!!list.dynamicType && (
         <Tooltip.Root positioning={{ placement: 'top' }}>
           <Tooltip.Trigger asChild>
@@ -419,6 +435,8 @@ const ListHeader = (props: ListHeaderProps) => {
                   onOpenDynamic={onOpenDynamic}
                   onCopyLink={copyLink}
                   onOpenExport={onOpenExport}
+                  goalCounter={props.goalCounter}
+                  onOpenGoalCounter={props.onOpenGoalCounter}
                 />
               </Box>
               <Heading size={{ base: 'lg', md: undefined }} as={'h1'} textWrap="balance">
@@ -474,6 +492,8 @@ const ListHeader = (props: ListHeaderProps) => {
                 onOpenDynamic={onOpenDynamic}
                 onCopyLink={copyLink}
                 onOpenExport={onOpenExport}
+                goalCounter={props.goalCounter}
+                onOpenGoalCounter={props.onOpenGoalCounter}
               />
             </Box>
           </Flex>

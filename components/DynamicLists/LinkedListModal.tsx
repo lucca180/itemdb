@@ -15,12 +15,14 @@ export type LinkedListModalProps = {
   onClose: () => void;
   list: UserList;
   onCreate?: (newList: UserList) => void;
+  /** Where the modal was opened from, sent with the confirm event (e.g. `goal-counter-info`) */
+  trackSource?: string;
 };
 
 const LinkedListModal = (props: LinkedListModalProps) => {
   const t = useTranslations();
   const toast = useToast();
-  const { isOpen, onClose, list, onCreate } = props;
+  const { isOpen, onClose, list, onCreate, trackSource } = props;
   const { user, openLogin } = useAuth();
   const { revalidate } = useLists();
   const [loading, setLoading] = useState<boolean>(false);
@@ -35,7 +37,11 @@ const LinkedListModal = (props: LinkedListModalProps) => {
       return;
     }
 
-    window.umami?.track('dynamic-list-confirm', { from: 'linked', type: dynamicType });
+    window.umami?.track('dynamic-list-confirm', {
+      from: 'linked',
+      type: dynamicType,
+      ...(trackSource && { source: trackSource }),
+    });
 
     setLoading(true);
     try {
