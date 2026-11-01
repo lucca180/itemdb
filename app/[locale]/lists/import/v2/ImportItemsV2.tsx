@@ -31,6 +31,7 @@ import { ImportSessionAlert } from './ImportSessionAlert';
 import { ImportSummaryBar } from './ImportSummaryBar';
 import { ImportToolbar } from './ImportToolbar';
 import { setLastImportListId } from './lastImportList';
+import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
 
 type ImportItemsV2Props = {
   importToken: string;
@@ -38,6 +39,7 @@ type ImportItemsV2Props = {
   /** Where the import came from (stamps, shop, sdb...); `null` for old userscripts. */
   source?: string | null;
   recommended_list?: UserList | null;
+  goalCounter?: GoalCounterInfo | null;
 };
 
 /** Carries an expected error code returned by an import action into the catch blocks below. */
@@ -66,6 +68,7 @@ export function ImportItemsV2({
   itemCount,
   source,
   recommended_list,
+  goalCounter,
 }: ImportItemsV2Props) {
   const t = useTranslations();
   const router = useRouter();
@@ -519,6 +522,7 @@ export function ImportItemsV2({
                 list={list}
                 onListChange={handleListChange}
                 recommended_list={recommended_list}
+                goalCounter={goalCounter}
                 onLinkedList={handleLinkedList}
                 action={action}
                 onActionChange={setAction}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Button, Flex, Heading, Image, SimpleGrid, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Icon, Image, SimpleGrid, Text } from '@chakra-ui/react';
 import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
 import { LuArrowRight } from 'react-icons/lu';
@@ -8,6 +8,12 @@ import DynamicIcon from '@assets/icons/dynamic.png';
 import MainLink from '@components/Utils/MainLink';
 import { GOAL_SIZES, goalSampleImagePath, type GoalConfig } from '@utils/goalCounter/config';
 import { PREVIEW_BACKGROUNDS } from '@utils/goalCounter/previewSurfaces';
+import {
+  GOALS_ACCENT,
+  GOALS_ACCENT_LIGHT,
+  GoalCounterIcon,
+  goalsAccentAlpha,
+} from '@utils/goalCounter/theme';
 import { PriceCheckerPageCard } from '@app/[locale]/tools/price-checker/PriceCheckerPageCard';
 import { checklistPages } from '@app/[locale]/tools/price-checker/priceCheckerPages';
 import {
@@ -107,19 +113,28 @@ function GoalCounterShowcase() {
       gap={5}
       align={{ md: 'center' }}
       borderWidth="1px"
-      borderColor={`rgba(${DYNAMIC_LIST_ACCENT_RGB}, 0.22)`}
+      borderColor={goalsAccentAlpha(0.45)}
       borderRadius="lg"
-      bg="blackAlpha.300"
+      bg={`linear-gradient(145deg, ${goalsAccentAlpha(0.16)}, ${goalsAccentAlpha(0.03)})`}
       p={{ base: 4, md: 5 }}
     >
       <Flex direction="column" gap={2} flex="1" align="flex-start">
-        <Heading as="h3" size="md">
+        <Heading as="h3" size="md" display="flex" alignItems="center" gap={2}>
+          <Icon as={GoalCounterIcon} color={GOALS_ACCENT_LIGHT} />
           {t('ImportPage.goal-title')}
         </Heading>
         <Text fontSize="sm" color="gray.300" lineHeight="1.55">
           {t('ImportPage.goal-description')}
         </Text>
-        <Button asChild size="sm" variant="outline" mt={1}>
+        <Button
+          asChild
+          size="sm"
+          variant="outline"
+          mt={1}
+          borderColor={GOALS_ACCENT}
+          color={GOALS_ACCENT_LIGHT}
+          _hover={{ bg: goalsAccentAlpha(0.15) }}
+        >
           <MainLink
             viaNextLink
             prefetch={false}

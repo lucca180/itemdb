@@ -1,9 +1,5 @@
 import type { GoalCollectionSlug } from '@utils/goalCounter/collections';
 
-export const GOALS_ACCENT = '#B7791F';
-export const GOALS_ACCENT_LIGHT = '#f6d38b';
-export const GOALS_ACCENT_RGB = '183, 121, 31';
-
 /** Header image, also used as the page's share image. */
 export const GOALS_IMAGE = {
   url: 'https://images.neopets.com/images/frontpage/extremepotato.gif',

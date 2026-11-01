@@ -2018,7 +2018,14 @@
     "goal-target-placeholder": "List total",
     "goal-target-help": "Leave empty to use the official list total. Maximum: {max}.",
     "goal-target-invalid": "Use a whole number between 1 and {max}.",
-    "variant-stamp-classic": "Classic bar"
+    "variant-stamp-classic": "Classic bar",
+    "new-badge": "New",
+    "new-tip-stamps": "Show this album on your lookup with a counter that updates by itself.",
+    "new-tip-collection": "Show this collection on your lookup with a counter that updates by itself.",
+    "import-cta-title": "Create a goal counter",
+    "import-cta-stamps": "After importing, paste this album's progress on your lookup. It updates by itself when you hide new stamps.",
+    "import-cta-collection": "After importing, paste this collection's progress on your lookup. It updates by itself when you hide new items.",
+    "import-cta-button": "See styles"
   },
   "GoalsTool": {
     "title": "Goal Counters",

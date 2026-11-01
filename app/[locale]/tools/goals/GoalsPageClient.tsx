@@ -8,6 +8,8 @@ import {
   Flex,
   Group,
   Heading,
+  HStack,
+  Icon,
   Image,
   SimpleGrid,
   Text,
@@ -37,6 +39,9 @@ import {
   GOALS_ACCENT,
   GOALS_ACCENT_LIGHT,
   GOALS_ACCENT_RGB,
+  GoalCounterIcon,
+} from '@utils/goalCounter/theme';
+import {
   GOALS_IMAGE,
   SAMPLE_COLLECTIONS,
   SAMPLE_STAMP_ALBUMS,
@@ -288,15 +293,12 @@ function HowItWorks() {
 function SectionTitle({ eyebrow, title, hint }: { eyebrow: string; title: string; hint: string }) {
   return (
     <Box mb={4}>
-      <Text
-        color={GOALS_ACCENT_LIGHT}
-        fontSize="xs"
-        fontWeight="bold"
-        letterSpacing="0.14em"
-        textTransform="uppercase"
-      >
-        {eyebrow}
-      </Text>
+      <HStack gap={1.5} color={GOALS_ACCENT_LIGHT}>
+        <Icon as={GoalCounterIcon} boxSize={3.5} />
+        <Text fontSize="xs" fontWeight="bold" letterSpacing="0.14em" textTransform="uppercase">
+          {eyebrow}
+        </Text>
+      </HStack>
       <Heading as="h2" size="lg" mt={1}>
         {title}
       </Heading>

@@ -2020,7 +2020,14 @@
     "goal-target-placeholder": "Total da lista",
     "goal-target-help": "Deixe em branco para usar o total da lista oficial. Máximo: {max}.",
     "goal-target-invalid": "Use um número inteiro entre 1 e {max}.",
-    "variant-stamp-classic": "Clássico com barra"
+    "variant-stamp-classic": "Clássico com barra",
+    "new-badge": "Novo",
+    "new-tip-stamps": "Mostre este álbum no seu lookup com um contador que se atualiza sozinho.",
+    "new-tip-collection": "Mostre esta coleção no seu lookup com um contador que se atualiza sozinho.",
+    "import-cta-title": "Crie um contador de meta",
+    "import-cta-stamps": "Depois de importar, cole o progresso deste álbum no seu lookup. Ele se atualiza sozinho quando você ocultar novos selos.",
+    "import-cta-collection": "Depois de importar, cole o progresso desta coleção no seu lookup. Ele se atualiza sozinho quando você ocultar novos itens.",
+    "import-cta-button": "Ver estilos"
   },
   "GoalsTool": {
     "title": "Contadores de Meta",
