@@ -21,7 +21,7 @@ import {
 } from './loadListPage';
 import { getListLoadingStrategy, type ListCore, type ListPageClientCore } from './listPage';
 import { ItemGridSkeleton, ListFullItemsReceiver, ListPageClient } from './ListPageClient';
-import { getListGoalCounter } from '@utils/goalCounter/eligibility';
+import { getGoalCounterAlbum, getListGoalCounter } from '@utils/goalCounter/eligibility';
 
 type ListDetailPageProps = {
   params: Promise<{ locale: string; username: string; list_id: string }>;
@@ -89,8 +89,13 @@ async function ListPageBody({
     getListPreload(core),
     getListMatches(core),
     getSimilarListsForList(core.list),
-    // only the owner gets the goal counter button
-    core.isOwner ? getListGoalCounter(core.list) : null,
+    // official album/collection lists show an informational goal counter modal to everyone;
+    // on checklists only the owner gets the goal counter button
+    core.list.official
+      ? getGoalCounterAlbum(core.list.internal_id)
+      : core.isOwner
+        ? getListGoalCounter(core.list)
+        : null,
   ]);
   const itemCount = core.list.itemCount ?? 0;
   const { useSuspenseFullLoad } = getListLoadingStrategy(itemCount);

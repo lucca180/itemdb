@@ -56,7 +56,7 @@ type ListHeaderProps = {
   canEdit: boolean;
   isLoading?: boolean;
   setOpenCreateModal?: (value: boolean) => void;
-  /** Owner only: the list can have a goal counter */
+  /** Checklist owner (code modal) or anyone on an official list (info modal) */
   goalCounter?: GoalCounterInfo | null;
   onOpenGoalCounter?: () => void;
 };
@@ -83,7 +83,11 @@ function HeaderActionButtons({
   return (
     <Flex gap={2} flexWrap="wrap" alignItems="center" justifyContent="center" flex="0 0 auto">
       {goalCounter && onOpenGoalCounter && (
-        <GoalCounterButton goalCounter={goalCounter} onOpen={onOpenGoalCounter} />
+        <GoalCounterButton
+          goalCounter={goalCounter}
+          onOpen={onOpenGoalCounter}
+          intro={!list.official}
+        />
       )}
       {!!list.dynamicType && (
         <Tooltip.Root positioning={{ placement: 'top' }}>

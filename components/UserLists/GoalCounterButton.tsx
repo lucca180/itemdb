@@ -18,12 +18,7 @@ import { GOAL_SIZES, goalSampleImagePath } from '@utils/goalCounter/config';
 import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
 import { PREVIEW_BACKGROUNDS } from '@utils/goalCounter/previewSurfaces';
 import { goalCounterPreviewConfig, goalCounterSample } from '@utils/goalCounter/sample';
-import {
-  GOALS_ACCENT,
-  GOALS_ACCENT_LIGHT,
-  GoalCounterIcon,
-  goalsAccentAlpha,
-} from '@utils/goalCounter/theme';
+import { GoalCounterIcon, goalsAccentAlpha, goalsLightAlpha } from '@utils/goalCounter/theme';
 
 // "New" badge + tip until the owner first interacts with the button or the tip (per browser).
 // The tip is desktop only (Chakra's `md` breakpoint); on mobile only the badge shows.
@@ -61,9 +56,11 @@ const subscribe = (listener: () => void) => {
 type GoalCounterButtonProps = {
   goalCounter: GoalCounterInfo;
   onOpen: () => void;
+  /** "New" badge + tip until first use (off on official lists, seen by everyone) */
+  intro?: boolean;
 };
 
-export function GoalCounterButton({ goalCounter, onOpen }: GoalCounterButtonProps) {
+export function GoalCounterButton({ goalCounter, onOpen, intro = true }: GoalCounterButtonProps) {
   const t = useTranslations();
   // seen on the server, so the intro only appears after hydration
   const introSeen = useSyncExternalStore(subscribe, getIntroSeen, () => true);
@@ -74,7 +71,7 @@ export function GoalCounterButton({ goalCounter, onOpen }: GoalCounterButtonProp
   const anchorRef = useCallback((el: HTMLDivElement | null) => {
     setVisible(!!el && el.offsetParent !== null && window.matchMedia(TIP_MEDIA_QUERY).matches);
   }, []);
-  const isNew = !introSeen;
+  const isNew = intro && !introSeen;
   const sample = goalCounterSample(goalCounter);
   const config = goalCounterPreviewConfig(goalCounter);
   const [w, h] = GOAL_SIZES[config.variant];
@@ -108,11 +105,15 @@ export function GoalCounterButton({ goalCounter, onOpen }: GoalCounterButtonProp
             if (isNew) closeTip();
             onOpen();
           }}
-          variant="outline"
-          borderColor={GOALS_ACCENT}
-          color={GOALS_ACCENT_LIGHT}
-          _hover={{ bg: goalsAccentAlpha(0.15) }}
-          boxShadow={isNew ? `0 0 0 3px ${goalsAccentAlpha(0.35)}` : undefined}
+          bg="#f6d38b/10"
+          borderColor="#f6d38b"
+          color="orange.200"
+          variant="surface"
+          _hover={{ bg: '#f6d38b/20' }}
+          boxShadow={
+            `inset 0 0 0 1px ${goalsLightAlpha(0.2)}` +
+            (isNew ? `, 0 0 0 3px ${goalsAccentAlpha(0.35)}` : '')
+          }
           data-umami-event="goal-counter-open"
           data-umami-event-label={sample}
           data-umami-event-new={String(isNew)}

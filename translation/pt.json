@@ -2027,7 +2027,15 @@
     "import-cta-title": "Crie um contador de meta",
     "import-cta-stamps": "Depois de importar, cole o progresso deste álbum no seu lookup. Ele se atualiza sozinho quando você ocultar novos selos.",
     "import-cta-collection": "Depois de importar, cole o progresso desta coleção no seu lookup. Ele se atualiza sozinho quando você ocultar novos itens.",
-    "import-cta-button": "Ver estilos"
+    "import-cta-button": "Ver estilos",
+    "info-description-stamps": "Mostre seu progresso nesta página do álbum no seu lookup, petpage ou loja do Neopets com uma imagem que se atualiza sozinha. Ele funciona a partir do seu checklist desta página.",
+    "info-description-collection": "Mostre seu progresso nesta coleção no seu lookup, petpage ou loja do Neopets com uma imagem que se atualiza sozinha. Ele funciona a partir do seu checklist desta coleção.",
+    "info-how": "Como funciona",
+    "info-step-1": "Crie seu checklist desta lista.",
+    "info-step-2": "Oculte os itens que você já tem: itens ocultos contam como conquistados.",
+    "info-step-3": "No seu checklist, clique em Contador de Meta, escolha um estilo e copie o código para o Neopets.",
+    "info-learn-more": "Saiba mais",
+    "info-open-checklist": "Abrir meu checklist"
   },
   "GoalsTool": {
     "title": "Contadores de Meta",

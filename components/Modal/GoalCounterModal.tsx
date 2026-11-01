@@ -22,11 +22,9 @@ import {
 import { useTranslations } from 'next-intl';
 import { useToast } from '@utils/theme/toast';
 import {
-  COLLECTION_VARIANTS,
   GOAL_SITE_URL,
   GOAL_SIZES,
   GOAL_TARGET_MAX,
-  STAMP_VARIANTS,
   VARIANT_BACKGROUNDS,
   goalListImagePath,
   goalSampleImagePath,
@@ -34,9 +32,8 @@ import {
   type GoalConfig,
   type GoalVariant,
 } from '@utils/goalCounter/config';
-import { GOAL_COLLECTIONS } from '@utils/goalCounter/collections';
 import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
-import { goalCounterSample } from '@utils/goalCounter/sample';
+import { goalCounterSample, goalCounterVariants } from '@utils/goalCounter/sample';
 import {
   GOALS_ACCENT,
   GOALS_ACCENT_LIGHT,
@@ -70,13 +67,7 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
   const isCollection = goalCounter.kind === 'collection';
   // style thumbnails use fixed sample data (same for everyone, cached); only the large preview is live
   const sample = goalCounterSample(goalCounter);
-  // the trophy style only for collections that have a trophy different from their icon
-  const variants: readonly GoalVariant[] =
-    goalCounter.kind === 'collection'
-      ? COLLECTION_VARIANTS.filter(
-          (v) => v !== 'classic-trophy' || !!GOAL_COLLECTIONS[goalCounter.collection].trophy
-        )
-      : STAMP_VARIANTS;
+  const variants = goalCounterVariants(goalCounter);
 
   const [variant, setVariant] = useState<GoalVariant>(variants[0]);
   const [bg, setBg] = useState<GoalBackground>('transparent');
