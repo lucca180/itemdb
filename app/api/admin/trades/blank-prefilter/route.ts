@@ -8,8 +8,8 @@ import {
 } from '@services/feedback/tradeAutoApprove';
 import { autoPriceTrades2 } from '@pages/api/v1/trades/autoPrice2';
 
-const DEFAULT_LIMIT = 100;
-const MAX_LIMIT = 200;
+const DEFAULT_LIMIT = 200;
+const MAX_LIMIT = 1000;
 const SAMPLE_SIZE = 20;
 
 type Body = { dryRun?: boolean; limit?: number; afterId?: number };
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
         });
       }
     },
-    { concurrency: 2 }
+    { concurrency: 4 }
   );
 
   if (dryRun || !trades.length) return Response.json(result);

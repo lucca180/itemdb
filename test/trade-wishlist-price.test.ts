@@ -255,8 +255,11 @@ describe('getConfirmedBlank', () => {
   });
 
   test('confirms mixed lot totals, with or without Instant Buy (pt-6)', () => {
-    expect(confirmed('9 mil', mixed)).toBe('mixed lot total');
+    expect(
+      confirmed('1m online now please buy im tired of this the tp is upsetting me', mixed)
+    ).toBe('mixed lot total');
     expect(confirmed('[MIX OF EVIL COCONUTS - 20M]', mixed, 20 * M)).toBe('instant buy mixed lot');
+    expect(confirmed('5 cool neggs', mixed)).toBe('no np value');
   });
 
   test.each([
@@ -280,6 +283,8 @@ describe('getConfirmedBlank', () => {
     '140M - 20M pure + Cool Neggs or fully pure',
     '250m obo. Saving for golden shell',
     '17m please, 6.5+x2 cool negg or equiv',
+    // the items are an ad in another sentence
+    '10m pure! check my gallery for UBs and other album items, MPs, Books, and other fun and collectable stuff!!',
   ])('leaves item payments that may not be an addition to the queue: %s', (wishlist) => {
     expect(confirmed(wishlist)).toBeNull();
   });

@@ -333,6 +333,12 @@ const PAYMENT_DOUBT = new RegExp(
 );
 // a mixed lot total that comes with a free item, or prices some items (pt-5, pt-16)
 const MIXED_DOUBT = /\b(?:free|bonus|included|separate\w*|for the|lowest)\b/;
+const SENTENCE_END = /[.!?]+(?=\s|$)|\n/;
+
+// every sentence with a value must name the item paid with it: "10m pure! check my gallery for
+// UBs and other stuff" is 10m, the items are an ad
+const paymentOutsideValue = (l: string, mentionsItem: (s: string) => boolean) =>
+  l.split(SENTENCE_END).some((s) => amounts(` ${s} `).length && !mentionsItem(s));
 
 // numbers the parser didn't read as NP ("39.5 pure", "120mi", "40+m"); item counts are fine
 const hasUnreadNumber = (l: string) => {
@@ -375,7 +381,9 @@ export const getConfirmedBlank = (
   if (hasUnreadNumber(l)) return null;
   if (
     reason === 'item payment without np value' &&
-    (PAYMENT_DOUBT.test(l) || PAYMENT_DOUBT.test(raw))
+    (PAYMENT_DOUBT.test(l) ||
+      PAYMENT_DOUBT.test(raw) ||
+      paymentOutsideValue(l, createItemMatcher(knownItemNames)))
   )
     return null;
   // two items: the total is often for the obvious one (pt-5, "14M - BONUS ITEM INCLUDED")

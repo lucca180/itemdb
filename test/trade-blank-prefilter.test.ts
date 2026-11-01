@@ -57,20 +57,21 @@ describe('getTradeConfirmedBlank', () => {
     });
   });
 
-  test('confirms a mixed lot total', async () => {
+  test('confirms a mixed lot total and a lot without any value', async () => {
     await expect(getTradeConfirmedBlank(tradeRow('9 mil'))).resolves.toBe('mixed lot total');
+    await expect(getTradeConfirmedBlank(tradeRow('5 cool neggs'))).resolves.toBe('no np value');
   });
 });
 
 describe('closeConfirmedBlank', () => {
   test('closes a confirmed blank lot with every slot blank', async () => {
-    await expect(closeConfirmedBlank(tradeRow('9 mil'))).resolves.toBe(true);
+    await expect(closeConfirmedBlank(tradeRow('5 cool neggs'))).resolves.toBe(true);
 
     const [closed] = processTradePrice.mock.calls[0];
     expect(closed.trade_id).toBe(10);
     expect(closed.items.map((i: any) => i.price)).toEqual([null, null, null]);
     expect(metricsCount).toHaveBeenCalledWith('trade.blank_prefilter', 1, {
-      attributes: { reason: 'mixed lot total' },
+      attributes: { reason: 'no np value' },
     });
   });
 
@@ -82,7 +83,7 @@ describe('closeConfirmedBlank', () => {
   test('does nothing when disabled', async () => {
     process.env.TRADE_BLANK_PREFILTER = 'off';
 
-    await expect(closeConfirmedBlank(tradeRow('9 mil'))).resolves.toBe(false);
+    await expect(closeConfirmedBlank(tradeRow('5 cool neggs'))).resolves.toBe(false);
     expect(prismaMock.items.findMany).not.toHaveBeenCalled();
     expect(processTradePrice).not.toHaveBeenCalled();
   });
@@ -90,7 +91,7 @@ describe('closeConfirmedBlank', () => {
   test('reports a failure without breaking the auto pricer batch', async () => {
     processTradePrice.mockRejectedValueOnce(new Error('boom'));
 
-    await expect(closeConfirmedBlank(tradeRow('9 mil'))).resolves.toBe(false);
+    await expect(closeConfirmedBlank(tradeRow('5 cool neggs'))).resolves.toBe(false);
     expect(reportBackgroundError).toHaveBeenCalledWith(expect.any(Error), {
       task: 'trade.blankPrefilter',
       tags: { trade_id: 10 },
