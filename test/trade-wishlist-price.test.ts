@@ -136,6 +136,39 @@ describe('getWishlistPrices', () => {
     expect(prices('80M each', two)).toEqual([80 * M, 80 * M]);
   });
 
+  test.each([
+    ['200m per lot', 50 * M],
+    ['200m per trade', 50 * M],
+    ['200m for all 4', 50 * M],
+    ['50m per stamp', 50 * M],
+    ['50m/each', 50 * M],
+  ])('quantity > 1: %s', (wishlist, expected) => {
+    expect(prices(wishlist, [{ item_iid: 1, amount: 4 }])).toEqual([expected]);
+  });
+
+  test.each([
+    ['50m each or 50m', 'unit or total'],
+    // "each" of the negg alternative may cover the np value too
+    ['200m or 1 cool negg each', 'unit or total'],
+    ['28m or 7 Cool Negg each, or Alien Attack Pea + 10 Cool Negg for all', 'unit or total'],
+    ['50m ea or 180m for all', 'multiple values'],
+    ['200m total (50m ea)', 'multiple values'],
+  ])('quantity > 1, unit or total unclear -> abstains: %s', (wishlist, reason) => {
+    expect(prices(wishlist, [{ item_iid: 1, amount: 4 }])).toBe(`abstain: ${reason}`);
+  });
+
+  test('a single unit is the same price either way', () => {
+    expect(prices('50m each or 50m')).toEqual([50 * M]);
+  });
+
+  test('list slots divide by their amount unless priced per unit', () => {
+    const lot = [
+      { item_iid: 1, amount: 2 },
+      { item_iid: 2, amount: 3 },
+    ];
+    expect(prices('10m | 9m each', lot)).toEqual([5 * M, 9 * M]);
+  });
+
   test('lists map by slot or by item name (pt-14)', () => {
     const four = [1, 2, 3, 4].map((item_iid) => ({ item_iid, amount: 1 }));
     expect(prices('10m | 5m | nm | 10m', four)).toEqual([10 * M, 5 * M, null, 10 * M]);
@@ -153,13 +186,42 @@ describe('getWishlistPrices', () => {
     ).toEqual([50 * M, 100 * M, 50 * M]);
   });
 
-  test('mixed lots without a list abstain', () => {
+  test('a mixed lot total is not split between items (pt-6)', () => {
     const mixed = [
       { item_iid: 1, amount: 1 },
       { item_iid: 2, amount: 1 },
+      { item_iid: 3, amount: 2 },
     ];
-    expect(prices('50m', mixed)).toBe('abstain: mixed lot');
-    expect(prices('5 cool neggs', mixed)).toEqual([null, null]);
+    expect(prices('50m', mixed)).toEqual([null, null, null]);
+    expect(prices('Otb 675m for all', mixed)).toEqual([null, null, null]);
+    expect(prices('5 cool neggs', mixed)).toEqual([null, null, null]);
+    // as many values as items: may be a price per item (pt-16)
+    expect(prices('Maraquan 1,800,000, Island 2,500,000, Red 2,000,000', mixed)).toBe(
+      'abstain: multiple values'
+    );
+    expect(prices('10m pure or 10m in neggs or 10m in items', mixed)).toBe('abstain: mixed lot');
+  });
+
+  test('Instant Buy on a mixed lot is a total too', () => {
+    const mixed = [
+      { item_iid: 1, amount: 1 },
+      { item_iid: 2, amount: 1 },
+      { item_iid: 3, amount: 1 },
+    ];
+    expect(prices('[MIX OF EVIL COCONUTS - 20M]', mixed, noNames, 20 * M)).toEqual([
+      null,
+      null,
+      null,
+    ]);
+    expect(prices('Offer 1 np or a junk item please!', mixed, noNames, 5 * M)).toEqual([
+      null,
+      null,
+      null,
+    ]);
+    expect(prices('10m | 5m | nm', mixed, noNames, 15 * M)).toBe('abstain: mixed lot');
+    expect(prices('Pink 3,700,000, Red 2m and Fire 1.5m', mixed, noNames, 7 * M)).toBe(
+      'abstain: mixed lot'
+    );
   });
 });
 

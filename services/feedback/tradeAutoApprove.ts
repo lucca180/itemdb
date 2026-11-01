@@ -18,7 +18,7 @@ import {
 import { commitFeedbackDecision } from '@services/feedback/feedbackCommit';
 
 /** Bump when the parser rules change, so approvals can be traced to the rules that made them. */
-export const TRADE_AUTO_APPROVE_VERSION = 1;
+export const TRADE_AUTO_APPROVE_VERSION = 2;
 
 /** Kill switch: TRADE_AUTO_APPROVE=off (+ restart) stops new auto approvals without a build. */
 export const isTradeAutoApproveEnabled = () => process.env.TRADE_AUTO_APPROVE !== 'off';

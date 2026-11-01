@@ -105,7 +105,9 @@ const NEGATION = /\b(not|don'?t|do not|isn'?t|never|won'?t)\b[^.!?\d]{0,40}\d/;
 const CONNECTOR = /\s*(?:\+|\bplus\b|\band\b|&|\bw\/)\s*/;
 const ALTERNATIVE =
   /\bor\b|\/(?!\s*ea)|;|\||\n|\botherwise\b|\bif you(?:'d| would)? (?:prefer|rather)\b|\bwill (?:take|accept|do)\b|\bcan (?:take|do)\b/;
-const EACH = /\bea(ch)?\b|\/ ?ea\b|\bper\b|\bapiece\b|\bchac?un\b|\bchaqu'?un\b|\bcada\b|\bcu\b/;
+// "per lot" / "per trade" is the total, not a unit price
+const EACH =
+  /\bea(ch)?\b|\/ ?ea\b|\bper\b(?!\s*(?:the\s*)?(?:lot|trade|bundle|set|all|everything|whole)\b)|\bapiece\b|\bchac?un\b|\bchaqu'?un\b|\bcada\b|\bcu\b/;
 const PURE_AMOUNT = new RegExp(`\\d+(\\.\\d+)?\\s*(${UNIT_RE})?\\s*(nps?\\s*)?pure`, 'g');
 
 type Option = { value: number | null | 'ambiguous'; pure: boolean };
@@ -194,7 +196,8 @@ const mapListToItems = (
   bars.forEach((bar, k) => {
     const i = byName ? (target[k] as number) : k;
     const value = evalOption(bar.replace(/lotitem\d+/, ''), mentionsItem)?.value;
-    prices[i] = typeof value === 'number' ? Math.round(value / (items[i].amount || 1)) : null;
+    const qty = EACH.test(bar) ? 1 : items[i].amount || 1;
+    prices[i] = typeof value === 'number' ? Math.round(value / qty) : null;
   });
 
   return { prices, reason: byName ? 'list by item' : 'list by slot' };
@@ -210,8 +213,10 @@ export const getWishlistPrices = (
   instantBuy: number | null | undefined,
   knownItemNames: Set<string>
 ): WishlistPrices => {
-  if (instantBuy) return { abstain: 'instant buy' };
   if (!items.length) return { abstain: 'no items' };
+
+  const allEqual = items.every((i) => i.item_iid === items[0].item_iid);
+  if (instantBuy && allEqual) return { abstain: 'instant buy' };
 
   const mentionsItem = createItemMatcher(knownItemNames);
   const blank = (reason: string): WishlistPrices => ({ prices: items.map(() => null), reason });
@@ -221,6 +226,15 @@ export const getWishlistPrices = (
   items.forEach((it, i) => {
     if (it.name) l = l.split(it.name.toLowerCase()).join(` lotitem${i} `);
   });
+
+  // pt-6: a mixed lot's total (wishlist or Instant Buy) is not split between its items. As many
+  // values as items may be prices per item instead (pt-16: "Maraquan 1.8m, Island 2.5m...")
+  const mixedLotTotal = (reason: string): WishlistPrices =>
+    amounts(l).length >= items.length || l.split('|').length === items.length
+      ? { abstain: 'mixed lot' }
+      : blank(reason);
+
+  if (instantBuy) return mixedLotTotal('instant buy mixed lot');
 
   if (!amounts(l).length) return blank('no np value');
   l = l.replace(RELATIVE_PHRASE, ' ');
@@ -232,37 +246,45 @@ export const getWishlistPrices = (
   if (items.length > 1 && bars.length === items.length)
     return mapListToItems(bars, items, mentionsItem);
 
+  // "each" only counts for the alternative it's in ("200m or 1 cool negg each")
   const options = l
     .split(ALTERNATIVE)
-    .map((o) => evalOption(o, mentionsItem))
-    .filter((o): o is Option => !!o);
+    .map((o) => {
+      const option = evalOption(o, mentionsItem);
+      return option && { ...option, each: EACH.test(o) };
+    })
+    .filter((o): o is Option & { each: boolean } => !!o);
 
   const hasPureValue = options.some((o) => o.pure && typeof o.value === 'number');
   if (options.some((o) => o.value === 'ambiguous') && !hasPureValue)
     return { abstain: 'multiple values' };
 
   const valued = options.filter(
-    (o): o is Option & { value: number } => typeof o.value === 'number'
+    (o): o is (typeof options)[number] & { value: number } => typeof o.value === 'number'
   );
   if (!valued.length) return blank('item payment without np value');
 
   let value: number;
+  let sources = valued;
   const distinct = [...new Set(valued.map((o) => o.value))];
   if (distinct.length === 1) value = distinct[0];
   else {
     const pureValues = [...new Set(valued.filter((o) => o.pure).map((o) => o.value))];
     if (pureValues.length !== 1) return { abstain: 'multiple values' };
     value = pureValues[0];
+    sources = valued.filter((o) => o.pure && o.value === value);
   }
 
   if (value < 50) return blank('symbolic');
 
-  const allEqual = items.every((i) => i.item_iid === items[0].item_iid);
-  if (items.length > 1 && !allEqual) return { abstain: 'mixed lot' };
+  if (!allEqual) return mixedLotTotal('mixed lot total');
 
   // pt-17: identical items share one total unless the price is per unit
   const qty = items.reduce((s, i) => s + (i.amount || 1), 0);
-  const unit = EACH.test(l) ? value : Math.round(value / qty);
+  const each = sources.every((o) => o.each);
+  // unit price or total? "50m each or 50m", "28m or 7 cool neggs each" (each of both?)
+  if (qty > 1 && !each && options.some((o) => o.each)) return { abstain: 'unit or total' };
+  const unit = each ? value : Math.round(value / qty);
   return { prices: items.map(() => unit), reason: qty > 1 ? 'unit price' : 'single value' };
 };
 
