@@ -3,7 +3,11 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { processTradePrice } from '..';
 import { FeedbackParsed, TradeData } from '../../../../../types';
-import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/item/tradeCanonical';
+import {
+  canonicalFitsTradeItems,
+  getTradeItemByOrder,
+  normalizeCanonicalWishlist,
+} from '@utils/item/tradeCanonical';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -89,7 +93,7 @@ export const applyCanonicalTrade = async (id: string) => {
       )
   `) as { trade_id: number }[];
 
-  const trades = await prisma.trades.findMany({
+  const matchedTrades = await prisma.trades.findMany({
     where: {
       trade_id: {
         in: tradeIds.map((trade) => trade.trade_id),
@@ -101,6 +105,11 @@ export const applyCanonicalTrade = async (id: string) => {
       },
     },
   });
+
+  // same itemsCount, but maybe other slots (one x2 instead of two x1): leave those in the queue
+  const trades = matchedTrades.filter((trade) =>
+    canonicalFitsTradeItems(canonicalTrade.items, trade.items)
+  );
 
   const allTrades = [canonicalTrade, ...trades];
 

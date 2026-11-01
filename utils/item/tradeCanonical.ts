@@ -14,6 +14,18 @@ export const getCanonicalItemsCount = (items: TradeItemWithOrder[]) =>
 export const getTradeItemByOrder = <T extends TradeItemWithOrder>(items: T[], order: number) =>
   items.find((item) => item.order === order);
 
+// itemsCount sums the amounts, so a lot with one x2 slot shares the canonical lookup of a lot
+// with two x1 slots. The canonical prices only fit a lot with the very same slots
+export const canonicalFitsTradeItems = (
+  canonicalItems: TradeItemWithOrder[],
+  tradeItems: TradeItemWithOrder[]
+) =>
+  canonicalItems.length === tradeItems.length &&
+  canonicalItems.every((canonicalItem) => {
+    const item = getTradeItemByOrder(tradeItems, canonicalItem.order);
+    return !!item && (item.amount || 1) === (canonicalItem.amount || 1);
+  });
+
 export const isTradeAllItemsEqual = (trade: Pick<TradeData, 'items'>) =>
   trade.items.every(
     (item) => item.name === trade.items[0]?.name && item.image_id === trade.items[0]?.image_id

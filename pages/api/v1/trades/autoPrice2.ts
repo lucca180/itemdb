@@ -7,7 +7,11 @@ import { AUTO_PRICE_UID, MAX_VOTE_MULTIPLIER } from '@utils/feedback/voteRules';
 import { getManyItems } from '../items/many';
 import { differenceInCalendarDays } from 'date-fns';
 import { ItemData } from '@types';
-import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/item/tradeCanonical';
+import {
+  canonicalFitsTradeItems,
+  getTradeItemByOrder,
+  normalizeCanonicalWishlist,
+} from '@utils/item/tradeCanonical';
 import { omitOwnerHash } from '@utils/ownerHash';
 import { reportBackgroundError } from '@utils/api/reportBackgroundError';
 import { FeedbackCommitError } from '@services/feedback/feedbackCommit';
@@ -363,13 +367,13 @@ const findCanonical = async (
     },
   });
 
-  if (!canonical) return trade;
+  // a lot with other slots than the canonical one goes on to similar matching
+  if (!canonical || !canonicalFitsTradeItems(canonical.items, trade.items)) return trade;
 
   const updatedItems: any[] = [...trade.items];
 
   for (const canonicalItem of canonical.items) {
-    const item = getTradeItemByOrder(updatedItems, canonicalItem.order);
-    if (!item) throw new Error(`Missing trade item order ${canonicalItem.order}`);
+    const item = getTradeItemByOrder(updatedItems, canonicalItem.order)!;
 
     item.price = canonicalItem.price;
     item.addedAt = item.addedAt.toJSON();
