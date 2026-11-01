@@ -86,7 +86,7 @@ function HeaderActionButtons({
         <GoalCounterButton
           goalCounter={goalCounter}
           onOpen={onOpenGoalCounter}
-          intro={!list.official}
+          kind={list.official ? 'info' : 'code'}
         />
       )}
       {!!list.dynamicType && (

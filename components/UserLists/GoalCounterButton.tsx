@@ -56,11 +56,14 @@ const subscribe = (listener: () => void) => {
 type GoalCounterButtonProps = {
   goalCounter: GoalCounterInfo;
   onOpen: () => void;
-  /** "New" badge + tip until first use (off on official lists, seen by everyone) */
-  intro?: boolean;
+  /**
+   * `code`: the owner's checklist (code modal, with the "New" badge + tip until first use);
+   * `info`: an official list, seen by everyone (info modal, no intro)
+   */
+  kind: 'code' | 'info';
 };
 
-export function GoalCounterButton({ goalCounter, onOpen, intro = true }: GoalCounterButtonProps) {
+export function GoalCounterButton({ goalCounter, onOpen, kind }: GoalCounterButtonProps) {
   const t = useTranslations();
   // seen on the server, so the intro only appears after hydration
   const introSeen = useSyncExternalStore(subscribe, getIntroSeen, () => true);
@@ -71,10 +74,15 @@ export function GoalCounterButton({ goalCounter, onOpen, intro = true }: GoalCou
   const anchorRef = useCallback((el: HTMLDivElement | null) => {
     setVisible(!!el && el.offsetParent !== null && window.matchMedia(TIP_MEDIA_QUERY).matches);
   }, []);
-  const isNew = intro && !introSeen;
+  const isNew = kind === 'code' && !introSeen;
   const sample = goalCounterSample(goalCounter);
   const config = goalCounterPreviewConfig(goalCounter);
   const [w, h] = GOAL_SIZES[config.variant];
+
+  const tipShown = isNew && tipOpen && visible;
+  useEffect(() => {
+    if (tipShown) window.umami?.track('goal-counter-tip-view', { label: sample });
+  }, [tipShown, sample]);
 
   useEffect(() => {
     if (!isNew) return;
@@ -89,7 +97,7 @@ export function GoalCounterButton({ goalCounter, onOpen, intro = true }: GoalCou
 
   return (
     <Popover.Root
-      open={isNew && tipOpen && visible}
+      open={tipShown}
       onOpenChange={({ open }) => {
         if (!open) setTipOpen(false);
       }}
@@ -117,6 +125,7 @@ export function GoalCounterButton({ goalCounter, onOpen, intro = true }: GoalCou
           data-umami-event="goal-counter-open"
           data-umami-event-label={sample}
           data-umami-event-new={String(isNew)}
+          data-umami-event-kind={kind}
         >
           <Icon as={GoalCounterIcon} />
           {t('GoalCounter.button')}

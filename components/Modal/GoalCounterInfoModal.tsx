@@ -78,12 +78,20 @@ const GoalCounterInfoModal = (props: GoalCounterInfoModalProps) => {
   return (
     <>
       {isOpenLinked && (
-        <LinkedListModal isOpen={isOpenLinked} onClose={() => setOpenLinked(false)} list={list} />
+        <LinkedListModal
+          isOpen={isOpenLinked}
+          onClose={() => setOpenLinked(false)}
+          list={list}
+          trackSource="goal-counter-info"
+        />
       )}
       <Dialog.Root
         open={isOpen}
         onOpenChange={({ open }) => {
-          if (!open) onClose();
+          // also reported after the parent sets `open` to false: track the close once
+          if (open || !isOpen) return;
+          window.umami?.track('goal-counter-info-close', { label: sample });
+          onClose();
         }}
         placement="center"
         size="lg"

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Box, Button, Flex, HStack, Icon, Image, Text } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { LuExternalLink } from 'react-icons/lu';
@@ -9,6 +10,9 @@ import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
 import { PREVIEW_BACKGROUNDS } from '@utils/goalCounter/previewSurfaces';
 import { goalCounterPreviewConfig, goalCounterSample } from '@utils/goalCounter/sample';
 import { GOALS_ACCENT_LIGHT, GoalCounterIcon, goalsAccentAlpha } from '@utils/goalCounter/theme';
+
+// switching lists remounts the card: count one view per sample per page load
+const viewed = new Set<string>();
 
 /**
  * Shown under the submit button when the import goes into a checklist of an album page or
@@ -20,6 +24,12 @@ export function ImportGoalCounterCard({ goalCounter }: { goalCounter: GoalCounte
   const sample = goalCounterSample(goalCounter);
   const config = goalCounterPreviewConfig(goalCounter);
   const [w, h] = GOAL_SIZES[config.variant];
+
+  useEffect(() => {
+    if (viewed.has(sample)) return;
+    viewed.add(sample);
+    window.umami?.track('import-v2-goal-counter-cta-view', { label: sample });
+  }, [sample]);
 
   return (
     <Box

@@ -142,11 +142,19 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
     }
   };
 
+  // every way out (footer button, Esc, backdrop) is tracked once, here; the dialog also reports
+  // a close after the parent sets `open` to false, which the `isOpen` check skips
+  const close = (via: 'button' | 'dismiss') => {
+    if (!isOpen) return;
+    window.umami?.track('goal-counter-close', { label: sample, via });
+    onClose();
+  };
+
   return (
     <Dialog.Root
       open={isOpen}
       onOpenChange={({ open }) => {
-        if (!open) onClose();
+        if (!open) close('dismiss');
       }}
       placement="center"
       size="xl"
@@ -418,13 +426,7 @@ const GoalCounterModal = (props: GoalCounterModalProps) => {
               </Grid>
             </Dialog.Body>
             <Dialog.Footer>
-              <Button
-                onClick={onClose}
-                data-umami-event="goal-counter-close"
-                data-umami-event-label={sample}
-              >
-                {t('General.close')}
-              </Button>
+              <Button onClick={() => close('button')}>{t('General.close')}</Button>
             </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Positioner>
