@@ -109,8 +109,21 @@ const ALTERNATIVE =
 const EACH =
   /\bea(ch)?\b|\/ ?ea\b|\bper\b(?!\s*(?:the\s*)?(?:lot|trade|bundle|set|all|everything|whole)\b)|\bapiece\b|\bchac?un\b|\bchaqu'?un\b|\bcada\b|\bcu\b/;
 const PURE_AMOUNT = new RegExp(`\\d+(\\.\\d+)?\\s*(${UNIT_RE})?\\s*(nps?\\s*)?pure`, 'g');
+// "60m pure + cool neggs": 60m in pure + neggs, or 60m pure plus neggs? A count ("+ 2 cool
+// neggs", "+ a cool negg") makes it an addition
+const PURE_PLUS_ITEM = new RegExp(
+  `\\d(?:\\.\\d+)?\\s*(?:${UNIT_RE})\\.?\\s*(?:pure|nps?|neopoints)\\s*(?:\\+|\\bplus\\b|\\band\\b|&|\\bw\\/)(?!\\s*(?:\\d|an?\\b|one\\b))([^.!?;\\n]*)`
+);
+// an alternative that is a total in items ("20m in stamps", "30m worth of ets")
+const ITEM_TOTAL = new RegExp(
+  `^[\\s\\W]*\\d+(?:\\.\\d+)?\\s*(?:${UNIT_RE})\\s*(?:nps?\\s*)?(?:worth\\s*(?:of|in)?|in|of)\\s+[a-z]`
+);
+// "10m + 12 cool neggs please, accepting 1 cool negg = 6m": "=" binds only its own clause;
+// "(17.5m + 5 cool neggs) itemdb = 45m": nor what's in brackets
+const CLAUSE_END = /[,!?;:()[\]]|\.(?!\d)/;
 
-type Option = { value: number | null | 'ambiguous'; pure: boolean };
+// unsure: no np value, but maybe not blank either ("60m pure + cool neggs")
+type Option = { value: number | null | 'ambiguous'; pure: boolean; unsure?: boolean };
 
 const createItemMatcher = (knownItemNames: Set<string>) => (s: string) => {
   if (ITEM_WORDS.test(s)) return true;
@@ -143,10 +156,32 @@ const evalOption = (o: string, mentionsItem: (s: string) => boolean): Option | n
     if (afterItem) return { value: 'ambiguous', pure };
   }
 
+  // "20m + cool negg = 25m", "24.5m = 19.5m pure + 1 cool negg": the total of its breakdown
+  const eq = o.split('=');
+  if (eq.length === 2) {
+    const before = eq[0].split(CLAUSE_END).at(-1) ?? '';
+    const after = eq[1].split(CLAUSE_END)[0];
+    for (const [total, breakdown] of [
+      [after, before],
+      [before, after],
+    ]) {
+      const totalAmts = amounts(` ${total} `);
+      if (totalAmts.length !== 1 || mentionsItem(total)) continue;
+      if (!CONNECTOR.test(breakdown) || !mentionsItem(breakdown)) continue;
+      const parts = amounts(` ${breakdown} `);
+      return { value: parts.every((p) => p < totalAmts[0]) ? totalAmts[0] : 'ambiguous', pure };
+    }
+  }
+
   // "80m in pure and cool negg": the amount is the total of a mixed payment
   const free = o.replace(PURE_AMOUNT, 'N');
   if ((/\bpure\b/.test(free) || /\bmix\b/.test(free)) && mentionsItem(free) && amts.length === 1)
     return { value: amts[0], pure };
+
+  const pureItem = o.match(PURE_PLUS_ITEM);
+  // "20m pure and any items worth 1m" declares the value: summed below
+  if (pureItem && amts.length === 1 && mentionsItem(pureItem[1]))
+    return { value: null, pure, unsure: true };
 
   // sum the parts (declared item values count, pt-9 blanks an item without value)
   let sum = 0;
@@ -272,9 +307,10 @@ export const getWishlistPrices = (
     .split(ALTERNATIVE)
     .map((o) => {
       const option = evalOption(o, mentionsItem);
-      return option && { ...option, each: EACH.test(o) };
+      const itemTotal = ITEM_TOTAL.test(o) && amounts(o).length === 1 && mentionsItem(o);
+      return option && { ...option, each: EACH.test(o), itemTotal };
     })
-    .filter((o): o is Option & { each: boolean } => !!o);
+    .filter((o): o is Option & { each: boolean; itemTotal: boolean } => !!o);
 
   const hasPureValue = options.some((o) => o.pure && typeof o.value === 'number');
   if (options.some((o) => o.value === 'ambiguous') && !hasPureValue)
@@ -283,17 +319,24 @@ export const getWishlistPrices = (
   const valued = options.filter(
     (o): o is (typeof options)[number] & { value: number } => typeof o.value === 'number'
   );
-  if (!valued.length) return blank('item payment without np value');
+  if (!valued.length)
+    return options.some((o) => o.unsure)
+      ? { abstain: 'pure plus items' }
+      : blank('item payment without np value');
 
   let value: number;
   let sources = valued;
   const distinct = [...new Set(valued.map((o) => o.value))];
   if (distinct.length === 1) value = distinct[0];
   else {
+    // the pure value first ("30m pure or 20m in ets" is 30m), else the lowest of the item
+    // payment totals ("20m in stamps or 30m in ets" is 20m)
     const pureValues = [...new Set(valued.filter((o) => o.pure).map((o) => o.value))];
-    if (pureValues.length !== 1) return { abstain: 'multiple values' };
-    value = pureValues[0];
-    sources = valued.filter((o) => o.pure && o.value === value);
+    if (pureValues.length === 1) value = pureValues[0];
+    else if (!pureValues.length && allEqual && valued.every((o) => o.itemTotal && !o.each))
+      value = Math.min(...distinct);
+    else return { abstain: 'multiple values' };
+    sources = valued.filter((o) => o.value === value);
   }
 
   if (value < 50) return blank('symbolic');

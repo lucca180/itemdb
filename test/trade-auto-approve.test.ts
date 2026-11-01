@@ -53,7 +53,7 @@ describe('autoApproveTradeFeedback', () => {
     expect(options.ip).toBe('2.2.2.2');
     expect(JSON.parse(options.json).autoApprove).toEqual({
       by: 'wishlist-parser',
-      version: 2,
+      version: 3,
       reason: 'single value',
     });
   });

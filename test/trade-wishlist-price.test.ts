@@ -73,6 +73,10 @@ describe('getWishlistPrices', () => {
 
   test.each([
     ['42M or 9 Cool Neggs', 42 * M],
+    ['40mil or 20mil np + rare books or stamps', 40 * M],
+    ['20m pure or 30m in ETS', 20 * M],
+    ['30m pure or 20m in ETS', 30 * M], // pure first
+    ['20m in stamps or 30m in ETS', 20 * M], // else the lowest
     ['38M Will take 20M + 3 cool neggs', 38 * M],
     ['34 mil pure; 30 mil + 1 Cool Negg; 30 mil + 5 mil in items; OBO', 34 * M],
     ["20 mil + cool negg please! NM if you'd prefer to pay 25 mil via auction! (:", 25 * M],
@@ -86,6 +90,12 @@ describe('getWishlistPrices', () => {
     ['25 million NP (20 million + 1 cool negg)', 25 * M],
     ['30 Mil! Mix of NP and Items!', 30 * M],
     ['13m. 2 cool neggs and pure', 13 * M],
+    ['20m + Cool Negg = 25m', 25 * M],
+    ['20 million plus 1 cool negg = 25 million', 25 * M],
+    ['24.5M= 19.5M pure + 1 cool negg', 24.5 * M],
+    ['pure + cool neggs = 23m', 23 * M],
+    ['85m worth of cool neggs', 85 * M],
+    ['85m in cool neggs', 85 * M],
   ])('explicit total of a mixed payment: %s', (wishlist, expected) => {
     expect(prices(wishlist)).toEqual([expected]);
   });
@@ -115,6 +125,12 @@ describe('getWishlistPrices', () => {
   test.each([
     ["250mil = auto, also looking for certain gourmet foods that's under 20mil", 'multiple values'],
     ['20m & 10 cool neggs ( 80 m )', 'multiple values'],
+    ['30m + cool negg = 25m', 'multiple values'],
+    // 60m in pure + neggs, or 60m pure plus neggs?
+    ['60m pure + cool neggs', 'pure plus items'],
+    ['18 m nps and cool neggs', 'pure plus items'],
+    ['35m or 30m in ETS', 'multiple values'], // np without "pure"
+    ['50m ea or 180m for all', 'multiple values'],
     [
       'NM serious offers only, I am very reasonable and do not think this is worth 150m.',
       'negation',
