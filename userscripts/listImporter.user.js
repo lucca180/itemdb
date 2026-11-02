@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Price Checker & List Importer
-// @version      2.2.0
+// @version      2.2.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Price check your items, filter, sort and import to your wishlists
@@ -12,7 +12,6 @@
 // @match        *://*.neopets.com/gourmet_club.phtml*
 // @match        *://*.neopets.com/games/neodeck/index.phtml*
 // @match        *://*.neopets.com/books_read.phtml*
-// @match        *://*.neopets.com/moon/books_read.phtml*
 // @match        *://*.neopets.com/quickstock.phtml*
 // @match        *://*.neopets.com/market.phtml?type=your*
 // @match       *://*.neopets.com/neohome/shed*
@@ -168,15 +167,17 @@ const itemdb_importer = function() {
   }
 
   function handleBooks(){
-    const meta = { list_id: URLHas('moon') ? 663 : 664 };
-    // some books share the same image - use the name too when the page shows it (english only)
-    const namedItems = !URLHas('moon') && nl === 'en' ? collectNamedBookItems() : null;
+    const config = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).__booksReadConfig;
+    const isBooktastic = config ? config.activeTab === 'booktastic' : URLHas('tab=booktastic');
+    const meta = { list_id: isBooktastic ? 663 : 664 };
+    const books = config?.books ?? [];
 
-    if (namedItems)
-      return { items: namedItems, indexType: 'name_image_id', meta, source: 'books' };
+    // the page ships every book with its item id
+    if (books.length && books.every((book) => book.objInfoId))
+      return { items: collectBookItems(books), indexType: 'item_id', meta, source: 'books' };
 
     return {
-      items: collectImageItems($(".content table img")),
+      items: collectImageItems($("#books-read-app img.br-card-img")),
       indexType: 'image_id',
       source: 'books',
       meta,
@@ -250,31 +251,14 @@ const itemdb_importer = function() {
     return counts;
   }
 
-  // returns null if any book row is missing its name
-  function collectNamedBookItems() {
+  function collectBookItems(books) {
     const items = {};
-    let isComplete = true;
 
-    $(".content table tr").each(function () {
-      const tds = $(this).children('td');
-      const src = tds.eq(0).find('img').attr('src') ?? '';
-      if (tds.length !== 2 || !src.includes('/items/')) return;
-
-      const name = tds.eq(1).clone().children('i').remove().end().text()
-        .replace(/ /g, ' ')
-        .trim()
-        .replace(/:$/, '')
-        .trim();
-
-      if (!name) {
-        isComplete = false;
-        return false;
-      }
-
-      items[`${name},${getImageID(src)}`] = 1;
+    books.forEach((book) => {
+      items[book.objInfoId] = 1;
     });
 
-    return isComplete && Object.keys(items).length ? items : null;
+    return items;
   }
 
   function collectNeoDeckItems() {
@@ -389,7 +373,8 @@ const itemdb_importer = function() {
     });
   if (URLHas('books_read.phtml'))
     mountImportButton({
-      target: URLHas('moon') ? $(".content table").eq(0) : $(".content > div").eq(0),
+      // outside the vue app so it doesn't get re-rendered away
+      target: $("#books-read-app"),
       collector: handleBooks,
       withBreak: true,
     });

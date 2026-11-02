@@ -1731,8 +1731,8 @@
     "page-description-stamp-album": "Create a checklist from the stamps in your album.",
     "page-description-gourmet-club": "Create a checklist from the gourmet foods your pet has eaten.",
     "page-description-neodeck": "Create a checklist from the cards in your NeoDeck.",
-    "page-description-book-award": "Click your pet's intelligence number, then open the books read list.",
-    "page-description-booktastic": "Click your pet's intelligence number, then open the Booktastic Books read list."
+    "page-description-book-award": "Create a checklist from the books your pet has read.",
+    "page-description-booktastic": "Create a checklist from the Booktastic books your pet has read."
   },
   "ImportPage": {
     "h1": "Import Items & Build Checklists",
@@ -1762,8 +1762,8 @@
     "source-stamp-album": "Create a checklist from the stamps in your album.",
     "source-gourmet-club": "Create a checklist from the gourmet foods your pet has eaten.",
     "source-neodeck": "Create a checklist from the cards in your NeoDeck.",
-    "source-book-award": "Click your pet's intelligence number, then open the books read list.",
-    "source-booktastic": "Click your pet's intelligence number, then open the Booktastic Books read list.",
+    "source-book-award": "Create a checklist from the books your pet has read.",
+    "source-booktastic": "Create a checklist from the Booktastic books your pet has read.",
     "dynamic-eyebrow": "Dynamic Lists",
     "dynamic-title": "Checklists that update themselves",
     "dynamic-intro": "Checklists are powered by Dynamic Lists: they stay connected to an official list, so when new items are released your checklist grows with them. No need to rebuild anything.",

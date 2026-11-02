@@ -1733,8 +1733,8 @@
     "page-description-stamp-album": "Crie um checklist com os selos do seu álbum.",
     "page-description-gourmet-club": "Crie um checklist com os alimentos gourmet que seu pet já comeu.",
     "page-description-neodeck": "Crie um checklist com as cartas do seu NeoBaralho.",
-    "page-description-book-award": "Clique no valor de inteligência do seu pet e abra a lista de livros lidos.",
-    "page-description-booktastic": "Clique no valor de inteligência do seu pet e abra a lista de Livros Livrostáticos."
+    "page-description-book-award": "Crie um checklist com os livros que seu pet já leu.",
+    "page-description-booktastic": "Crie um checklist com os Livros Livrostáticos que seu pet já leu."
   },
   "ImportPage": {
     "h1": "Importe Itens e Crie Checklists",
@@ -1764,8 +1764,8 @@
     "source-stamp-album": "Crie um checklist com os selos do seu álbum.",
     "source-gourmet-club": "Crie um checklist com os alimentos gourmet que seu pet já comeu.",
     "source-neodeck": "Crie um checklist com as cartas do seu NeoBaralho.",
-    "source-book-award": "Clique no valor de inteligência do seu pet e abra a lista de livros lidos.",
-    "source-booktastic": "Clique no valor de inteligência do seu pet e abra a lista de livros lidos do Booktastic.",
+    "source-book-award": "Crie um checklist com os livros que seu pet já leu.",
+    "source-booktastic": "Crie um checklist com os Livros Livrostáticos que seu pet já leu.",
     "dynamic-eyebrow": "Listas Dinâmicas",
     "dynamic-title": "Checklists que se atualizam sozinhos",
     "dynamic-intro": "Checklists são baseados em Listas Dinâmicas: eles ficam conectados a uma lista oficial, então quando novos itens são lançados seu checklist cresce junto. Sem precisar refazer nada.",
