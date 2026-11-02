@@ -216,6 +216,7 @@ export const categoryToShopID: { [id: string]: string } = {
   'moltaran petpets': '113',
   'springy things': '116',
   'ugga shinies': '117',
+  'bookshelf decor': '118',
   'medieval food': '56',
   refreshments: '63',
 };
@@ -325,6 +326,7 @@ export const shopIDToCategory: { [id: string]: string } = {
   '114': 'moltaran books',
   '116': 'springy things',
   '117': 'ugga shinies',
+  '118': 'bookshelf decor',
 };
 
 export const isMissingInfo = (item: ItemData) => {
@@ -1391,7 +1393,20 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
     color: '#d09916',
     id: '117',
   },
+  '118': {
+    name: 'Shelf Indulgence',
+    category: 'Furniture',
+    difficulty: 'Medium',
+    color: '#8172ac',
+    id: '118',
+  },
 };
+
+// newer shopkeeper banners are only published as png
+const PNG_SHOPKEEPER_IDS = new Set(['118']);
+
+export const getShopkeeperImage = (shopId: string | number) =>
+  `https://images.neopets.com/shopkeepers/w${shopId}.${PNG_SHOPKEEPER_IDS.has(String(shopId)) ? 'png' : 'gif'}`;
 
 export const removeOutliers = (arr: number[], n: number) => {
   if (arr.length < 2) return arr;

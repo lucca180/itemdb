@@ -9,6 +9,7 @@ import {
 import { Box, Heading, Text } from '@chakra-ui/react';
 import type { ShopInfo } from '@types';
 import type { PracticeStockedItem } from '@utils/restockPractice';
+import { getShopkeeperImage } from '@utils/utils';
 
 // Replica of the Neopets shop page. Spacing, grid breakpoints and sizes mirror
 // images.neopets.com/themes/h5/common/{template,shoptemplate,shoppage}.css — keep them in sync.
@@ -146,7 +147,7 @@ export function NeoShopFrame({
         w="90%"
         h={0}
         pb="30%"
-        bgImage={`url(https://images.neopets.com/shopkeepers/w${shop.id}.gif)`}
+        bgImage={`url(${getShopkeeperImage(shop.id)})`}
         bgSize="100%"
         bgRepeat="no-repeat"
         role="button"

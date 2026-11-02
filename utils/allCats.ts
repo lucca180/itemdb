@@ -9,6 +9,7 @@ export const allCategories = [
   'baked',
   'battle magic',
   'book',
+  'bookshelf decor',
   'booktastic book',
   'brightvale armour',
   'brightvale books',

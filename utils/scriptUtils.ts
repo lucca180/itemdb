@@ -1,11 +1,11 @@
 import React from 'react';
 
 export const LATEST_VERSIONS_CODE = {
-  itemdb_script: 201,
+  itemdb_script: 202,
   itemdb_restock: 204,
-  itemdb_sdbPricer: 211,
+  itemdb_sdbPricer: 212,
   itemdb_albumHelper: 103,
-  itemdb_listImporter: 221,
+  itemdb_listImporter: 222,
   itemdb_sortGallery: 110,
 };
 

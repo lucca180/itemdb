@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppMetadata } from '@app/utils/appPage';
+import { getShopkeeperImage } from '@utils/utils';
 import {
   getRestockShopPathname,
   resolveRestockShopForMetadata,
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }: RestockHistoryPageProps): Pro
       ...metadata.openGraph,
       images: [
         {
-          url: `https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`,
+          url: getShopkeeperImage(shopInfo.id),
           width: 450,
           height: 150,
           alt: shopInfo.name,

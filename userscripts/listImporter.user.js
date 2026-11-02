@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Price Checker & List Importer
-// @version      2.2.1
+// @version      2.2.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Price check your items, filter, sort and import to your wishlists
@@ -17,7 +17,7 @@
 // @match       *://*.neopets.com/neohome/shed*
 // @match        *://*.itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://itemdb.com.br/js/script-utils.js?v2
+// @require      https://itemdb.com.br/js/script-utils.js?v3
 // @grant        unsafeWindow
 // @run-at       document-start
 // @noframes
