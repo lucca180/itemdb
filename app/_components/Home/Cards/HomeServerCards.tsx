@@ -1,11 +1,11 @@
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import { getTrendingCatLists, getTrendingLists } from '@pages/api/v1/beta/trending';
+import { getTrendingLists } from '@pages/api/v1/beta/trending';
 import { ItemService } from '@services/ItemService';
 import { loadRecentlyReleasedCombos } from '@app/server/rainbowPool';
 import { HomeCard } from '@components/Card/HomeCard';
-import { HalloweenHomeCard, HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
+import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { FeaturedListsGrid } from '@components/Home/FeaturedListsGrid';
 import { ComboTile } from '@app/[locale]/rainbow-pool/components/ComboTile';
 
@@ -37,29 +37,11 @@ async function getCachedTrendingItems() {
   return ItemService.getTrending(20).catch(() => []);
 }
 
-// The event card shows these lists, so Featured Lists skips them.
-const FESTIVAL_OF_FEARS_TAG = 'Festival of Fears';
-const FESTIVAL_OF_FEARS_YEAR = 2026;
-
 async function getCachedFeaturedLists() {
   'use cache';
   cacheTag('home-trending-lists');
   cacheLife('homeSlow');
-  return getTrendingLists(3, [FESTIVAL_OF_FEARS_TAG]).catch(() => []);
-}
-
-async function getCachedFestivalOfFearsLists() {
-  'use cache';
-  cacheTag('home-event-card-lists');
-  cacheLife('homeSlow');
-
-  try {
-    return (await getTrendingCatLists(FESTIVAL_OF_FEARS_TAG, 100)).filter(
-      (list) => new Date(list.createdAt).getFullYear() === FESTIVAL_OF_FEARS_YEAR
-    );
-  } catch {
-    return [];
-  }
+  return getTrendingLists(3).catch(() => []);
 }
 
 export function LatestItemsHomeCard() {
@@ -162,25 +144,6 @@ async function FeaturedListsHomeCardContent() {
     >
       <FeaturedListsGrid lists={lists} />
     </HorizontalHomeCard>
-  );
-}
-
-export function FestivalOfFearsHomeCard() {
-  return (
-    <Suspense fallback={<HalloweenHomeCard>{null}</HalloweenHomeCard>}>
-      <FestivalOfFearsHomeCardContent />
-    </Suspense>
-  );
-}
-
-async function FestivalOfFearsHomeCardContent() {
-  const lists = await getCachedFestivalOfFearsLists();
-  if (!lists.length) return null;
-
-  return (
-    <HalloweenHomeCard>
-      <FeaturedListsGrid lists={lists.slice(0, 3)} utmContent="halloween-lists" isSmall />
-    </HalloweenHomeCard>
   );
 }
 
