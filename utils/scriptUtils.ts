@@ -117,10 +117,9 @@ const _getScriptStatus = () => {
 
   for (const key of keys) {
     const script = (window as any)[key];
-    if (script) {
-      scriptStatus[key].status =
-        script.versionCode >= LATEST_VERSIONS_CODE[key] ? 'ok' : 'outdated';
-    }
+    if (!script) continue;
+
+    scriptStatus[key].status = script.versionCode >= LATEST_VERSIONS_CODE[key] ? 'ok' : 'outdated';
 
     // custom override
     if (key === 'itemdb_script') {

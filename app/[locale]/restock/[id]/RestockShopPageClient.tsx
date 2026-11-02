@@ -344,6 +344,10 @@ function sortItems(a: RestockShopItem, b: RestockShopItem, sortBy: string, sortD
   }
 
   if (sortBy === 'profit') {
+    // unpriced items stay on top (like the price sort) — they're usually the most valuable
+    const unpricedDiff = Number(!getNpPrice(b)) - Number(!getNpPrice(a));
+    if (unpricedDiff) return unpricedDiff;
+
     if (sortDir === 'asc')
       return (getRestockProfitV2(a) ?? Infinity) - (getRestockProfitV2(b) ?? Infinity);
     return (
