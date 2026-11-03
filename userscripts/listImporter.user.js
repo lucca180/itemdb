@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Price Checker & List Importer
-// @version      2.2.2
+// @version      2.3.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Price check your items, filter, sort and import to your wishlists
@@ -15,6 +15,7 @@
 // @match        *://*.neopets.com/quickstock.phtml*
 // @match        *://*.neopets.com/market.phtml?type=your*
 // @match       *://*.neopets.com/neohome/shed*
+// @match        *://*.neopets.com/bookshelf/archive-bookshelf.phtml*
 // @match        *://*.itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
 // @require      https://itemdb.com.br/js/script-utils.js?v3
@@ -184,6 +185,15 @@ const itemdb_importer = function() {
     };
   }
 
+  function handleArchiveBookshelf(collections){
+    return {
+      items: collectArchiveBookshelfItems(collections),
+      indexType: 'item_id',
+      source: 'bookshelf',
+      meta: { list_id: 31462 },
+    };
+  }
+
   function collectSDBItems() {
     return item_list;
   }
@@ -303,6 +313,32 @@ const itemdb_importer = function() {
     return items;
   }
 
+  function collectArchiveBookshelfItems(collections) {
+    const items = {};
+
+    collections.forEach((collection) => {
+      collection.books.forEach((book) => {
+        if (book.owned) items[book.itemInfoId] = 1;
+      });
+    });
+
+    return items;
+  }
+
+  function fetchArchiveCollections() {
+    // the page itself never sends username here, but the api returns that user's collections
+    const username = (new URL(document.location)).searchParams.get('user');
+
+    return fetch('/servicesneo/bookshelf.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ action: 'getCollections', ...(username && { username }) }),
+    })
+      .then((res) => res.json())
+      .then((res) => res.data.collections);
+  }
+
   function canImportStamps() {
     return $('.content center').eq(-1).text().includes("You have");
   }
@@ -401,6 +437,18 @@ const itemdb_importer = function() {
       where: 'before',
       withBreak: true,
     });
+
+  if (URLHas('bookshelf/archive-bookshelf.phtml'))
+    // fetched before mounting so the click can open the import tab without being blocked as a popup
+    fetchArchiveCollections()
+      .then((collections) => mountImportButton({
+        // the shelf is a unity canvas, so the button goes right above it
+        target: $('.unity-wrapper'),
+        collector: () => handleArchiveBookshelf(collections),
+        where: 'before',
+        withBreak: true,
+      }))
+      .catch((e) => console.error('itemdb List Importer: failed to load bookshelf collections', e));
 }
 
 // only runs the script if the page is fully loaded
