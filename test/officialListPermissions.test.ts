@@ -13,6 +13,7 @@ const prismaMock = vi.hoisted(() => ({
 }));
 const checkAuthMock = vi.hoisted(() => vi.fn());
 const updateItemsMock = vi.hoisted(() => vi.fn());
+const logOfficialListActionMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@utils/prisma', () => ({ default: prismaMock }));
 vi.mock('@utils/googleCloud', () => ({ CheckAuth: checkAuthMock }));
@@ -22,6 +23,9 @@ vi.mock('@services/ListService', () => ({
     updateItems: updateItemsMock,
     adminListSeoWriteData: () => ({}),
   },
+}));
+vi.mock('@services/OfficialListLogService', () => ({
+  logOfficialListAction: logOfficialListActionMock,
 }));
 
 import { canDeleteList, canEditListInfo } from '@utils/list/listPermissions';
@@ -127,6 +131,45 @@ describe('POST /api/v1/lists/[username]/[list_id]', () => {
     expect(prismaMock.userList.update).not.toHaveBeenCalled();
   });
 
+  test('item updates are logged with the item ids', async () => {
+    checkAuthMock.mockResolvedValue({ user: CURATOR });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    const res = mockRes();
+    const itemInfo = [{ internal_id: 1, item_iid: 2, amount: 3 }];
+
+    await listHandle(
+      req('POST', { username: 'curator', list_id: '10' }, { action: 'update', itemInfo }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(logOfficialListActionMock).toHaveBeenCalledWith(
+      officialList,
+      'updateItems',
+      { item_iids: [2] },
+      CURATOR
+    );
+  });
+
+  test('info changes are logged with the changed fields', async () => {
+    checkAuthMock.mockResolvedValue({ user: ADMIN });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    const res = mockRes();
+
+    await listHandle(
+      req('POST', { username: 'official', list_id: '10' }, { description: 'new' }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(logOfficialListActionMock).toHaveBeenCalledWith(
+      { internal_id: 10, official: true },
+      'updateInfo',
+      { fields: ['description'] },
+      ADMIN
+    );
+  });
+
   test('non-admins cannot set official-only fields on their own lists', async () => {
     checkAuthMock.mockResolvedValue({ user: CURATOR });
     prismaMock.userList.findUnique.mockResolvedValue(personalList);
@@ -210,6 +253,9 @@ describe('DELETE /api/v1/lists/[username]', () => {
 
   test('admins can delete official lists', async () => {
     checkAuthMock.mockResolvedValue({ user: ADMIN });
+    prismaMock.userList.findMany.mockResolvedValue([
+      { internal_id: 10, official: true, name: officialList.name },
+    ]);
     const res = mockRes();
 
     await listsHandle(req('DELETE', { username: 'curator' }, { listIds: ['10'] }), res);
@@ -217,6 +263,12 @@ describe('DELETE /api/v1/lists/[username]', () => {
     expect(res.statusCode).toBe(200);
     expect(prismaMock.userList.count).not.toHaveBeenCalled();
     expect(prismaMock.userList.deleteMany).toHaveBeenCalledOnce();
+    expect(logOfficialListActionMock).toHaveBeenCalledWith(
+      { internal_id: 10, official: true, name: officialList.name },
+      'deleteList',
+      { name: officialList.name },
+      ADMIN
+    );
   });
 });
 

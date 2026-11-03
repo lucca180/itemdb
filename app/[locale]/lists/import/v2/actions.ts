@@ -5,6 +5,7 @@ import { parseManyItemsV2Query } from '@app/api/v2/items/parse';
 import { type FindManyItemsV2Query, type FindManyItemsV2Type } from '@app/server/items/v2';
 import { ItemService } from '@services/ItemService';
 import { ListService } from '@services/ListService';
+import { logOfficialListAction } from '@services/OfficialListLogService';
 import { listMutationCacheTags } from '@utils/appCacheTags';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { buildImportListItems, importQuantity } from '@utils/list/buildImportListItems';
@@ -324,15 +325,23 @@ async function applyImport(input: ApplyListImportV2Input): Promise<ApplyListImpo
 
   if (!importData.length) throwImportError(IMPORT_ERROR.NO_ITEMS);
 
+  const itemIids = importData.map((item) => Number(item.item_iid));
+
   if (input.action === 'add') {
     await ListService.upsertItems(list.internal_id, importData, {
       addAmounts: input.quantityMode === 'sum',
     });
+    await logOfficialListAction(list, 'addItems', { source: 'import', item_iids: itemIids }, user);
   } else {
-    const itemIids = importData.map((item) => Number(item.item_iid));
     const shouldHide = input.action === 'hide' || list.dynamicType === 'fullSync';
     if (shouldHide) await ListService.hideItems(list.internal_id, itemIids);
     else await ListService.removeItems(list.internal_id, itemIids);
+    await logOfficialListAction(
+      list,
+      shouldHide ? 'hideItems' : 'removeItems',
+      { source: 'import', item_iids: itemIids },
+      user
+    );
   }
 
   const username = list.official ? 'official' : (list.user.username ?? '');

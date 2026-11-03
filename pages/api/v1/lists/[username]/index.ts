@@ -9,6 +9,7 @@ import { ListService } from '@services/ListService';
 import { userListsTag } from '@utils/appCacheTags';
 import { getRandomName } from '@utils/randomName';
 import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
+import { logOfficialListAction } from '@services/OfficialListLogService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -126,6 +127,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
+    await logOfficialListAction(list, 'createList', { name: list.name }, user);
+
     await triggerAppRevalidation({ tags: [userListsTag(username as string)] });
 
     return res.status(200).json({ success: true, message: list });
@@ -160,6 +163,14 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(403).json({ error: 'Official lists can only be deleted by admins' });
     }
 
+    // only admins reach this with official lists: grab them for the log before deleting
+    const officialLists = user.isAdmin
+      ? await prisma.userList.findMany({
+          where: { internal_id: { in: listsIds }, official: true },
+          select: { internal_id: true, official: true, name: true },
+        })
+      : [];
+
     const result = await prisma.userList.deleteMany({
       where: {
         internal_id: {
@@ -169,6 +180,10 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
         official: user.isAdmin ? undefined : false,
       },
     });
+
+    for (const list of officialLists) {
+      await logOfficialListAction(list, 'deleteList', { name: list.name }, user);
+    }
 
     await triggerAppRevalidation({ tags: [userListsTag(username as string)] });
 
