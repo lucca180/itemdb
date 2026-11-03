@@ -25,13 +25,18 @@ import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
 import { useTranslations } from 'next-intl';
 import { useLists } from '../../utils/useLists';
 import MainLink from '@components/Utils/MainLink';
-import { canEditListInfo } from '@utils/list/listPermissions';
+import { canDeleteList, canEditListInfo } from '@utils/list/listPermissions';
+import DeleteListModal from '@components/Modal/DeleteListModal';
+import { useRouter } from '@i18n/navigation';
+import { useToast } from '@utils/theme/toast';
 
 export type CreateListModalProps = {
   list?: UserList;
   isOpen: boolean;
   onClose: () => void;
   refresh?: () => void;
+  /** Opened from the list's own page: deleting it redirects to the owner's profile */
+  isListPage?: boolean;
 };
 
 type EditableList = Partial<
@@ -86,10 +91,16 @@ const CreateListModal = (props: CreateListModalProps) => {
   const [list, setList] = useState<EditableList>(props.list ?? defaultList);
   const { revalidate } = useLists();
   const [colorPalette, setColorPalette] = useState<string[]>(defaultColors);
+  const [isDeleteOpen, setDeleteOpen] = useState<boolean>(false);
+  const router = useRouter();
+  const toast = useToast();
   // official lists: curators see a notice instead of the form (only admins edit the list info)
   const isLocked =
     !!props.list &&
     !canEditListInfo({ official: props.list.official, ownerId: props.list.owner.id }, user);
+  const canDelete =
+    !!props.list &&
+    canDeleteList({ official: props.list.official, ownerId: props.list.owner.id }, user);
 
   useEffect(() => {
     if (!isOpen || !user?.isAdmin || !props.list?.internal_id) return;
@@ -175,6 +186,24 @@ const CreateListModal = (props: CreateListModalProps) => {
     setError(false);
     setLoading(false);
     onClose();
+  };
+
+  const handleDeleted = () => {
+    if (!props.list) return;
+
+    onClose();
+
+    if (props.isListPage) {
+      router.push(`/lists/${props.list.owner.username}`);
+      return;
+    }
+
+    toast({
+      id: 'list-deleted',
+      status: 'success',
+      title: t('Lists.list-deleted', { name: props.list.name }),
+    });
+    props.refresh?.();
   };
 
   const handleChange = (
@@ -613,6 +642,16 @@ const CreateListModal = (props: CreateListModalProps) => {
               )}
               {!isLoading && !error && !isLocked && (
                 <>
+                  {canDelete && (
+                    <Button
+                      variant="ghost"
+                      colorPalette="red"
+                      mr="auto"
+                      onClick={() => setDeleteOpen(true)}
+                    >
+                      {t('General.delete')}
+                    </Button>
+                  )}
                   <Button variant="ghost" onClick={handleCancel} mr={3}>
                     {t('General.cancel')}
                   </Button>
@@ -625,6 +664,16 @@ const CreateListModal = (props: CreateListModalProps) => {
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>
+      {isDeleteOpen && props.list && (
+        <DeleteListModal
+          isOpen={isDeleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          selectedLists={[props.list.internal_id]}
+          username={props.list.owner.username ?? ''}
+          listName={props.list.name}
+          refresh={handleDeleted}
+        />
+      )}
     </Dialog.Root>
   );
 };

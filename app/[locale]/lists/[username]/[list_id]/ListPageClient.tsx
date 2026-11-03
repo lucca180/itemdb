@@ -212,6 +212,7 @@ export function ListPageClient({
           isOpen={state.openCreateModal}
           list={state.list}
           onClose={() => state.setOpenCreateModal(false)}
+          isListPage
         />
       )}
       {!!state.selectionAction && (
