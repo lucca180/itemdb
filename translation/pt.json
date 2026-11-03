@@ -433,6 +433,7 @@
     "action": "Ação",
     "book-award": "Prêmio de Leitura",
     "booktastic-books-award": "Clube de Livros Livrostáticos",
+    "archived-bookshelf": "Archived Bookshelf",
     "checklist": "Checklists",
     "closet": "Armário",
     "error": "Erro",
@@ -1736,7 +1737,8 @@
     "page-description-gourmet-club": "Crie um checklist com os alimentos gourmet que seu pet já comeu.",
     "page-description-neodeck": "Crie um checklist com as cartas do seu NeoBaralho.",
     "page-description-book-award": "Crie um checklist com os livros que seu pet já leu.",
-    "page-description-booktastic": "Crie um checklist com os Livros Livrostáticos que seu pet já leu."
+    "page-description-booktastic": "Crie um checklist com os Livros Livrostáticos que seu pet já leu.",
+    "page-description-archived-bookshelf": "Crie um checklist com os livros da sua Archived Bookshelf."
   },
   "ImportPage": {
     "h1": "Importe Itens e Crie Checklists",
@@ -1768,6 +1770,7 @@
     "source-neodeck": "Crie um checklist com as cartas do seu NeoBaralho.",
     "source-book-award": "Crie um checklist com os livros que seu pet já leu.",
     "source-booktastic": "Crie um checklist com os Livros Livrostáticos que seu pet já leu.",
+    "source-archived-bookshelf": "Crie um checklist com os livros da sua Archived Bookshelf.",
     "dynamic-eyebrow": "Listas Dinâmicas",
     "dynamic-title": "Checklists que se atualizam sozinhos",
     "dynamic-intro": "Checklists são baseados em Listas Dinâmicas: eles ficam conectados a uma lista oficial, então quando novos itens são lançados seu checklist cresce junto. Sem precisar refazer nada.",
