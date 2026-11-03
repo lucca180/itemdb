@@ -7,7 +7,7 @@ import { SeriesType } from '@prisma/generated/client';
 import { UTCDate } from '@date-fns/utc';
 import { slugify } from '@utils/utils';
 import { ListService, type PutListItemInput } from '@services/ListService';
-import { listMutationCacheTags } from '@utils/appCacheTags';
+import { listMutationCacheTags, userListsTag } from '@utils/appCacheTags';
 import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
 import { canEditListInfo } from '@utils/list/listPermissions';
 import { logOfficialListAction } from '@services/OfficialListLogService';
@@ -45,10 +45,12 @@ async function revalidateListCaches(listId: number, extraListIds: number[] = [])
 
     if (!list) continue;
 
-    const username = list.official ? 'official' : (list.user.username ?? '');
+    const ownerUsername = list.user.username ?? '';
+    const username = list.official ? 'official' : ownerUsername;
 
     await triggerAppRevalidation({
-      tags: listMutationCacheTags(username, id),
+      // official lists are tagged under 'official', but their owner's profile also shows them
+      tags: [...new Set([...listMutationCacheTags(username, id), userListsTag(ownerUsername)])],
     });
   }
 }

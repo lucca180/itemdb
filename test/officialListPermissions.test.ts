@@ -29,6 +29,7 @@ vi.mock('@services/OfficialListLogService', () => ({
 }));
 
 import { canDeleteList, canEditListInfo } from '@utils/list/listPermissions';
+import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
 import listHandle from '../pages/api/v1/lists/[username]/[list_id]/index';
 import listsHandle from '../pages/api/v1/lists/[username]/index';
 import dynamicHandle from '../pages/api/v1/lists/[username]/[list_id]/dynamic';
@@ -168,6 +169,22 @@ describe('POST /api/v1/lists/[username]/[list_id]', () => {
       { fields: ['description'] },
       ADMIN
     );
+  });
+
+  test("info changes on an official list revalidate its owner's profile lists", async () => {
+    checkAuthMock.mockResolvedValue({ user: ADMIN });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    const res = mockRes();
+
+    await listHandle(
+      req('POST', { username: 'official', list_id: '10' }, { description: 'new' }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const { tags } = vi.mocked(triggerAppRevalidation).mock.calls[0][0];
+    expect(tags).toContain('user-lists-official');
+    expect(tags).toContain(`user-lists-${CURATOR.username}`);
   });
 
   test('non-admins cannot set official-only fields on their own lists', async () => {
