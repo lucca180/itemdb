@@ -569,6 +569,8 @@ type ContributeWallData = {
   /** Goals after the caller's multiplier, so the UI can show progress. */
   tradeGoal?: number;
   voteGoal?: number;
+  /** Site only: the contribute queues are large enough to also gate the auction relisting. */
+  gatesRelisting?: boolean;
 };
 
 type ItemMMEData = {

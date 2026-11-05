@@ -1,9 +1,8 @@
-import { Prisma } from '@prisma/generated/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import { User } from '../../../../types';
-import { subDays } from 'date-fns';
+import { countTradeQueue } from '@services/feedback/contributeQueues';
 
 export type BetaStats = {
   itemToProcess: number;
@@ -58,20 +57,6 @@ export async function getBetaStats(sessionOverride?: string): Promise<BetaStats>
   });
 
   const itemsTotal = prisma.items.count();
-  const DATE_LIMIT = subDays(new Date(), 30);
-
-  const tradeQueueRaw = prisma.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
-    SELECT COUNT(DISTINCT hash) as "count" FROM trades t where processed = 0 and EXISTS (
-      SELECT 1 
-      FROM trades t2
-      LEFT JOIN tradeitems ti ON t2.trade_id = ti.trade_id
-      LEFT JOIN items i ON i.internal_id = ti.item_iid
-      LEFT JOIN itemprices p ON p.item_iid = i.internal_id AND p.isLatest = 1 AND p.addedAt > t.addedAt
-      WHERE t.trade_id = t2.trade_id and t.addedAt >= ${DATE_LIMIT}
-      AND p.price IS NULL
-      )`
-  );
 
   const feedbackVoting = prisma.feedbacks.count({
     where: {
@@ -98,7 +83,7 @@ export async function getBetaStats(sessionOverride?: string): Promise<BetaStats>
     itemProcess.catch(() => 0),
     itemsMissingInfo.catch(() => 0),
     itemsTotal.catch(() => 0),
-    tradeQueueRaw.catch(() => [{ count: 0 }]),
+    countTradeQueue().catch(() => 0),
     feedbackVoting.catch(() => 0),
   ]);
 
@@ -106,7 +91,7 @@ export async function getBetaStats(sessionOverride?: string): Promise<BetaStats>
     itemToProcess: itemToProcessCount,
     itemsMissingInfo: itemsMissingInfoCount,
     itemsTotal: itemsTotalCount,
-    tradeQueue: Number(tradeQueueCount[0].count.toString()),
+    tradeQueue: tradeQueueCount,
     feedbackVoting: feedbackVotingCount,
   };
 }

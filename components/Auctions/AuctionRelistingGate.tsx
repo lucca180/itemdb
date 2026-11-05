@@ -47,8 +47,10 @@ export function useAuctionRelistingGate(wall: ContributeWallData | null) {
 
   // A wall with nothing left to do (e.g. empty queues) can't be passed, so it doesn't gate.
   const canContribute = !!wall && (wall.needVotes > 0 || wall.needTrades > 0);
+  // Only ask for help when the queues are really large.
+  const shouldGate = canContribute && !!wall.gatesRelisting;
 
-  return { gate: canContribute && !dismissed ? wall : null, dismiss };
+  return { gate: shouldGate && !dismissed ? wall : null, dismiss };
 }
 
 type AuctionRelistingGateProps = {
