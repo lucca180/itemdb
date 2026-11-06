@@ -47,7 +47,12 @@ const CreatePriceModal = (props: CreatePriceModalModalProps) => {
         setLoading(false);
       }
     } catch (err) {
-      setMsg(t('General.something-went-wrong-please-try-again-later'));
+      const serverError = axios.isAxiosError(err) && err.response?.status === 400;
+      setMsg(
+        serverError
+          ? err.response?.data?.error
+          : t('General.something-went-wrong-please-try-again-later')
+      );
       setLoading(false);
     }
   };

@@ -23,6 +23,7 @@ import { LogService } from '@services/ActionLogService';
 import {
   canAutoApprove,
   getAutoApproveOwnerNeed,
+  getPriceDayRange,
   handleInflation,
   PRICING,
   shouldUpdatePrice,
@@ -150,6 +151,84 @@ describe('process price z-score rules', () => {
     expect(result.msg).toBe('inflation');
     expect(result.isManualCheck).toBe(true);
     expect(result.newPriceData.noInflation_id).toBe(42);
+  });
+});
+
+describe('one price per day hard stop', () => {
+  // real case (item 7953): different days in UTC, both on Nov 5 in Neopian time
+  const addedAt = new Date('2026-11-05T11:12:00.000Z');
+  const sameNeopianDay = new Date('2026-11-06T00:50:00.000Z');
+
+  const entry = (value: number, date: Date, overrides: Record<string, unknown> = {}) => ({
+    addedAt: date,
+    price: price(value),
+    noInflation_id: null,
+    internal_id: date.getTime(),
+    manual_check: null,
+    ...overrides,
+  });
+
+  const zScoreHistory = (overrides: Record<string, unknown> = {}) =>
+    [
+      entry(230_000, addedAt, { noInflation_id: 7, ...overrides }),
+      entry(100_000, new Date('2026-10-20T12:00:00.000Z')),
+      entry(110_000, new Date('2026-10-10T12:00:00.000Z')),
+      entry(105_000, new Date('2026-10-01T12:00:00.000Z')),
+      entry(95_000, new Date('2026-09-20T12:00:00.000Z')),
+    ] as any;
+
+  const legacyHistory = (overrides: Record<string, unknown> = {}) =>
+    [entry(230_000, addedAt, overrides)] as any;
+
+  test.each([
+    ['z-score + pending check', zScoreHistory({ manual_check: 'inflation' }), false],
+    ['z-score + force', zScoreHistory(), true],
+    ['legacy + pending check', legacyHistory({ manual_check: 'inflation' }), false],
+    ['legacy + force', legacyHistory(), true],
+  ])('blocks a second price on the same Neopian day: %s', (_, priceHistory, forceMode) => {
+    expect(
+      shouldUpdatePrice({
+        latestDate: sameNeopianDay,
+        priceHistory,
+        priceValue: 96_000,
+        forceMode,
+      })
+    ).toEqual({ update: false, reason: 'same_day_update' });
+  });
+
+  test('allows force mode when the UTC day matches but the Neopian day does not', () => {
+    // Jul 20 23:02 -> Jul 21 15:00 in Neopian time
+    const first = new Date('2026-07-21T06:02:00.000Z');
+    const second = new Date('2026-07-21T22:00:00.000Z');
+
+    const priceHistory = [
+      entry(650_000, first),
+      entry(600_000, new Date('2026-07-10T12:00:00.000Z')),
+      entry(610_000, new Date('2026-07-01T12:00:00.000Z')),
+      entry(590_000, new Date('2026-06-20T12:00:00.000Z')),
+      entry(620_000, new Date('2026-06-10T12:00:00.000Z')),
+    ] as any;
+
+    expect(
+      shouldUpdatePrice({
+        latestDate: second,
+        priceHistory,
+        priceValue: 700_000,
+        forceMode: true,
+      }).update
+    ).toBe(true);
+  });
+
+  test.each([
+    // PST (UTC-8), the day after the DST change
+    ['2026-11-05T11:12:00.000Z', '2026-11-05T08:00:00.000Z', '2026-11-06T07:59:59.999Z'],
+    // PDT (UTC-7)
+    ['2026-07-21T06:02:00.000Z', '2026-07-20T07:00:00.000Z', '2026-07-21T06:59:59.999Z'],
+  ])('getPriceDayRange(%s) covers the whole Neopian day', (date, gte, lte) => {
+    const range = getPriceDayRange(new Date(date));
+
+    expect(range.gte.toISOString()).toBe(gte);
+    expect(range.lte.toISOString()).toBe(lte);
   });
 });
 
