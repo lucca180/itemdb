@@ -46,9 +46,11 @@ vi.mock('@services/ActionLogService', () => ({
 import { GET as listGET } from '@app/api/admin/price-markers/route';
 import { POST as createPOST } from '@app/api/admin/price-markers/create/route';
 import {
+  GET as getGET,
   PATCH as patchPATCH,
   DELETE as deleteDELETE,
 } from '@app/api/admin/price-markers/[id]/route';
+import { MAX_MARKER_ITEM_IDS } from '@app/api/admin/price-markers/priceMarkersShared';
 
 const markerRow = (overrides: Record<string, unknown> = {}) => ({
   internal_id: 10,
@@ -101,6 +103,56 @@ describe('price-markers auth', () => {
     const res = await createPOST(jsonRequest({}));
     expect(res.status).toBe(401);
   });
+
+  test('rejects non-admins on GET by id', async () => {
+    getServerCurrentUserMock.mockResolvedValue({ user: { id: 'u', isAdmin: false } });
+    const res = await getGET(jsonRequest({}, 'POST'), idContext('10'));
+    expect(res.status).toBe(401);
+    expect(prismaMock.manualPriceMarker.findUnique).not.toHaveBeenCalled();
+  });
+});
+
+describe('read manual markers', () => {
+  test('lists markers with an item count and no item rows', async () => {
+    const { items: _items, ...row } = markerRow();
+    prismaMock.manualPriceMarker.findMany.mockResolvedValue([{ ...row, _count: { items: 2 } }]);
+
+    const res = await listGET();
+
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.count).toBe(1);
+    expect(data.markers[0].itemCount).toBe(2);
+    expect(data.markers[0]).not.toHaveProperty('items');
+    expect(prismaMock.manualPriceMarker.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ include: { _count: { select: { items: true } } } })
+    );
+  });
+
+  test('returns a single marker with its items', async () => {
+    prismaMock.manualPriceMarker.findUnique.mockResolvedValue(markerRow());
+
+    const res = await getGET(new Request('http://localhost'), idContext('10'));
+
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.marker.internal_id).toBe(10);
+    expect(data.marker.items.map((item: { internal_id: number }) => item.internal_id)).toEqual([
+      101, 102,
+    ]);
+  });
+
+  test('returns 404 when the marker does not exist', async () => {
+    prismaMock.manualPriceMarker.findUnique.mockResolvedValue(null);
+    const res = await getGET(new Request('http://localhost'), idContext('999'));
+    expect(res.status).toBe(404);
+  });
+
+  test('returns 400 for an invalid marker id', async () => {
+    const res = await getGET(new Request('http://localhost'), idContext('abc'));
+    expect(res.status).toBe(400);
+    expect(prismaMock.manualPriceMarker.findUnique).not.toHaveBeenCalled();
+  });
 });
 
 describe('create manual marker', () => {
@@ -131,9 +183,35 @@ describe('create manual marker', () => {
       '10',
       'admin-1'
     );
-    // markers + root tag per affected item
+    // Only the markers section: the root tag would invalidate the whole item page cache.
+    expect(revalidateTagMock).toHaveBeenCalledTimes(2);
     expect(revalidateTagMock).toHaveBeenCalledWith('item-101-markers', 'max');
     expect(revalidateTagMock).toHaveBeenCalledWith('item-102-markers', 'max');
+  });
+
+  test('accepts the maximum number of items', async () => {
+    const itemIds = Array.from({ length: MAX_MARKER_ITEM_IDS }, (_, index) => index + 1);
+    prismaMock.manualPriceMarker.create.mockResolvedValue({ internal_id: 10 });
+    prismaMock.manualPriceMarkerItem.createMany.mockResolvedValue({ count: itemIds.length });
+    prismaMock.manualPriceMarker.findUniqueOrThrow.mockResolvedValue(markerRow());
+
+    const res = await createPOST(
+      jsonRequest({ title: 'Large', color: '#123456', startAt: '2024-03-01', itemIds })
+    );
+
+    expect(MAX_MARKER_ITEM_IDS).toBe(5000);
+    expect(res.status).toBe(200);
+  });
+
+  test('rejects more items than the maximum', async () => {
+    const itemIds = Array.from({ length: MAX_MARKER_ITEM_IDS + 1 }, (_, index) => index + 1);
+
+    const res = await createPOST(
+      jsonRequest({ title: 'Too large', color: '#123456', startAt: '2024-03-01', itemIds })
+    );
+
+    expect(res.status).toBe(400);
+    expect(prismaMock.manualPriceMarker.create).not.toHaveBeenCalled();
   });
 
   test('rejects when badgeText is empty and title/description are missing', async () => {

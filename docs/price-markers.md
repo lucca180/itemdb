@@ -82,6 +82,13 @@ through as-is.
 - `endAt` before `startAt` is rejected.
 - At least one of `badgeText`, `title` or `description` is required.
 - `badgeText`: `null` = automatic translated badge, `""` = no badge, other = custom text.
+- A marker links at most `MAX_MARKER_ITEM_IDS` (5000) items.
+
+### Admin API
+
+`GET /api/admin/price-markers` returns an `itemCount` per marker, without item
+rows. `GET /api/admin/price-markers/[id]` returns the marker with its items, and
+the admin page calls it when editing starts.
 
 ### Visibility rules
 
@@ -137,5 +144,6 @@ The item page loads markers through `loadItemPriceMarkers`
 
 - "Today" is evaluated when the cache entry is built, so a series whose start
   or end day just arrived appears only after the entry revalidates (up to ~10 min).
-- Manual marker create/update/delete revalidates the affected items' tags
-  immediately.
+- Manual marker create/update/delete revalidates only each affected item's
+  `markers` tag. It skips the item's root tag, which would also invalidate the
+  other cached sections of the item page.

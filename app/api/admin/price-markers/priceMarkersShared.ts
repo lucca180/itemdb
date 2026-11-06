@@ -1,6 +1,6 @@
 import { ItemData } from '@types';
 
-export const MAX_MARKER_ITEM_IDS = 500;
+export const MAX_MARKER_ITEM_IDS = 5000;
 export const MAX_MARKER_BADGE_LENGTH = 191;
 export const MAX_MARKER_TITLE_LENGTH = 191;
 /** Client-side only guidance; the DB column is `@db.Text` (no app-level cap). */
@@ -27,6 +27,11 @@ export type ManualMarkerAdminDTO = {
   createdAt: string;
   updatedAt: string;
   items: ManualMarkerItemRef[];
+};
+
+/** Listing row: only the item count, since a marker can link thousands of items. */
+export type ManualMarkerListDTO = Omit<ManualMarkerAdminDTO, 'items'> & {
+  itemCount: number;
 };
 
 export type ManualMarkerFields = {

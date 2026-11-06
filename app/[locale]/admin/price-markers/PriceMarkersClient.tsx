@@ -40,11 +40,13 @@ import {
   MAX_MARKER_DESCRIPTION_LENGTH,
   MAX_MARKER_TITLE_LENGTH,
   type ManualMarkerAdminDTO,
+  type ManualMarkerListDTO,
   type ManualMarkerSourceResponse,
 } from '@app/api/admin/price-markers/priceMarkersShared';
 
 type DropPoolsResponse = { pools: PriceContextDropPool[]; count: number };
-type MarkersResponse = { markers: ManualMarkerAdminDTO[]; count: number };
+type MarkersResponse = { markers: ManualMarkerListDTO[]; count: number };
+type MarkerResponse = { marker: ManualMarkerAdminDTO };
 
 const DEFAULT_COLOR = '#8f5573';
 
@@ -98,10 +100,11 @@ export function PriceMarkersClient() {
   const [isLoadingSource, setIsLoadingSource] = useState(false);
   const [isLoadingPools, setIsLoadingPools] = useState(false);
 
-  const [markers, setMarkers] = useState<ManualMarkerAdminDTO[]>([]);
+  const [markers, setMarkers] = useState<ManualMarkerListDTO[]>([]);
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(false);
+  const [loadingEditId, setLoadingEditId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<ManualMarkerAdminDTO | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ManualMarkerListDTO | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const selectedItems = useMemo(
@@ -268,31 +271,46 @@ export function PriceMarkersClient() {
     clearItems();
   };
 
-  const startEditing = (marker: ManualMarkerAdminDTO) => {
-    setEditingId(marker.internal_id);
-    setForm({
-      title: marker.title ?? '',
-      badgeText: marker.badgeText ?? '',
-      badgeAuto: marker.badgeText === null,
-      description: marker.description ?? '',
-      color: marker.color,
-      startAt: marker.startAt.slice(0, 10),
-      endAt: marker.endAt ? marker.endAt.slice(0, 10) : '',
-      isPoint: marker.isPoint,
-    });
-    setItemsById(
-      Object.fromEntries(
-        marker.items.map((item) => [
-          item.internal_id,
-          {
-            internal_id: item.internal_id,
-            name: item.name,
-            image: item.image,
-          } as ItemData,
-        ])
-      )
-    );
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  const startEditing = async (markerId: number) => {
+    setLoadingEditId(markerId);
+    try {
+      const res = await axios.get<MarkerResponse>(`/api/admin/price-markers/${markerId}`);
+      const { marker } = res.data;
+      setEditingId(marker.internal_id);
+      setForm({
+        title: marker.title ?? '',
+        badgeText: marker.badgeText ?? '',
+        badgeAuto: marker.badgeText === null,
+        description: marker.description ?? '',
+        color: marker.color,
+        startAt: marker.startAt.slice(0, 10),
+        endAt: marker.endAt ? marker.endAt.slice(0, 10) : '',
+        isPoint: marker.isPoint,
+      });
+      setItemsById(
+        Object.fromEntries(
+          marker.items.map((item) => [
+            item.internal_id,
+            {
+              internal_id: item.internal_id,
+              name: item.name,
+              image: item.image,
+            } as ItemData,
+          ])
+        )
+      );
+      if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      toast({
+        id: 'price-markers-edit-error',
+        title: 'Unable to load marker.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoadingEditId(null);
+    }
   };
 
   const hasLabel =
@@ -348,7 +366,7 @@ export function PriceMarkersClient() {
     }
   };
 
-  const deleteMarker = async (marker: ManualMarkerAdminDTO) => {
+  const deleteMarker = async (marker: ManualMarkerListDTO) => {
     setIsDeleting(true);
     const prom = axios.delete(`/api/admin/price-markers/${marker.internal_id}`);
     toast.promise(prom, {
@@ -743,7 +761,9 @@ export function PriceMarkersClient() {
                   key={marker.internal_id}
                   marker={marker}
                   isEditing={editingId === marker.internal_id}
-                  onEdit={() => startEditing(marker)}
+                  isLoadingEdit={loadingEditId === marker.internal_id}
+                  isEditDisabled={loadingEditId !== null}
+                  onEdit={() => void startEditing(marker.internal_id)}
                   onDelete={() => setDeleteTarget(marker)}
                 />
               ))}
@@ -886,11 +906,15 @@ function SelectedItemRow({ item, onRemove }: { item: ItemData; onRemove: (id: nu
 function ExistingMarkerRow({
   marker,
   isEditing,
+  isLoadingEdit,
+  isEditDisabled,
   onEdit,
   onDelete,
 }: {
-  marker: ManualMarkerAdminDTO;
+  marker: ManualMarkerListDTO;
   isEditing: boolean;
+  isLoadingEdit: boolean;
+  isEditDisabled: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -935,8 +959,8 @@ function ExistingMarkerRow({
           </Flex>
           <Text fontSize="xs" color="gray.400" mt={1}>
             {marker.startAt.slice(0, 10)}
-            {marker.endAt ? ` → ${marker.endAt.slice(0, 10)}` : ''} · {marker.items.length} item
-            {marker.items.length === 1 ? '' : 's'}
+            {marker.endAt ? ` → ${marker.endAt.slice(0, 10)}` : ''} · {marker.itemCount} item
+            {marker.itemCount === 1 ? '' : 's'}
           </Text>
           {!!marker.description &&
             (marker.badgeText === null || !!marker.badgeText || !!marker.title) && (
@@ -946,7 +970,14 @@ function ExistingMarkerRow({
             )}
         </Box>
         <Flex gap={1} flexShrink={0}>
-          <Button size="xs" variant="ghost" colorPalette="blue" onClick={onEdit}>
+          <Button
+            size="xs"
+            variant="ghost"
+            colorPalette="blue"
+            onClick={onEdit}
+            loading={isLoadingEdit}
+            disabled={isEditDisabled}
+          >
             <LuPencil />
           </Button>
           <Button size="xs" variant="ghost" colorPalette="red" onClick={onDelete}>
@@ -964,10 +995,10 @@ function DeleteMarkerDialog({
   onClose,
   onConfirm,
 }: {
-  marker: ManualMarkerAdminDTO | null;
+  marker: ManualMarkerListDTO | null;
   isDeleting: boolean;
   onClose: () => void;
-  onConfirm: (marker: ManualMarkerAdminDTO) => void;
+  onConfirm: (marker: ManualMarkerListDTO) => void;
 }) {
   return (
     <Dialog.Root
@@ -995,8 +1026,8 @@ function DeleteMarkerDialog({
                   {marker
                     ? ` “${marker.title || marker.badgeText || marker.description || `#${marker.internal_id}`}”`
                     : ''}{' '}
-                  and removes it from {marker?.items.length ?? 0} item
-                  {marker?.items.length === 1 ? '' : 's'}.
+                  and removes it from {marker?.itemCount ?? 0} item
+                  {marker?.itemCount === 1 ? '' : 's'}.
                 </Text>
                 <Text color="gray.400">This action cannot be undone.</Text>
               </Stack>
