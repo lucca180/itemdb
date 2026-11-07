@@ -302,6 +302,7 @@ export function HubResultsGrid({
               render={(item) => (
                 <IconButton
                   variant={{ base: 'ghost', _selected: 'outline' }}
+                  _selected={{ borderColor: 'whiteAlpha.500' }}
                   aria-label={t('PetStyles.page-n', { n: item.value })}
                 >
                   {item.value}
