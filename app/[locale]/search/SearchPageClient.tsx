@@ -25,6 +25,7 @@ import { SearchFilterModalProps } from '@components/Search/SearchFiltersModal';
 import { BsFilter } from 'react-icons/bs';
 import { SelectItemsCheckbox } from '@components/Input/SelectItemsCheckbox';
 import ListSelect from '@components/UserLists/ListSelect';
+import { isDynamicActionDisabled } from '@utils/utils';
 import { countActiveFilters, defaultFilters, getFiltersDiff } from '@utils/parseFilters';
 import { setSearchListScope } from '@components/Search/searchListScope';
 import { CreateDynamicListButton } from '@components/DynamicLists/CreateButton';
@@ -446,6 +447,7 @@ export function SearchPageClient(props: SearchPageClientProps) {
                 size="sm"
                 createNew
                 onChange={(list) => handleAddItemToList(list.internal_id)}
+                isItemDisabled={(list) => isDynamicActionDisabled('add', list.dynamicType)}
                 trackEvent="search-add-to-list"
                 loginSource="search"
                 loginTrigger="search-add-to-list"

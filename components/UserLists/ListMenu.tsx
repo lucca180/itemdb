@@ -1,4 +1,4 @@
-import { Menu, Badge, Tooltip, Portal, Text, Input, Box, Icon } from '@chakra-ui/react';
+import { Menu, Badge, Portal, Text, Input, Box, Icon } from '@chakra-ui/react';
 import { BsBoxArrowInRight } from 'react-icons/bs';
 import type { ReactNode, RefObject } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -9,7 +9,9 @@ import DynamicIcon from '@assets/icons/dynamic.png';
 import NextImage from 'next/image';
 import { useLists } from '@utils/useLists';
 import { useTranslations } from 'next-intl';
+import { useDynamicListLabels } from '@utils/list/dynamicListLabels';
 import { ViewportList } from 'react-viewport-list';
+import Tooltip from '@components/Utils/Tooltip';
 
 type Props = {
   /** Menu trigger element (rendered through `Menu.Trigger asChild`). */
@@ -35,6 +37,7 @@ const LIST_SEARCH_THRESHOLD = 8;
 /** Shared lists menu: search (above a threshold), virtualized list, create-new and login states. */
 const ListMenu = (props: Props) => {
   const t = useTranslations();
+  const { getFullLabel } = useDynamicListLabels();
   const { user, authLoading, openLogin } = useAuth();
   const { lists, isLoading } = useLists();
   const [listSearch, setListSearch] = useState('');
@@ -103,56 +106,50 @@ const ListMenu = (props: Props) => {
                   initialPrerender={8}
                   overscan={8}
                 >
-                  {(list) => (
-                    <Menu.Item
-                      key={list.internal_id}
-                      value={String(list.internal_id)}
-                      onClick={() => {
-                        if (props.trackEvent)
-                          window.umami?.track(props.trackEvent, { label: 'select' });
-                        props.onSelect(list);
-                      }}
-                      disabled={props.isItemDisabled?.(list)}
-                      _hover={{ bg: 'whiteAlpha.100' }}
-                      cursor="pointer"
-                    >
-                      <Text
-                        as="span"
-                        flex="1"
-                        maxW={'220px'}
-                        minW={0}
-                        overflow="hidden"
-                        textOverflow="ellipsis"
-                        whiteSpace="nowrap"
-                        title={list.name}
+                  {(list) => {
+                    const isDisabled = !!props.isItemDisabled?.(list);
+
+                    return (
+                      <Menu.Item
+                        key={list.internal_id}
+                        value={String(list.internal_id)}
+                        onClick={() => {
+                          // Menu.Item still calls onClick when disabled
+                          if (isDisabled) return;
+                          if (props.trackEvent)
+                            window.umami?.track(props.trackEvent, { label: 'select' });
+                          props.onSelect(list);
+                        }}
+                        disabled={isDisabled}
+                        _hover={isDisabled ? undefined : { bg: 'whiteAlpha.100' }}
+                        cursor={isDisabled ? 'not-allowed' : 'pointer'}
                       >
-                        {list.name}
-                      </Text>
-                      {list.purpose !== 'none' && !list.official && (
-                        <Tooltip.Root positioning={{ placement: 'top' }}>
-                          <Tooltip.Trigger asChild>
+                        <Text
+                          as="span"
+                          flex="1"
+                          maxW={'220px'}
+                          minW={0}
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                          whiteSpace="nowrap"
+                          title={list.name}
+                        >
+                          {list.name}
+                        </Text>
+                        {list.purpose !== 'none' && !list.official && (
+                          <Tooltip label={list.purpose}>
                             <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-                          </Tooltip.Trigger>
-                          <Tooltip.Positioner>
-                            <Tooltip.Content fontSize="sm">{list.purpose}</Tooltip.Content>
-                          </Tooltip.Positioner>
-                        </Tooltip.Root>
-                      )}
-                      {list.official && (
-                        <Tooltip.Root positioning={{ placement: 'top' }}>
-                          <Tooltip.Trigger asChild>
+                          </Tooltip>
+                        )}
+                        {list.official && (
+                          <Tooltip label="official">
                             <Badge ml={1} colorPalette="blue">
                               ✓
                             </Badge>
-                          </Tooltip.Trigger>
-                          <Tooltip.Positioner>
-                            <Tooltip.Content fontSize="sm">official</Tooltip.Content>
-                          </Tooltip.Positioner>
-                        </Tooltip.Root>
-                      )}
-                      {list.dynamicType && (
-                        <Tooltip.Root positioning={{ placement: 'top' }}>
-                          <Tooltip.Trigger asChild>
+                          </Tooltip>
+                        )}
+                        {list.dynamicType && (
+                          <Tooltip label={getFullLabel(list)}>
                             <Badge
                               ml={1}
                               colorPalette="orange"
@@ -167,16 +164,11 @@ const ListMenu = (props: Props) => {
                                 style={{ display: 'inline' }}
                               />
                             </Badge>
-                          </Tooltip.Trigger>
-                          <Tooltip.Positioner>
-                            <Tooltip.Content fontSize="sm">
-                              {list.dynamicType} {t('General.dynamic-list')}
-                            </Tooltip.Content>
-                          </Tooltip.Positioner>
-                        </Tooltip.Root>
-                      )}
-                    </Menu.Item>
-                  )}
+                          </Tooltip>
+                        )}
+                      </Menu.Item>
+                    );
+                  }}
                 </ViewportList>
                 {filteredLists.length === 0 && (
                   <Menu.Item value="no-lists" disabled justifyContent="center">

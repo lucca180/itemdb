@@ -32,7 +32,7 @@ import {
 } from '@utils/list/resolveImportItems';
 import prisma from '@utils/prisma';
 import type { ItemV2For } from '@types';
-import { dynamicListCan } from '@utils/utils';
+import { dynamicListCan, isFullSyncList } from '@utils/utils';
 import {
   IMPORT_ERROR,
   IMPORT_V2_PAGE_SIZE,
@@ -333,7 +333,7 @@ async function applyImport(input: ApplyListImportV2Input): Promise<ApplyListImpo
     });
     await logOfficialListAction(list, 'addItems', { source: 'import', item_iids: itemIids }, user);
   } else {
-    const shouldHide = input.action === 'hide' || list.dynamicType === 'fullSync';
+    const shouldHide = input.action === 'hide' || isFullSyncList(list.dynamicType);
     if (shouldHide) await ListService.hideItems(list.internal_id, itemIids);
     else await ListService.removeItems(list.internal_id, itemIids);
     await logOfficialListAction(

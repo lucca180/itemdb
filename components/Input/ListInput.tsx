@@ -7,8 +7,10 @@ import {
   Item,
 } from '@choc-ui/chakra-autocomplete';
 import axios from 'axios';
-import { Badge, Box, Flex, Image, Text, Tooltip } from '@chakra-ui/react';
+import { Badge, Box, Flex, Image, Text } from '@chakra-ui/react';
 import DynamicIcon from '@assets/icons/dynamic.png';
+import { useDynamicListLabels } from '@utils/list/dynamicListLabels';
+import Tooltip from '@components/Utils/Tooltip';
 import { UserList } from '@types';
 import NextImage from 'next/image';
 
@@ -160,44 +162,31 @@ function ListOption({ option }: { option: ListInputOption }) {
 }
 
 function ListBadges({ list }: { list: UserList }) {
+  const { getFullLabel } = useDynamicListLabels();
+
   return (
     <Flex alignItems="center" gap={1} flexShrink={0}>
       {list.purpose !== 'none' && !list.official && (
-        <Tooltip.Root positioning={{ placement: 'top' }}>
-          <Tooltip.Trigger asChild>
-            <Badge>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-          </Tooltip.Trigger>
-          <Tooltip.Positioner>
-            <Tooltip.Content fontSize="sm">{list.purpose}</Tooltip.Content>
-          </Tooltip.Positioner>
-        </Tooltip.Root>
+        <Tooltip label={list.purpose}>
+          <Badge>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
+        </Tooltip>
       )}
       {list.official && (
-        <Tooltip.Root positioning={{ placement: 'top' }}>
-          <Tooltip.Trigger asChild>
-            <Badge colorPalette="blue">{'\u2713'}</Badge>
-          </Tooltip.Trigger>
-          <Tooltip.Positioner>
-            <Tooltip.Content fontSize="sm">official</Tooltip.Content>
-          </Tooltip.Positioner>
-        </Tooltip.Root>
+        <Tooltip label="official">
+          <Badge colorPalette="blue">{'\u2713'}</Badge>
+        </Tooltip>
       )}
       {list.dynamicType && (
-        <Tooltip.Root positioning={{ placement: 'top' }}>
-          <Tooltip.Trigger asChild>
-            <Badge colorPalette="orange" display="inline-flex" alignItems="center" p="2px">
-              <NextImage
-                src={DynamicIcon}
-                alt="lightning bolt"
-                width={8}
-                style={{ display: 'inline' }}
-              />
-            </Badge>
-          </Tooltip.Trigger>
-          <Tooltip.Positioner>
-            <Tooltip.Content fontSize="sm">{list.dynamicType} Dynamic List</Tooltip.Content>
-          </Tooltip.Positioner>
-        </Tooltip.Root>
+        <Tooltip label={getFullLabel(list)}>
+          <Badge colorPalette="orange" display="inline-flex" alignItems="center" p="2px">
+            <NextImage
+              src={DynamicIcon}
+              alt="lightning bolt"
+              width={8}
+              style={{ display: 'inline' }}
+            />
+          </Badge>
+        </Tooltip>
       )}
     </Flex>
   );

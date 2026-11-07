@@ -28,6 +28,7 @@ import icon from '../../public/logo_icon.svg';
 import GiftBox from '../../public/icons/giftbox.png';
 import NPBag from '../../public/icons/npbag.png';
 import DynamicIcon from '../../public/icons/dynamic.png';
+import { useDynamicListLabels } from '@utils/list/dynamicListLabels';
 import NextImage from 'next/image';
 import dynamic from 'next/dynamic';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
@@ -156,6 +157,7 @@ function HeaderActionButtons({
 
 const ListHeader = (props: ListHeaderProps) => {
   const t = useTranslations();
+  const { getNoun } = useDynamicListLabels();
   const format = useFormatter();
   const now = useNow();
   const toast = useToast();
@@ -383,7 +385,7 @@ const ListHeader = (props: ListHeaderProps) => {
                         height={10}
                         style={{ display: 'inline-block' }}
                       />
-                      {t('Lists.dynamic-list-badge')}
+                      {getNoun(list)}
                     </MainLink>
                   </Badge>
                 )}

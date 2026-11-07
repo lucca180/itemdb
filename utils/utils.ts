@@ -1444,13 +1444,17 @@ export const msIntervalFormatted = (ms: number, long = false, precision = 0) => 
   }`;
 };
 
+/** Search lists (admin only) behave like fullSync: their items only come from the sync. */
+export const isFullSyncList = (dynamicType: DynamicListTypes | null | undefined) =>
+  dynamicType === 'fullSync' || dynamicType === 'search';
+
 export const isDynamicActionDisabled = (
   action: 'move' | 'add' | 'remove',
   dynamicType: DynamicListTypes | null
 ) => {
   if (!dynamicType) return false;
 
-  if (dynamicType === 'fullSync') return true;
+  if (isFullSyncList(dynamicType)) return true;
 
   if (dynamicType === 'addOnly') {
     if (action === 'remove') return true;
@@ -1838,7 +1842,7 @@ export const dynamicListCan = (
   if (!list.dynamicType) return true;
 
   // fullSync lists can't be modified manually
-  if (list.dynamicType === 'fullSync') return false;
+  if (isFullSyncList(list.dynamicType)) return false;
 
   if (permission === 'add') {
     if (list.dynamicType === 'addOnly') return true;

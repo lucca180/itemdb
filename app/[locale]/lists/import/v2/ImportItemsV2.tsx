@@ -32,6 +32,7 @@ import { ImportSummaryBar } from './ImportSummaryBar';
 import { ImportToolbar } from './ImportToolbar';
 import { setLastImportListId } from './lastImportList';
 import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
+import { isFullSyncList } from '@utils/utils';
 
 type ImportItemsV2Props = {
   importToken: string;
@@ -242,7 +243,7 @@ export function ImportItemsV2({
 
   const handleListChange = (next: UserListLite) => {
     let nextAction = action;
-    if (next.dynamicType === 'fullSync' && ['remove', 'add'].includes(action)) {
+    if (isFullSyncList(next.dynamicType) && ['remove', 'add'].includes(action)) {
       nextAction = 'hide';
     }
     if (next.dynamicType && next.dynamicType !== 'addOnly' && action === 'add') {

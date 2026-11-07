@@ -21,6 +21,8 @@ type Props = {
   recommended_id?: number;
   size?: 'sm' | 'md' | 'lg';
   searchThreshold?: number;
+  /** Lists that can't be picked here, e.g. dynamic lists that can't receive items. */
+  isItemDisabled?: (list: UserListLite) => boolean;
   portalRef?: RefObject<HTMLElement | null>;
   /** Umami event name. Tracks menu open, user list selection and list creation. */
   trackEvent?: string;
@@ -104,6 +106,7 @@ const ListSelect = (props: Props) => {
       onSelect={handleSelect}
       onCreateNew={props.createNew ? createNewList : undefined}
       searchThreshold={props.searchThreshold}
+      isItemDisabled={props.isItemDisabled}
       portalRef={props.portalRef}
       trackEvent={props.trackEvent}
       loginSource={props.loginSource}

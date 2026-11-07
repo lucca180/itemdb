@@ -1,16 +1,6 @@
 'use client';
 
-import {
-  Badge,
-  chakra,
-  Separator,
-  Tooltip,
-  Box,
-  useDisclosure,
-  HStack,
-  Text,
-  Kbd,
-} from '@chakra-ui/react';
+import { Badge, chakra, Separator, Box, useDisclosure, HStack, Text, Kbd } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import { ContextMenu, ContextMenuItem, Submenu } from 'rctx-contextmenu';
 import type { ItemFindAt, ItemV2For, ListItemInfo, UserListLite } from '@types';
@@ -21,6 +11,8 @@ import dynamic from 'next/dynamic';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
+import { useDynamicListLabels } from '@utils/list/dynamicListLabels';
+import Tooltip from '@components/Utils/Tooltip';
 import AuctionIcon from '../../public/icons/auction.png';
 import ShopIcon from '../../public/icons/shop.svg';
 import SDBIcon from '../../public/icons/safetydeposit.svg';
@@ -92,6 +84,7 @@ type Props = {
 
 const ItemCtxMenuV2 = (props: Props) => {
   const t = useTranslations();
+  const { getFullLabel } = useDynamicListLabels();
   const toast = useToast();
   const { user, openLogin } = useAuth();
   const { lists, isLoading } = useLists();
@@ -240,54 +233,37 @@ const ItemCtxMenuV2 = (props: Props) => {
                 >
                   {list.name}
                   {list.purpose !== 'none' && !list.official && (
-                    <Tooltip.Root positioning={{ placement: 'top' }}>
-                      <Tooltip.Trigger asChild>
-                        <Badge ml={1} cursor="default">
-                          {list.purpose === 'seeking' ? 's' : 't'}
-                        </Badge>
-                      </Tooltip.Trigger>
-                      <Tooltip.Positioner style={{ zIndex: CONTEXT_MENU_TOOLTIP_Z_INDEX }}>
-                        <Tooltip.Content fontSize="sm">{list.purpose}</Tooltip.Content>
-                      </Tooltip.Positioner>
-                    </Tooltip.Root>
+                    <Tooltip label={list.purpose} zIndex={CONTEXT_MENU_TOOLTIP_Z_INDEX}>
+                      <Badge ml={1} cursor="default">
+                        {list.purpose === 'seeking' ? 's' : 't'}
+                      </Badge>
+                    </Tooltip>
                   )}
                   {list.official && (
-                    <Tooltip.Root positioning={{ placement: 'top' }}>
-                      <Tooltip.Trigger asChild>
-                        <Badge ml={1} colorPalette="blue" cursor="default">
-                          ✓
-                        </Badge>
-                      </Tooltip.Trigger>
-                      <Tooltip.Positioner style={{ zIndex: CONTEXT_MENU_TOOLTIP_Z_INDEX }}>
-                        <Tooltip.Content fontSize="sm">official</Tooltip.Content>
-                      </Tooltip.Positioner>
-                    </Tooltip.Root>
+                    <Tooltip label="official" zIndex={CONTEXT_MENU_TOOLTIP_Z_INDEX}>
+                      <Badge ml={1} colorPalette="blue" cursor="default">
+                        ✓
+                      </Badge>
+                    </Tooltip>
                   )}
                   {list.dynamicType && (
-                    <Tooltip.Root positioning={{ placement: 'top' }}>
-                      <Tooltip.Trigger asChild>
-                        <Badge
-                          ml={1}
-                          colorPalette="orange"
-                          display={'inline-flex'}
-                          alignItems="center"
-                          p={'2px'}
-                          cursor="default"
-                        >
-                          <NextImage
-                            src={DynamicIcon}
-                            alt="lightning bolt"
-                            width={8}
-                            style={{ display: 'inline' }}
-                          />
-                        </Badge>
-                      </Tooltip.Trigger>
-                      <Tooltip.Positioner style={{ zIndex: CONTEXT_MENU_TOOLTIP_Z_INDEX }}>
-                        <Tooltip.Content fontSize="sm">
-                          {list.dynamicType} Dynamic List
-                        </Tooltip.Content>
-                      </Tooltip.Positioner>
-                    </Tooltip.Root>
+                    <Tooltip label={getFullLabel(list)} zIndex={CONTEXT_MENU_TOOLTIP_Z_INDEX}>
+                      <Badge
+                        ml={1}
+                        colorPalette="orange"
+                        display={'inline-flex'}
+                        alignItems="center"
+                        p={'2px'}
+                        cursor="default"
+                      >
+                        <NextImage
+                          src={DynamicIcon}
+                          alt="lightning bolt"
+                          width={8}
+                          style={{ display: 'inline' }}
+                        />
+                      </Badge>
+                    </Tooltip>
                   )}
                 </CtxMenuItem>
               )}

@@ -5,7 +5,7 @@ import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { SeriesType } from '@prisma/generated/client';
 import { UTCDate } from '@date-fns/utc';
-import { slugify } from '@utils/utils';
+import { isFullSyncList, slugify } from '@utils/utils';
 import { ListService, type PutListItemInput } from '@services/ListService';
 import { listMutationCacheTags, userListsTag } from '@utils/appCacheTags';
 import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
@@ -399,7 +399,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!item_internal_ids || !item_internal_ids.length)
       return res.status(400).json({ error: 'Bad Request' });
 
-    if (list.dynamicType === 'fullSync') justHide = true;
+    if (isFullSyncList(list.dynamicType)) justHide = true;
 
     if (justHide) {
       await ListService.hideItems(

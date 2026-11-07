@@ -83,6 +83,7 @@ const GoalCounterInfoModal = (props: GoalCounterInfoModalProps) => {
           onClose={() => setOpenLinked(false)}
           list={list}
           trackSource="goal-counter-info"
+          showGoalStep
         />
       )}
       <Dialog.Root

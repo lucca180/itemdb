@@ -295,7 +295,11 @@ export function ListPageClient({
                 </Button>
               )}
               {(state.isOwner || state.list.official || state.list.canBeLinked) && (
-                <CreateLinkedListButton list={state.list} isLoading={state.isLoading} />
+                <CreateLinkedListButton
+                  list={state.list}
+                  isLoading={state.isLoading}
+                  showGoalStep={!!goalCounter && state.list.official}
+                />
               )}
               <HStack gap={1}>
                 <Text as="div" color="gray.300" fontSize="sm">
