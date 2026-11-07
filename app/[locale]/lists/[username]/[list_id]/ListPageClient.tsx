@@ -204,11 +204,14 @@ export function ListPageClient({
       <Switch.Root
         colorPalette="whiteAlpha"
         checked={state.onlyHidden}
-        onCheckedChange={state.toggleOnlyHidden}
+        onCheckedChange={({ checked }) => {
+          // A data attribute here counts twice: the label click also clicks its hidden input
+          window.umami?.track('list-only-hidden', { label: checked ? 'on' : 'off' });
+          state.toggleOnlyHidden();
+        }}
         display="flex"
         alignItems="center"
         disabled={state.isLoading}
-        data-umami-event="list-only-hidden"
       >
         <Switch.HiddenInput />
         <Switch.Label mb="0" color="gray.300" fontSize="sm">
