@@ -6,7 +6,7 @@ import { Link } from '@i18n/navigation';
 import { useLocale } from 'next-intl';
 import { isLocalizableHref, localizeInternalHref, type AppLocale } from '@utils/locales';
 
-export interface MainLinkProps {
+export interface MainLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   href?: string;
   target?: HTMLAttributeAnchorTarget | undefined;
   className?: string;
@@ -24,6 +24,8 @@ export interface MainLinkProps {
    */
   viaNextLink?: boolean;
   'data-testid'?: string;
+  'data-umami-event'?: string;
+  'data-umami-event-label'?: string;
 }
 
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
@@ -42,6 +44,15 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       viaNextLink: _viaNextLink,
       'data-testid': dataTestId,
+      // Umami hard-reloads on click of `a[data-umami-event]`, breaking soft navigation.
+      // Use `trackEvent` here instead.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      'data-umami-event': _umamiEvent,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      'data-umami-event-label': _umamiEventLabel,
+      onClick,
+      rel,
+      ...rest
     }: MainLinkProps,
     ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
@@ -50,7 +61,8 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
     const resolvedHref = localizeInternalHref(href, locale, { isExternal });
     const isInternal = isLocalizableHref(internalPath, isExternal);
 
-    const handleTracking = () => {
+    const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+      onClick?.(event);
       if (trackEvent) {
         window.umami?.track(trackEvent, { label: trackEventLabel });
       }
@@ -59,13 +71,14 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
     if (isExternal || !isInternal || hardNavigation) {
       return (
         <a
+          {...rest}
           ref={ref}
           className={className}
           target={target || (isExternal ? '_blank' : undefined)}
           href={resolvedHref}
-          onClick={trackEvent ? handleTracking : undefined}
+          onClick={handleClick}
           style={style}
-          rel={isExternal ? 'noopener noreferrer' : undefined}
+          rel={isExternal ? 'noopener noreferrer' : rel}
           data-testid={dataTestId}
         >
           {children}
@@ -75,11 +88,13 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
 
     return (
       <Link
+        {...rest}
         ref={ref}
         className={className}
         target={target}
         href={internalPath}
-        onClick={handleTracking}
+        onClick={handleClick}
+        rel={rel}
         style={style}
         prefetch={prefetch ?? false}
         data-mainlink-via="next-link"
