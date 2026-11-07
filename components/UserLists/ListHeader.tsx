@@ -21,7 +21,7 @@ import { ColorInstance } from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
 import { MdDateRange } from 'react-icons/md';
 import MainLink from '@components/Utils/MainLink';
-import type { ItemV2For, ListItemInfo, UserList } from '@types';
+import type { DynamicListSource, ItemV2For, ListItemInfo, UserList } from '@types';
 import { useMemo } from 'react';
 import { useAuth } from '../../utils/auth';
 import icon from '../../public/logo_icon.svg';
@@ -40,6 +40,9 @@ import { ListBreadcrumb } from '../Breadcrumbs/ListBreadcrumb';
 import { LuFileSpreadsheet } from 'react-icons/lu';
 import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
 import { GoalCounterButton } from '@components/UserLists/GoalCounterButton';
+import { ChecklistProgressCard } from '@components/UserLists/ChecklistProgressCard';
+import { DynamicListSourceInfo } from '@components/UserLists/DynamicListSourceInfo';
+import { useChecklistProgressHidden, type ChecklistProgress } from '@utils/list/checklistProgress';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
@@ -57,9 +60,17 @@ type ListHeaderProps = {
   canEdit: boolean;
   isLoading?: boolean;
   setOpenCreateModal?: (value: boolean) => void;
+  /** What a user's dynamic list follows */
+  dynamicSource?: DynamicListSource | null;
   /** Checklist owner (code modal) or anyone on an official list (info modal) */
   goalCounter?: GoalCounterInfo | null;
   onOpenGoalCounter?: () => void;
+  /** Owner of a checklist: the progress card replaces the cost card */
+  tracksProgress?: boolean;
+  /** `null` while the hidden items are loading */
+  checklistProgress?: ChecklistProgress | null;
+  /** Server filters are on: `itemInfo` only has the matching rows */
+  isFiltered?: boolean;
 };
 
 function HeaderActionButtons({
@@ -162,6 +173,8 @@ const ListHeader = (props: ListHeaderProps) => {
   const now = useNow();
   const toast = useToast();
   const { list, color, items, itemInfo, canEdit: isOwner, setOpenCreateModal, isLoading } = props;
+  const { dynamicSource, tracksProgress, checklistProgress = null, isFiltered } = props;
+  const [progressHidden, setProgressHidden] = useChecklistProgressHidden();
   const { open, onOpen, onClose } = useDisclosure();
   const { open: isOpenDynamic, onOpen: onOpenDynamic, onClose: onCloseDynamic } = useDisclosure();
   const { open: isOpenExport, onOpen: onOpenExport, onClose: onCloseExport } = useDisclosure();
@@ -239,6 +252,64 @@ const ListHeader = (props: ListHeaderProps) => {
   const hasPrice = !!NPPrice || !!NCPrice;
   const hasChart = hasPrice && item_iids.length > 0 && item_iids.length < MAX_ITEMS_LIST_PRICE;
   const dateFormat = { day: 'numeric', month: 'short', year: 'numeric' } as const;
+  const showProgressCard =
+    !!tracksProgress && !progressHidden && (!checklistProgress || checklistProgress.total > 0);
+  const hasStatsCard = hasPrice || hasChart || showProgressCard;
+
+  const costValues = (
+    <>
+      {!!NPPrice && (
+        <>
+          <b>{format.number(NPPrice)} NP</b>
+          <Image
+            display="inline"
+            verticalAlign="middle"
+            src={NPBag}
+            width={24}
+            height={24}
+            alt="NP icon"
+            ml="3px"
+          />
+        </>
+      )}
+      {!!NPPrice && !!NCPrice && <> {t('General.and')} </>}
+      {!!NCPrice && (
+        <>
+          <b>
+            {format.number(NCPrice)} {t('General.caps')}
+          </b>{' '}
+          <Image
+            display="inline"
+            verticalAlign="middle"
+            src={GiftBox}
+            width={24}
+            height={24}
+            alt="gift box icon"
+          />
+        </>
+      )}
+    </>
+  );
+
+  const chartButton = hasChart && (
+    <IconButton
+      onClick={onOpen}
+      size="xs"
+      variant="ghost"
+      display="inline-flex"
+      verticalAlign="middle"
+      ml={1}
+      aria-label={t('Lists.list-price-history')}
+    >
+      <AiOutlineAreaChart />
+    </IconButton>
+  );
+
+  const unpricedBadge = !!unpricedItems && (
+    <Badge colorPalette="orange" variant="subtle">
+      {t('Lists.unpriced-count', { count: unpricedItems })}
+    </Badge>
+  );
 
   return (
     <Box>
@@ -476,6 +547,15 @@ const ListHeader = (props: ListHeaderProps) => {
                         })}
                   </>
                 )}
+                {!!list.dynamicType && !list.official && (
+                  <DynamicListSourceInfo
+                    source={dynamicSource}
+                    lastSync={list.lastSync}
+                    onShowProgress={
+                      tracksProgress && progressHidden ? () => setProgressHidden(false) : undefined
+                    }
+                  />
+                )}
               </Text>
               {list.description && (
                 <Text
@@ -499,10 +579,10 @@ const ListHeader = (props: ListHeaderProps) => {
               />
             </Box>
           </Flex>
-          {(hasSeriesDates || hasPrice || hasChart) && (
+          {(hasSeriesDates || hasStatsCard) && (
             <SimpleGrid
               w="full"
-              columns={{ base: 1, lg: hasSeriesDates && (hasPrice || hasChart) ? 2 : 1 }}
+              columns={{ base: 1, lg: hasSeriesDates && hasStatsCard ? 2 : 1 }}
               gap={3}
             >
               {hasSeriesDates && (
@@ -553,7 +633,24 @@ const ListHeader = (props: ListHeaderProps) => {
                   </Grid>
                 </Box>
               )}
-              {(hasPrice || hasChart) && (
+              {showProgressCard && (
+                <ChecklistProgressCard
+                  progress={checklistProgress}
+                  cost={
+                    // the progress stays on the whole list, but this sum would only cover the matches
+                    hasPrice &&
+                    !isFiltered && (
+                      <>
+                        {t('Lists.finishing-costs-aprox')} {costValues}
+                        {chartButton} {unpricedBadge}
+                      </>
+                    )
+                  }
+                  sourceDeleted={dynamicSource?.type === 'deleted'}
+                  onHide={() => setProgressHidden(true)}
+                />
+              )}
+              {!showProgressCard && (hasPrice || hasChart) && (
                 <Flex
                   gap={2}
                   alignItems={{ base: 'center', md: 'flex-start' }}
@@ -567,11 +664,7 @@ const ListHeader = (props: ListHeaderProps) => {
                   borderColor="whiteAlpha.100"
                   textAlign={{ base: 'center', md: 'left' }}
                 >
-                  {!!unpricedItems && (
-                    <Badge colorPalette="orange" variant="subtle">
-                      {t('Lists.unpriced-count', { count: unpricedItems })}
-                    </Badge>
-                  )}
+                  {unpricedBadge}
                   <Text
                     fontSize="sm"
                     cursor={unpricedItems ? 'default' : undefined}
@@ -579,52 +672,10 @@ const ListHeader = (props: ListHeaderProps) => {
                   >
                     {hasPrice && (
                       <>
-                        {t('Lists.this-list-costs-aprox')}{' '}
-                        {!!NPPrice && (
-                          <>
-                            <b>{format.number(NPPrice)} NP</b>
-                            <Image
-                              display="inline"
-                              verticalAlign="middle"
-                              src={NPBag}
-                              width={24}
-                              height={24}
-                              alt="NP icon"
-                              ml="3px"
-                            />
-                          </>
-                        )}
-                        {!!NPPrice && !!NCPrice && <> {t('General.and')} </>}
-                        {!!NCPrice && (
-                          <>
-                            <b>
-                              {format.number(NCPrice)} {t('General.caps')}
-                            </b>{' '}
-                            <Image
-                              display="inline"
-                              verticalAlign="middle"
-                              src={GiftBox}
-                              width={24}
-                              height={24}
-                              alt="gift box icon"
-                            />
-                          </>
-                        )}
+                        {t('Lists.this-list-costs-aprox')} {costValues}
                       </>
                     )}
-                    {hasChart && (
-                      <IconButton
-                        onClick={onOpen}
-                        size="xs"
-                        variant="ghost"
-                        display="inline-flex"
-                        verticalAlign="middle"
-                        ml={1}
-                        aria-label={t('Lists.list-price-history')}
-                      >
-                        <AiOutlineAreaChart />
-                      </IconButton>
-                    )}
+                    {chartButton}
                   </Text>
                 </Flex>
               )}

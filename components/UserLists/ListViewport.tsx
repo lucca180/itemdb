@@ -40,19 +40,15 @@ export type ListViewportProps = {
   itemSelect?: number[];
   editMode?: boolean;
   activateSort?: boolean;
+  /** Keep hidden rows on screen outside of edit mode */
+  showHidden?: boolean;
   onClick?: (id: number, force?: boolean) => void;
   onSort?: (ids: number[]) => void;
   onChange?: (
     id: number,
     value: number | string | null,
     field:
-      | 'amount'
-      | 'capValue'
-      | 'isHighlight'
-      | 'isHidden'
-      | 'order'
-      | 'seriesStart'
-      | 'seriesEnd'
+      'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order' | 'seriesStart' | 'seriesEnd'
   ) => void;
   onListAction?: (item: ItemV2For<'card'>, action: 'move' | 'delete') => void;
 };
@@ -61,7 +57,7 @@ export default function ListViewport(props: ListViewportProps) {
   const elementRef = useRef(null);
   const dimensions = useElementSize(elementRef);
 
-  const { itemInfo, items, editMode, activateSort, list, ids } = props;
+  const { itemInfo, items, editMode, activateSort, showHidden, list, ids } = props;
 
   const debouncedOnChange = useCallback(
     // eslint-disable-next-line react-hooks/use-memo
@@ -70,13 +66,7 @@ export default function ListViewport(props: ListViewportProps) {
         id: number,
         value: number | string | null,
         field:
-          | 'amount'
-          | 'capValue'
-          | 'isHighlight'
-          | 'isHidden'
-          | 'order'
-          | 'seriesStart'
-          | 'seriesEnd'
+          'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order' | 'seriesStart' | 'seriesEnd'
       ) => props.onChange?.(id, value, field),
       250
     ),
@@ -91,7 +81,7 @@ export default function ListViewport(props: ListViewportProps) {
           const item = itemInfo[i];
           const itemData = items[item?.item_iid];
           if (!itemData) return false;
-          return !item?.isHidden || (editMode && !activateSort);
+          return !item?.isHidden || showHidden || (editMode && !activateSort);
         })
         .reduce((acc, cur, i) => {
           const itemSizeMap = {
@@ -107,7 +97,7 @@ export default function ListViewport(props: ListViewportProps) {
           acc[groupIndex].push(cur);
           return acc;
         }, [] as number[][]),
-    [ids, editMode, dimensions?.width, itemInfo, items, activateSort]
+    [ids, editMode, dimensions?.width, itemInfo, items, activateSort, showHidden]
   );
 
   return (
@@ -127,6 +117,7 @@ export default function ListViewport(props: ListViewportProps) {
                 isTrading: list?.purpose === 'trading',
                 selected: props.itemSelect?.includes(id),
                 editMode: editMode && !activateSort,
+                showHidden,
                 onListAction: props.onListAction,
                 item: items[itemInfo[id]?.item_iid],
               };

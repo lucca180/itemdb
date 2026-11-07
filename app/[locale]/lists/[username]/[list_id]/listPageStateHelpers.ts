@@ -42,6 +42,40 @@ export function filterItemInfoIdsBySearch(
   );
 }
 
+/** Client-side "only hidden" view, for owners and admins (the only ones who load hidden rows). */
+export function filterHiddenItemInfoIds(
+  itemInfoIds: number[],
+  itemInfo: Record<number, ListItemInfo>
+): number[] {
+  return itemInfoIds.filter((id) => itemInfo[id]?.isHidden);
+}
+
+/** The current view shows nothing, but the opposite side of the "only hidden" switch might. */
+export type OnlyHiddenEmptyState = { showing: 'visible' | 'hidden'; otherCount: number };
+
+/**
+ * `matchingIds` are the rows left after filters and search, before the switch applies.
+ * Edit mode lists hidden rows too, so without the switch it never reads as empty.
+ */
+export function getOnlyHiddenEmptyState(params: {
+  matchingIds: number[];
+  itemInfo: Record<number, ListItemInfo>;
+  onlyHidden: boolean;
+  isEdit: boolean;
+  isLoading: boolean;
+}): OnlyHiddenEmptyState | null {
+  const { matchingIds, itemInfo, onlyHidden, isEdit, isLoading } = params;
+  if (isLoading) return null;
+
+  const hidden = filterHiddenItemInfoIds(matchingIds, itemInfo).length;
+  const visible = matchingIds.length - hidden;
+
+  if (onlyHidden) return hidden === 0 ? { showing: 'hidden', otherCount: visible } : null;
+  if (isEdit) return null;
+
+  return visible === 0 && hidden > 0 ? { showing: 'visible', otherCount: hidden } : null;
+}
+
 export function buildListSortTypes(isStampList: boolean) {
   return {
     name: 'name',

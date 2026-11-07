@@ -115,6 +115,7 @@ flowchart TD
    - `getListPreload(core)`
    - `getListMatches(core)` — only if logged in, not owner, list has seek/trade purpose
    - `getSimilarListsForList` — official lists only
+   - `getListDynamicSource(core)` — user dynamic lists only; a prop, not part of `core.list`, because it varies per viewer and `list` is a `'use cache'` key
 3. `ListPageClient` receives `ListPageClientCore` (**without** serialized `viewer`)
 4. If tier 2: `Suspense` → `getListFullItems` → `ListFullItemsReceiver`
 

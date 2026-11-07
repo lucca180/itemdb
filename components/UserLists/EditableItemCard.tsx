@@ -14,6 +14,7 @@ export type EditableItemCardProps = {
   isTrading?: boolean;
   itemInfo?: ListItemInfo;
   editMode?: boolean;
+  showHidden?: boolean;
   selected?: boolean;
   sortType?: string;
   list?: UserList;
@@ -21,13 +22,7 @@ export type EditableItemCardProps = {
     id: number,
     value: number | string | null,
     field:
-      | 'amount'
-      | 'capValue'
-      | 'isHighlight'
-      | 'isHidden'
-      | 'order'
-      | 'seriesStart'
-      | 'seriesEnd'
+      'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order' | 'seriesStart' | 'seriesEnd'
   ) => void;
   onClick?: (id: number, force?: boolean) => void;
   onListAction?: (item: ItemV2For<'card'>, action: 'move' | 'delete') => unknown;
@@ -51,13 +46,7 @@ export function EditableItemCard(props: EditableItemCardProps) {
   const handleItemInfoChange = (
     value: number | string | null,
     field:
-      | 'amount'
-      | 'capValue'
-      | 'isHighlight'
-      | 'isHidden'
-      | 'order'
-      | 'seriesStart'
-      | 'seriesEnd'
+      'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order' | 'seriesStart' | 'seriesEnd'
   ) => {
     if (!itemInfo) return;
     const newInfo = { ...itemInfo } as any;
@@ -79,7 +68,7 @@ export function EditableItemCard(props: EditableItemCardProps) {
     props.onClick?.(id, force);
   };
 
-  if (!editMode && itemInfo?.isHidden) return null;
+  if (!editMode && !props.showHidden && itemInfo?.isHidden) return null;
 
   return (
     <VStack
@@ -88,7 +77,7 @@ export function EditableItemCard(props: EditableItemCardProps) {
       {...props.attributes}
       {...props.listeners}
       mb={3}
-      opacity={itemInfo?.isHidden ? 0.5 : 1}
+      opacity={editMode && itemInfo?.isHidden ? 0.5 : 1}
     >
       <Box onClick={(e) => onClick(e)} style={{ height: '100%' }}>
         <ItemCardV2

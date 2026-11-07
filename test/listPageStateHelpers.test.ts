@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   applyDragSortOrder,
   computeListQtyCount,
+  filterHiddenItemInfoIds,
   filterItemInfoIdsBySearch,
+  getOnlyHiddenEmptyState,
   hasServerFilters,
   shouldMergeListItems,
 } from '@app/[locale]/lists/[username]/[list_id]/listPageStateHelpers';
@@ -25,6 +27,57 @@ const itemInfoRow = (
   }) as ListItemInfo;
 
 describe('listPageStateHelpers', () => {
+  it('keeps only hidden rows, in the given order', () => {
+    const itemInfo = {
+      1: itemInfoRow(1, '1', { isHidden: true }),
+      2: itemInfoRow(2, '2'),
+      3: itemInfoRow(3, '3', { isHidden: true }),
+    };
+
+    expect(filterHiddenItemInfoIds([3, 2, 1], itemInfo)).toEqual([3, 1]);
+  });
+
+  describe('getOnlyHiddenEmptyState', () => {
+    const itemInfo = {
+      1: itemInfoRow(1, '1', { isHidden: true }),
+      2: itemInfoRow(2, '2', { isHidden: true }),
+      3: itemInfoRow(3, '3'),
+    };
+    const base = { itemInfo, onlyHidden: false, isEdit: false, isLoading: false };
+
+    it('points to the hidden rows when none of the matches is visible', () => {
+      expect(getOnlyHiddenEmptyState({ ...base, matchingIds: [1, 2] })).toEqual({
+        showing: 'visible',
+        otherCount: 2,
+      });
+    });
+
+    it('points to the visible rows when the switch finds nothing hidden', () => {
+      expect(getOnlyHiddenEmptyState({ ...base, matchingIds: [3], onlyHidden: true })).toEqual({
+        showing: 'hidden',
+        otherCount: 1,
+      });
+    });
+
+    it('still explains the empty switch view when nothing matches at all', () => {
+      expect(getOnlyHiddenEmptyState({ ...base, matchingIds: [], onlyHidden: true })).toEqual({
+        showing: 'hidden',
+        otherCount: 0,
+      });
+    });
+
+    it('stays out of the way when the view has rows or nothing matches', () => {
+      expect(getOnlyHiddenEmptyState({ ...base, matchingIds: [1, 3] })).toBeNull();
+      expect(getOnlyHiddenEmptyState({ ...base, matchingIds: [1], onlyHidden: true })).toBeNull();
+      expect(getOnlyHiddenEmptyState({ ...base, matchingIds: [] })).toBeNull();
+    });
+
+    it('ignores loads and edit mode, which lists hidden rows', () => {
+      expect(getOnlyHiddenEmptyState({ ...base, matchingIds: [1], isLoading: true })).toBeNull();
+      expect(getOnlyHiddenEmptyState({ ...base, matchingIds: [1], isEdit: true })).toBeNull();
+    });
+  });
+
   it('detects active server filters', () => {
     expect(hasServerFilters(defaultFilters)).toBe(false);
     expect(hasServerFilters({ ...defaultFilters, rarity: ['rare'] })).toBe(true);

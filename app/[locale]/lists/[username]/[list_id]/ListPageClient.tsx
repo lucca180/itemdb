@@ -17,15 +17,17 @@ import {
   Kbd,
 } from '@chakra-ui/react';
 import { useEffect, type ReactNode } from 'react';
-import type { ListItemInfo, UserList } from '@types';
+import type { DynamicListSource, ListItemInfo, UserList } from '@types';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import Color from 'color';
 import { ItemActionModalProps } from '@components/Modal/ItemActionModal';
 import { CreateListModalProps } from '@components/Modal/CreateListModal';
 import dynamic from 'next/dynamic';
 import ListHeader from '@components/UserLists/ListHeader';
+import { OnlyHiddenEmptyState } from '@components/UserLists/OnlyHiddenEmptyState';
 import { CreateLinkedListButton } from '@components/DynamicLists/CreateLinkedList';
 import { dynamicListCan } from '@utils/utils';
+import { isChecklist } from '@utils/list/dynamicListLabels';
 import { sortListItemsV2 } from '@utils/item/v2';
 import { SearchList } from '@components/Search/SearchLists';
 import { SortSelect } from '@components/Input/SortSelect';
@@ -115,6 +117,8 @@ export type ListPageClientProps = {
   initialPreload: ListItemsData;
   matches: ListItemInfo[];
   similarLists: UserList[];
+  /** What a user's dynamic list follows */
+  dynamicSource?: DynamicListSource | null;
   /** Set when the owner can embed a goal counter for this list */
   goalCounter?: GoalCounterInfo | null;
   children?: ReactNode;
@@ -129,6 +133,7 @@ export function ListPageClient({
   initialPreload,
   matches,
   similarLists,
+  dynamicSource,
   goalCounter,
   children,
 }: ListPageClientProps) {
@@ -165,7 +170,9 @@ export function ListPageClient({
   };
 
   const highlightIds = state.displayedItemInfoIds.filter(
-    (id) => state.itemInfo[id].isHighlight && (!state.itemInfo[id].isHidden || state.isEdit)
+    (id) =>
+      state.itemInfo[id].isHighlight &&
+      (!state.itemInfo[id].isHidden || state.isEdit || state.onlyHidden)
   );
 
   // "Suggest missing item" button: non-editors on official, non-dynamic lists
@@ -190,6 +197,29 @@ export function ListPageClient({
 
   // Keep Suspense children mounted during filter loads so the full-load receiver is not remounted.
   const showMainItemGrid = !state.isLoading || !!state.itemInfoIds.length || useSuspenseFullLoad;
+
+  // In edit mode the item count is gone, but the view must still be switchable
+  const onlyHiddenSwitch = state.canEdit && (state.hiddenCount > 0 || state.onlyHidden) && (
+    <Field.Root display="flex" alignItems="center" justifyContent="center" w="auto">
+      <Switch.Root
+        colorPalette="whiteAlpha"
+        checked={state.onlyHidden}
+        onCheckedChange={state.toggleOnlyHidden}
+        display="flex"
+        alignItems="center"
+        disabled={state.isLoading}
+        data-umami-event="list-only-hidden"
+      >
+        <Switch.HiddenInput />
+        <Switch.Label mb="0" color="gray.300" fontSize="sm">
+          {t(isChecklist(state.list) ? 'Lists.only-collected' : 'Lists.only-hidden')}
+        </Switch.Label>
+        <Switch.Control>
+          <Switch.Thumb />
+        </Switch.Control>
+      </Switch.Root>
+    </Field.Root>
+  );
 
   return (
     <ListFullItemsMergeProvider value={state.mergeContext}>
@@ -260,8 +290,12 @@ export function ListPageClient({
         itemInfo={state.itemInfo}
         isLoading={state.isLoading}
         setOpenCreateModal={state.setOpenCreateModal}
+        dynamicSource={dynamicSource}
         goalCounter={goalCounter}
         onOpenGoalCounter={onOpenGoal}
+        tracksProgress={state.tracksProgress}
+        checklistProgress={state.checklistProgress}
+        isFiltered={state.isServerFiltered}
       />
 
       <Flex mt={5} gap={6} flexFlow="column">
@@ -273,7 +307,7 @@ export function ListPageClient({
           flexFlow={{ base: 'column-reverse', lg: 'row' }}
         >
           {!state.isEdit && (
-            <HStack>
+            <HStack flexWrap="wrap" justifyContent={{ base: 'center', lg: 'flex-start' }}>
               {state.canEdit && dynamicListCan(state.list, 'add') && (
                 <Button onClick={onOpenInsert} loading={state.isLoading}>
                   {t('Lists.add-items')}{' '}
@@ -303,7 +337,11 @@ export function ListPageClient({
               )}
               <HStack gap={1}>
                 <Text as="div" color="gray.300" fontSize="sm">
-                  {t('Lists.itemcount-items', { itemCount: state.qtyCount.visibleQty })}
+                  {t('Lists.itemcount-items', {
+                    itemCount: state.onlyHidden
+                      ? state.qtyCount.totalQty
+                      : state.qtyCount.visibleQty,
+                  })}
                 </Text>
                 <A11yTooltip
                   position="right"
@@ -319,18 +357,20 @@ export function ListPageClient({
                   </IconButton>
                 </A11yTooltip>
               </HStack>
+              {onlyHiddenSwitch}
             </HStack>
           )}
 
           {state.isEdit && (
-            <Flex gap={3} flexWrap="wrap" justifyContent="center">
+            <Flex gap={3} flexWrap="wrap" justifyContent="center" alignItems="center">
               <Box bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.35)`} p={2} borderRadius="md">
                 <SelectItemsCheckbox
                   checked={state.itemSelect}
-                  allChecked={state.itemSelect.length === Object.values(state.itemInfo).length}
+                  allChecked={state.itemSelect.length === state.displayedItemInfoIds.length}
                   onClick={state.handleSelectCheckbox}
                 />
               </Box>
+              {onlyHiddenSwitch}
             </Flex>
           )}
 
@@ -540,6 +580,7 @@ export function ListPageClient({
               <ItemList
                 onClick={state.selectItem}
                 ids={highlightIds}
+                showHidden={state.onlyHidden}
                 list={state.list}
                 itemInfo={state.itemInfo}
                 items={state.items}
@@ -563,6 +604,14 @@ export function ListPageClient({
           </Flex>
         )}
 
+        {state.onlyHiddenEmptyState && (
+          <OnlyHiddenEmptyState
+            state={state.onlyHiddenEmptyState}
+            isChecklist={isChecklist(state.list)}
+            onToggle={state.toggleOnlyHidden}
+          />
+        )}
+
         {/* Tier 2 Suspense slot ({children}) + main item grid. */}
         {showMainItemGrid && (
           <Flex flexFlow="column">
@@ -572,6 +621,7 @@ export function ListPageClient({
               sortType={state.sortInfo.sortBy}
               onClick={state.selectItem}
               ids={state.mainItemIds}
+              showHidden={state.onlyHidden}
               itemInfo={state.itemInfo}
               items={state.items}
               itemSelect={state.itemSelect}
@@ -604,7 +654,7 @@ export function ListPageClient({
       {state.isEdit && state.itemSelect.length > 0 && (
         <SelectedItemsActionBar
           selectedItems={state.selectedItems}
-          totalItems={Object.values(state.itemInfo).length}
+          totalItems={state.displayedItemInfoIds.length}
           canRemove={dynamicListCan(state.list, 'remove')}
           onSelectItems={state.handleSelectCheckbox}
           onClearSelection={() => state.setItemSelect([])}

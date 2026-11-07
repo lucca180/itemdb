@@ -317,6 +317,12 @@ export type UserListLite = Pick<
 
 export type DynamicListTypes = 'addOnly' | 'removeOnly' | 'fullSync' | 'search';
 
+export type DynamicListSource =
+  | { type: 'list'; name: string; href: string }
+  | { type: 'privateList' }
+  | { type: 'search' }
+  | { type: 'deleted' };
+
 export type ObligatoryUserList = Required<Pick<UserList, 'itemInfo'>> & UserList;
 
 export type ListItemInfo = {
