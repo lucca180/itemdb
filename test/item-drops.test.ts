@@ -42,6 +42,7 @@ vi.mock('@pages/api/v1/items/many', () => ({
 import { getItemDrops, getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import {
   AUTHORITATIVE_OPENING_IDS,
+  CAPSULE_CONTENTS_SYNC_OPENING_ID,
   NC_DROP_SUPPORT,
   NP_DROP_SUPPORT_RULES,
 } from '@utils/item/itemDropEvidence';
@@ -160,6 +161,30 @@ describe('getItemDrops statistical filtering', () => {
     expect(result?.pools.normal.isLE).toBe(false);
     expect(result?.drops[ACCEPTED_DROP_ID].isLE).toBe(true);
     expect(result?.drops[REJECTED_DROP_ID].isLE).toBe(false);
+  });
+
+  test('treats synced category pools as a category choice', async () => {
+    prismaMock.items.findFirst.mockResolvedValue(item(true));
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      drop(CAPSULE_CONTENTS_SYNC_OPENING_ID, ACCEPTED_DROP_ID, { prizePool: 'clothing' }),
+      drop(CAPSULE_CONTENTS_SYNC_OPENING_ID, REJECTED_DROP_ID, { prizePool: 'trinkets' }),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.isChoice).toBe(true);
+    expect(Object.keys(result?.pools ?? {}).sort()).toEqual(['clothing', 'trinkets']);
+  });
+
+  test('does not treat a non-category manual pool as a choice', async () => {
+    prismaMock.items.findFirst.mockResolvedValue(item(true));
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      drop(AUTHORITATIVE_OPENING_IDS[0], ACCEPTED_DROP_ID, { prizePool: 'normal', isManual: true }),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.isChoice).toBe(false);
   });
 
   test('uses the same statistical acceptance for inverse parent results', async () => {

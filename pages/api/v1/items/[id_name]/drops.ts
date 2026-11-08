@@ -269,6 +269,8 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
       if (pool) {
         if (pool.includes('gram')) isGram = true;
         if (pool.split('-').includes('le')) dropData.isLE = true;
+        // category pools (e.g. from the capsule contents sync) are a choice, like category notes
+        if (catTypeZone.includes(pool)) isChoice = true;
 
         if (!prizePools[pool]) {
           prizePools[pool] = {
