@@ -313,30 +313,34 @@ export const CHECK_IMG_URL = (image_url: string) => {
   }
 };
 
-export const createListSlug = async (name: string, userId: string, isOfficial: boolean) => {
-  let slug = slugify(name);
+/**
+ * First free slug for `name`: the slug itself, else the lowest free `-2`, `-3`...
+ * The unique key is (slug, user_id), so every list of the owner counts, official or not.
+ * Official lists are also served at /lists/official/<slug>, so other official lists count too.
+ * `excludeListId` is the list being renamed: its current slug is free for itself.
+ */
+export const createListSlug = async (
+  name: string,
+  userId: string,
+  isOfficial: boolean,
+  excludeListId?: number
+) => {
+  const slug = slugify(name);
 
   const lists = await prisma.userList.findMany({
     where: {
-      slug: slug,
-      user_id: !isOfficial ? userId : undefined,
-      official: isOfficial,
+      slug: { startsWith: slug },
+      OR: isOfficial ? [{ user_id: userId }, { official: true }] : [{ user_id: userId }],
+      ...(excludeListId ? { NOT: { internal_id: excludeListId } } : {}),
     },
+    select: { slug: true },
   });
 
-  if (lists.length === 0) return slug;
+  const taken = new Set(lists.map((x) => x.slug));
+  if (!taken.has(slug)) return slug;
 
-  // check if we have same slug
+  let suffix = 2;
+  while (taken.has(`${slug}-${suffix}`)) suffix++;
 
-  const regex = new RegExp(`^${slug}(-\\d+)?$`);
-
-  const allSlugs = [...lists.map((x) => x.slug)];
-
-  const sameSlug = allSlugs.filter((x) => regex.test(x ?? ''));
-
-  if (sameSlug.length > 0) {
-    slug = `${slug}-${sameSlug.length + 1}`;
-  }
-
-  return slug;
+  return `${slug}-${suffix}`;
 };
