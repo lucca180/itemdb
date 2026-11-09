@@ -3,10 +3,9 @@ import prisma from '@utils/prisma';
 import { getCachedNow } from '@utils/getCachedNow';
 import { isEventActive } from '@app/_components/Item/NCTrade/ncTradeInsightsUtils';
 import { ItemService } from '@services/ItemService';
-import { ListService } from '@services/ListService';
+import { ListService, filterOfficialLists } from '@services/ListService';
 import { getUmamiItemPageviews } from '@services/item/trendingItems';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
-import { filterOfficialLists, getItemLists } from '@pages/api/v1/items/[id_name]/lists';
 import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
 import { listItemsTag } from '@utils/appCacheTags';
 import { DYEWORKS_CURRENT_LIST_ID } from '@utils/dyeworks/sync';
@@ -120,9 +119,11 @@ async function resolveCoverFoundIn(
 ): Promise<{ foundIn: MallCoverFoundIn | null; isLE: boolean }> {
   const [parentResult, listResult] = await Promise.all([
     getItemParent(internalId, 1).catch(() => ({ itemData: [] })),
-    getItemLists(internalId, { includeOfficial: true, includeTrade: false }).catch(() => ({
-      official: [] as UserList[],
-    })),
+    ListService.getItemLists(internalId, { includeOfficial: true, includeTrade: false }).catch(
+      () => ({
+        official: [] as UserList[],
+      })
+    ),
   ]);
 
   const parent = parentResult.itemData[0];
@@ -782,10 +783,7 @@ export function getMallCapsules() {
 }
 
 export type MallMonthlyHighlightKind =
-  | 'nc-collectible'
-  | 'premium-collectible'
-  | 'dyeworks'
-  | 'gbc';
+  'nc-collectible' | 'premium-collectible' | 'dyeworks' | 'gbc';
 
 export type MallMonthlyHighlight = {
   kind: MallMonthlyHighlightKind;

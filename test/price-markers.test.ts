@@ -3,8 +3,8 @@ import type { ListItemInfo, PriceData, PriceMarker, UserList } from '@types';
 
 vi.mock('server-only', () => ({}));
 
-vi.mock('@pages/api/v1/items/[id_name]/lists', () => ({
-  getItemLists: vi.fn(),
+vi.mock('@services/ListService', () => ({
+  ListService: { getItemLists: vi.fn() },
 }));
 
 vi.mock('@utils/prisma', () => ({

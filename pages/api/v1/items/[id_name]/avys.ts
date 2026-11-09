@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
-import { getItemLists } from './lists';
+import { ListService } from '@services/ListService';
 import { AvyData, UserList } from '@types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -26,7 +26,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 export const getAvyData = async (item_iid: number, officialLists?: UserList[]) => {
-  const lists = officialLists ?? (await getItemLists(item_iid, { includeOfficial: true })).official;
+  const lists =
+    officialLists ?? (await ListService.getItemLists(item_iid, { includeOfficial: true })).official;
 
   const avyRaw = await prisma.avatarSolution.findMany({
     where: {

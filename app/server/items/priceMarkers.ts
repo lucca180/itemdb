@@ -5,7 +5,7 @@ import { tz } from '@date-fns/tz';
 import { isSameDay, startOfDay } from 'date-fns';
 import type { ManualPriceMarker as ManualPriceMarkerRow } from '@prisma/generated/client';
 import type { ManualPriceMarkerDTO, OfficialListPriceMarker, PriceMarker, UserList } from '@types';
-import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
+import { ListService } from '@services/ListService';
 import prisma from '@utils/prisma';
 
 const LA = tz('America/Los_Angeles');
@@ -30,7 +30,7 @@ export async function getItemPriceMarkers(
   opts: GetItemPriceMarkersOptions = {}
 ): Promise<PriceMarker[]> {
   const [{ official }, manual] = await Promise.all([
-    getItemLists(item.internal_id, {
+    ListService.getItemLists(item.internal_id, {
       includeOfficial: true,
       includeTrade: opts.includeTrade ?? false,
     }),

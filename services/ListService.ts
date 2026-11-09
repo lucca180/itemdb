@@ -46,6 +46,7 @@ import {
   type GetUserListsOptions,
 } from '@services/list/userListsQuery';
 import { fetchListItemsV2, type FetchListItemsV2Result } from '@services/list/listItemsV2';
+import { getItemLists } from '@services/list/itemListsQuery';
 
 export { LIST_ITEMS_MAX_LIMIT } from '@services/list/listItemsV2';
 import { adminListSeoWriteData, getListSeo } from '@services/list/listSeo';
@@ -58,6 +59,13 @@ export {
   rawToListItems,
 } from '@services/list/listMappers';
 export type { LinkedListSourceRaw } from '@services/list/listMappers';
+export {
+  filterOfficialLists,
+  filterTradeLists,
+  isListSeriesActive,
+  rankItemOfficialLists,
+} from '@services/list/itemListsQuery';
+export type { GetItemListsOptions, ItemListCollections } from '@services/list/itemListsQuery';
 export type { PutListItemInput, DynamicItemChanges };
 
 export class ListService {
@@ -72,6 +80,8 @@ export class ListService {
   static applyDynamicItemChanges = applyDynamicItemChanges;
   static getListSeo = getListSeo;
   static adminListSeoWriteData = adminListSeoWriteData;
+  /** Lists that hold one item (official and/or public trade lists); viewer-independent. */
+  static getItemLists = getItemLists;
 
   static init() {
     return ListService.initUser(null);
