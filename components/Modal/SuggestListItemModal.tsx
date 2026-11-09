@@ -15,10 +15,7 @@ import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 import { LuX } from 'react-icons/lu';
 import ItemSelect from '@components/Input/ItemSelect';
-import MainLink from '@components/Utils/MainLink';
 import type { ItemData, UserList } from '@types';
-import { useAuth } from '@utils/auth';
-import { getListLink } from '@utils/list/listLink';
 import { suggestMissingListItems } from '@app/[locale]/lists/[username]/[list_id]/actions';
 import {
   MAX_SUGGESTION_ITEMS,
@@ -27,7 +24,7 @@ import {
 
 /**
  * "Suggest missing item" modal for official lists (opened from the list page toolbar).
- * The user picks up to MAX_SUGGESTION_ITEMS items + an optional note; submission goes
+ * Open to logged-out users too. The user picks up to MAX_SUGGESTION_ITEMS items + an optional note; submission goes
  * through the `suggestMissingListItems` server action.
  */
 export type SuggestListItemModalProps = {
@@ -38,14 +35,11 @@ export type SuggestListItemModalProps = {
 
 /** idle = form visible; success/error = result of the last submission. */
 type Status =
-  | { type: 'idle' }
-  | { type: 'success'; skipped: number }
-  | { type: 'error'; message: string };
+  { type: 'idle' } | { type: 'success'; skipped: number } | { type: 'error'; message: string };
 
 export default function SuggestListItemModal(props: SuggestListItemModalProps) {
   const t = useTranslations();
   const { isOpen, onClose, list } = props;
-  const { user, authLoading } = useAuth();
   const [items, setItems] = useState<ItemData[]>([]);
   const [note, setNote] = useState('');
   const [warning, setWarning] = useState<string | null>(null);
@@ -122,10 +116,6 @@ export default function SuggestListItemModal(props: SuggestListItemModalProps) {
     });
   };
 
-  const isLoggedOut = !user && !authLoading;
-  // back to this list with the modal reopened (`?suggest`, handled by the list page)
-  const loginUrl = `/login?redirect=${encodeURIComponent(`${getListLink(list)}?suggest=true`)}`;
-
   return (
     <Dialog.Root
       open={isOpen}
@@ -158,21 +148,14 @@ export default function SuggestListItemModal(props: SuggestListItemModalProps) {
                 </Stack>
               )}
               {status.type !== 'success' && (
-                <Stack gap={4}>
-                  <Text fontSize="sm">
-                    {t.rich('Lists.suggest-missing-description', {
-                      list: list.name,
-                      b: (chunk) => <b>{chunk}</b>,
-                    })}
-                  </Text>
-                  {isLoggedOut && (
-                    <Text fontSize="sm" textAlign="center" color="whiteAlpha.800">
-                      {t('Lists.suggest-missing-login-required')}
-                    </Text>
-                  )}
-                </Stack>
+                <Text fontSize="sm">
+                  {t.rich('Lists.suggest-missing-description', {
+                    list: list.name,
+                    b: (chunk) => <b>{chunk}</b>,
+                  })}
+                </Text>
               )}
-              {status.type !== 'success' && !isLoggedOut && (
+              {status.type !== 'success' && (
                 <Stack gap={4} mt={4}>
                   <Stack gap={2}>
                     <ItemSelect onChange={addItem} isDisabled={isPending} />
@@ -241,22 +224,9 @@ export default function SuggestListItemModal(props: SuggestListItemModalProps) {
                   <Button variant="ghost" mr={3} onClick={handleClose} disabled={isPending}>
                     {t('General.cancel')}
                   </Button>
-                  {isLoggedOut && (
-                    <Button asChild>
-                      <MainLink href={loginUrl} trackEvent="suggest-missing-login">
-                        {t('Layout.login')}
-                      </MainLink>
-                    </Button>
-                  )}
-                  {!isLoggedOut && (
-                    <Button
-                      onClick={handleSubmit}
-                      loading={isPending || authLoading}
-                      disabled={!items.length}
-                    >
-                      {t('General.send')}
-                    </Button>
-                  )}
+                  <Button onClick={handleSubmit} loading={isPending} disabled={!items.length}>
+                    {t('General.send')}
+                  </Button>
                 </>
               )}
             </Dialog.Footer>
