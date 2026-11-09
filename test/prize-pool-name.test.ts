@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
+  comparePrizePools,
   composePoolName,
   decomposePoolName,
   emptyPoolNameOptions,
@@ -97,5 +98,31 @@ describe('prize pool names', () => {
     expect(isDeclaredAllPool({ name: 'gram-1-1', items: [1] })).toBe(false);
     expect(isDeclaredAllPool({ name: 'le-1-1', items: [1] })).toBe(false);
     expect(isDeclaredAllPool({ name: 'normal-chance', items: [1] })).toBe(false);
+  });
+
+  test('orders pools as LE, bonus, then alphabetical', () => {
+    const pools = [
+      { name: 'normal', isLE: false },
+      { name: 'cat2', isLE: false },
+      { name: 'bonus', isLE: false },
+      { name: 'zeta-le', isLE: true },
+      { name: 'cat1', isLE: false },
+      { name: 'chance-le', isLE: true },
+    ];
+
+    expect([...pools].sort(comparePrizePools).map((a) => a.name)).toEqual([
+      'chance-le',
+      'zeta-le',
+      'bonus',
+      'cat1',
+      'cat2',
+      'normal',
+    ]);
+    expect(
+      [...pools]
+        .reverse()
+        .sort(comparePrizePools)
+        .map((a) => a.name)
+    ).toEqual(['chance-le', 'zeta-le', 'bonus', 'cat1', 'cat2', 'normal']);
   });
 });
