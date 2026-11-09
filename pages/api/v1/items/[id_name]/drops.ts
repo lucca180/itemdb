@@ -8,6 +8,7 @@ import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 import { getManyItems } from '../many';
 import { redis_setDataCount } from '@utils/api/redis';
 import {
+  CAPSULE_CONTENTS_SYNC_OPENING_ID,
   deduplicateCommunityDrops,
   evaluateDropEvidence,
   GRAM_OPTION_NOTE,
@@ -37,8 +38,8 @@ export const SKIP_ITEMS = [61696, 65743];
 
 /** PATCH actions on one drop of a pool (need `drop_id`). */
 const DROP_ACTIONS = ['add', 'remove', 'set-le'];
-/** PATCH actions on the manual rows of a whole pool. */
-const POOL_ACTIONS = ['rename-pool', 'delete-pool'];
+/** PATCH actions on a whole pool. */
+const POOL_ACTIONS = ['rename-pool', 'delete-pool', 'move-pool'];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -150,6 +151,42 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (action === 'delete-pool') {
     await prisma.openableItems.deleteMany({ where: manualPoolRows });
+  }
+
+  // Unlike rename-pool, also moves the drops that are only in the pool through sync/community
+  // rows (e.g. the computed "unknown" pool) by pinning them to the target with manual rows.
+  if (action === 'move-pool') {
+    const targetName = slugifyPoolBase(newPoolName ?? '');
+    if (!targetName) return res.status(400).json({ error: 'Missing parameters' });
+
+    const current = await getItemDrops(item.internal_id);
+    const sourcePool = current?.pools[poolName];
+    if (!current || !sourcePool) return res.status(400).json({ error: 'Pool not found' });
+
+    if (targetName !== poolName) {
+      await prisma.openableItems.updateMany({
+        where: manualPoolRows,
+        data: { prizePool: targetName },
+      });
+    }
+
+    const pinned = await prisma.openableItems.findMany({
+      where: { ...manualPoolRows, prizePool: targetName },
+      select: { item_iid: true },
+    });
+    const pinnedIds = new Set(pinned.map((row) => row.item_iid));
+    const toPin = Array.from(new Set(sourcePool.items)).filter((id) => !pinnedIds.has(id));
+
+    if (toPin.length > 0) {
+      await prisma.openableItems.createMany({
+        data: toPin.map((item_iid) => ({
+          ...manualPoolRows,
+          prizePool: targetName,
+          item_iid,
+          limitedEdition: !!current.drops[item_iid]?.isLE,
+        })),
+      });
+    }
   }
 
   const [newDrops, sources] = await Promise.all([
@@ -488,6 +525,28 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
     )
       pool.isChance = true;
   });
+
+  // The capsule contents API lists LE bonus items in their own tiers, each with a percentage,
+  // so they are a chance at one bonus per opening. Without community openings the ratio above
+  // can't tell, and the LE pool would read as a guaranteed drop of 0 items.
+  const syncBonusIds = new Set(
+    rawDrops
+      .filter(
+        (drop) =>
+          drop.opening_id === CAPSULE_CONTENTS_SYNC_OPENING_ID &&
+          drop.limitedEdition &&
+          !drop.prizePool
+      )
+      .map((drop) => drop.item_iid)
+  );
+  const lePool = prizePools.le;
+  if (lePool && lePool.items.some((id) => syncBonusIds.has(id))) {
+    lePool.isChance = true;
+    if (!lePool.openings) {
+      lePool.minDrop = 1;
+      lePool.maxDrop = 1;
+    }
+  }
 
   openableData.minDrop =
     openingMinMax.min.repeat > 1 || !openingMinMax.min.prevRepeat

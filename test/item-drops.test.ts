@@ -296,6 +296,36 @@ describe('getItemDrops limited edition pools', () => {
     expect(result?.pools.le.items).toEqual([LE_ID]);
   });
 
+  test('treats synced LE bonus items without openings as a chance at one LE', async () => {
+    prismaMock.items.findFirst.mockResolvedValue(item(true));
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      ...REGULAR_IDS.map((id) => drop(CAPSULE_CONTENTS_SYNC_OPENING_ID, id)),
+      drop(CAPSULE_CONTENTS_SYNC_OPENING_ID, LE_ID, { limitedEdition: true }),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.pools.le.items).toEqual([LE_ID]);
+    expect(result?.pools.le.isChance).toBe(true);
+    expect(result?.pools.le.minDrop).toBe(1);
+    expect(result?.pools.le.maxDrop).toBe(1);
+    expect(result?.pools.unknown.isChance).toBe(false);
+  });
+
+  test('keeps the community LE chance when synced LE rows have openings', async () => {
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      ...regularOpenings(10),
+      ...leOpenings(6, true),
+      drop(CAPSULE_CONTENTS_SYNC_OPENING_ID, LE_ID, { limitedEdition: true }),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.pools.le.isChance).toBe(true);
+    expect(result?.pools.le.openings).toBe(6);
+    expect(result?.pools.le.maxDrop).toBe(1);
+  });
+
   test('does not override a LE pinned to a pool by name', async () => {
     prismaMock.openableItems.findMany.mockResolvedValue([
       ...regularOpenings(10),

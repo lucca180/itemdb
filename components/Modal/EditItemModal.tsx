@@ -45,6 +45,7 @@ import dynamic from 'next/dynamic';
 import ItemSelect from '../Input/ItemSelect';
 import { CreatePrizePoolForm } from '@components/Input/CreatePrizePoolForm';
 import { PrizePoolBadges } from '@components/Items/PrizePoolBadges';
+import { UNKNOWN_POOL } from '@utils/item/prizePoolName';
 import type { ItemDropSources } from '@utils/item/itemDropSources';
 import type {
   CapsuleSyncPreview,
@@ -836,7 +837,8 @@ type DropAction =
   | { action: 'remove'; poolName: string; drop_id: number }
   | { action: 'set-le'; poolName: string; drop_id: number; isLE: boolean }
   | { action: 'rename-pool'; poolName: string; newPoolName: string }
-  | { action: 'delete-pool'; poolName: string };
+  | { action: 'delete-pool'; poolName: string }
+  | { action: 'move-pool'; poolName: string; newPoolName: string };
 
 export const OpenableTab = (props: OpenableTabProps) => {
   const {
@@ -1027,6 +1029,7 @@ export const OpenableTab = (props: OpenableTabProps) => {
           <PoolEditor
             key={pool.name}
             pool={pool}
+            poolNames={Object.keys(itemOpenable.pools)}
             drops={itemOpenable.drops}
             dropData={dropData}
             sources={sources}
@@ -1041,6 +1044,8 @@ export const OpenableTab = (props: OpenableTabProps) => {
 
 type PoolEditorProps = {
   pool: PrizePoolData;
+  /** Every pool of the item, offered as targets when moving the unknown pool. */
+  poolNames: string[];
   drops: ItemOpenable['drops'];
   dropData: { [id: number]: ItemData };
   sources: Record<number, ItemDropSources> | null;
@@ -1050,8 +1055,8 @@ type PoolEditorProps = {
 };
 
 const PoolEditor = (props: PoolEditorProps) => {
-  const { pool, drops, dropData, sources, isLoading, onAction, onLocalChange } = props;
-  const [mode, setMode] = useState<'view' | 'rename' | 'delete'>('view');
+  const { pool, poolNames, drops, dropData, sources, isLoading, onAction, onLocalChange } = props;
+  const [mode, setMode] = useState<'view' | 'rename' | 'delete' | 'move'>('view');
   const [addAsLE, setAddAsLE] = useState(false);
 
   const poolItems = Array.from(new Set(pool.items));
@@ -1061,6 +1066,14 @@ const PoolEditor = (props: PoolEditorProps) => {
   ).length;
   const otherCount = poolItems.length - manualCount;
   const canEditPool = isLocal || manualCount > 0;
+  const canMoveAll = pool.name === UNKNOWN_POOL && !isLocal;
+  const moveTargets = poolNames.filter((name) => name !== pool.name);
+
+  const moveAll = (newPoolName: string) => {
+    setMode('view');
+    if (newPoolName === pool.name) return;
+    onAction({ action: 'move-pool', poolName: pool.name, newPoolName });
+  };
 
   const rename = (newPoolName: string) => {
     setMode('view');
@@ -1101,7 +1114,36 @@ const PoolEditor = (props: PoolEditorProps) => {
             </Button>
           </HStack>
         )}
+        {canMoveAll && mode === 'view' && (
+          <Button size="xs" variant="ghost" onClick={() => setMode('move')}>
+            Move all
+          </Button>
+        )}
       </Flex>
+
+      {mode === 'move' && (
+        <Flex flexFlow="column" gap={2} bg="blackAlpha.300" p={2} borderRadius="md">
+          <Text fontSize="xs" color="gray.300">
+            Pins all {poolItems.length} drop(s) of this pool to the target pool with manual rows.
+          </Text>
+          {moveTargets.length > 0 && (
+            <HStack gap={1} flexWrap="wrap">
+              <Text fontSize="xs">Existing pool:</Text>
+              {moveTargets.map((name) => (
+                <Button key={name} size="xs" variant="outline" onClick={() => moveAll(name)}>
+                  {name}
+                </Button>
+              ))}
+            </HStack>
+          )}
+          <Text fontSize="xs">Or a new pool:</Text>
+          <CreatePrizePoolForm
+            submitLabel="Move to new pool"
+            onSubmit={moveAll}
+            onCancel={() => setMode('view')}
+          />
+        </Flex>
+      )}
 
       {mode === 'rename' && (
         <Flex flexFlow="column" gap={2} bg="blackAlpha.300" p={2} borderRadius="md">

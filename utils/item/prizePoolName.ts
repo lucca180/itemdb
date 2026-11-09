@@ -32,6 +32,9 @@ const FLAG_SEGMENTS = ['le', 'chance', 'gram'];
 /** Bare pool name meaning every item of the pool is granted. */
 export const ALL_ITEMS_POOL = 'normal';
 
+/** Computed pool for accepted drops that have no pool or category note. */
+export const UNKNOWN_POOL = 'unknown';
+
 export const emptyPoolNameOptions: PoolNameOptions = {
   base: '',
   isLE: false,
