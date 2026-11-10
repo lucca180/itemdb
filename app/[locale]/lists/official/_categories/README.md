@@ -54,6 +54,10 @@ that makes `/lists/official` hit `official/page.tsx`).
     `editionOrder` = order inside a year by slug prefix; `editionDates: { [year]: { start, end? } }`
     (`YYYY-MM-DD`, UTC) wins over the lists' dates, no `end` → "Since <start>".
   - **`groups`**: free groups by match. `groups: []` = everything under "All lists".
+    `featured?: ListMatch & { label?, popular? }` puts lists as featured cards below the hero (e.g.
+    All Collectibles on Stamps). `popular: n` adds the category's `n` most viewed lists (Umami
+    pageviews of `/lists/official/<slug>`, last 30 days, cached for hours, "Popular" badge); they
+    also stay in their groups. If Umami fails, only the matched lists show.
 - Lists matched by no rule go to "Other lists": nothing disappears from the page.
 - `labels: { match, label, color? }[]`: per-list badges (e.g. "Special week"), with a colored edge on
   pool cards. **Do not use `list.highlight` as a label**: it is the title of the highlighted items

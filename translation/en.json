@@ -2137,6 +2137,7 @@
     "show-all": "Show all {count}",
     "show-less": "Show less",
     "faq": "FAQ",
-    "related-articles": "From our articles"
+    "related-articles": "From our articles",
+    "popular": "Popular"
   }
 }

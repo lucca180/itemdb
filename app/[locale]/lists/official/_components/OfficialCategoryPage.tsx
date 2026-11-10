@@ -6,10 +6,11 @@ import { SetMainColor } from '@components/Layout/SetMainColor';
 import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getOfficialCategory } from '@app/[locale]/lists/official/_categories';
-import { resolveCategory } from '@app/[locale]/lists/official/_categories/resolve';
+import { needsPageviews, resolveCategory } from '@app/[locale]/lists/official/_categories/resolve';
 import {
   loadOfficialCategoryArticles,
   loadOfficialCategoryLists,
+  loadOfficialListPageviews,
 } from '@app/[locale]/lists/official/loadOfficialLists';
 import { OfficialCategoryClient } from './OfficialCategoryClient';
 
@@ -64,11 +65,12 @@ export function OfficialCategoryRoute(props: OfficialCategoryRouteProps) {
 async function OfficialCategoryContent({ slug, params }: OfficialCategoryRouteProps) {
   const { locale } = await params;
   const category = requireCategory(slug);
-  const [lists, related] = await Promise.all([
+  const [lists, related, pageviews] = await Promise.all([
     loadOfficialCategoryLists(category.slug),
     loadOfficialCategoryArticles(category.slug),
+    needsPageviews(category) ? loadOfficialListPageviews() : undefined,
   ]);
-  const resolved = resolveCategory(category, lists);
+  const resolved = resolveCategory(category, lists, pageviews);
 
   const faqJsonLd = category.faq?.length
     ? {

@@ -11,12 +11,17 @@ export const dailies = {
   tags: ['dailies'],
   color: '#D663A6',
   image: 'https://images.neopets.com/images/frontpage/y7_day.gif',
+  seoTitle: 'Neopets Dailies & Freebies: All Prize Lists | itemdb',
   description:
-    'Discover complete prize lists from Neopets Dailies! Stay updated on the latest items from Neopets Freebies and never miss a daily freebie again.',
+    "Prize lists for the Neopets dailies: Tombola, Giant Omelette, Coltzan's Shrine, the Wheels, the Snowager, Monthly Freebies and more.",
   intro: [
-    'Discover complete prize lists from Neopets Dailies! Stay updated on the latest items from Neopets Freebies and never miss a daily freebie again.',
+    'Not sure a daily is worth the click? Open its list to see everything it can give and how much each prize is worth.',
   ],
-  layout: { type: 'groups', groups: [] },
+  layout: {
+    type: 'groups',
+    featured: { popular: 3 },
+    groups: [],
+  },
 } satisfies OfficialCategoryConfig;
 
 export const adventCalendar = {
@@ -39,10 +44,25 @@ export const stamps = {
   tags: ['stamps'],
   color: '#FFCC00',
   image: 'https://images.neopets.com/nt/ntimages/351_lenny_stamps.gif',
+  seoTitle: 'Neopets Stamps: Stamp Album Checklists & Prices | itemdb',
   description:
-    'Explore detailed checklists for each Neopets Stamp Album page! Track your stamps and complete your collection with ease.',
+    "Neopets stamp checklists for 50+ Stamp Album pages, including Coins, Charms and Scarabs. Find the stamps you're missing and how much they cost.",
   intro: [
-    'Explore detailed checklists for each Neopets Stamp Album page! Track your stamps and complete your collection with ease.',
+    'One checklist per Stamp Album page. Prices follow the market, so you can plan the cheapest way to finish a page.',
   ],
-  layout: { type: 'groups', groups: [] },
+  layout: {
+    type: 'groups',
+    featured: { slugs: ['all-collectibles'], popular: 2 },
+    groups: [],
+  },
+  faq: [
+    {
+      q: "How do I see which stamps I'm missing?",
+      a: 'Import your items and itemdb will show which stamps on each checklist you already have.',
+    },
+    {
+      q: 'Which stamps are the most expensive?',
+      a: 'Open an album page and sort its list by price. Prices come from the market data itemdb collects.',
+    },
+  ],
 } satisfies OfficialCategoryConfig;

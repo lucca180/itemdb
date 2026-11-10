@@ -6,15 +6,15 @@ export const questLog = {
   tags: ['quest log'],
   color: '#F3C242',
   image: 'https://images.neopets.com/neopies/y25/images/nominees/Surprise_2sytnvcmnj/04.png',
-  seoTitle: 'Quest Log Prizes: Daily, Weekly and Premium | itemdb',
+  seoTitle: 'Quest Log Prizes Guide: Daily, Weekly & NeoPass | itemdb',
   description:
-    'Explore prize lists from current and past Quest Log prizes! Stay updated on the latest Daily Quests Prizes, find the best Weekly Prizes and make Neopoints easily!',
+    'Every Neopets Quest Log prize pool in one place: the current Daily, Weekly, NeoPass and Premium rewards, plus the full history of past pools.',
 
   kicker: 'Dailies guide',
-  tagline: 'Every prize the Quest Log has ever handed out, in one place.',
+  tagline: 'Explore current and past Quest Log prizes, all in one place.',
   intro: [
-    'Each reward track below shows the pool you can win right now, followed by every past pool of that track.',
-    'Pools rotate every couple of months. When a pool leaves the rotation, it moves to the history of its track.',
+    'The Quest Log has separate reward tracks: Daily, Weekly, NeoPass and Premium. Each one below shows the pool you can win right now, followed by its past pools.',
+    'Pools rotate every couple of months. When one rotates out, we freeze its list and start a new one, so you can still check what it gave.',
   ],
 
   layout: {
@@ -73,16 +73,20 @@ export const questLog = {
 
   faq: [
     {
-      q: 'How often are these lists updated?',
-      a: 'Current pools are updated as new prizes are reported. When a pool rotates out, we freeze it and start a new list.',
+      q: 'What prizes can I get from the Quest Log?',
+      a: 'Each track has its own prize pool: Daily, Weekly, NeoPass and Premium. The current pool of each track is at the top of this page.',
     },
     {
-      q: 'Why are old pools still here?',
-      a: 'Past pools are useful to check when an item was last obtainable and how often it shows up.',
+      q: 'How often do Quest Log prize pools change?',
+      a: 'Pools rotate every couple of months. When one rotates out, its list is frozen and moved to the history of its track, and a new list starts.',
     },
     {
-      q: 'Can I help keep these lists updated?',
-      a: 'Yes! Suggest missing items on any official list.',
+      q: 'What is a NeoPass Special Week?',
+      a: 'Sometimes the NeoPass has a Special Week, with special prizes for a limited time. Those pools are marked as "Special week" in the NeoPass history.',
+    },
+    {
+      q: 'How are these lists kept up to date?',
+      a: "Prizes are added as players report them. Got something that isn't listed? Suggest it on the list and it will be reviewed.",
     },
   ],
 } satisfies OfficialCategoryConfig;

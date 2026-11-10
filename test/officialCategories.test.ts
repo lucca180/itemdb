@@ -206,6 +206,37 @@ describe('resolveCategory — groups fallback', () => {
     const resolved = resolveCategory(config, [list('a'), list('b')]);
     expect(slugsOf(resolved.other)).toEqual(['a', 'b']);
   });
+
+  it('pulls featured lists out of "other"', () => {
+    const config: OfficialCategoryConfig = {
+      ...baseConfig,
+      layout: { type: 'groups', featured: { slugs: ['b'], label: 'Top' }, groups: [] },
+    };
+    const resolved = resolveCategory(config, [list('a'), list('b')]);
+    if (resolved.type !== 'groups') throw new Error('expected groups');
+    expect(slugsOf(resolved.featured.lists)).toEqual(['b']);
+    expect(resolved.featured.label).toBe('Top');
+    expect(slugsOf(resolved.other)).toEqual(['a']);
+  });
+
+  it('adds the most viewed lists after the pinned ones, keeping them in their groups', () => {
+    const config: OfficialCategoryConfig = {
+      ...baseConfig,
+      layout: { type: 'groups', featured: { slugs: ['pinned'], popular: 2 }, groups: [] },
+    };
+    const lists = [list('pinned'), list('a'), list('b'), list('c'), list('d')];
+    const pageviews = { pinned: 999, a: 10, b: 50, c: 30 };
+
+    const resolved = resolveCategory(config, lists, pageviews);
+    if (resolved.type !== 'groups') throw new Error('expected groups');
+    expect(slugsOf(resolved.featured.lists)).toEqual(['pinned']);
+    expect(slugsOf(resolved.featured.popular)).toEqual(['b', 'c']);
+    expect(slugsOf(resolved.other)).toEqual(['a', 'b', 'c', 'd']);
+
+    const noViews = resolveCategory(config, lists);
+    if (noViews.type !== 'groups') throw new Error('expected groups');
+    expect(noViews.featured.popular).toEqual([]);
+  });
 });
 
 describe('resolveSections', () => {

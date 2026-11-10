@@ -60,6 +60,7 @@ export type ResolvedCategory = {
     }
   | {
       type: 'groups';
+      featured: { label?: string; lists: UserList[]; popular: UserList[] };
       groups: { id: string; title: string; description?: string; lists: UserList[] }[];
     }
 );
@@ -91,7 +92,16 @@ export const editionYear = (list: UserList): number | null => {
   return m ? Number(m[1]) : null;
 };
 
-export function resolveCategory(config: OfficialCategoryConfig, all: UserList[]): ResolvedCategory {
+/** Does this config need list pageviews (see `featured.popular`)? */
+export const needsPageviews = (config: OfficialCategoryConfig) =>
+  config.layout.type === 'groups' && !!config.layout.featured?.popular;
+
+/** @param pageviews list slug (lowercase) → recent pageviews, for `featured.popular`. */
+export function resolveCategory(
+  config: OfficialCategoryConfig,
+  all: UserList[],
+  pageviews: Record<string, number> = {}
+): ResolvedCategory {
   const archive = all.filter((l) => matches(l, config.archive)).sort(byNewest);
   const lists = all.filter((l) => !archive.includes(l));
   const used = new Set<number>();
@@ -160,11 +170,19 @@ export function resolveCategory(config: OfficialCategoryConfig, all: UserList[])
     };
   }
 
+  const pinned = take(lists.filter((l) => matches(l, layout.featured)));
+  const views = (l: UserList) => pageviews[slugOf(l)] ?? 0;
+  // Not taken: popular lists stay in their groups too.
+  const popular = lists
+    .filter((l) => !used.has(l.internal_id) && views(l) > 0)
+    .sort((a, b) => views(b) - views(a))
+    .slice(0, layout.featured?.popular ?? 0);
+  const featured = { label: layout.featured?.label, lists: pinned, popular };
   const groups = layout.groups.map((g) => ({
     id: g.id,
     title: g.title,
     description: g.description,
     lists: take(lists.filter((l) => matches(l, g.match))),
   }));
-  return { type: 'groups', groups, other: rest(), archive };
+  return { type: 'groups', featured, groups, other: rest(), archive };
 }

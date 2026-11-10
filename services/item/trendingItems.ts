@@ -36,8 +36,12 @@ export type UmamiItemPageviewsOptions = {
   windowMs?: number;
 };
 
-/** Path metrics for `/item/...` keyed by slug. NP and NC share the same map. */
-export async function getUmamiItemPageviews(
+/**
+ * Path metrics for paths containing `search`, keyed by the last path segment. Rows of the same
+ * slug (e.g. `/item/x` and `/pt/item/x`) are summed.
+ */
+export async function getUmamiPathPageviews(
+  search: string,
   options: UmamiItemPageviewsOptions = {}
 ): Promise<Map<string, number>> {
   const nowMs = options.nowMs ?? Date.now();
@@ -49,7 +53,7 @@ export async function getUmamiItemPageviews(
     endAt: nowMs,
     type: env.type,
     // @ts-expect-error missing types
-    search: 'item/',
+    search,
     excludeBounce: true,
     limit,
   })) as WebsiteMetrics;
@@ -62,6 +66,10 @@ export async function getUmamiItemPageviews(
   }
   return pageviews;
 }
+
+/** Path metrics for `/item/...` keyed by slug. NP and NC share the same map. */
+export const getUmamiItemPageviews = (options: UmamiItemPageviewsOptions = {}) =>
+  getUmamiPathPageviews('item/', options);
 
 export async function getTrendingItemsV2(limit: number): Promise<ItemV2For<'card'>[]> {
   const pageviews = await getUmamiItemPageviews({ limit: limit + 10 });

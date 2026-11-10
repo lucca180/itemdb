@@ -46,6 +46,12 @@ export type EditionsLayout = {
 
 export type GroupsLayout = {
   type: 'groups';
+  /**
+   * Featured cards right below the hero. Matched lists come first (`label` = their badge);
+   * `popular` adds that many of the category's most viewed lists (Umami, last 30 days), which
+   * also stay in their groups.
+   */
+  featured?: ListMatch & { label?: string; popular?: number };
   groups: { id: string; title: string; description?: string; match: ListMatch }[];
 };
 

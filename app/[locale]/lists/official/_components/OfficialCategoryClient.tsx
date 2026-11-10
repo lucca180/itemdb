@@ -126,7 +126,10 @@ export function OfficialCategoryClient(props: Props) {
   const accent = config.color;
   const sections = resolveSections(config);
   const hasFeatured =
-    resolved.type === 'tracks' || (resolved.type === 'editions' && !!resolved.latest);
+    resolved.type === 'tracks' ||
+    (resolved.type === 'editions' && !!resolved.latest) ||
+    (resolved.type === 'groups' &&
+      resolved.featured.lists.length + resolved.featured.popular.length > 0);
   // Featured cards only overlap the hero when they come right after it.
   const overlap = hasFeatured && sections[0] === 'featured';
 
@@ -143,6 +146,18 @@ export function OfficialCategoryClient(props: Props) {
             {resolved.type === 'tracks' && <NowTracks resolved={resolved} accent={accent} />}
             {resolved.type === 'editions' && resolved.latest && (
               <LatestEdition edition={resolved.latest} accent={accent} />
+            )}
+            {resolved.type === 'groups' && (
+              <NowGrid
+                cards={[
+                  ...resolved.featured.lists.map((list) => ({
+                    list,
+                    label: resolved.featured.label,
+                  })),
+                  ...resolved.featured.popular.map((list) => ({ list, label: t('popular') })),
+                ]}
+                accent={accent}
+              />
             )}
           </Box>
         );
@@ -707,20 +722,31 @@ const LatestEdition = ({ edition, accent }: { edition: EditionGroup; accent: str
           </Text>
         )}
       </HStack>
-      <Grid
-        templateColumns={
-          edition.lists.length === 1 ? '1fr' : { base: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' }
-        }
-        maxW={edition.lists.length === 1 ? '520px' : undefined}
-        gap={3}
-      >
-        {edition.lists.map((list) => (
-          <NowCard key={list.internal_id} list={list} accent={accent} />
-        ))}
-      </Grid>
+      <NowGrid cards={edition.lists.map((list) => ({ list }))} accent={accent} />
     </>
   );
 };
+
+/** Featured cards: one card stays narrow, more cards fill a grid. */
+const NowGrid = ({
+  cards,
+  accent,
+}: {
+  cards: { list: UserList; label?: string }[];
+  accent: string;
+}) => (
+  <Grid
+    templateColumns={
+      cards.length === 1 ? '1fr' : { base: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' }
+    }
+    maxW={cards.length === 1 ? '520px' : undefined}
+    gap={3}
+  >
+    {cards.map(({ list, label }) => (
+      <NowCard key={list.internal_id} list={list} label={label} accent={accent} />
+    ))}
+  </Grid>
+);
 
 const Editions = ({ resolved, accent }: { resolved: Editions; accent: string }) => {
   const t = useTranslations('OfficialCategory');
