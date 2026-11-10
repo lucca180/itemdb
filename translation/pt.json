@@ -95,7 +95,6 @@
     "tools": "Ferramentas",
     "devs": "Devs",
     "feedback-and-ideas": "Feedback e Ideias",
-    "missing-info-hub": "Infos Faltantes",
     "faerie-festval-cta": "Encontre os melhores itens para doar no <Link>Guia do Festival das Fadas</Link>",
     "scheduled-maintenance": "Manutenção Programada",
     "tavi-alert": "Alguns preços podem estar bastante desatualizados devido às Buscas de Tavi. \n<Link>Saiba como ajudar</Link> ou use o Botão de Preço Errado :)",
@@ -1548,11 +1547,8 @@
     "preview-clothed": "Roupa"
   },
   "MissingHub": {
-    "description": "Estamos precisando de algumas informações sobre esses itens. Se você possui algum desses itens, <Link>saiba como ajudar</Link>",
-    "missing-info-hub": "Central de Informações Faltantes",
     "next-page": "Próxima Página",
-    "prev-page": "Página Anterior",
-    "yay-its-empty": "eba está vazio!"
+    "prev-page": "Página Anterior"
   },
   "NcMall": {
     "leaving-soon-desc": "Itens que sairão do <Link>Centro NC</Link> em breve",
@@ -2013,8 +2009,6 @@
     "nc-trade-report-description": "Compartilhe suas trocas NC para melhorar as estimativas de valor NC.",
     "item-data-extractor": "Item Data Extractor",
     "item-data-extractor-description": "Nosso userscript que coleta dados de itens enquanto você navega no Neopets.",
-    "missing-info": "Infos Faltantes",
-    "missing-info-description": "Itens sem preço, descrição ou outras informações que você pode ajudar a preencher.",
     "trade-pricing": "Precificar Trocas",
     "trade-pricing-description": "Precifique lotes do Trading Post e ajude a manter os valores dos itens atualizados.",
     "sdb-pricer": "SDB Pricer",

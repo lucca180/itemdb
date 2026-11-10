@@ -189,13 +189,6 @@ export const tools: ToolInfo[] = [
     category: 'contribute',
   },
   {
-    id: 'missing-info',
-    href: '/hub/missing-info',
-    image: 'https://images.neopets.com/caption/caption_376.gif',
-    color: '#f0fa94',
-    category: 'contribute',
-  },
-  {
     id: 'trade-pricing',
     href: '/feedback/trades',
     image: 'https://images.neopets.com/nt/ntimages/347_trading_post.gif',

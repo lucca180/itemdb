@@ -93,7 +93,6 @@
     "restock-dashboard": "Restock Dashboard",
     "restock-simulator": "Restock Simulator",
     "devs": "Devs",
-    "missing-info-hub": "Missing Info Hub",
     "feedback-and-ideas": "Feedback and Ideas",
     "faerie-festval-cta": "Find the best items to donate in the <Link>Faerie Festival Guide</Link>",
     "scheduled-maintenance": "Scheduled Maintenance",
@@ -1546,9 +1545,6 @@
     "preview-clothed": "Outfit"
   },
   "MissingHub": {
-    "missing-info-hub": "Missing Info Hub",
-    "description": "We're missing some information on these items. If you have any of these items, <Link>learn how to help</Link>",
-    "yay-its-empty": "yay it's empty!",
     "prev-page": "Prev Page",
     "next-page": "Next Page"
   },
@@ -2011,8 +2007,6 @@
     "nc-trade-report-description": "Share your NC trades to improve NC value estimates.",
     "item-data-extractor": "Item Data Extractor",
     "item-data-extractor-description": "Our userscript that collects item data while you browse Neopets.",
-    "missing-info": "Missing Info Hub",
-    "missing-info-description": "Items missing prices, descriptions or other info that you can help fill.",
     "trade-pricing": "Trade Pricing",
     "trade-pricing-description": "Price Trading Post lots and help keep item values fresh.",
     "sdb-pricer": "SDB Pricer",

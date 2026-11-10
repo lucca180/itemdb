@@ -216,11 +216,6 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           trackEventLabel: 'item-data-extractor',
         },
         {
-          label: t('Layout.missing-info-hub'),
-          href: '/hub/missing-info',
-          trackEventLabel: 'missing-info-hub',
-        },
-        {
           label: t('Layout.trade-pricing'),
           href: '/feedback/trades',
           trackEventLabel: 'trade-pricing',

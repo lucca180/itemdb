@@ -12,7 +12,6 @@ export const STATIC_SITEMAP_PATHS = [
   '/feedback',
   '/hub/faeriefestival',
   '/hub/item-effects',
-  '/hub/missing-info',
   '/hub/the-void-within',
   '/lists/import',
   '/lists/official',
