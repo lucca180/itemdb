@@ -49,6 +49,18 @@ export const emptyPoolNameOptions: PoolNameOptions = {
 export const slugifyPoolBase = (value: string) =>
   value.trim().toLowerCase().replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
+const poolDisplayPriority = (pool: { name: string; isLE: boolean }) => {
+  if (pool.isLE) return 0;
+  if (pool.name === 'bonus') return 1;
+  return 2;
+};
+
+/** Display order of pools on the item page: LE, then bonus, then alphabetical. */
+export const comparePrizePools = (
+  a: { name: string; isLE: boolean },
+  b: { name: string; isLE: boolean }
+) => poolDisplayPriority(a) - poolDisplayPriority(b) || a.name.localeCompare(b.name, 'en');
+
 /** Same checks `getItemDrops` runs on a (lowercased) pool name. */
 export const parsePoolName = (rawName: string): ParsedPoolName => {
   const name = rawName.toLowerCase();

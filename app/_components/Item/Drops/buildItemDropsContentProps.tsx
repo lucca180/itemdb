@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link as I18nLink } from '@i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { renderDropText } from '@app/_components/Item/Drops/renderDropText';
+import { comparePrizePools } from '@utils/item/prizePoolName';
 import type { ItemData, ItemOpenable, PrizePoolData } from '@types';
 
 export type HelpNeededLabels = {
@@ -60,7 +61,7 @@ function buildPoolTextData(
 
   return {
     alertDropText:
-      pool.name === 'bonus' || pool.isLE ? renderDropText(t, pool, itemOpenable) : null,
+      pool.name === 'bonus' || pool.isLE ? renderDropText(t, pool, itemOpenable, isFirst) : null,
     mainDropText:
       !isChoice && pool.name !== 'bonus' && !pool.isLE
         ? renderDropText(t, pool, itemOpenable, isFirst)
@@ -75,21 +76,30 @@ export async function buildItemDropsContentProps(
 ): Promise<ItemDropsPreparedContent> {
   const t = await getTranslations();
   const pools = itemOpenable.pools;
-  const poolsArr = Object.values(pools).sort((a, b) =>
-    a.isLE ? -1 : a.name.localeCompare(b.name)
-  );
+  const poolsArr = Object.values(pools).sort(comparePrizePools);
   const multiplePools = Object.keys(pools).filter((a) => !a.includes('old-')).length > 1;
   const hasOldPool = Object.keys(pools).some((a) => a.includes('old-'));
   const isChoice = itemOpenable.isChoice;
   const forceOddsText = hasOldPool;
 
+  const choiceDropText =
+    isChoice && (itemOpenable.minDrop > 1 || itemOpenable.maxDrop > 1)
+      ? renderDropText(t, null, itemOpenable)
+      : null;
+
   const poolTexts: Record<string, PoolTextData> = {};
 
+  // the choice text is rendered above the pools, so no pool is the first sentence then
   poolsArr
     .filter((a) => !['unknown'].includes(a.name) && !a.name.includes('old-'))
-    .sort((a) => (a.isLE ? -1 : 1))
     .forEach((pool, i) => {
-      poolTexts[pool.name] = buildPoolTextData(t, pool, itemOpenable, i === 0, forceOddsText);
+      poolTexts[pool.name] = buildPoolTextData(
+        t,
+        pool,
+        itemOpenable,
+        i === 0 && !choiceDropText,
+        forceOddsText
+      );
     });
 
   if (pools['unknown']) {
@@ -107,11 +117,6 @@ export async function buildItemDropsContentProps(
     .forEach((pool) => {
       poolTexts[pool.name] = buildPoolTextData(t, pool, itemOpenable, false, forceOddsText);
     });
-
-  const choiceDropText =
-    isChoice && (itemOpenable.minDrop > 1 || itemOpenable.maxDrop > 1)
-      ? renderDropText(t, null, itemOpenable)
-      : null;
 
   const oldPoolTitles = poolsArr
     .filter((a) => a.name.includes('old-'))

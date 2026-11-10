@@ -176,10 +176,10 @@ export function ListPageClient({
   );
 
   // "Suggest missing item" button: non-editors on official, non-dynamic lists
-  // (logged-out users get a login prompt inside the modal)
+  // (logged-out users too)
   const canSuggestItems = state.list.official && !state.canEdit && !state.list.dynamicType;
 
-  // reopen the suggest modal after the login redirect (`?suggest`)
+  // reopen the suggest modal from `?suggest` (old login-redirect links)
   useEffect(() => {
     if (!canSuggestItems) return;
     if (new URL(window.location.href).searchParams.has('suggest')) onOpenSuggest();

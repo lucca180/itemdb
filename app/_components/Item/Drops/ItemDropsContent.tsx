@@ -4,6 +4,7 @@ import { Text, Alert, Link, useDisclosure } from '@chakra-ui/react';
 import { useMemo } from 'react';
 import { DropPool, HelpNeeded } from '@app/_components/Item/Drops/ItemDropPool';
 import dynamic from 'next/dynamic';
+import { comparePrizePools } from '@utils/item/prizePoolName';
 import type {
   ItemDropsContentLabels,
   PoolTextData,
@@ -39,10 +40,7 @@ export function ItemDropsContent({
   const isChoice = itemOpenable.isChoice;
   const hasOldPool = Object.keys(pools).some((a) => a.includes('old-'));
 
-  const poolsArr = useMemo(
-    () => Object.values(pools).sort((a, b) => (a.isLE ? -1 : a.name.localeCompare(b.name))),
-    [pools]
-  );
+  const poolsArr = useMemo(() => Object.values(pools).sort(comparePrizePools), [pools]);
 
   const unknownLabels = {
     categories: labels.unknownCategories,
@@ -70,7 +68,6 @@ export function ItemDropsContent({
 
       {poolsArr
         .filter((a) => !['unknown'].includes(a.name) && !a.name.includes('old-'))
-        .sort((a) => (a.isLE ? -1 : 1))
         .map((pool) => (
           <DropPool
             key={pool.name}

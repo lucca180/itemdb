@@ -131,19 +131,18 @@ beforeEach(() => {
 });
 
 describe('submitListSuggestion', () => {
-  test('requires a logged in, non-banned user', async () => {
-    await expectCode(
-      submitListSuggestion({ listId: 7, itemIids: [1], user: null }),
-      'unauthorized'
-    );
+  test('rejects banned users only', async () => {
     await expectCode(
       submitListSuggestion({ listId: 7, itemIids: [1], user: user({ banned: true }) }),
       'forbidden'
     );
-    await expectCode(
-      submitListSuggestion({ listId: 7, itemIids: [1], user: user({ xp: -300 }) }),
-      'forbidden'
-    );
+
+    const result = await submitListSuggestion({
+      listId: 7,
+      itemIids: [1],
+      user: user({ xp: -500 }),
+    });
+    expect(result).toEqual({ created: [1], skipped: [] });
   });
 
   test('rejects non-official and dynamic lists', async () => {
@@ -197,6 +196,37 @@ describe('submitListSuggestion', () => {
           ip_address: '127.0.0.1',
         }),
       ],
+    });
+  });
+
+  test('accepts logged-out users and dedupes their pending suggestions by ip', async () => {
+    prismaMock.dataCollecting.findMany.mockResolvedValue([{ item_iid: 2 }]);
+
+    const result = await submitListSuggestion({
+      listId: 7,
+      itemIids: [1, 2],
+      user: null,
+      ip: '10.0.0.1',
+    });
+
+    expect(result).toEqual({ created: [1], skipped: [2] });
+    expect(prismaMock.dataCollecting.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ user_id: null, ip_address: '10.0.0.1' }),
+      })
+    );
+    expect(prismaMock.dataCollecting.createMany).toHaveBeenCalledWith({
+      data: [expect.objectContaining({ item_iid: 1, user_id: null, ip_address: '10.0.0.1' })],
+    });
+  });
+
+  test('skips the pending dedupe for logged-out users without an ip', async () => {
+    const result = await submitListSuggestion({ listId: 7, itemIids: [1], user: null });
+
+    expect(result).toEqual({ created: [1], skipped: [] });
+    expect(prismaMock.dataCollecting.findMany).not.toHaveBeenCalled();
+    expect(prismaMock.dataCollecting.createMany).toHaveBeenCalledWith({
+      data: [expect.objectContaining({ user_id: null, ip_address: '-1' })],
     });
   });
 

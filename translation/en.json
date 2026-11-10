@@ -828,7 +828,6 @@
     "suggest-missing-error-already-in-list": "These items are already in this list.",
     "suggest-missing-error-already-suggested": "You have already suggested these items.",
     "suggest-missing-error-note-too-long": "Your note is too long (max {max} characters).",
-    "suggest-missing-login-required": "Log in to send your suggestion. It only takes a moment, and it helps us keep the lists accurate!",
     "suggest-to-list-title": "Suggest to an official list",
     "suggest-to-list-description": "Should <b>{item}</b> be on an official list? Pick the list below and our team will review your suggestion.",
     "suggest-to-list-select": "Official list",
@@ -2118,5 +2117,27 @@
     "faq-where": "The code is a regular image: paste it on your Neopets lookup, petpage or shop.",
     "faq-owner-title": "Where to find the button",
     "faq-owner": "The Goal Counter button shows up on the checklist page, only for the list owner."
+  },
+  "OfficialCategory": {
+    "items-tracked": "items tracked",
+    "items": "items",
+    "items-count": "{count, plural, one {# item} other {# items}}",
+    "since": "Since {date}",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "weeks": "{count, plural, one {# week} other {# weeks}}",
+    "most-recent": "Most recent",
+    "latest-edition": "Latest edition · {year}",
+    "past-editions": "Past editions",
+    "other-lists": "Other lists",
+    "all-lists": "All lists",
+    "archive": "Archive · {count}",
+    "archive-hint": "Retired lists, kept for reference.",
+    "show": "Show",
+    "hide": "Hide",
+    "show-all": "Show all {count}",
+    "show-less": "Show less",
+    "faq": "FAQ",
+    "related-articles": "From our articles",
+    "popular": "Popular"
   }
 }

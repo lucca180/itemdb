@@ -6,7 +6,7 @@ import {
 import { GetServerSideProps } from 'next';
 import prisma from '@utils/prisma';
 import { restockShopInfo, slugify } from '@utils/utils';
-import { listCategoriesData } from '@utils/lists/listCategoriesData';
+import { officialCategorySlugs } from '@app/[locale]/lists/official/_categories';
 import { allSpecies, findPetColorName, petColorSlug } from '@utils/pet-utils';
 import { fetchAllNeopetsColors } from '@utils/pet-colors';
 import { wp } from '@pages/api/wp/posts';
@@ -154,10 +154,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         : []),
     ]);
 
-  // Keys are the route params of /lists/official/cat/[category]; ids may hold comma-separated tags.
-  const officialListsCats: ISitemapField[] = Object.keys(listCategoriesData)
+  // Official categories live at /lists/official/<slug> (registry in app/[locale]/lists/official/_categories).
+  const officialListsCats: ISitemapField[] = officialCategorySlugs
     .slice(pageNum * 10, pageNum * 10 + 10)
-    .flatMap((cat) => bilingualSitemapFields(`/lists/official/cat/${cat}`));
+    .flatMap((cat) => bilingualSitemapFields(`/lists/official/${cat}`));
 
   const speciesOutfitsPaths: ISitemapField[] = Object.values(allSpecies)
     .slice(pageNum * 10, pageNum * 10 + 10)

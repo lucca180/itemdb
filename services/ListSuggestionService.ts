@@ -33,7 +33,6 @@ import {
 
 /** Expected validation failures; returned to the client as-is so it can show a message. */
 export type ListSuggestionErrorCode =
-  | 'unauthorized'
   | 'forbidden'
   | 'invalid-list'
   | 'invalid-items'
@@ -67,6 +66,7 @@ type SubmitListSuggestionParams = {
   listId: number;
   itemIids: unknown;
   note?: string | null;
+  /** `null` for logged-out users (their pending suggestions are deduped by `ip`). */
   user: User | null;
   ip?: string | null;
   /** Untrusted client value; unknown values count as `list-page`. */
@@ -81,11 +81,22 @@ export type SubmitListSuggestionResult = {
 };
 
 /**
- * Stores a user's "missing item" suggestion for an official, non-dynamic list.
- * One `DataCollecting` row per item, sharing an `instance_id` per submission.
+ * Who a pending suggestion belongs to, for deduping: the user id, or (logged out) the IP among
+ * anonymous rows. `null` when a logged-out request has no IP, so nothing can be matched.
+ */
+function pendingAuthorFilter(user: User | null, ip: string | null | undefined) {
+  if (user) return { user_id: user.id };
+  if (!ip) return null;
+
+  return { user_id: null, ip_address: ip };
+}
+
+/**
+ * Stores a "missing item" suggestion for an official, non-dynamic list, from a logged-in or
+ * logged-out user. One `DataCollecting` row per item, sharing an `instance_id` per submission.
  *
- * Items already in the list, or already pending from the same user, are skipped (so a user
- * can't inflate the request count). Throws when nothing is left to store.
+ * Items already in the list, or already pending from the same user (same IP when logged out),
+ * are skipped (so a user can't inflate the request count). Throws when nothing is left to store.
  */
 export async function submitListSuggestion({
   listId,
@@ -96,8 +107,7 @@ export async function submitListSuggestion({
   source,
 }: SubmitListSuggestionParams): Promise<SubmitListSuggestionResult> {
   // --- permission & input validation ---
-  if (!user) throw new SuggestionInputError('unauthorized');
-  if (user.banned || user.xp <= -300) throw new SuggestionInputError('forbidden');
+  if (user?.banned) throw new SuggestionInputError('forbidden');
 
   const uniqueIids = normalizeIids(itemIids);
   if (!uniqueIids.length) throw new SuggestionInputError('invalid-items');
@@ -132,21 +142,25 @@ export async function submitListSuggestion({
   if (!validIids.length) throw new SuggestionInputError('invalid-items');
 
   // --- dedupe against the list and against this user's pending suggestions ---
+  const authorFilter = pendingAuthorFilter(user, ip);
+
   const [inList, pendingFromUser] = await Promise.all([
     prisma.listItems.findMany({
       where: { list_id: list.internal_id, item_iid: { in: validIids } },
       select: { item_iid: true },
     }),
-    prisma.dataCollecting.findMany({
-      where: {
-        type: LIST_SUGGESTION_TYPE,
-        subject_id: list.internal_id,
-        user_id: user.id,
-        processed: false,
-        item_iid: { in: validIids },
-      },
-      select: { item_iid: true },
-    }),
+    authorFilter
+      ? prisma.dataCollecting.findMany({
+          where: {
+            type: LIST_SUGGESTION_TYPE,
+            subject_id: list.internal_id,
+            ...authorFilter,
+            processed: false,
+            item_iid: { in: validIids },
+          },
+          select: { item_iid: true },
+        })
+      : [],
   ]);
 
   const inListSet = new Set(inList.map((row) => row.item_iid));
@@ -169,7 +183,7 @@ export async function submitListSuggestion({
       item_iid: iid,
       subject_id: list.internal_id,
       note: trimmedNote,
-      user_id: user.id,
+      user_id: user?.id ?? null,
       ip_address: ip ?? '-1',
     })),
   });
@@ -179,7 +193,7 @@ export async function submitListSuggestion({
     list,
     itemNames: toCreate.map((iid) => items[iid]?.name ?? `#${iid}`),
     note: trimmedNote,
-    username: user.username,
+    username: user?.username ?? null,
     source: normalizeSuggestionSource(source),
   }).catch(console.error);
 
@@ -390,7 +404,7 @@ async function sendSuggestionWebhook({
     })
     .addField({
       name: 'Usuário',
-      value: username ?? 'Unknown',
+      value: username ?? 'Deslogado',
       inline: true,
     })
     .addField({
