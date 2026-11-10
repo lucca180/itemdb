@@ -9,10 +9,10 @@ export const ITEM_QUOTA_ROUTES = {
     /^\/api\/v[12]\/items(\/|$)/,
     /^\/api\/v[12]\/search(\/|$)/,
     /^\/api\/v[12]\/lists\/[^/]+\/[^/]+\/itemdata$/,
-    /^\/api\/v1\/prices\/(history|stats)$/,
+    /^\/api\/v1\/prices\/stats$/,
     /^\/api\/v1\/tools\/album-helper$/,
   ],
-  POST: [/^\/api\/v[12]\/items(\/|$)/, /^\/api\/v1\/prices\/history$/],
+  POST: [/^\/api\/v[12]\/items(\/|$)/],
 } as const;
 
 export function isItemQuotaRoute(method: string, pathname: string): boolean {

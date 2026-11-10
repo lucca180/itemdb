@@ -4,7 +4,7 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 import { ItemPriceData, RestockSession, RestockStats, User } from '../../../../types';
 import prisma from '../../../../utils/prisma';
 import { addMonths, differenceInCalendarDays, format, parse, startOfMonth } from 'date-fns';
-import { getManyItemsPriceHistory } from '../prices/history';
+import { getManyItemsPriceHistory } from '@services/item/priceHistory';
 import { calculateStats, defaultStats } from '.';
 import { getItem } from '../items/[id_name]';
 import { chunk } from 'lodash';

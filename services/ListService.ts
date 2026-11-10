@@ -47,6 +47,7 @@ import {
 } from '@services/list/userListsQuery';
 import { fetchListItemsV2, type FetchListItemsV2Result } from '@services/list/listItemsV2';
 import { getItemLists } from '@services/list/itemListsQuery';
+import { getListPriceHistory } from '@services/list/listPriceHistory';
 
 export { LIST_ITEMS_MAX_LIMIT } from '@services/list/listItemsV2';
 import { adminListSeoWriteData, getListSeo } from '@services/list/listSeo';
@@ -82,6 +83,8 @@ export class ListService {
   static adminListSeoWriteData = adminListSeoWriteData;
   /** Lists that hold one item (official and/or public trade lists); viewer-independent. */
   static getItemLists = getItemLists;
+  /** Price history of an already-authorized list's visible NP items. */
+  static getListPriceHistory = getListPriceHistory;
 
   static init() {
     return ListService.initUser(null);
