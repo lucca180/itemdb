@@ -37,6 +37,57 @@ export const festivalOfNeggs = {
   ],
 } satisfies OfficialCategoryConfig;
 
+export const neopetsAnniversary = {
+  slug: 'neopets-anniversary',
+  name: 'Birthday Celebration',
+  tags: ['birthday celebrations'],
+  // Only tagged "Treasure Maps" for now; drop this once it gets the Birthday Celebrations tag.
+  lists: { slugs: ['birthday-map'] },
+  // Wheel of Celebration list color.
+  color: '#8ED1FC',
+  image: 'https://images.neopets.com/homepage/marquee/icons/woc_event_icon.png',
+  // Update the birthday number every year.
+  seoTitle: 'Neopets 27th Birthday Prizes & Past Celebrations | itemdb',
+  // Mention the current year's activities (2026: Celebration Pass and Monoceraptor raid).
+  description:
+    'Every prize from the Neopets Birthday Celebration in one place: the Wheel of Celebration, the new Celebration Pass, the Monoceraptor raid and the treasure map.',
+
+  kicker: 'Yearly event',
+  tagline: 'Wheel spins, treasure hunts and more from every Neopets Birthday.',
+  intro: [
+    'Looking for a birthday prize? Start with the latest celebration, then check past years to see when an item was last available.',
+  ],
+
+  layout: {
+    type: 'editions',
+    editionOrder: [
+      'wheel-of-celebration-',
+      'free-celebration-pass',
+      'paid-celebration-pass',
+      'monoceraptor-raid',
+      'birthday-treasure-hunt-',
+    ],
+    // Wheel of Celebration opened Nov 10 (support.neopets.com); the Celebration Pass end isn't
+    // announced. Only applies once a 2026 list exists.
+    editionDates: { 2026: { start: '2026-11-10' } },
+  },
+
+  faq: [
+    {
+      q: 'When is the Neopets Birthday Celebration?',
+      a: 'Neopets launched on November 15, 1999, so its birthday is celebrated in mid-November, with events running for a couple of weeks.',
+    },
+    {
+      q: 'What is the Wheel of Celebration?',
+      a: 'A limited-time wheel that runs during the birthday celebration. Each year it ran has its own prize list on this page.',
+    },
+    {
+      q: 'Where can I find the birthday map pieces?',
+      a: 'The Birthday Map list has every piece of the birthday treasure map. Prizes for completing it are in the Birthday Treasure Hunt Prizes list.',
+    },
+  ],
+} satisfies OfficialCategoryConfig;
+
 export const altadorCup = {
   slug: 'altador-cup',
   name: 'Altador Cup',

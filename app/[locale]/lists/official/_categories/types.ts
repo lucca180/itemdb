@@ -74,6 +74,11 @@ export type OfficialCategoryConfig = {
   name: string;
   /** `official_tag` values (case-insensitive). Also maps list breadcrumbs to this category. */
   tags: string[];
+  /**
+   * Extra official lists picked by slug, on top of `tags`, for lists whose tag belongs to
+   * something broader (e.g. "Other Events"). Breadcrumbs of these lists still follow their tag.
+   */
+  lists?: ListMatch;
   color: string;
   image: string;
   seoTitle?: string;

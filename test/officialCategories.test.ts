@@ -65,6 +65,16 @@ describe('official category registry', () => {
     }
   });
 
+  it('picks an extra list (`lists.slugs`) in a single category', () => {
+    const seen = new Map<string, string>();
+    for (const c of Object.values(officialCategories)) {
+      for (const slug of c.lists?.slugs ?? []) {
+        expect(seen.get(slug), `list "${slug}" is in two categories`).toBeUndefined();
+        seen.set(slug, c.slug);
+      }
+    }
+  });
+
   it('looks categories up by slug and by official tag, case-insensitively', () => {
     expect(getOfficialCategory('Quest-Log')?.slug).toBe('quest-log');
     expect(getOfficialCategory('weekly-quest-prize')).toBeNull();

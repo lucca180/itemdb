@@ -7,6 +7,7 @@ import type { UserList, WP_Article } from '@types';
 import { fitCacheTag } from '@utils/appCacheTags';
 import { wp_getBySlug } from '@pages/api/wp/posts/[slug]';
 import { getOfficialCategory } from '@app/[locale]/lists/official/_categories';
+import { matches } from '@app/[locale]/lists/official/_categories/resolve';
 
 export const OFFICIAL_LISTS_CACHE_TAG = 'official-lists';
 
@@ -55,7 +56,14 @@ async function loadOfficialCategoryListsCached(slug: string): Promise<UserList[]
   const category = getOfficialCategory(slug);
   if (!category) return [];
 
-  return ListService.init().getOfficialListsCat(category.tags.join(','), 3000);
+  const listService = ListService.init();
+  const byTag = await listService.getOfficialListsCat(category.tags.join(','), 3000);
+  if (!category.lists) return byTag;
+
+  const seen = new Set(byTag.map((l) => l.internal_id));
+  const all = await listService.getUserLists({ username: 'official', limit: -1 });
+  const extra = all.filter((l) => !seen.has(l.internal_id) && matches(l, category.lists));
+  return [...byTag, ...extra].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export const loadOfficialCategoryLists = cache(loadOfficialCategoryListsCached);

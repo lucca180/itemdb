@@ -1,6 +1,6 @@
 import type { OfficialCategoryConfig } from './types';
 import { questLog } from './quest-log';
-import { altadorCup, festivalOfNeggs } from './events';
+import { altadorCup, festivalOfNeggs, neopetsAnniversary } from './events';
 import { adventCalendar, dailies, stamps } from './fallback';
 
 /** Registry order = order in sitemaps and other listings. */
@@ -9,6 +9,7 @@ const categories: OfficialCategoryConfig[] = [
   adventCalendar,
   altadorCup,
   festivalOfNeggs,
+  neopetsAnniversary,
   questLog,
   stamps,
 ];

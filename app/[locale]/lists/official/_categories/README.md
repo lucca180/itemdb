@@ -42,6 +42,8 @@ that makes `/lists/official` hit `official/page.tsx`).
 ## Config
 
 - `tags`: `official_tag` values (case-insensitive) loaded for the page. A tag belongs to one category.
+- `lists?: ListMatch`: extra official lists by slug, for lists that don't have the category tag
+  yet (e.g. Birthday Map on Birthday Celebration). Their breadcrumbs still follow their first tag.
 - `ListMatch`: exact `slugs` and/or `slugPrefix` (string or array), case-insensitive.
 - `archive?: ListMatch`: forced into the collapsed archive regardless of layout.
 - `layout`:
