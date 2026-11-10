@@ -15,6 +15,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import Color from 'color';
+import dynamic from 'next/dynamic';
 import { useFormatter, useTranslations } from 'next-intl';
 import { createContext, Fragment, useContext, useState } from 'react';
 import type { UserList, WP_Article } from '@types';
@@ -34,6 +35,8 @@ import {
   type EditionGroup,
   type ResolvedCategory,
 } from '@app/[locale]/lists/official/_categories/resolve';
+
+const Markdown = dynamic(() => import('@components/Utils/Markdown'));
 
 type Props = {
   locale: string;
@@ -423,17 +426,10 @@ const inkFor = (hex: string) => {
   };
 };
 
-/** First line of a markdown description, as plain text. */
-const plain = (md?: string | null) =>
-  (md ?? '')
-    .split(/[\r\n]+/)[0]
-    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[*_`#>]/g, '')
-    .trim();
-
 /**
  * ListCard, "featured" flavour: same colored body and overlapping cover, with the track label
- * as the first badge instead of the official badge.
+ * as the first badge instead of the official badge. Like ListCard, only the cover and the title
+ * link to the list; the markdown description keeps its own links.
  */
 const NowCard = ({
   list,
@@ -448,8 +444,9 @@ const NowCard = ({
   const labels = useListLabels(list);
   const hex = listColor(list, accent);
   const ink = inkFor(hex);
+  const description = (list.description ?? '').split(/[\r\n]+/)[0].trim();
   return (
-    <ListLink list={list} h="100%">
+    <Box h="100%">
       <Flex
         h="100%"
         minH="120px"
@@ -459,29 +456,36 @@ const NowCard = ({
         bg="gray.700"
         borderRadius="md"
         bgGradient={`linear-gradient(to top, rgba(0,0,0,0) 0, ${rgba(hex, 0.6)} 0%)`}
-        transition="transform .15s"
-        _hover={{ transform: 'translateY(-2px)' }}
       >
-        <Flex
-          w="100px"
-          h="100px"
-          ml="-48px"
-          flex="0 0 auto"
-          borderRadius="md"
-          bg="gray.700"
-          bgGradient={`linear-gradient(to top, rgba(0,0,0,0) 0, ${rgba(hex, 0.75)} 0%)`}
-          alignItems="center"
-          justifyContent="center"
-          boxShadow="md"
-        >
-          <Cover list={list} size="92px" radius="md" />
-        </Flex>
+        <ListLink list={list} flex="0 0 auto" ml="-48px">
+          <Flex
+            w="100px"
+            h="100px"
+            borderRadius="md"
+            bg="gray.700"
+            bgGradient={`linear-gradient(to top, rgba(0,0,0,0) 0, ${rgba(hex, 0.75)} 0%)`}
+            alignItems="center"
+            justifyContent="center"
+            boxShadow="md"
+          >
+            <Cover list={list} size="92px" radius="md" />
+          </Flex>
+        </ListLink>
         <Flex flexFlow="column" gap={1.5} minW={0} flex="1">
-          <Text fontWeight="bold" color={ink.text} lineClamp={2} lineHeight="1.25">
-            {list.name.trim()}
-          </Text>
-          <Text fontSize="xs" color={ink.muted} lineClamp={2} flex="1">
-            {plain(list.description)}
+          <ListLink list={list}>
+            <Text fontWeight="bold" color={ink.text} lineClamp={2} lineHeight="1.25">
+              {list.name.trim()}
+            </Text>
+          </ListLink>
+          <Text
+            as="div"
+            fontSize="xs"
+            color={ink.muted}
+            lineClamp={2}
+            flex="1"
+            css={{ '& a': { fontWeight: 'bold', color: 'inherit' } }}
+          >
+            {description && <Markdown skipParagraph>{description}</Markdown>}
           </Text>
           <Flex gap={1} flexWrap="wrap">
             {label && (
@@ -498,7 +502,7 @@ const NowCard = ({
           </Flex>
         </Flex>
       </Flex>
-    </ListLink>
+    </Box>
   );
 };
 
