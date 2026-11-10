@@ -33,7 +33,8 @@ import NextImage from 'next/image';
 import dynamic from 'next/dynamic';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
 import { FaShareAlt } from 'react-icons/fa';
-import { MAX_ITEMS_LIST_PRICE, ListPriceHistoryModalProps } from '../Modal/ListPriceHistoryModal';
+import type { ListPriceHistoryModalProps } from '@components/Modal/ListPriceHistoryModal';
+import { MAX_ITEMS_LIST_PRICE } from '@utils/list/listPriceHistory';
 import { AiOutlineAreaChart } from 'react-icons/ai';
 import Image from '../Utils/Image';
 import { ListBreadcrumb } from '../Breadcrumbs/ListBreadcrumb';
@@ -238,19 +239,18 @@ const ListHeader = (props: ListHeaderProps) => {
     });
   };
 
-  const item_iids = useMemo(() => {
-    return Object.values(itemInfo)
-      .filter((item) => {
-        const itemData = items[item.item_iid];
-        if (!itemData) return false;
-        return itemData.type !== 'nc' && !item.isHidden;
-      })
-      .map((item) => item.item_iid);
+  // Only decides whether to show the chart button; the chart itself is built server-side.
+  const npItemCount = useMemo(() => {
+    return Object.values(itemInfo).filter((item) => {
+      const itemData = items[item.item_iid];
+      if (!itemData) return false;
+      return itemData.type !== 'nc' && !item.isHidden;
+    }).length;
   }, [itemInfo, items]);
 
   const hasSeriesDates = !!(list.seriesStart || list.seriesEnd);
   const hasPrice = !!NPPrice || !!NCPrice;
-  const hasChart = hasPrice && item_iids.length > 0 && item_iids.length < MAX_ITEMS_LIST_PRICE;
+  const hasChart = hasPrice && npItemCount > 0 && npItemCount <= MAX_ITEMS_LIST_PRICE;
   const dateFormat = { day: 'numeric', month: 'short', year: 'numeric' } as const;
   const showProgressCard =
     !!tracksProgress && !progressHidden && (!checklistProgress || checklistProgress.total > 0);
@@ -318,7 +318,8 @@ const ListHeader = (props: ListHeaderProps) => {
           listColor={color}
           isOpen={open}
           onClose={onClose}
-          item_iids={item_iids}
+          username={list.official ? 'official' : (list.owner.username ?? '')}
+          listId={list.internal_id}
         />
       )}
       {isOpenDynamic && (

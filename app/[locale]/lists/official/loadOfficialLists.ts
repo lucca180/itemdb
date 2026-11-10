@@ -2,9 +2,12 @@ import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { ListService } from '@services/ListService';
 import { getTrendingLists } from '@pages/api/v1/beta/trending';
-import { UserList } from '@types';
+import { getUmamiPathPageviews } from '@services/item/trendingItems';
+import type { UserList, WP_Article } from '@types';
 import { fitCacheTag } from '@utils/appCacheTags';
-import { listCategoriesData, sortOfficialLists } from '@utils/lists/listCategoriesData';
+import { wp_getBySlug } from '@pages/api/wp/posts/[slug]';
+import { getOfficialCategory } from '@app/[locale]/lists/official/_categories';
+import { matches } from '@app/[locale]/lists/official/_categories/resolve';
 
 export const OFFICIAL_LISTS_CACHE_TAG = 'official-lists';
 
@@ -44,21 +47,57 @@ async function loadOfficialAllListsCached() {
 
 export const loadOfficialAllLists = cache(loadOfficialAllListsCached);
 
-async function loadOfficialListsCatDataCached(category: string) {
+async function loadOfficialCategoryListsCached(slug: string): Promise<UserList[]> {
   'use cache';
   cacheTag(OFFICIAL_LISTS_CACHE_TAG);
-  cacheTag(fitCacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-${category}`));
+  cacheTag(fitCacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-${slug}`));
   cacheLife('homeSection');
 
-  const catInfo = listCategoriesData[category];
-  if (!catInfo) return null;
+  const category = getOfficialCategory(slug);
+  if (!category) return [];
 
   const listService = ListService.init();
-  const lists = (await listService.getOfficialListsCat(catInfo.id.toLowerCase(), 3000)).sort(
-    (a, b) => sortOfficialLists(a, b, catInfo.featured)
-  );
+  const byTag = await listService.getOfficialListsCat(category.tags.join(','), 3000);
+  if (!category.lists) return byTag;
 
-  return { lists, catInfo };
+  const seen = new Set(byTag.map((l) => l.internal_id));
+  const all = await listService.getUserLists({ username: 'official', limit: -1 });
+  const extra = all.filter((l) => !seen.has(l.internal_id) && matches(l, category.lists));
+  return [...byTag, ...extra].sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export const loadOfficialListsCatData = cache(loadOfficialListsCatDataCached);
+export const loadOfficialCategoryLists = cache(loadOfficialCategoryListsCached);
+
+/** WordPress posts from the category's `relatedArticles`, in config order; missing ones are skipped. */
+async function loadOfficialCategoryArticlesCached(slug: string): Promise<WP_Article[]> {
+  'use cache';
+  cacheTag(fitCacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-${slug}-articles`));
+  cacheLife('hours');
+
+  const slugs = getOfficialCategory(slug)?.relatedArticles ?? [];
+  const posts = await Promise.all(slugs.map((s) => wp_getBySlug(s).catch(() => null)));
+  return posts.filter((p): p is WP_Article => !!p);
+}
+
+export const loadOfficialCategoryArticles = cache(loadOfficialCategoryArticlesCached);
+
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+/**
+ * Umami pageviews of official list pages over the last 30 days, by list slug (locales summed).
+ * Shared by every category; empty when Umami fails, so the page never depends on it.
+ */
+async function loadOfficialListPageviewsCached(): Promise<Record<string, number>> {
+  'use cache';
+  cacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-pageviews`);
+  cacheLife('hours');
+
+  try {
+    const views = await getUmamiPathPageviews('lists/official/', { windowMs: THIRTY_DAYS_MS });
+    return Object.fromEntries([...views].map(([slug, n]) => [slug.toLowerCase(), n]));
+  } catch {
+    return {};
+  }
+}
+
+export const loadOfficialListPageviews = cache(loadOfficialListPageviewsCached);

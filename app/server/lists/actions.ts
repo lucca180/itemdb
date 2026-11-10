@@ -3,6 +3,7 @@
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { ListService } from '@services/ListService';
 import prisma from '@utils/prisma';
+import type { ListPriceHistoryResult } from '@utils/list/listPriceHistory';
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
@@ -112,4 +113,30 @@ export async function loadDynamicLogs(
     hasMore && last ? { addedAt: last.addedAt.toISOString(), logId: last.log_id } : null;
 
   return { logs, nextCursor };
+}
+
+/**
+ * Price history of a list's visible NP items, aggregated server-side for the list header chart.
+ * Hidden items never count (same as the header's NP total), whoever the viewer is.
+ */
+export async function loadListPriceHistory(
+  username: string,
+  listId: number
+): Promise<ListPriceHistoryResult> {
+  if (!username || !Number.isFinite(listId) || listId <= 0) {
+    throw new Error('Invalid list');
+  }
+
+  const { user } = await getServerCurrentUser();
+  const list = await ListService.initUser(user).getList({
+    username,
+    listId,
+    isOfficial: username === 'official',
+    skipSync: true,
+  });
+
+  if (!list) throw new Error('List not found');
+
+  const rows = await ListService.getAllListItemInfo(list, false);
+  return ListService.getListPriceHistory(rows ?? []);
 }

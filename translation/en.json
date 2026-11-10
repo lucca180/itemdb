@@ -2117,5 +2117,27 @@
     "faq-where": "The code is a regular image: paste it on your Neopets lookup, petpage or shop.",
     "faq-owner-title": "Where to find the button",
     "faq-owner": "The Goal Counter button shows up on the checklist page, only for the list owner."
+  },
+  "OfficialCategory": {
+    "items-tracked": "items tracked",
+    "items": "items",
+    "items-count": "{count, plural, one {# item} other {# items}}",
+    "since": "Since {date}",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "weeks": "{count, plural, one {# week} other {# weeks}}",
+    "most-recent": "Most recent",
+    "latest-edition": "Latest edition · {year}",
+    "past-editions": "Past editions",
+    "other-lists": "Other lists",
+    "all-lists": "All lists",
+    "archive": "Archive · {count}",
+    "archive-hint": "Retired lists, kept for reference.",
+    "show": "Show",
+    "hide": "Hide",
+    "show-all": "Show all {count}",
+    "show-less": "Show less",
+    "faq": "FAQ",
+    "related-articles": "From our articles",
+    "popular": "Popular"
   }
 }

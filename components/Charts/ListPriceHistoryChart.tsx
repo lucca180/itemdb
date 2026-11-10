@@ -3,11 +3,12 @@ import { ColorInstance } from 'color';
 import { createChart, ColorType, LineStyle, AreaSeries } from 'lightweight-charts';
 import { useFormatter } from 'next-intl';
 import React, { useEffect, useRef } from 'react';
+import type { ListPriceHistoryPoint } from '@utils/list/listPriceHistory';
 
 export type ListChartComponentProps = {
   color: ColorInstance;
-  priceData: { [day: string]: number };
-  noDataData: { [day: string]: number[] };
+  /** Sorted by date, one point per day at most */
+  priceData: ListPriceHistoryPoint[];
 };
 
 const ListChartComponent = (props: ListChartComponentProps) => {
@@ -68,31 +69,12 @@ const ListChartComponent = (props: ListChartComponentProps) => {
       priceScaleId: 'right',
     });
 
-    const dataClone = Object.entries(priceData).map((p) => {
-      return {
-        time: p[0],
-        value: p[1],
-      };
-    });
-
-    dataClone.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-
-    newSeries.setData(dataClone);
+    newSeries.setData(priceData.map((p) => ({ time: p.date, value: p.value })));
 
     // ------- no data ------- //
 
     // const lineSeries = chart.addSeries(LineSeries, { color: '#2962FF', priceScaleId: 'left' });
-
-    // const noDataData = Object.entries(props.noDataData).map((p) => {
-    //   return {
-    //     time: p[0],
-    //     value: p[1].length,
-    //   };
-    // });
-
-    // noDataData.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-
-    // lineSeries.setData(noDataData);
+    // lineSeries.setData(priceData.map((p) => ({ time: p.date, value: p.pricedItems })));
 
     window.addEventListener('resize', handleResize);
 

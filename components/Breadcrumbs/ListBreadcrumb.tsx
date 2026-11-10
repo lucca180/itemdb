@@ -2,8 +2,7 @@ import { UserList } from '../../types';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
-import { listCategoriesData } from '@utils/lists/listCategoriesData';
-import { slugify } from '../../utils/utils';
+import { getOfficialCategoryByTag } from '@app/[locale]/lists/official/_categories';
 
 type ListBreadcrumb = {
   list: UserList;
@@ -47,12 +46,12 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
           name: 'Faerie Festival',
           item: '/hub/faeriefestival',
         });
-      } else if (listCategoriesData[slugify(category)]) {
-        const { name } = listCategoriesData[slugify(category)];
+      } else if (getOfficialCategoryByTag(category)) {
+        const { name, slug } = getOfficialCategoryByTag(category)!;
         breadList.push({
           position: 3,
           name: name,
-          item: `/lists/official/cat/${slugify(category)}`,
+          item: `/lists/official/${slug}`,
         });
       } else {
         breadList.push({
