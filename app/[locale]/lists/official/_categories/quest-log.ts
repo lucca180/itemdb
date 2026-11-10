@@ -4,7 +4,6 @@ export const questLog = {
   slug: 'quest-log',
   name: 'Quest Log Prizes',
   tags: ['quest log'],
-  legacyTags: ['Quest Log'],
   color: '#F3C242',
   image: 'https://images.neopets.com/neopies/y25/images/nominees/Surprise_2sytnvcmnj/04.png',
   seoTitle: 'Quest Log Prizes: Daily, Weekly and Premium | itemdb',
@@ -25,28 +24,52 @@ export const questLog = {
         id: 'weekly',
         title: 'Weekly',
         current: { slugs: ['weekly-quest-prize'] },
-        history: { slugPrefix: 'old-weekly-quest-pool-' },
+        history: {
+          slugPrefix: 'old-weekly-quest-pool-',
+          title: 'Past Weekly pools',
+          description: 'Weekly rewards that already left the Quest Log, newest first.',
+        },
       },
       {
         id: 'daily',
         title: 'Daily',
         current: { slugs: ['daily-quest-prize'] },
-        history: { slugPrefix: 'old-daily-quest-pool-' },
+        history: {
+          slugPrefix: 'old-daily-quest-pool-',
+          title: 'Past Daily pools',
+          description: 'Daily rewards that already left the Quest Log, newest first.',
+        },
       },
       {
         id: 'neopass',
         title: 'NeoPass',
         current: { slugs: ['weekly-neopass-prize'] },
-        history: { slugPrefix: ['old-weekly-neopass-pool-', 'special-weekly-neopass-prize-'] },
+        history: {
+          slugPrefix: ['old-weekly-neopass-pool-', 'special-weekly-neopass-prize-'],
+          title: 'Past NeoPass pools',
+          description: 'Regular pools and special weeks, newest first.',
+        },
       },
       {
         id: 'premium',
         title: 'Premium',
         current: { slugs: ['premium-daily-quest-prizes', 'premium-weekly-quest-prize'] },
       },
+      {
+        id: 'tutorial',
+        title: 'Tutorial',
+        current: { slugs: ['quest-log-tutorial'] },
+      },
     ],
   },
   archive: { slugs: ['retired-daily-quest-prize', 'retired-weekly-quest-prize'] },
+  labels: [
+    {
+      match: { slugPrefix: 'special-weekly-neopass-prize-' },
+      label: 'Special week',
+      color: '#F687B3',
+    },
+  ],
 
   faq: [
     {

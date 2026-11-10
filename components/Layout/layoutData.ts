@@ -95,7 +95,7 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
         },
         {
           label: t('Layout.dailies-and-freebies'),
-          href: '/lists/official/cat/dailies',
+          href: '/lists/official/dailies',
           trackEventLabel: 'dailies-and-freebies',
         },
         {
@@ -110,7 +110,7 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
         },
         {
           label: 'Quest Log',
-          href: '/lists/official/cat/quest-log',
+          href: '/lists/official/quest-log',
           trackEventLabel: 'quest-log',
         },
         {

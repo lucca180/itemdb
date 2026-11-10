@@ -1,7 +1,39 @@
 import type { UserList } from '@types';
-import type { ListMatch, OfficialCategoryConfig } from './types';
+import type { ListMatch, OfficialCategoryConfig, SectionId, SectionSlot } from './types';
 
-export type EditionGroup = { year: number; lists: UserList[] };
+export const DEFAULT_SECTIONS: SectionSlot[] = [
+  'featured',
+  'intro',
+  'main',
+  'other',
+  'archive',
+  ['faq', 'related'],
+];
+
+/** Config order (duplicates dropped) + any missing section, in default order. */
+export function resolveSections(config: OfficialCategoryConfig): SectionSlot[] {
+  const seen = new Set<SectionId>();
+  const keep = (slot: SectionSlot): SectionSlot | null => {
+    const ids = [slot].flat().filter((id) => !seen.has(id));
+    ids.forEach((id) => seen.add(id));
+    if (!ids.length) return null;
+    return Array.isArray(slot) ? ids : ids[0];
+  };
+  const order = (config.sections ?? DEFAULT_SECTIONS).map(keep);
+  const missing = DEFAULT_SECTIONS.flat()
+    .filter((id) => !seen.has(id))
+    .map(keep);
+  return [...order, ...missing].filter((s): s is SectionSlot => s !== null);
+}
+
+export type EditionGroup = {
+  year: number;
+  lists: UserList[];
+  /** Config `editionDates[year]`, else the first list with series dates. */
+  start: string | null;
+  end: string | null;
+  datesFromConfig: boolean;
+};
 
 export type ResolvedCategory = {
   other: UserList[];
@@ -13,6 +45,9 @@ export type ResolvedCategory = {
         id: string;
         title: string;
         description?: string;
+        label: string;
+        historyTitle: string;
+        historyDescription?: string;
         current: UserList[];
         history: UserList[];
       }[];
@@ -38,6 +73,10 @@ export const matches = (list: UserList, m?: ListMatch) => {
   const prefixes = m.slugPrefix ? [m.slugPrefix].flat() : [];
   return prefixes.some((p) => slug.startsWith(p.toLowerCase()));
 };
+
+/** Config badges that apply to a list, in config order. */
+export const listLabels = (config: OfficialCategoryConfig, list: UserList) =>
+  (config.labels ?? []).filter((l) => matches(list, l.match));
 
 const time = (d?: string | null) => (d ? new Date(d).getTime() : 0);
 
@@ -68,6 +107,9 @@ export function resolveCategory(config: OfficialCategoryConfig, all: UserList[])
       id: t.id,
       title: t.title,
       description: t.description,
+      label: t.label ?? t.title,
+      historyTitle: t.history?.title ?? `${t.title} · past pools`,
+      historyDescription: t.history?.description,
       current: take(lists.filter((l) => matches(l, t.current))),
       history: take(lists.filter((l) => matches(l, t.history)).sort(byNewest)),
     }));
@@ -90,12 +132,21 @@ export function resolveCategory(config: OfficialCategoryConfig, all: UserList[])
       byYear.set(year, [...(byYear.get(year) ?? []), l]);
     });
 
-    const editions = [...byYear.entries()]
+    const editions: EditionGroup[] = [...byYear.entries()]
       .sort(([a], [b]) => b - a)
-      .map(([year, ls]) => ({
-        year,
-        lists: ls.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name)),
-      }));
+      .map(([year, ls]) => {
+        const sorted = ls.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+        const configured = layout.editionDates?.[year];
+        const dated =
+          sorted.find((l) => l.seriesStart && l.seriesEnd) ?? sorted.find((l) => l.seriesStart);
+        return {
+          year,
+          lists: sorted,
+          start: configured?.start ?? dated?.seriesStart ?? null,
+          end: configured ? (configured.end ?? null) : (dated?.seriesEnd ?? null),
+          datesFromConfig: !!configured,
+        };
+      });
 
     return {
       type: 'editions',

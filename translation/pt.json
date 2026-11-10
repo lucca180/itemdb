@@ -2119,5 +2119,26 @@
     "faq-where": "O código é uma imagem comum: cole no seu lookup, petpage ou loja do Neopets.",
     "faq-owner-title": "Onde fica o botão",
     "faq-owner": "O botão Contador de Meta aparece na página do checklist, apenas para quem é dono da lista."
+  },
+  "OfficialCategory": {
+    "items-tracked": "itens catalogados",
+    "items": "itens",
+    "items-count": "{count, plural, one {# item} other {# itens}}",
+    "since": "Desde {date}",
+    "days": "{count, plural, one {# dia} other {# dias}}",
+    "weeks": "{count, plural, one {# semana} other {# semanas}}",
+    "most-recent": "Mais recente",
+    "latest-edition": "Última edição · {year}",
+    "past-editions": "Edições anteriores",
+    "other-lists": "Outras listas",
+    "all-lists": "Todas as listas",
+    "archive": "Arquivo · {count}",
+    "archive-hint": "Listas aposentadas, mantidas como referência.",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "show-all": "Mostrar todos ({count})",
+    "show-less": "Mostrar menos",
+    "faq": "Perguntas frequentes",
+    "related-articles": "Dos nossos artigos"
   }
 }

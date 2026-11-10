@@ -2,9 +2,10 @@ import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { ListService } from '@services/ListService';
 import { getTrendingLists } from '@pages/api/v1/beta/trending';
-import { UserList } from '@types';
+import type { UserList, WP_Article } from '@types';
 import { fitCacheTag } from '@utils/appCacheTags';
-import { listCategoriesData, sortOfficialLists } from '@utils/lists/listCategoriesData';
+import { wp_getBySlug } from '@pages/api/wp/posts/[slug]';
+import { getOfficialCategory } from '@app/[locale]/lists/official/_categories';
 
 export const OFFICIAL_LISTS_CACHE_TAG = 'official-lists';
 
@@ -44,21 +45,29 @@ async function loadOfficialAllListsCached() {
 
 export const loadOfficialAllLists = cache(loadOfficialAllListsCached);
 
-async function loadOfficialListsCatDataCached(category: string) {
+async function loadOfficialCategoryListsCached(slug: string): Promise<UserList[]> {
   'use cache';
   cacheTag(OFFICIAL_LISTS_CACHE_TAG);
-  cacheTag(fitCacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-${category}`));
+  cacheTag(fitCacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-${slug}`));
   cacheLife('homeSection');
 
-  const catInfo = listCategoriesData[category];
-  if (!catInfo) return null;
+  const category = getOfficialCategory(slug);
+  if (!category) return [];
 
-  const listService = ListService.init();
-  const lists = (await listService.getOfficialListsCat(catInfo.id.toLowerCase(), 3000)).sort(
-    (a, b) => sortOfficialLists(a, b, catInfo.featured)
-  );
-
-  return { lists, catInfo };
+  return ListService.init().getOfficialListsCat(category.tags.join(','), 3000);
 }
 
-export const loadOfficialListsCatData = cache(loadOfficialListsCatDataCached);
+export const loadOfficialCategoryLists = cache(loadOfficialCategoryListsCached);
+
+/** WordPress posts from the category's `relatedArticles`, in config order; missing ones are skipped. */
+async function loadOfficialCategoryArticlesCached(slug: string): Promise<WP_Article[]> {
+  'use cache';
+  cacheTag(fitCacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-${slug}-articles`));
+  cacheLife('hours');
+
+  const slugs = getOfficialCategory(slug)?.relatedArticles ?? [];
+  const posts = await Promise.all(slugs.map((s) => wp_getBySlug(s).catch(() => null)));
+  return posts.filter((p): p is WP_Article => !!p);
+}
+
+export const loadOfficialCategoryArticles = cache(loadOfficialCategoryArticlesCached);

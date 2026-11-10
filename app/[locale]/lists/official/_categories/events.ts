@@ -4,7 +4,6 @@ export const festivalOfNeggs = {
   slug: 'festival-of-neggs',
   name: 'Festival of Neggs',
   tags: ['festival of neggs', 'festival of neggs 2026'],
-  legacyTags: ['Festival of Neggs', 'Festival of Neggs 2026'],
   color: '#8FAA37',
   image: 'https://images.neopets.com/neopies/2010/finalists/byd32vcnx73a/03.jpg',
   description:
@@ -17,7 +16,14 @@ export const festivalOfNeggs = {
     'Older editions are kept below, one row per year.',
   ],
 
-  layout: { type: 'editions' },
+  layout: {
+    type: 'editions',
+    // Same as the 2026 list dates; keep in sync if the event is extended.
+    editionDates: { 2026: { start: '2026-03-30', end: '2026-04-15' } },
+  },
+
+  // FAQ + articles right after the latest edition.
+  sections: ['featured', ['faq', 'related'], 'intro', 'main'],
 
   faq: [
     {
@@ -35,7 +41,6 @@ export const altadorCup = {
   slug: 'altador-cup',
   name: 'Altador Cup',
   tags: ['altador cup', 'altador cup 2026'],
-  legacyTags: ['Altador Cup', 'Altador Cup 2026'],
   color: '#FFCC00',
   image: 'https://images.neopets.com/nt/nt_images/548_altadorcup_referee.gif',
   description:

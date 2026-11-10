@@ -11,21 +11,29 @@ import {
   HStack,
   Image as ChakraImg,
   Link,
-  Switch,
   Text,
   VStack,
 } from '@chakra-ui/react';
 import Color from 'color';
-import { useFormatter } from 'next-intl';
-import { createContext, useContext, useState } from 'react';
+import { useFormatter, useTranslations } from 'next-intl';
+import { createContext, Fragment, useContext, useState } from 'react';
 import type { UserList, WP_Article } from '@types';
 import MainLink from '@components/Utils/MainLink';
 import Image from '@components/Utils/Image';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
 import { getListLink } from '@utils/list/listLink';
 import icon from '@assets/logo_icon.svg';
-import type { OfficialCategoryConfig } from './_categories/types';
-import type { EditionGroup, ResolvedCategory } from './_categories/resolve';
+import type {
+  ListLabel,
+  OfficialCategoryConfig,
+  SectionId,
+} from '@app/[locale]/lists/official/_categories/types';
+import {
+  matches,
+  resolveSections,
+  type EditionGroup,
+  type ResolvedCategory,
+} from '@app/[locale]/lists/official/_categories/resolve';
 
 type Props = {
   locale: string;
@@ -33,14 +41,14 @@ type Props = {
   lists: UserList[];
   resolved: ResolvedCategory;
   related: WP_Article[];
-  categories: { slug: string; name: string; color: string; configured: boolean }[];
 };
-
-const CFG_COLOR = '#b794f4';
 
 // ---------- helpers ----------
 
-const HighlightCtx = createContext(false);
+const LabelsCtx = createContext<ListLabel[]>([]);
+
+const useListLabels = (list: UserList) =>
+  useContext(LabelsCtx).filter((l) => matches(list, l.match));
 
 const rgba = (hex: string, a: number) => {
   const [r, g, b] = Color(hex).rgb().round().array();
@@ -48,36 +56,6 @@ const rgba = (hex: string, a: number) => {
 };
 
 const listColor = (list: UserList, fallback: string) => list.colorHex || fallback;
-
-/** Outlines blocks that come from the category config when the toggle is on. */
-const Cfg = ({ field, children, ...rest }: { field: string; children: React.ReactNode } & any) => {
-  const on = useContext(HighlightCtx);
-  return (
-    <Box
-      position="relative"
-      outline={on ? `2px dashed ${CFG_COLOR}` : undefined}
-      outlineOffset="4px"
-      borderRadius="md"
-      {...rest}
-    >
-      {on && (
-        <Badge
-          position="absolute"
-          top="-14px"
-          right="0"
-          zIndex={2}
-          bg={CFG_COLOR}
-          color="gray.900"
-          fontSize="2xs"
-          textTransform="none"
-        >
-          config · {field}
-        </Badge>
-      )}
-      {children}
-    </Box>
-  );
-};
 
 const ListLink = ({
   list,
@@ -120,16 +98,17 @@ const Cover = ({
 
 const usePeriod = () => {
   const format = useFormatter();
-  return (list: UserList) => {
-    const s = list.seriesStart ? new Date(list.seriesStart) : null;
-    const e = list.seriesEnd ? new Date(list.seriesEnd) : null;
+  const t = useTranslations('OfficialCategory');
+  return (start?: string | null, end?: string | null) => {
+    const s = start ? new Date(start) : null;
+    const e = end ? new Date(end) : null;
     const md = { month: 'short', day: 'numeric', timeZone: 'UTC' } as const;
     const mdy = { ...md, year: 'numeric' } as const;
     if (s && e) {
       const sameYear = s.getUTCFullYear() === e.getUTCFullYear();
       return `${format.dateTime(s, sameYear ? md : mdy)} – ${format.dateTime(e, mdy)}`;
     }
-    if (s) return `Since ${format.dateTime(s, mdy)}`;
+    if (s) return t('since', { date: format.dateTime(s, mdy) });
     return null;
   };
 };
@@ -141,142 +120,116 @@ const getStats = (lists: UserList[]) => ({
 
 // ---------- page ----------
 
-export function OfficialCatDemoClient(props: Props) {
-  const [highlight, setHighlight] = useState(false);
+export function OfficialCategoryClient(props: Props) {
   const { config, resolved } = props;
+  const t = useTranslations('OfficialCategory');
   const accent = config.color;
+  const sections = resolveSections(config);
+  const hasFeatured =
+    resolved.type === 'tracks' || (resolved.type === 'editions' && !!resolved.latest);
+  // Featured cards only overlap the hero when they come right after it.
+  const overlap = hasFeatured && sections[0] === 'featured';
 
-  return (
-    <HighlightCtx.Provider value={highlight}>
-      <DemoToolbar {...props} highlight={highlight} setHighlight={setHighlight} />
-      <Box key={config.slug}>
-        <Hero {...props} />
-
-        {(resolved.type === 'tracks' || (resolved.type === 'editions' && resolved.latest)) && (
-          <Box mt={{ base: -16, md: -20 }} position="relative" zIndex={1}>
+  const render = (id: SectionId, index: number): React.ReactNode => {
+    switch (id) {
+      case 'featured':
+        if (!hasFeatured) return null;
+        return (
+          <Box
+            mt={overlap && index === 0 ? { base: -16, md: -20 } : 12}
+            position="relative"
+            zIndex={1}
+          >
             {resolved.type === 'tracks' && <NowTracks resolved={resolved} accent={accent} />}
             {resolved.type === 'editions' && resolved.latest && (
               <LatestEdition edition={resolved.latest} accent={accent} />
             )}
           </Box>
-        )}
+        );
 
-        {config.intro && <GuideBubble config={config} />}
+      case 'intro':
+        return config.intro ? <GuideBubble config={config} /> : null;
 
-        {resolved.type === 'tracks' && <TrackHistories resolved={resolved} accent={accent} />}
-        {resolved.type === 'editions' && <Editions resolved={resolved} accent={accent} />}
-        {resolved.type === 'groups' &&
-          resolved.groups.map((g) => (
-            <Section key={g.id} title={g.title} count={g.lists.length} cfg="groups[]">
-              <ListGrid lists={g.lists} accent={accent} />
-            </Section>
-          ))}
+      case 'main':
+        if (resolved.type === 'tracks')
+          return <TrackHistories resolved={resolved} accent={accent} />;
+        if (resolved.type === 'editions') return <Editions resolved={resolved} accent={accent} />;
+        return resolved.groups.map((g) => (
+          <Section key={g.id} title={g.title} hint={g.description} count={g.lists.length}>
+            <ListGrid lists={g.lists} accent={accent} />
+          </Section>
+        ));
 
-        {resolved.other.length > 0 && (
+      case 'other': {
+        if (!resolved.other.length) return null;
+        const onlyBucket = resolved.type === 'groups' && !resolved.groups.length;
+        return (
           <Section
-            title={
-              resolved.type === 'groups' && !resolved.groups.length ? 'All lists' : 'Other lists'
-            }
+            title={onlyBucket ? t('all-lists') : t('other-lists')}
             count={resolved.other.length}
-            hint={
-              resolved.type === 'groups' && !resolved.groups.length
-                ? 'This category has no config yet'
-                : 'Not matched by any rule in the config'
-            }
           >
             <ListGrid lists={resolved.other} accent={accent} />
           </Section>
-        )}
+        );
+      }
 
-        {resolved.archive.length > 0 && <Archive lists={resolved.archive} accent={accent} />}
+      case 'archive':
+        return resolved.archive.length ? (
+          <Archive lists={resolved.archive} accent={accent} />
+        ) : null;
 
-        <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={8} mt={14}>
-          {config.faq && config.faq.length > 0 && (
-            <Box>
-              <SectionTitle title="FAQ" accent={accent} />
-              <Cfg field="faq">
-                <Faq faq={config.faq} />
-              </Cfg>
-            </Box>
-          )}
-          {props.related.length > 0 && (
-            <Box>
-              <SectionTitle title="From our articles" accent={accent} />
-              <Cfg field="relatedArticles">
-                <Related posts={props.related} />
-              </Cfg>
-            </Box>
-          )}
-        </Grid>
+      case 'faq':
+        return config.faq?.length ? (
+          <Box mt={12}>
+            <SectionTitle title={t('faq')} accent={accent} />
+            <Faq faq={config.faq} />
+          </Box>
+        ) : null;
 
-        <ConfigPanel config={config} />
-      </Box>
-    </HighlightCtx.Provider>
+      case 'related':
+        return props.related.length ? (
+          <Box mt={12}>
+            <SectionTitle title={t('related-articles')} accent={accent} />
+            <Related posts={props.related} />
+          </Box>
+        ) : null;
+    }
+  };
+
+  return (
+    <LabelsCtx.Provider value={config.labels ?? []}>
+      <Hero {...props} overlap={overlap} />
+
+      {sections.map((slot, i) => {
+        if (!Array.isArray(slot)) return <Fragment key={slot}>{render(slot, i)}</Fragment>;
+
+        const cols = slot.map((id) => ({ id, node: render(id, i) })).filter((c) => c.node !== null);
+        if (!cols.length) return null;
+        // Side-by-side blocks drop their own top margin; the row carries it.
+        return (
+          <Grid
+            key={slot.join('+')}
+            templateColumns={{ base: '1fr', lg: `repeat(${cols.length}, 1fr)` }}
+            gap={8}
+            mt={12}
+          >
+            {cols.map((c) => (
+              <Box key={c.id} minW={0} css={{ '& > *': { marginTop: '0 !important' } }}>
+                {c.node}
+              </Box>
+            ))}
+          </Grid>
+        );
+      })}
+    </LabelsCtx.Provider>
   );
 }
 
-const DemoToolbar = (props: Props & { highlight: boolean; setHighlight: (v: boolean) => void }) => {
-  const { highlight, setHighlight, categories, config } = props;
-  return (
-    <Box
-      position={{ base: 'relative', md: 'sticky' }}
-      top="8px"
-      zIndex={20}
-      mt={3}
-      mb={4}
-      p={3}
-      bg="blackAlpha.800"
-      backdropFilter="blur(8px)"
-      borderRadius="lg"
-      border="1px solid"
-      borderColor="whiteAlpha.200"
-    >
-      <Flex gap={1.5} flexWrap="wrap" alignItems="center">
-        <Text fontSize="xs" color="gray.400" fontWeight="bold" textTransform="uppercase" mr={1}>
-          Demo
-        </Text>
-        {categories.map((c) => (
-          <Link key={c.slug} asChild _hover={{ textDecoration: 'none' }}>
-            <MainLink href={`/demo?cat=${c.slug}`} prefetch={false}>
-              <Badge
-                variant={c.slug === config.slug ? 'solid' : 'subtle'}
-                bg={c.slug === config.slug ? rgba(c.color, 0.9) : undefined}
-                color={c.slug === config.slug ? 'blackAlpha.900' : undefined}
-                textTransform="none"
-                opacity={c.configured || c.slug === config.slug ? 1 : 0.6}
-              >
-                {c.name}
-                {c.configured ? ' ✦' : ''}
-              </Badge>
-            </MainLink>
-          </Link>
-        ))}
-        <Box flex="1" />
-        <Switch.Root
-          size="sm"
-          checked={highlight}
-          onCheckedChange={(e) => setHighlight(e.checked)}
-          colorPalette="purple"
-        >
-          <Switch.HiddenInput />
-          <Switch.Control />
-          <Switch.Label fontSize="xs">Destacar o que vem do config</Switch.Label>
-        </Switch.Root>
-      </Flex>
-      <Text fontSize="xs" color="gray.300" mt={2}>
-        ✦ = tem config. Layout: <b>{config.layout.type}</b> · URL proposta:{' '}
-        <Text as="span" fontFamily="mono" color="green.300">
-          /lists/official/{config.slug}
-        </Text>
-      </Text>
-    </Box>
-  );
-};
-
 // ---------- hero ----------
 
-const Hero = (props: Props) => {
-  const { config, lists, locale } = props;
+const Hero = (props: Props & { overlap: boolean }) => {
+  const { config, lists, locale, overlap } = props;
+  const t = useTranslations();
   const accent = config.color;
   const dark = Color(accent).darken(0.75).hex();
   const stats = getStats(lists);
@@ -288,9 +241,8 @@ const Hero = (props: Props) => {
       ml="calc(50% - 50vw)"
       position="relative"
       overflow="hidden"
-      mt={-4}
       pt={{ base: 6, md: 10 }}
-      pb={{ base: 24, md: 28 }}
+      pb={overlap ? { base: 24, md: 28 } : { base: 10, md: 12 }}
       bg={dark}
     >
       {backdrop.length > 0 && (
@@ -326,9 +278,9 @@ const Hero = (props: Props) => {
           locale={locale}
           useAppDir
           breadcrumbList={[
-            { position: 1, name: 'Home', item: '/' },
-            { position: 2, name: 'Official Lists', item: '/lists/official' },
-            { position: 3, name: config.name, item: `/lists/official/cat/${config.slug}` },
+            { position: 1, name: t('Layout.home'), item: '/' },
+            { position: 2, name: t('General.official-lists'), item: '/lists/official' },
+            { position: 3, name: config.name, item: `/lists/official/${config.slug}` },
           ]}
         />
         <Flex
@@ -348,7 +300,7 @@ const Hero = (props: Props) => {
           >
             <ChakraImg
               src={config.image}
-              alt=""
+              alt={config.name}
               w={{ base: '150px', md: '210px' }}
               h={{ base: '150px', md: '210px' }}
               borderRadius="xl"
@@ -357,11 +309,9 @@ const Hero = (props: Props) => {
           </Box>
           <Box>
             {config.kicker && (
-              <Cfg field="kicker" display="inline-block">
-                <Badge bg={accent} color="blackAlpha.900" px={3} py={1} borderRadius="full">
-                  {config.kicker}
-                </Badge>
-              </Cfg>
+              <Badge bg={accent} color="blackAlpha.900" px={3} py={1} borderRadius="full">
+                {config.kicker}
+              </Badge>
             )}
             <Heading
               as="h1"
@@ -375,15 +325,17 @@ const Hero = (props: Props) => {
               {config.name}
             </Heading>
             {config.tagline && (
-              <Cfg field="tagline" mt={4}>
-                <Text fontSize={{ base: 'lg', md: '2xl' }} color="whiteAlpha.900" maxW="560px">
-                  {config.tagline}
-                </Text>
-              </Cfg>
+              <Text mt={4} fontSize={{ base: 'lg', md: '2xl' }} color="whiteAlpha.900" maxW="560px">
+                {config.tagline}
+              </Text>
             )}
             <HStack mt={5} gap={6} justifyContent={{ base: 'center', md: 'flex-start' }}>
-              <BigStat value={stats.lists} label="lists" accent={accent} />
-              <BigStat value={stats.items} label="items tracked" accent={accent} />
+              <BigStat value={stats.lists} label={t('General.lists')} accent={accent} />
+              <BigStat
+                value={stats.items}
+                label={t('OfficialCategory.items-tracked')}
+                accent={accent}
+              />
             </HStack>
           </Box>
         </Flex>
@@ -392,21 +344,24 @@ const Hero = (props: Props) => {
   );
 };
 
-const BigStat = ({ value, label, accent }: { value: number; label: string; accent: string }) => (
-  <Box>
-    <Text
-      fontSize="3xl"
-      fontWeight="black"
-      lineHeight="1"
-      color={Color(accent).lighten(0.25).hex()}
-    >
-      {value.toLocaleString()}
-    </Text>
-    <Text fontSize="xs" color="whiteAlpha.700" textTransform="uppercase" letterSpacing="0.1em">
-      {label}
-    </Text>
-  </Box>
-);
+const BigStat = ({ value, label, accent }: { value: number; label: string; accent: string }) => {
+  const formatter = useFormatter();
+  return (
+    <Box>
+      <Text
+        fontSize="3xl"
+        fontWeight="black"
+        lineHeight="1"
+        color={Color(accent).lighten(0.25).hex()}
+      >
+        {formatter.number(value)}
+      </Text>
+      <Text fontSize="xs" color="whiteAlpha.700" textTransform="uppercase" letterSpacing="0.1em">
+        {label}
+      </Text>
+    </Box>
+  );
+};
 
 const GuideBubble = ({ config }: { config: OfficialCategoryConfig }) => (
   <Flex mt={10} gap={4} alignItems="flex-start" position="relative" zIndex={1}>
@@ -422,39 +377,38 @@ const GuideBubble = ({ config }: { config: OfficialCategoryConfig }) => (
       borderColor={config.color}
       flex="0 0 auto"
     />
-    <Cfg field="intro" flex="1">
-      <VStack
-        alignItems="stretch"
-        gap={2}
-        bg={rgba(config.color, 0.1)}
-        border="1px solid"
-        borderColor={rgba(config.color, 0.3)}
-        borderRadius="xl"
-        p={4}
-        fontSize="sm"
-        color="whiteAlpha.900"
-      >
-        {config.intro!.map((p, i) => (
-          <Text key={i}>{p}</Text>
-        ))}
-      </VStack>
-    </Cfg>
+    <VStack
+      flex="1"
+      alignItems="stretch"
+      gap={2}
+      bg={rgba(config.color, 0.1)}
+      border="1px solid"
+      borderColor={rgba(config.color, 0.3)}
+      borderRadius="xl"
+      p={4}
+      fontSize="sm"
+      color="whiteAlpha.900"
+    >
+      {config.intro!.map((p, i) => (
+        <Text key={i}>{p}</Text>
+      ))}
+    </VStack>
   </Flex>
 );
 
 // ---------- cards ----------
 
-/** Text/badge palettes that follow ListCard: dark ink on light list colors. */
+/** Text palettes that follow ListCard: dark ink on light list colors. */
 const inkFor = (hex: string) => {
   const light = Color(hex).isLight();
   return {
     light,
     text: light ? 'blackAlpha.800' : undefined,
     muted: light ? 'blackAlpha.700' : 'whiteAlpha.800',
-    badge: light ? 'blackAlpha' : 'whiteAlpha',
   };
 };
 
+/** First line of a markdown description, as plain text. */
 const plain = (md?: string | null) =>
   (md ?? '')
     .split(/[\r\n]+/)[0]
@@ -463,8 +417,8 @@ const plain = (md?: string | null) =>
     .trim();
 
 /**
- * ListCard, "featured" flavour: same colored body and overlapping cover, with the track /
- * edition label as the first badge instead of the official badge.
+ * ListCard, "featured" flavour: same colored body and overlapping cover, with the track label
+ * as the first badge instead of the official badge.
  */
 const NowCard = ({
   list,
@@ -475,7 +429,8 @@ const NowCard = ({
   label?: string | null;
   accent: string;
 }) => {
-  const formatter = useFormatter();
+  const t = useTranslations('OfficialCategory');
+  const labels = useListLabels(list);
   const hex = listColor(list, accent);
   const ink = inkFor(hex);
   return (
@@ -519,13 +474,11 @@ const NowCard = ({
                 {label}
               </Badge>
             )}
-            {list.highlight && (
-              <Badge colorPalette={ink.badge} variant="solid">
-                {list.highlight}
-              </Badge>
-            )}
+            {labels.map((l) => (
+              <LabelBadge key={l.label} label={l} accent={accent} />
+            ))}
             <Badge colorPalette={ink.light ? 'blackAlpha' : 'gray'} variant="solid">
-              {formatter.number(list.itemCount ?? 0)} items
+              {t('items-count', { count: list.itemCount ?? 0 })}
             </Badge>
           </Flex>
         </Flex>
@@ -534,9 +487,33 @@ const NowCard = ({
   );
 };
 
+/** Config label (`labels[]`) as a solid badge in its own color. */
+const LabelBadge = ({
+  label,
+  accent,
+  size,
+}: {
+  label: ListLabel;
+  accent: string;
+  size?: 'xs' | 'sm';
+}) => {
+  const bg = label.color ?? accent;
+  return (
+    <Badge
+      size={size}
+      variant="solid"
+      bg={bg}
+      color={Color(bg).isLight() ? 'blackAlpha.900' : 'white'}
+    >
+      {label.label}
+    </Badge>
+  );
+};
+
 /**
- * History entry: a ListCard shrunk to one line. Pools of a track look alike, so only the
- * months are shown; exact dates and the list name live in the tooltip.
+ * History entry: a small ListCard. Exact period, year + duration and item count are always
+ * visible; config labels (e.g. "Special week") add a colored edge and a badge so pools of
+ * different kinds in the same track can be told apart. The list name lives in the tooltip.
  */
 const PoolTile = ({
   list,
@@ -547,55 +524,80 @@ const PoolTile = ({
   accent: string;
   isLatest?: boolean;
 }) => {
+  const t = useTranslations('OfficialCategory');
   const formatter = useFormatter();
+  const labels = useListLabels(list);
   const hex = listColor(list, accent);
   const ink = inkFor(hex);
+  const edge = labels.find((l) => l.color)?.color;
+
   const s = list.seriesStart ? new Date(list.seriesStart) : null;
   const e = list.seriesEnd ? new Date(list.seriesEnd) : null;
-  const month = (d: Date) => formatter.dateTime(d, { month: 'short', timeZone: 'UTC' });
+  const day = (d: Date) =>
+    formatter.dateTime(d, { month: 'short', day: 'numeric', timeZone: 'UTC' });
   const sy = (s ?? e)?.getUTCFullYear();
   const ey = e?.getUTCFullYear();
   const year = sy && ey && ey !== sy ? `${sy}–${String(ey).slice(2)}` : sy;
-  const title = s && e ? `${month(s)} – ${month(e)}` : s ? `${month(s)} →` : list.name.trim();
+  const days = s && e ? Math.round((e.getTime() - s.getTime()) / 86_400_000) : null;
+  const duration =
+    days === null
+      ? null
+      : days < 7
+        ? t('days', { count: days })
+        : t('weeks', { count: Math.round(days / 7) });
+  const title =
+    s && e ? `${day(s)} – ${day(e)}` : s ? t('since', { date: day(s) }) : list.name.trim();
+  const meta = [year, duration].filter(Boolean).join(' · ');
+  const text = isLatest ? ink.text : undefined;
+  const muted = isLatest ? ink.muted : 'whiteAlpha.700';
 
   return (
-    <ListLink list={list} title={list.name.trim()}>
+    <ListLink list={list} title={list.name.trim()} h="100%">
       <Flex
+        h="100%"
         alignItems="center"
-        gap={2}
-        p={1.5}
-        pr={2.5}
+        gap={2.5}
+        p={2}
+        pr={3}
         borderRadius="md"
         bg="gray.700"
         bgGradient={`linear-gradient(to top, rgba(0,0,0,0) 0, ${rgba(hex, isLatest ? 0.6 : 0.3)} 0%)`}
+        borderLeft={edge ? `4px solid ${edge}` : undefined}
         outline={isLatest ? `2px solid ${rgba(hex, 0.9)}` : undefined}
-        transition="background .15s, transform .15s"
+        transition="transform .15s"
         _hover={{ transform: 'translateY(-1px)' }}
       >
-        <Cover list={list} size="32px" radius="sm" />
-        <Box flex="1" minW={0} lineHeight="1.1">
-          <Text
-            fontSize="sm"
-            fontWeight="bold"
-            color={isLatest ? ink.text : undefined}
-            lineClamp={1}
-          >
+        <Cover list={list} size="40px" radius="sm" />
+        <Box flex="1" minW={0} lineHeight="1.2">
+          <Text fontSize="sm" fontWeight="bold" color={text} lineClamp={1}>
             {title}
           </Text>
-          {year && (
-            <Text fontSize="2xs" color={isLatest ? ink.muted : 'whiteAlpha.600'}>
-              {year}
+          {meta && (
+            <Text fontSize="xs" color={muted}>
+              {meta}
             </Text>
           )}
+          {(isLatest || labels.length > 0) && (
+            <Flex gap={1} mt={1} flexWrap="wrap">
+              {isLatest && (
+                <Badge size="xs" colorPalette="blue" variant="solid">
+                  {t('most-recent')}
+                </Badge>
+              )}
+              {labels.map((l) => (
+                <LabelBadge key={l.label} label={l} accent={accent} size="xs" />
+              ))}
+            </Flex>
+          )}
         </Box>
-        <Badge
-          size="xs"
-          colorPalette={isLatest && ink.light ? 'blackAlpha' : 'gray'}
-          variant="solid"
-          flex="0 0 auto"
-        >
-          {formatter.number(list.itemCount ?? 0)}
-        </Badge>
+        <Box flex="0 0 auto" textAlign="right" lineHeight="1.1">
+          <Text fontSize="lg" fontWeight="black" color={text}>
+            {formatter.number(list.itemCount ?? 0)}
+          </Text>
+          <Text fontSize="2xs" color={muted} textTransform="uppercase">
+            {t('items')}
+          </Text>
+        </Box>
       </Flex>
     </ListLink>
   );
@@ -603,7 +605,9 @@ const PoolTile = ({
 
 /** Compact card with cover, for mixed lists (other, groups, archive, past editions). */
 const ListChip = ({ list, accent }: { list: UserList; accent: string }) => {
+  const t = useTranslations('OfficialCategory');
   const color = listColor(list, accent);
+  const labels = useListLabels(list);
   return (
     <ListLink list={list} h="100%">
       <Flex
@@ -624,10 +628,14 @@ const ListChip = ({ list, accent }: { list: UserList; accent: string }) => {
           <Text fontWeight="semibold" fontSize="sm" lineClamp={1}>
             {list.name.trim()}
           </Text>
-          <Text fontSize="xs" color="whiteAlpha.600">
-            {list.itemCount} items
-            {list.highlight ? ` · ${list.highlight}` : ''}
-          </Text>
+          <Flex gap={1.5} alignItems="center" flexWrap="wrap">
+            <Text fontSize="xs" color="whiteAlpha.600">
+              {t('items-count', { count: list.itemCount ?? 0 })}
+            </Text>
+            {labels.map((l) => (
+              <LabelBadge key={l.label} label={l} accent={accent} size="xs" />
+            ))}
+          </Flex>
         </Box>
       </Flex>
     </ListLink>
@@ -648,15 +656,13 @@ type Tracks = Extract<ResolvedCategory, { type: 'tracks' }>;
 type Editions = Extract<ResolvedCategory, { type: 'editions' }>;
 
 const NowTracks = ({ resolved, accent }: { resolved: Tracks; accent: string }) => {
-  const cards = resolved.tracks.flatMap((t) => t.current.map((list) => ({ list, label: t.title })));
+  const cards = resolved.tracks.flatMap((t) => t.current.map((list) => ({ list, label: t.label })));
   return (
-    <Cfg field="tracks[].current">
-      <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' }} gap={3}>
-        {cards.map(({ list, label }) => (
-          <NowCard key={list.internal_id} list={list} label={label} accent={accent} />
-        ))}
-      </Grid>
-    </Cfg>
+    <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' }} gap={3}>
+      {cards.map(({ list, label }) => (
+        <NowCard key={list.internal_id} list={list} label={label} accent={accent} />
+      ))}
+    </Grid>
   );
 };
 
@@ -667,13 +673,13 @@ const TrackHistories = ({ resolved, accent }: { resolved: Tracks; accent: string
       .map((t) => (
         <Section
           key={t.id}
-          title={`${t.title} · past pools`}
+          title={t.historyTitle}
+          hint={t.historyDescription}
           count={t.history.length}
-          cfg="tracks[].history"
         >
-          <Collapsible items={t.history} initial={10}>
+          <Collapsible items={t.history} initial={8}>
             {(shown) => (
-              <Grid templateColumns="repeat(auto-fill, minmax(170px, 1fr))" gap={2}>
+              <Grid templateColumns="repeat(auto-fill, minmax(270px, 1fr))" gap={2}>
                 {shown.map((l, i) => (
                   <PoolTile key={l.internal_id} list={l} accent={accent} isLatest={i === 0} />
                 ))}
@@ -686,17 +692,20 @@ const TrackHistories = ({ resolved, accent }: { resolved: Tracks; accent: string
 );
 
 const LatestEdition = ({ edition, accent }: { edition: EditionGroup; accent: string }) => {
+  const t = useTranslations('OfficialCategory');
   const period = usePeriod();
-  const main = edition.lists.find((l) => l.seriesStart && l.seriesEnd) ?? edition.lists[0];
+  const dates = period(edition.start, edition.end);
   return (
-    <Cfg field="layout: editions">
+    <>
       <HStack mb={3} gap={3} alignItems="center">
         <Badge bg={accent} color="blackAlpha.900" px={3} borderRadius="full">
-          Latest edition · {edition.year}
+          {t('latest-edition', { year: edition.year })}
         </Badge>
-        <Text fontSize="xs" color="whiteAlpha.800">
-          {period(main)}
-        </Text>
+        {dates && (
+          <Text fontSize="xs" color="whiteAlpha.800">
+            {dates}
+          </Text>
+        )}
       </HStack>
       <Grid
         templateColumns={
@@ -709,77 +718,81 @@ const LatestEdition = ({ edition, accent }: { edition: EditionGroup; accent: str
           <NowCard key={list.internal_id} list={list} accent={accent} />
         ))}
       </Grid>
-    </Cfg>
+    </>
   );
 };
 
-const Editions = ({ resolved, accent }: { resolved: Editions; accent: string }) => (
-  <>
-    {resolved.evergreen && (
-      <Section title={resolved.evergreen.title} cfg="evergreen">
-        <ListGrid lists={resolved.evergreen.lists} accent={accent} />
-      </Section>
-    )}
-    {resolved.past.length > 0 && (
-      <Section title="Past editions" count={resolved.past.length}>
-        <Collapsible items={resolved.past} initial={5} label="editions">
-          {(shown) => (
-            <VStack alignItems="stretch" gap={0}>
-              {shown.map((ed) => (
-                <Flex
-                  key={ed.year}
-                  gap={{ base: 2, md: 6 }}
-                  py={3}
-                  borderTop="1px solid"
-                  borderColor="whiteAlpha.100"
-                  flexFlow={{ base: 'column', md: 'row' }}
-                >
-                  <Text
-                    w={{ md: '96px' }}
-                    flex="0 0 auto"
-                    fontSize="2xl"
-                    fontWeight="black"
-                    color={Color(accent).lighten(0.2).hex()}
-                    lineHeight="1.2"
+const Editions = ({ resolved, accent }: { resolved: Editions; accent: string }) => {
+  const t = useTranslations('OfficialCategory');
+  return (
+    <>
+      {resolved.evergreen && (
+        <Section title={resolved.evergreen.title}>
+          <ListGrid lists={resolved.evergreen.lists} accent={accent} />
+        </Section>
+      )}
+      {resolved.past.length > 0 && (
+        <Section title={t('past-editions')} count={resolved.past.length}>
+          <Collapsible items={resolved.past} initial={5}>
+            {(shown) => (
+              <VStack alignItems="stretch" gap={0}>
+                {shown.map((ed) => (
+                  <Flex
+                    key={ed.year}
+                    gap={{ base: 2, md: 6 }}
+                    py={3}
+                    borderTop="1px solid"
+                    borderColor="whiteAlpha.100"
+                    flexFlow={{ base: 'column', md: 'row' }}
                   >
-                    {ed.year}
-                  </Text>
-                  <Box flex="1" minW={0}>
-                    <ListGrid lists={ed.lists} accent={accent} />
-                  </Box>
-                </Flex>
-              ))}
-            </VStack>
-          )}
-        </Collapsible>
-      </Section>
-    )}
-  </>
-);
+                    <Text
+                      w={{ md: '96px' }}
+                      flex="0 0 auto"
+                      fontSize="2xl"
+                      fontWeight="black"
+                      color={Color(accent).lighten(0.2).hex()}
+                      lineHeight="1.2"
+                    >
+                      {ed.year}
+                    </Text>
+                    <Box flex="1" minW={0}>
+                      <ListGrid lists={ed.lists} accent={accent} />
+                    </Box>
+                  </Flex>
+                ))}
+              </VStack>
+            )}
+          </Collapsible>
+        </Section>
+      )}
+    </>
+  );
+};
 
 const Archive = ({ lists, accent }: { lists: UserList[]; accent: string }) => {
+  const t = useTranslations('OfficialCategory');
   const [open, setOpen] = useState(false);
   return (
-    <Cfg field="archive" mt={12}>
-      <Box borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100" p={4}>
-        <Flex alignItems="center" gap={3}>
-          <Box flex="1">
-            <Text fontWeight="bold">Archive · {lists.length}</Text>
-            <Text fontSize="xs" color="whiteAlpha.600">
-              Retired lists, kept for reference.
-            </Text>
-          </Box>
-          <Button size="xs" variant="outline" onClick={() => setOpen(!open)}>
-            {open ? 'Hide' : 'Show'}
-          </Button>
-        </Flex>
-        {open && (
-          <Box mt={4}>
-            <ListGrid lists={lists} accent={accent} />
-          </Box>
-        )}
-      </Box>
-    </Cfg>
+    <Box mt={12} borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100" p={4}>
+      <Flex alignItems="center" gap={3}>
+        <Box flex="1">
+          <Heading as="h2" size="sm">
+            {t('archive', { count: lists.length })}
+          </Heading>
+          <Text fontSize="xs" color="whiteAlpha.600">
+            {t('archive-hint')}
+          </Text>
+        </Box>
+        <Button size="xs" variant="outline" onClick={() => setOpen(!open)}>
+          {open ? t('hide') : t('show')}
+        </Button>
+      </Flex>
+      {open && (
+        <Box mt={4}>
+          <ListGrid lists={lists} accent={accent} />
+        </Box>
+      )}
+    </Box>
   );
 };
 
@@ -798,47 +811,41 @@ const Section = ({
   title,
   count,
   hint,
-  cfg,
   children,
 }: {
   title: string;
   count?: number;
   hint?: string;
-  cfg?: string;
   children: React.ReactNode;
-}) => {
-  const body = (
-    <>
-      <Heading as="h2" size="xl" fontWeight="black">
-        {title}{' '}
-        {count !== undefined && (
-          <Text as="span" color="whiteAlpha.500" fontWeight="normal">
-            {count}
-          </Text>
-        )}
-      </Heading>
-      {hint && (
-        <Text fontSize="xs" color="whiteAlpha.500">
-          {hint}
+}) => (
+  <Box mt={12}>
+    <Heading as="h2" size="xl" fontWeight="black">
+      {title}{' '}
+      {count !== undefined && (
+        <Text as="span" color="whiteAlpha.500" fontWeight="normal">
+          {count}
         </Text>
       )}
-      <Box mt={4}>{children}</Box>
-    </>
-  );
-  return <Box mt={12}>{cfg ? <Cfg field={cfg}>{body}</Cfg> : body}</Box>;
-};
+    </Heading>
+    {hint && (
+      <Text fontSize="xs" color="whiteAlpha.500">
+        {hint}
+      </Text>
+    )}
+    <Box mt={4}>{children}</Box>
+  </Box>
+);
 
 function Collapsible<T>({
   items,
   initial,
-  label = 'pools',
   children,
 }: {
   items: T[];
   initial: number;
-  label?: string;
   children: (shown: T[]) => React.ReactNode;
 }) {
+  const t = useTranslations('OfficialCategory');
   const [all, setAll] = useState(false);
   const shown = all ? items : items.slice(0, initial);
   return (
@@ -846,7 +853,7 @@ function Collapsible<T>({
       {children(shown)}
       {items.length > initial && (
         <Button size="xs" variant="ghost" mt={2} onClick={() => setAll(!all)}>
-          {all ? 'Show less' : `Show all ${items.length} ${label}`}
+          {all ? t('show-less') : t('show-all', { count: items.length })}
         </Button>
       )}
     </>
@@ -858,7 +865,7 @@ const Faq = ({ faq }: { faq: NonNullable<OfficialCategoryConfig['faq']> }) => (
     {faq.map((f, i) => (
       <Accordion.Item key={i} value={String(i)} borderColor="whiteAlpha.100">
         <Accordion.ItemTrigger px={4} py={3}>
-          <Text flex="1" fontWeight="semibold" fontSize="sm">
+          <Text as="h3" flex="1" fontWeight="semibold" fontSize="sm">
             {f.q}
           </Text>
           <Accordion.ItemIndicator />
@@ -910,45 +917,3 @@ const Related = ({ posts }: { posts: WP_Article[] }) => (
     ))}
   </VStack>
 );
-
-const ConfigPanel = ({ config }: { config: OfficialCategoryConfig }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <Box
-      mt={16}
-      p={5}
-      borderRadius="xl"
-      border="1px dashed"
-      borderColor={CFG_COLOR}
-      bg="blackAlpha.400"
-    >
-      <Flex alignItems="center" gap={3}>
-        <Box flex="1">
-          <Heading as="h2" size="md" color={CFG_COLOR}>
-            Config desta categoria
-          </Heading>
-          <Text fontSize="sm" color="whiteAlpha.700">
-            Na implementação: <code>app/[locale]/lists/official/_categories/{config.slug}.ts</code>
-          </Text>
-        </Box>
-        <Button size="xs" variant="outline" onClick={() => setOpen(!open)}>
-          {open ? 'Esconder' : 'Ver config'}
-        </Button>
-      </Flex>
-      {open && (
-        <Box
-          as="pre"
-          mt={4}
-          p={3}
-          bg="blackAlpha.600"
-          borderRadius="md"
-          fontSize="xs"
-          overflowX="auto"
-          whiteSpace="pre"
-        >
-          {JSON.stringify(config, null, 2)}
-        </Box>
-      )}
-    </Box>
-  );
-};

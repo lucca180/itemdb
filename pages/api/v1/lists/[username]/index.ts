@@ -10,6 +10,10 @@ import { userListsTag } from '@utils/appCacheTags';
 import { getRandomName } from '@utils/randomName';
 import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
 import { logOfficialListAction } from '@services/OfficialListLogService';
+import {
+  officialCategorySlugs,
+  RESERVED_OFFICIAL_SLUGS,
+} from '@app/[locale]/lists/official/_categories';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -336,7 +340,12 @@ export const createListSlug = async (
     select: { slug: true },
   });
 
-  const taken = new Set(lists.map((x) => x.slug));
+  const taken = new Set<string | null>(lists.map((x) => x.slug));
+  // Official lists share /lists/official/<slug> with the category pages, where categories win.
+  if (isOfficial) {
+    officialCategorySlugs.forEach((s) => taken.add(s));
+    RESERVED_OFFICIAL_SLUGS.forEach((s) => taken.add(s));
+  }
   if (!taken.has(slug)) return slug;
 
   let suffix = 2;
