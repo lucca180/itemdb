@@ -3,6 +3,7 @@ import 'server-only';
 import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { notFound } from 'next/navigation';
+import { cacheLifeNotFound } from '@app/utils/cacheLifeNotFound';
 import { getListMatchWithViewer } from '@pages/api/v1/lists/match/[...usernames]';
 import { getUser } from '@pages/api/v1/users/[username]';
 import { getUserAchievements } from '@pages/api/v1/users/[username]/achievements';
@@ -48,9 +49,15 @@ export type ProfileListData = {
 async function fetchUser(username: string) {
   'use cache';
   cacheTag(userProfileTag(username));
-  cacheLife('homeSection');
 
-  return getUser(username);
+  const user = await getUser(username);
+  if (!user) {
+    cacheLifeNotFound();
+    return user;
+  }
+
+  cacheLife('homeSection');
+  return user;
 }
 
 const getUserCached = cache(fetchUser);
