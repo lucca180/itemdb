@@ -42,6 +42,12 @@ export type EditionsLayout = {
    * Without `end` the edition shows as "Since <start>".
    */
   editionDates?: Record<number, { start: string; end?: string }>;
+  /**
+   * Edition year(s) by list slug, for lists whose year can't be derived (no `seriesStart` and no
+   * standalone year in the slug). Wins over the derived year; an array shows the list in each year.
+   * An `evergreen` list named here shows in both its row and those editions.
+   */
+  editionYears?: Record<string, number | number[]>;
 };
 
 export type GroupsLayout = {

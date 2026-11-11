@@ -205,6 +205,49 @@ describe('resolveCategory — editions', () => {
       datesFromConfig: false,
     });
   });
+
+  it('puts a list in every year set by editionYears, over the derived year', () => {
+    const withYears: OfficialCategoryConfig = {
+      ...baseConfig,
+      layout: {
+        type: 'editions',
+        editionYears: { 'Cup-Bonus-20212022': [2021, 2022], 'cup-2010': 2011 },
+      },
+    };
+    const res = resolveCategory(withYears, [
+      list('cup-bonus-20212022'),
+      list('cup-2010'),
+      list('cup-mascot'),
+    ]);
+    if (res.type !== 'editions') throw new Error('expected editions');
+
+    const editions = [res.latest!, ...res.past];
+    expect(editions.map((e) => [e.year, slugsOf(e.lists)])).toEqual([
+      [2022, ['cup-bonus-20212022']],
+      [2021, ['cup-bonus-20212022']],
+      [2011, ['cup-2010']],
+    ]);
+    expect(slugsOf(res.other)).toEqual(['cup-mascot']);
+  });
+
+  it('shows an evergreen list in an edition only when editionYears names it', () => {
+    const pinned: OfficialCategoryConfig = {
+      ...baseConfig,
+      layout: {
+        type: 'editions',
+        evergreen: { slugs: ['cup-map', 'cup-rules'] },
+        editionYears: { 'cup-map': 2026 },
+      },
+    };
+    const res = resolveCategory(pinned, [list('cup-2026'), list('cup-map'), list('cup-rules')]);
+    if (res.type !== 'editions') throw new Error('expected editions');
+
+    expect(slugsOf(res.evergreen!.lists)).toEqual(['cup-map', 'cup-rules']);
+    expect(res.latest?.year).toBe(2026);
+    expect(slugsOf(res.latest!.lists)).toEqual(['cup-2026', 'cup-map']);
+    expect(res.past).toEqual([]);
+    expect(res.other).toEqual([]);
+  });
 });
 
 describe('resolveCategory — groups fallback', () => {

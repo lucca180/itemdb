@@ -211,6 +211,16 @@ const nextConfig: NextConfig = {
         destination: '/articles/owls',
         permanent: true,
       },
+      {
+        source: '/lists/official/advent-calendar',
+        destination: '/lists/official/winter-starlight-celebration',
+        permanent: true,
+      },
+      {
+        source: '/pt/lists/official/advent-calendar',
+        destination: '/pt/lists/official/winter-starlight-celebration',
+        permanent: true,
+      },
     ];
   },
   transpilePackages: ['lightweight-charts', 'fancy-canvas', 'next-intl'],

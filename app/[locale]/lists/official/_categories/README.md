@@ -12,8 +12,8 @@ _categories/
   resolve.ts    # resolveCategory(config, lists), resolveSections(config), listLabels
   index.ts      # registry, getOfficialCategory(slug), getOfficialCategoryByTag(tag), reserved slugs
   quest-log.ts  # layout 'tracks'
-  events.ts     # Festival of Neggs, Altador Cup — layout 'editions'
-  fallback.ts   # Dailies, Advent Calendar, Stamps — no curation yet ("All lists")
+  events.ts     # Festival of Neggs, Altador Cup, Birthday, Winter Starlight Celebration — layout 'editions'
+  fallback.ts   # Dailies, Stamps — no curation yet ("All lists")
 ../_components/
   OfficialCategoryPage.tsx    # server: route helpers, data, metadata, FAQPage JSON-LD
   OfficialCategoryClient.tsx  # UI
@@ -55,6 +55,9 @@ that makes `/lists/official` hit `official/page.tsx`).
     The newest edition is always the hero, even after it ends. `evergreen` = lists for every edition;
     `editionOrder` = order inside a year by slug prefix; `editionDates: { [year]: { start, end? } }`
     (`YYYY-MM-DD`, UTC) wins over the lists' dates, no `end` → "Since <start>".
+    `editionYears: { [slug]: year | year[] }` sets the edition(s) of lists whose year can't be derived
+    (e.g. `advent-calendar-bonus-20212022` → `[2021, 2022]`); an array shows the list in every year.
+    An `evergreen` list named in `editionYears` shows in both its row and those editions.
   - **`groups`**: free groups by match. `groups: []` = everything under "All lists".
     `featured?: ListMatch & { label?, popular? }` puts lists as featured cards below the hero (e.g.
     All Collectibles on Stamps). `popular: n` adds the category's `n` most viewed lists (Umami
@@ -73,5 +76,5 @@ that makes `/lists/official` hit `official/page.tsx`).
 ## Not done yet
 
 - `/lists/official/<category>/<year>` edition pages.
-- Curated layouts for Dailies, Advent Calendar and Stamps.
+- Curated layouts for Dailies and Stamps.
 - Dates on past edition rows.

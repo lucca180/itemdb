@@ -65,11 +65,14 @@ export const neopetsAnniversary = {
       'free-celebration-pass',
       'paid-celebration-pass',
       'monoceraptor-raid',
+      'birthday-map',
       'birthday-treasure-hunt-',
     ],
     // Wheel of Celebration opened Nov 10 (support.neopets.com); the Celebration Pass end isn't
     // announced. Only applies once a 2026 list exists.
     editionDates: { 2026: { start: '2026-11-10' } },
+    // Move to the new year when the birthday comes around again.
+    editionYears: { 'birthday-map': [2025, 2026], 'birthday-treasure-hunt-prizes': [2025, 2026] },
   },
 
   faq: [
@@ -114,5 +117,44 @@ export const altadorCup = {
       q: 'Where are the prizes from older Altador Cups?',
       a: 'Every past edition has its own row under "Past editions", including the staff tournament.',
     },
+  ],
+} satisfies OfficialCategoryConfig;
+
+// Was `/lists/official/advent-calendar` (permanent redirect in next.config.ts).
+export const winterStarlightCelebration = {
+  slug: 'winter-starlight-celebration',
+  name: 'Winter Starlight Celebration',
+  tags: ['advent calendar'],
+  // Stocking Stufftacular is tagged "NC Event"; the activities are Dailies/Quests (breadcrumbs keep their tag).
+  lists: {
+    slugPrefix: 'stocking-stufftacular-',
+    slugs: ['snowager', 'tdmbgpop', 'snow-faerie-quest', 'snow-faerie-prizes'],
+  },
+  // Blue from the image's stamp frame.
+  color: '#1F54BA',
+  image: 'https://images.neopets.com/neopies/y25/images/nominees/AdventPrize_buorta61mo/03.png',
+  seoTitle: 'Winter Starlight Celebration Prizes: Advent Calendar & More | itemdb',
+  description:
+    'Every prize from the Neopets Winter Starlight Celebration: Advent Calendar, Stocking Stufftacular and winter activities like the Snowager, TDMBGPOP and Snow Faerie quests.',
+
+  layout: {
+    type: 'editions',
+    evergreen: {
+      slugs: ['snowager', 'tdmbgpop', 'snow-faerie-quest', 'snow-faerie-prizes'],
+      title: 'Activities',
+    },
+    // `advent-calendar-` also matches the bonus lists; the name tie-break puts them after the main one.
+    editionOrder: ['advent-calendar-', 'premium-advent-calendar-', 'stocking-stufftacular-'],
+    editionDates: {
+      2025: { start: '2025-12-01', end: '2025-12-31' },
+    },
+    // One bonus list covers both years; the slug has no standalone year.
+    editionYears: { 'advent-calendar-bonus-20212022': [2021, 2022] },
+  },
+
+  kicker: 'Yearly event',
+  tagline: 'A month of prizes, stockings and a very sleepy Snowager.',
+  intro: [
+    "Reina hosts the celebration every December, and she's been handing out prizes for a long time. Here's everything: each Advent Calendar door, her bonus prizes, the Stocking Stufftacular and the winter activities that get a boost during the month.",
   ],
 } satisfies OfficialCategoryConfig;

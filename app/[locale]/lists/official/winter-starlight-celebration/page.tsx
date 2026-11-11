@@ -6,7 +6,7 @@ import {
 } from '@app/[locale]/lists/official/_components/OfficialCategoryPage';
 
 // Category config: app/[locale]/lists/official/_categories (slug must match this folder).
-const SLUG = 'advent-calendar';
+const SLUG = 'winter-starlight-celebration';
 
 export function generateMetadata(): Promise<Metadata> {
   return generateOfficialCategoryMetadata(SLUG);

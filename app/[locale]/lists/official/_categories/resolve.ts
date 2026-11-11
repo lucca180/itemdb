@@ -134,12 +134,18 @@ export function resolveCategory(
       return i === -1 ? order.length : i;
     };
 
+    const yearOverrides = new Map(
+      Object.entries(layout.editionYears ?? {}).map(([slug, y]) => [slug.toLowerCase(), [y].flat()])
+    );
+    // Evergreen lists only join an edition when `editionYears` names them (they stay in their row too).
+    const pinnedEvergreen = evergreenLists.filter((l) => yearOverrides.has(slugOf(l)));
     const byYear = new Map<number, UserList[]>();
-    rest().forEach((l) => {
-      const year = editionYear(l);
-      if (year === null) return;
+    [...rest(), ...pinnedEvergreen].forEach((l) => {
+      const derived = editionYear(l);
+      const years = yearOverrides.get(slugOf(l)) ?? (derived === null ? [] : [derived]);
+      if (!years.length) return;
       used.add(l.internal_id);
-      byYear.set(year, [...(byYear.get(year) ?? []), l]);
+      years.forEach((year) => byYear.set(year, [...(byYear.get(year) ?? []), l]));
     });
 
     const editions: EditionGroup[] = [...byYear.entries()]

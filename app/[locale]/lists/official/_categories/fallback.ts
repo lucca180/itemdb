@@ -24,20 +24,6 @@ export const dailies = {
   },
 } satisfies OfficialCategoryConfig;
 
-export const adventCalendar = {
-  slug: 'advent-calendar',
-  name: 'Advent Calendar',
-  tags: ['advent calendar'],
-  color: '#FF0000',
-  image: 'https://images.neopets.com/games/tradingcards/premium/0612.gif',
-  description:
-    'Explore the Advent Calendar lists and uncover the latest items and prizes from Neopets Advent Calendar Event!',
-  intro: [
-    'Explore the Advent Calendar lists and uncover the latest items and prizes from Neopets Advent Calendar Event!',
-  ],
-  layout: { type: 'groups', groups: [] },
-} satisfies OfficialCategoryConfig;
-
 export const stamps = {
   slug: 'stamps',
   name: 'Stamp Album',
