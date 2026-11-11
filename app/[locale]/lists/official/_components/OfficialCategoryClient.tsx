@@ -50,6 +50,23 @@ type Props = {
 
 const LabelsCtx = createContext<ListLabel[]>([]);
 
+/**
+ * Umami: every event has `label` = `<category slug>:<section>`, so clicks can be compared by
+ * section (featured, history:<track id>, evergreen, past, group, other, archive, related).
+ */
+const TrackCtx = createContext({ category: '', section: '' });
+
+const TrackSection = ({ section, children }: { section: string; children: React.ReactNode }) => {
+  const { category } = useContext(TrackCtx);
+  return <TrackCtx.Provider value={{ category, section }}>{children}</TrackCtx.Provider>;
+};
+
+const useTrack = () => {
+  const { category, section } = useContext(TrackCtx);
+  return (event: string, data?: Record<string, string>) =>
+    window.umami?.track(event, { label: `${category}:${section}`, ...data });
+};
+
 const useListLabels = (list: UserList) =>
   useContext(LabelsCtx).filter((l) => matches(list, l.match));
 
@@ -64,13 +81,20 @@ const ListLink = ({
   list,
   children,
   ...rest
-}: { list: UserList; children: React.ReactNode } & any) => (
-  <Link asChild _hover={{ textDecoration: 'none' }} display="block" {...rest}>
-    <MainLink href={getListLink(list)} prefetch={false}>
-      {children}
-    </MainLink>
-  </Link>
-);
+}: { list: UserList; children: React.ReactNode } & any) => {
+  const track = useTrack();
+  return (
+    <Link asChild _hover={{ textDecoration: 'none' }} display="block" {...rest}>
+      <MainLink
+        href={getListLink(list)}
+        prefetch={false}
+        onClick={() => track('official-category-list', { list: list.slug ?? '' })}
+      >
+        {children}
+      </MainLink>
+    </Link>
+  );
+};
 
 const Cover = ({
   list,
@@ -141,28 +165,30 @@ export function OfficialCategoryClient(props: Props) {
       case 'featured':
         if (!hasFeatured) return null;
         return (
-          <Box
-            mt={overlap && index === 0 ? { base: -16, md: -20 } : 12}
-            position="relative"
-            zIndex={1}
-          >
-            {resolved.type === 'tracks' && <NowTracks resolved={resolved} accent={accent} />}
-            {resolved.type === 'editions' && resolved.latest && (
-              <LatestEdition edition={resolved.latest} accent={accent} />
-            )}
-            {resolved.type === 'groups' && (
-              <NowGrid
-                cards={[
-                  ...resolved.featured.lists.map((list) => ({
-                    list,
-                    label: resolved.featured.label,
-                  })),
-                  ...resolved.featured.popular.map((list) => ({ list, label: t('popular') })),
-                ]}
-                accent={accent}
-              />
-            )}
-          </Box>
+          <TrackSection section="featured">
+            <Box
+              mt={overlap && index === 0 ? { base: -16, md: -20 } : 12}
+              position="relative"
+              zIndex={1}
+            >
+              {resolved.type === 'tracks' && <NowTracks resolved={resolved} accent={accent} />}
+              {resolved.type === 'editions' && resolved.latest && (
+                <LatestEdition edition={resolved.latest} accent={accent} />
+              )}
+              {resolved.type === 'groups' && (
+                <NowGrid
+                  cards={[
+                    ...resolved.featured.lists.map((list) => ({
+                      list,
+                      label: resolved.featured.label,
+                    })),
+                    ...resolved.featured.popular.map((list) => ({ list, label: t('popular') })),
+                  ]}
+                  accent={accent}
+                />
+              )}
+            </Box>
+          </TrackSection>
         );
 
       case 'intro':
@@ -172,28 +198,36 @@ export function OfficialCategoryClient(props: Props) {
         if (resolved.type === 'tracks')
           return <TrackHistories resolved={resolved} accent={accent} />;
         if (resolved.type === 'editions') return <Editions resolved={resolved} accent={accent} />;
-        return resolved.groups.map((g) => (
-          <Section key={g.id} title={g.title} hint={g.description} count={g.lists.length}>
-            <ListGrid lists={g.lists} accent={accent} />
-          </Section>
-        ));
+        return (
+          <TrackSection section="group">
+            {resolved.groups.map((g) => (
+              <Section key={g.id} title={g.title} hint={g.description} count={g.lists.length}>
+                <ListGrid lists={g.lists} accent={accent} />
+              </Section>
+            ))}
+          </TrackSection>
+        );
 
       case 'other': {
         if (!resolved.other.length) return null;
         const onlyBucket = resolved.type === 'groups' && !resolved.groups.length;
         return (
-          <Section
-            title={onlyBucket ? t('all-lists') : t('other-lists')}
-            count={resolved.other.length}
-          >
-            <ListGrid lists={resolved.other} accent={accent} />
-          </Section>
+          <TrackSection section="other">
+            <Section
+              title={onlyBucket ? t('all-lists') : t('other-lists')}
+              count={resolved.other.length}
+            >
+              <ListGrid lists={resolved.other} accent={accent} />
+            </Section>
+          </TrackSection>
         );
       }
 
       case 'archive':
         return resolved.archive.length ? (
-          <Archive lists={resolved.archive} accent={accent} />
+          <TrackSection section="archive">
+            <Archive lists={resolved.archive} accent={accent} />
+          </TrackSection>
         ) : null;
 
       case 'faq':
@@ -206,40 +240,46 @@ export function OfficialCategoryClient(props: Props) {
 
       case 'related':
         return props.related.length ? (
-          <Box mt={12}>
-            <SectionTitle title={t('related-articles')} accent={accent} />
-            <Related posts={props.related} />
-          </Box>
+          <TrackSection section="related">
+            <Box mt={12}>
+              <SectionTitle title={t('related-articles')} accent={accent} />
+              <Related posts={props.related} />
+            </Box>
+          </TrackSection>
         ) : null;
     }
   };
 
   return (
-    <LabelsCtx.Provider value={config.labels ?? []}>
-      <Hero {...props} overlap={overlap} />
+    <TrackCtx.Provider value={{ category: config.slug, section: '' }}>
+      <LabelsCtx.Provider value={config.labels ?? []}>
+        <Hero {...props} overlap={overlap} />
 
-      {sections.map((slot, i) => {
-        if (!Array.isArray(slot)) return <Fragment key={slot}>{render(slot, i)}</Fragment>;
+        {sections.map((slot, i) => {
+          if (!Array.isArray(slot)) return <Fragment key={slot}>{render(slot, i)}</Fragment>;
 
-        const cols = slot.map((id) => ({ id, node: render(id, i) })).filter((c) => c.node !== null);
-        if (!cols.length) return null;
-        // Side-by-side blocks drop their own top margin; the row carries it.
-        return (
-          <Grid
-            key={slot.join('+')}
-            templateColumns={{ base: '1fr', lg: `repeat(${cols.length}, 1fr)` }}
-            gap={8}
-            mt={12}
-          >
-            {cols.map((c) => (
-              <Box key={c.id} minW={0} css={{ '& > *': { marginTop: '0 !important' } }}>
-                {c.node}
-              </Box>
-            ))}
-          </Grid>
-        );
-      })}
-    </LabelsCtx.Provider>
+          const cols = slot
+            .map((id) => ({ id, node: render(id, i) }))
+            .filter((c) => c.node !== null);
+          if (!cols.length) return null;
+          // Side-by-side blocks drop their own top margin; the row carries it.
+          return (
+            <Grid
+              key={slot.join('+')}
+              templateColumns={{ base: '1fr', lg: `repeat(${cols.length}, 1fr)` }}
+              gap={8}
+              mt={12}
+            >
+              {cols.map((c) => (
+                <Box key={c.id} minW={0} css={{ '& > *': { marginTop: '0 !important' } }}>
+                  {c.node}
+                </Box>
+              ))}
+            </Grid>
+          );
+        })}
+      </LabelsCtx.Provider>
+    </TrackCtx.Provider>
   );
 }
 
@@ -690,22 +730,20 @@ const TrackHistories = ({ resolved, accent }: { resolved: Tracks; accent: string
     {resolved.tracks
       .filter((t) => t.history.length > 0)
       .map((t) => (
-        <Section
-          key={t.id}
-          title={t.historyTitle}
-          hint={t.historyDescription}
-          count={t.history.length}
-        >
-          <Collapsible items={t.history} initial={8}>
-            {(shown) => (
-              <Grid templateColumns="repeat(auto-fill, minmax(270px, 1fr))" gap={2}>
-                {shown.map((l, i) => (
-                  <PoolTile key={l.internal_id} list={l} accent={accent} isLatest={i === 0} />
-                ))}
-              </Grid>
-            )}
-          </Collapsible>
-        </Section>
+        // Track id in the label: tells which history was expanded or clicked.
+        <TrackSection key={t.id} section={`history:${t.id}`}>
+          <Section title={t.historyTitle} hint={t.historyDescription} count={t.history.length}>
+            <Collapsible items={t.history} initial={8}>
+              {(shown) => (
+                <Grid templateColumns="repeat(auto-fill, minmax(270px, 1fr))" gap={2}>
+                  {shown.map((l, i) => (
+                    <PoolTile key={l.internal_id} list={l} accent={accent} isLatest={i === 0} />
+                  ))}
+                </Grid>
+              )}
+            </Collapsible>
+          </Section>
+        </TrackSection>
       ))}
   </>
 );
@@ -757,43 +795,47 @@ const Editions = ({ resolved, accent }: { resolved: Editions; accent: string }) 
   return (
     <>
       {resolved.evergreen && (
-        <Section title={resolved.evergreen.title}>
-          <ListGrid lists={resolved.evergreen.lists} accent={accent} />
-        </Section>
+        <TrackSection section="evergreen">
+          <Section title={resolved.evergreen.title}>
+            <ListGrid lists={resolved.evergreen.lists} accent={accent} />
+          </Section>
+        </TrackSection>
       )}
       {resolved.past.length > 0 && (
-        <Section title={t('past-editions')} count={resolved.past.length}>
-          <Collapsible items={resolved.past} initial={5}>
-            {(shown) => (
-              <VStack alignItems="stretch" gap={0}>
-                {shown.map((ed) => (
-                  <Flex
-                    key={ed.year}
-                    gap={{ base: 2, md: 6 }}
-                    py={3}
-                    borderTop="1px solid"
-                    borderColor="whiteAlpha.100"
-                    flexFlow={{ base: 'column', md: 'row' }}
-                  >
-                    <Text
-                      w={{ md: '96px' }}
-                      flex="0 0 auto"
-                      fontSize="2xl"
-                      fontWeight="black"
-                      color={Color(accent).lighten(0.2).hex()}
-                      lineHeight="1.2"
+        <TrackSection section="past">
+          <Section title={t('past-editions')} count={resolved.past.length}>
+            <Collapsible items={resolved.past} initial={5}>
+              {(shown) => (
+                <VStack alignItems="stretch" gap={0}>
+                  {shown.map((ed) => (
+                    <Flex
+                      key={ed.year}
+                      gap={{ base: 2, md: 6 }}
+                      py={3}
+                      borderTop="1px solid"
+                      borderColor="whiteAlpha.100"
+                      flexFlow={{ base: 'column', md: 'row' }}
                     >
-                      {ed.year}
-                    </Text>
-                    <Box flex="1" minW={0}>
-                      <ListGrid lists={ed.lists} accent={accent} />
-                    </Box>
-                  </Flex>
-                ))}
-              </VStack>
-            )}
-          </Collapsible>
-        </Section>
+                      <Text
+                        w={{ md: '96px' }}
+                        flex="0 0 auto"
+                        fontSize="2xl"
+                        fontWeight="black"
+                        color={Color(accent).lighten(0.2).hex()}
+                        lineHeight="1.2"
+                      >
+                        {ed.year}
+                      </Text>
+                      <Box flex="1" minW={0}>
+                        <ListGrid lists={ed.lists} accent={accent} />
+                      </Box>
+                    </Flex>
+                  ))}
+                </VStack>
+              )}
+            </Collapsible>
+          </Section>
+        </TrackSection>
       )}
     </>
   );
@@ -802,6 +844,11 @@ const Editions = ({ resolved, accent }: { resolved: Editions; accent: string }) 
 const Archive = ({ lists, accent }: { lists: UserList[]; accent: string }) => {
   const t = useTranslations('OfficialCategory');
   const [open, setOpen] = useState(false);
+  const track = useTrack();
+  const toggle = () => {
+    if (!open) track('official-category-archive-open');
+    setOpen(!open);
+  };
   return (
     <Box mt={12} borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100" p={4}>
       <Flex alignItems="center" gap={3}>
@@ -813,7 +860,7 @@ const Archive = ({ lists, accent }: { lists: UserList[]; accent: string }) => {
             {t('archive-hint')}
           </Text>
         </Box>
-        <Button size="xs" variant="outline" onClick={() => setOpen(!open)}>
+        <Button size="xs" variant="outline" onClick={toggle}>
           {open ? t('hide') : t('show')}
         </Button>
       </Flex>
@@ -877,12 +924,17 @@ function Collapsible<T>({
 }) {
   const t = useTranslations('OfficialCategory');
   const [all, setAll] = useState(false);
+  const track = useTrack();
   const shown = all ? items : items.slice(0, initial);
+  const toggle = () => {
+    if (!all) track('official-category-show-all');
+    setAll(!all);
+  };
   return (
     <>
       {children(shown)}
       {items.length > initial && (
-        <Button size="xs" variant="ghost" mt={2} onClick={() => setAll(!all)}>
+        <Button size="xs" variant="ghost" mt={2} onClick={toggle}>
           {all ? t('show-less') : t('show-all', { count: items.length })}
         </Button>
       )}
@@ -910,40 +962,47 @@ const Faq = ({ faq }: { faq: NonNullable<OfficialCategoryConfig['faq']> }) => (
   </Accordion.Root>
 );
 
-const Related = ({ posts }: { posts: WP_Article[] }) => (
-  <VStack alignItems="stretch" gap={2}>
-    {posts.map((post) => (
-      <Link key={post.id} asChild _hover={{ textDecoration: 'none' }}>
-        <MainLink href={`/articles/${post.slug}`} prefetch={false}>
-          <Flex
-            gap={3}
-            p={3}
-            bg="whiteAlpha.50"
-            borderRadius="lg"
-            _hover={{ bg: 'whiteAlpha.150' }}
+const Related = ({ posts }: { posts: WP_Article[] }) => {
+  const track = useTrack();
+  return (
+    <VStack alignItems="stretch" gap={2}>
+      {posts.map((post) => (
+        <Link key={post.id} asChild _hover={{ textDecoration: 'none' }}>
+          <MainLink
+            href={`/articles/${post.slug}`}
+            prefetch={false}
+            onClick={() => track('official-category-article', { article: post.slug })}
           >
-            {post.thumbnail && (
-              <ChakraImg
-                src={post.thumbnail}
-                alt=""
-                w="64px"
-                h="64px"
-                borderRadius="md"
-                objectFit="cover"
-                flex="0 0 auto"
-              />
-            )}
-            <Box minW={0}>
-              <Text fontWeight="bold" fontSize="sm" lineClamp={2}>
-                {post.title}
-              </Text>
-              <Text fontSize="xs" color="whiteAlpha.600" lineClamp={2}>
-                {post.excerpt}
-              </Text>
-            </Box>
-          </Flex>
-        </MainLink>
-      </Link>
-    ))}
-  </VStack>
-);
+            <Flex
+              gap={3}
+              p={3}
+              bg="whiteAlpha.50"
+              borderRadius="lg"
+              _hover={{ bg: 'whiteAlpha.150' }}
+            >
+              {post.thumbnail && (
+                <ChakraImg
+                  src={post.thumbnail}
+                  alt=""
+                  w="64px"
+                  h="64px"
+                  borderRadius="md"
+                  objectFit="cover"
+                  flex="0 0 auto"
+                />
+              )}
+              <Box minW={0}>
+                <Text fontWeight="bold" fontSize="sm" lineClamp={2}>
+                  {post.title}
+                </Text>
+                <Text fontSize="xs" color="whiteAlpha.600" lineClamp={2}>
+                  {post.excerpt}
+                </Text>
+              </Box>
+            </Flex>
+          </MainLink>
+        </Link>
+      ))}
+    </VStack>
+  );
+};
