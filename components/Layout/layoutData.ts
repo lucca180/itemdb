@@ -109,6 +109,12 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           trackEventLabel: 'dynamic-lists',
         },
         {
+          label: t('Layout.stamp-collecting'),
+          href: '/lists/official/stamps',
+          trackEventLabel: 'stamp-collecting',
+          newUntil: 1795737599000, // 2026-11-26
+        },
+        {
           label: 'Quest Log',
           href: '/lists/official/quest-log',
           trackEventLabel: 'quest-log',
