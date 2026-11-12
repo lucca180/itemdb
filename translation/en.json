@@ -2132,6 +2132,14 @@
     "show-less": "Show less",
     "faq": "FAQ",
     "related-articles": "From our articles",
-    "popular": "Popular"
+    "popular": "Popular",
+    "album-cost": "~{cost} NP",
+    "unpriced-count": "{count} without price",
+    "stamps-cta-import-title": "Find the stamps you’re missing",
+    "stamps-cta-import-text": "Import your items and every album checklist shows which stamps you already have and which ones are left.",
+    "stamps-cta-import-button": "Import items",
+    "stamps-cta-goals-title": "Goal Counters",
+    "stamps-cta-goals-text": "Show your progress on an album page on your Neopets lookup, petpage or shop with an image that updates by itself.",
+    "stamps-cta-goals-button": "See goal counters"
   }
 }

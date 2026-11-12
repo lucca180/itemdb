@@ -65,11 +65,13 @@ export type GroupsLayout = {
  * Page blocks below the hero.
  * - `featured`: current track cards / latest edition (overlaps the hero when it comes first)
  * - `intro`: guide bubble with `intro`
+ * - `cta`: import / goal counter cards (Stamp Album only)
  * - `main`: track histories / evergreen + past editions / groups
  * - `other`: lists not matched by any rule
  * - `archive`, `faq`, `related`
  */
-export type SectionId = 'featured' | 'intro' | 'main' | 'other' | 'archive' | 'faq' | 'related';
+export type SectionId =
+  'featured' | 'intro' | 'cta' | 'main' | 'other' | 'archive' | 'faq' | 'related';
 
 /** A single id renders full width; an array renders those sections side by side. */
 export type SectionSlot = SectionId | SectionId[];

@@ -4,6 +4,7 @@ import type { ListMatch, OfficialCategoryConfig, SectionId, SectionSlot } from '
 export const DEFAULT_SECTIONS: SectionSlot[] = [
   'featured',
   'intro',
+  'cta',
   'main',
   'other',
   'archive',

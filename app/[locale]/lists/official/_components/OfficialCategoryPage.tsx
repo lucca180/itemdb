@@ -8,9 +8,14 @@ import { routing } from '@utils/locales';
 import { getOfficialCategory } from '@app/[locale]/lists/official/_categories';
 import { needsPageviews, resolveCategory } from '@app/[locale]/lists/official/_categories/resolve';
 import {
+  groupStampAlbums,
+  isStampsCategory,
+} from '@app/[locale]/lists/official/_categories/stamps';
+import {
   loadOfficialCategoryArticles,
   loadOfficialCategoryLists,
   loadOfficialListPageviews,
+  loadStampAlbums,
 } from '@app/[locale]/lists/official/loadOfficialLists';
 import { OfficialCategoryClient } from './OfficialCategoryClient';
 
@@ -65,12 +70,14 @@ export function OfficialCategoryRoute(props: OfficialCategoryRouteProps) {
 async function OfficialCategoryContent({ slug, params }: OfficialCategoryRouteProps) {
   const { locale } = await params;
   const category = requireCategory(slug);
-  const [lists, related, pageviews] = await Promise.all([
+  const [lists, related, pageviews, albums] = await Promise.all([
     loadOfficialCategoryLists(category.slug),
     loadOfficialCategoryArticles(category.slug),
     needsPageviews(category) ? loadOfficialListPageviews() : undefined,
+    isStampsCategory(category) ? loadStampAlbums() : undefined,
   ]);
-  const resolved = resolveCategory(category, lists, pageviews);
+  const base = resolveCategory(category, lists, pageviews);
+  const resolved = albums ? groupStampAlbums(base, albums) : base;
 
   const faqJsonLd = category.faq?.length
     ? {
@@ -99,6 +106,7 @@ async function OfficialCategoryContent({ slug, params }: OfficialCategoryRoutePr
         lists={lists}
         resolved={resolved}
         related={related}
+        albums={albums}
       />
     </>
   );

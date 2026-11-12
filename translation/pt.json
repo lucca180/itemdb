@@ -2134,6 +2134,14 @@
     "show-less": "Mostrar menos",
     "faq": "Perguntas frequentes",
     "related-articles": "Dos nossos artigos",
-    "popular": "Popular"
+    "popular": "Popular",
+    "album-cost": "~{cost} NP",
+    "unpriced-count": "{count} sem preço",
+    "stamps-cta-import-title": "Descubra quais selos faltam",
+    "stamps-cta-import-text": "Importe seus itens e cada checklist de álbum mostra quais selos você já tem e quais ainda faltam.",
+    "stamps-cta-import-button": "Importar itens",
+    "stamps-cta-goals-title": "Contadores de Meta",
+    "stamps-cta-goals-text": "Mostre seu progresso em uma página do álbum no seu lookup, petpage ou loja do Neopets com uma imagem que se atualiza sozinha.",
+    "stamps-cta-goals-button": "Ver contadores de meta"
   }
 }

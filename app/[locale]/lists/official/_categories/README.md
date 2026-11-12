@@ -13,7 +13,8 @@ _categories/
   index.ts      # registry, getOfficialCategory(slug), getOfficialCategoryByTag(tag), reserved slugs
   quest-log.ts  # layout 'tracks'
   events.ts     # Festival of Neggs, Altador Cup, Birthday, Winter Starlight Celebration — layout 'editions'
-  fallback.ts   # Dailies, Stamps — no curation yet ("All lists")
+  fallback.ts   # Dailies — no curation yet ("All lists")
+  stamps.ts     # Stamp Album — layout 'groups' + album split (see below)
 ../_components/
   OfficialCategoryPage.tsx    # server: route helpers, data, metadata, FAQPage JSON-LD
   OfficialCategoryClient.tsx  # UI
@@ -67,14 +68,23 @@ that makes `/lists/official` hit `official/page.tsx`).
 - `labels: { match, label, color? }[]`: per-list badges (e.g. "Special week"), with a colored edge on
   pool cards. **Do not use `list.highlight` as a label**: it is the title of the highlighted items
   _inside_ the list (e.g. "Premium" on Festival of Neggs 2026), not a label for the whole list.
-- `sections: SectionSlot[]`: order below the hero (`featured`, `intro`, `main`, `other`, `archive`,
-  `faq`, `related`); an array renders side by side. Missing ones are appended in `DEFAULT_SECTIONS`
+- `sections: SectionSlot[]`: order below the hero (`featured`, `intro`, `cta`, `main`, `other`,
+  `archive`, `faq`, `related`); an array renders side by side. Missing ones are appended in `DEFAULT_SECTIONS`
   order. `featured` overlaps the hero only when it comes first.
 - `faq` (also emitted as `FAQPage` JSON-LD), `relatedArticles` (WordPress slugs; section hidden when
   empty), `seoTitle`, `description`, `kicker`, `tagline`, `intro`.
 
+## Stamp Album
+
+`stamps.ts` keeps the `groups` layout; on top of it, `loadStampAlbums` (`loadOfficialLists.ts`)
+loads cost and avatar per album page (official `stamps` list that isn't a goal collection) and
+`groupStampAlbums` moves the album pages into "Complete Albums" (has an `AvatarSolution`) and
+"Incomplete Albums", each cheapest first. Cost = latest NP price x amount of the visible items,
+same as the list page (NC left out). Album chips show the avatar as cover, the cost and a
+"without price" badge. The `cta` section (import + goal counters) only renders on this page.
+
 ## Not done yet
 
 - `/lists/official/<category>/<year>` edition pages.
-- Curated layouts for Dailies and Stamps.
+- Curated layout for Dailies.
 - Dates on past edition rows.

@@ -309,6 +309,7 @@ describe('resolveSections', () => {
       ['featured'],
       'main',
       'intro',
+      'cta',
       'other',
       'archive',
       'related',

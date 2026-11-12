@@ -6,7 +6,8 @@ import {
   neopetsAnniversary,
   winterStarlightCelebration,
 } from './events';
-import { dailies, stamps } from './fallback';
+import { dailies } from './fallback';
+import { stamps } from './stamps';
 
 /** Registry order = order in sitemaps and other listings. */
 const categories: OfficialCategoryConfig[] = [

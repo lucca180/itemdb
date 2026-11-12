@@ -18,12 +18,17 @@ import Color from 'color';
 import dynamic from 'next/dynamic';
 import { useFormatter, useTranslations } from 'next-intl';
 import { createContext, Fragment, useContext, useState } from 'react';
+import { LuDownload } from 'react-icons/lu';
 import type { UserList, WP_Article } from '@types';
 import MainLink from '@components/Utils/MainLink';
 import Image from '@components/Utils/Image';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
 import { getListLink } from '@utils/list/listLink';
 import icon from '@assets/logo_icon.svg';
+import { GOAL_SIZES, goalSampleImagePath } from '@utils/goalCounter/config';
+import { PREVIEW_BACKGROUNDS } from '@utils/goalCounter/previewSurfaces';
+import { GOALS_ACCENT_LIGHT, GoalCounterIcon, goalsAccentAlpha } from '@utils/goalCounter/theme';
+import { SAMPLE_STAMP_ALBUMS } from '@app/[locale]/tools/goals/goalsPageData';
 import type {
   ListLabel,
   OfficialCategoryConfig,
@@ -35,6 +40,7 @@ import {
   type EditionGroup,
   type ResolvedCategory,
 } from '@app/[locale]/lists/official/_categories/resolve';
+import type { StampAlbums } from '@app/[locale]/lists/official/_categories/stamps';
 
 const Markdown = dynamic(() => import('@components/Utils/Markdown'));
 
@@ -44,11 +50,14 @@ type Props = {
   lists: UserList[];
   resolved: ResolvedCategory;
   related: WP_Article[];
+  /** Stamp Album only: cost and avatar per album page */
+  albums?: StampAlbums;
 };
 
 // ---------- helpers ----------
 
 const LabelsCtx = createContext<ListLabel[]>([]);
+const AlbumsCtx = createContext<StampAlbums>({});
 
 /**
  * Umami: every event has `label` = `<category slug>:<section>`, so clicks can be compared by
@@ -100,10 +109,13 @@ const Cover = ({
   list,
   size,
   radius = 'lg',
+  avatar,
 }: {
   list: UserList;
   size: string;
   radius?: string;
+  /** Replaces the list cover (Stamp Album avatar) */
+  avatar?: string | null;
 }) => (
   <Flex
     w={size}
@@ -115,8 +127,8 @@ const Cover = ({
     alignItems="center"
     justifyContent="center"
   >
-    {list.coverURL ? (
-      <ChakraImg src={list.coverURL} alt="" w="100%" h="100%" objectFit="cover" />
+    {avatar || list.coverURL ? (
+      <ChakraImg src={avatar || list.coverURL!} alt="" w="100%" h="100%" objectFit="cover" />
     ) : (
       <Image src={icon} width={32} style={{ opacity: 0.8 }} alt="" />
     )}
@@ -194,6 +206,13 @@ export function OfficialCategoryClient(props: Props) {
       case 'intro':
         return config.intro ? <GuideBubble config={config} /> : null;
 
+      case 'cta':
+        return props.albums ? (
+          <TrackSection section="cta">
+            <StampsCta accent={accent} />
+          </TrackSection>
+        ) : null;
+
       case 'main':
         if (resolved.type === 'tracks')
           return <TrackHistories resolved={resolved} accent={accent} />;
@@ -253,31 +272,33 @@ export function OfficialCategoryClient(props: Props) {
   return (
     <TrackCtx.Provider value={{ category: config.slug, section: '' }}>
       <LabelsCtx.Provider value={config.labels ?? []}>
-        <Hero {...props} overlap={overlap} />
+        <AlbumsCtx.Provider value={props.albums ?? {}}>
+          <Hero {...props} overlap={overlap} />
 
-        {sections.map((slot, i) => {
-          if (!Array.isArray(slot)) return <Fragment key={slot}>{render(slot, i)}</Fragment>;
+          {sections.map((slot, i) => {
+            if (!Array.isArray(slot)) return <Fragment key={slot}>{render(slot, i)}</Fragment>;
 
-          const cols = slot
-            .map((id) => ({ id, node: render(id, i) }))
-            .filter((c) => c.node !== null);
-          if (!cols.length) return null;
-          // Side-by-side blocks drop their own top margin; the row carries it.
-          return (
-            <Grid
-              key={slot.join('+')}
-              templateColumns={{ base: '1fr', lg: `repeat(${cols.length}, 1fr)` }}
-              gap={8}
-              mt={12}
-            >
-              {cols.map((c) => (
-                <Box key={c.id} minW={0} css={{ '& > *': { marginTop: '0 !important' } }}>
-                  {c.node}
-                </Box>
-              ))}
-            </Grid>
-          );
-        })}
+            const cols = slot
+              .map((id) => ({ id, node: render(id, i) }))
+              .filter((c) => c.node !== null);
+            if (!cols.length) return null;
+            // Side-by-side blocks drop their own top margin; the row carries it.
+            return (
+              <Grid
+                key={slot.join('+')}
+                templateColumns={{ base: '1fr', lg: `repeat(${cols.length}, 1fr)` }}
+                gap={8}
+                mt={12}
+              >
+                {cols.map((c) => (
+                  <Box key={c.id} minW={0} css={{ '& > *': { marginTop: '0 !important' } }}>
+                    {c.node}
+                  </Box>
+                ))}
+              </Grid>
+            );
+          })}
+        </AlbumsCtx.Provider>
       </LabelsCtx.Provider>
     </TrackCtx.Provider>
   );
@@ -453,6 +474,92 @@ const GuideBubble = ({ config }: { config: OfficialCategoryConfig }) => (
     </VStack>
   </Flex>
 );
+
+// ---------- stamps CTA ----------
+
+const CTA_SAMPLE = `stamps-${SAMPLE_STAMP_ALBUMS[0].id}`;
+const [CTA_SAMPLE_W, CTA_SAMPLE_H] = GOAL_SIZES.mosaic;
+
+/** Stamp Album only: import items (checklists) and goal counters. */
+const StampsCta = ({ accent }: { accent: string }) => {
+  const t = useTranslations('OfficialCategory');
+  const track = useTrack();
+  return (
+    <Grid mt={8} templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={3}>
+      <Flex
+        direction="column"
+        gap={2}
+        p={4}
+        borderRadius="xl"
+        bg={rgba(accent, 0.08)}
+        border="1px solid"
+        borderColor={rgba(accent, 0.3)}
+      >
+        <HStack gap={2}>
+          <LuDownload color={accent} />
+          <Text fontWeight="bold">{t('stamps-cta-import-title')}</Text>
+        </HStack>
+        <Text fontSize="sm" color="whiteAlpha.800" flex="1">
+          {t('stamps-cta-import-text')}
+        </Text>
+        <Button asChild size="sm" alignSelf="flex-start" colorPalette="gray" variant="subtle">
+          <MainLink
+            href="/lists/import"
+            prefetch={false}
+            onClick={() => track('official-category-cta', { cta: 'import' })}
+          >
+            {t('stamps-cta-import-button')}
+          </MainLink>
+        </Button>
+      </Flex>
+      <Flex
+        gap={4}
+        p={4}
+        borderRadius="xl"
+        bg={goalsAccentAlpha(0.12)}
+        border="1px solid"
+        borderColor={goalsAccentAlpha(0.45)}
+        alignItems="center"
+      >
+        <Flex direction="column" gap={2} flex="1" minW={0} alignSelf="stretch">
+          <HStack gap={2}>
+            <GoalCounterIcon color={GOALS_ACCENT_LIGHT} />
+            <Text fontWeight="bold" color={GOALS_ACCENT_LIGHT}>
+              {t('stamps-cta-goals-title')}
+            </Text>
+          </HStack>
+          <Text fontSize="sm" color="whiteAlpha.800" flex="1">
+            {t('stamps-cta-goals-text')}
+          </Text>
+          <Button asChild size="sm" alignSelf="flex-start" variant="subtle" colorPalette="yellow">
+            <MainLink
+              href="/tools/goals"
+              prefetch={false}
+              onClick={() => track('official-category-cta', { cta: 'goal-counters' })}
+            >
+              {t('stamps-cta-goals-button')}
+            </MainLink>
+          </Button>
+        </Flex>
+        <Flex
+          flex="0 0 auto"
+          p={2}
+          borderRadius="md"
+          css={PREVIEW_BACKGROUNDS.lookup}
+          display={{ base: 'none', sm: 'flex' }}
+        >
+          <ChakraImg
+            src={goalSampleImagePath(CTA_SAMPLE, { variant: 'mosaic', bg: 'transparent' })}
+            alt=""
+            width={`${CTA_SAMPLE_W}px`}
+            height={`${CTA_SAMPLE_H}px`}
+            loading="lazy"
+          />
+        </Flex>
+      </Flex>
+    </Grid>
+  );
+};
 
 // ---------- cards ----------
 
@@ -665,8 +772,10 @@ const PoolTile = ({
 /** Compact card with cover, for mixed lists (other, groups, archive, past editions). */
 const ListChip = ({ list, accent }: { list: UserList; accent: string }) => {
   const t = useTranslations('OfficialCategory');
+  const formatter = useFormatter();
   const color = listColor(list, accent);
   const labels = useListLabels(list);
+  const album = useContext(AlbumsCtx)[list.internal_id];
   return (
     <ListLink list={list} h="100%">
       <Flex
@@ -681,7 +790,7 @@ const ListChip = ({ list, accent }: { list: UserList; accent: string }) => {
         _hover={{ bg: 'whiteAlpha.150' }}
       >
         <Box borderRadius="md" boxShadow={`0 0 0 2px ${rgba(color, 0.5)}`} flex="0 0 auto">
-          <Cover list={list} size="40px" radius="md" />
+          <Cover list={list} size="40px" radius="md" avatar={album?.avatar} />
         </Box>
         <Box minW={0} flex="1">
           <Text fontWeight="semibold" fontSize="sm" lineClamp={1}>
@@ -691,6 +800,21 @@ const ListChip = ({ list, accent }: { list: UserList; accent: string }) => {
             <Text fontSize="xs" color="whiteAlpha.600">
               {t('items-count', { count: list.itemCount ?? 0 })}
             </Text>
+            {!!album?.cost && (
+              <Text fontSize="xs" fontWeight="semibold" color="whiteAlpha.800">
+                {t('album-cost', {
+                  cost: formatter.number(album.cost, {
+                    notation: 'compact',
+                    maximumFractionDigits: 1,
+                  }),
+                })}
+              </Text>
+            )}
+            {!!album?.unpriced && (
+              <Badge size="xs" colorPalette="orange" variant="subtle">
+                {t('unpriced-count', { count: album.unpriced })}
+              </Badge>
+            )}
             {labels.map((l) => (
               <LabelBadge key={l.label} label={l} accent={accent} size="xs" />
             ))}

@@ -23,32 +23,3 @@ export const dailies = {
     groups: [],
   },
 } satisfies OfficialCategoryConfig;
-
-export const stamps = {
-  slug: 'stamps',
-  name: 'Stamp Album',
-  tags: ['stamps'],
-  color: '#FFCC00',
-  image: 'https://images.neopets.com/nt/ntimages/351_lenny_stamps.gif',
-  seoTitle: 'Neopets Stamps: Stamp Album Checklists & Prices | itemdb',
-  description:
-    "Neopets stamp checklists for 50+ Stamp Album pages, including Coins, Charms and Scarabs. Find the stamps you're missing and how much they cost.",
-  intro: [
-    'One checklist per Stamp Album page. Prices follow the market, so you can plan the cheapest way to finish a page.',
-  ],
-  layout: {
-    type: 'groups',
-    featured: { slugs: ['all-collectibles'], popular: 2 },
-    groups: [],
-  },
-  faq: [
-    {
-      q: "How do I see which stamps I'm missing?",
-      a: 'Import your items and itemdb will show which stamps on each checklist you already have.',
-    },
-    {
-      q: 'Which stamps are the most expensive?',
-      a: 'Open an album page and sort its list by price. Prices come from the market data itemdb collects.',
-    },
-  ],
-} satisfies OfficialCategoryConfig;

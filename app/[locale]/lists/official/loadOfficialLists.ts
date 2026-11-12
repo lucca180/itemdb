@@ -1,5 +1,7 @@
 import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
+import { Prisma } from '@prisma/generated/client';
+import prisma from '@utils/prisma';
 import { ListService } from '@services/ListService';
 import { getTrendingLists } from '@pages/api/v1/beta/trending';
 import { getUmamiPathPageviews } from '@services/item/trendingItems';
@@ -8,6 +10,9 @@ import { fitCacheTag } from '@utils/appCacheTags';
 import { wp_getBySlug } from '@pages/api/wp/posts/[slug]';
 import { getOfficialCategory } from '@app/[locale]/lists/official/_categories';
 import { matches } from '@app/[locale]/lists/official/_categories/resolve';
+import { stamps, type StampAlbums } from '@app/[locale]/lists/official/_categories/stamps';
+import { isGoalCollectionSlug } from '@utils/goalCounter/collections';
+import { toAvatarUrl } from '@utils/goalCounter/stampGoalData';
 
 export const OFFICIAL_LISTS_CACHE_TAG = 'official-lists';
 
@@ -101,3 +106,52 @@ async function loadOfficialListPageviewsCached(): Promise<Record<string, number>
 }
 
 export const loadOfficialListPageviews = cache(loadOfficialListPageviewsCached);
+
+/**
+ * Cost and avatar of every Stamp Album page (official `stamps` lists that aren't a goal
+ * collection such as All Collectibles). Cost = current NP price x amount of the visible items,
+ * same as the list page; NC items are left out.
+ */
+async function loadStampAlbumsCached(): Promise<StampAlbums> {
+  'use cache';
+  cacheTag(OFFICIAL_LISTS_CACHE_TAG);
+  cacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-stamps-albums`);
+  cacheLife('hours');
+
+  const lists = await loadOfficialCategoryLists(stamps.slug);
+  const ids = lists.filter((l) => !isGoalCollectionSlug(l.slug)).map((l) => l.internal_id);
+  if (!ids.length) return {};
+
+  const [costs, avatars] = await Promise.all([
+    prisma.$queryRaw<{ list_id: number; cost: unknown; unpriced: unknown }[]>`
+      SELECT li.list_id,
+        SUM(CASE WHEN i.type <> 'nc' THEN p.price * li.amount ELSE 0 END) AS cost,
+        SUM(i.type <> 'nc' AND p.price IS NULL AND i.status = 'active') AS unpriced
+      FROM ListItems li
+      JOIN Items i ON i.internal_id = li.item_iid
+      LEFT JOIN ItemPrices p ON p.item_iid = li.item_iid AND p.isLatest = 1
+      WHERE li.isHidden = 0 AND li.list_id IN (${Prisma.join(ids)})
+      GROUP BY li.list_id
+    `,
+    prisma.avatarSolution.findMany({
+      where: { list_id: { in: ids } },
+      orderBy: { internal_id: 'asc' },
+      select: { list_id: true, image: true },
+    }),
+  ]);
+
+  const albums: StampAlbums = Object.fromEntries(
+    ids.map((id) => [id, { cost: 0, unpriced: 0, avatar: null }])
+  );
+  for (const row of costs) {
+    albums[row.list_id].cost = Number(row.cost ?? 0);
+    albums[row.list_id].unpriced = Number(row.unpriced ?? 0);
+  }
+  for (const avy of avatars) {
+    const album = avy.list_id ? albums[avy.list_id] : undefined;
+    if (album && !album.avatar) album.avatar = toAvatarUrl(avy.image);
+  }
+  return albums;
+}
+
+export const loadStampAlbums = cache(loadStampAlbumsCached);
