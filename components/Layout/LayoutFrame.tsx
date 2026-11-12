@@ -5,6 +5,9 @@ export const LAYOUT_BASE_COLOR = '#4A5568';
 /** Default nav tint (with alpha), shared by App layout + SetMainColor cleanup. */
 export const LAYOUT_MAIN_COLOR_DEFAULT = '#4A5568c7';
 export const LAYOUT_MAIN_COLOR_CSS_VAR = '--layout-main-color';
+/** Nav text and hover background that read on the nav tint (see SetMainColor). */
+export const LAYOUT_INK_CSS_VAR = '--layout-main-ink';
+export const LAYOUT_INK_HOVER_CSS_VAR = '--layout-main-ink-hover';
 
 type LayoutFrameProps = {
   children?: ReactNode;

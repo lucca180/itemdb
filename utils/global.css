@@ -1,5 +1,8 @@
 :root {
   --layout-main-color: #4a5568c7;
+  /* nav text on the tint; SetMainColor switches to dark text on light tints */
+  --layout-main-ink: rgba(255, 255, 255, 0.92);
+  --layout-main-ink-hover: rgba(255, 255, 255, 0.08);
 }
 
 body {
