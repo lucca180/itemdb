@@ -178,9 +178,9 @@ export class dti {
       ...item.canonicalAppearance.body.canonicalAppearance.layers,
     ].sort((a, b) => a.zone.depth - b.zone.depth);
 
-    const imageURLs = [];
+    const imageURLs: string[] = [];
 
-    for (const layer of layers) imageURLs.push(layer.imageUrlV2);
+    for (const layer of layers) if (layer.imageUrlV2) imageURLs.push(layer.imageUrlV2);
 
     const images = await loadImages(imageURLs);
 

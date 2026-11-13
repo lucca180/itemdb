@@ -803,7 +803,8 @@ export type DTIZoneQuery = {
 
 export type DTILayer = {
   id: string;
-  imageUrlV2: string;
+  // DTI returns null for layers it has no image for (e.g. Vandagyre Pirate "Hind Biology")
+  imageUrlV2: string | null;
   knowGlitches: string[];
   remoteId: string;
   bodyId: string;

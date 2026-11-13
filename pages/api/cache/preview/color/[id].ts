@@ -172,7 +172,8 @@ const fetchPetPreviewImages = async (species_id: number, color_id: number) => {
   const imagesURLs = [];
 
   for (const layer of layers) {
-    imagesURLs.push(layer.imageUrlV2);
+    // DTI may have no image for a layer; skip it instead of breaking the whole preview
+    if (layer.imageUrlV2) imagesURLs.push(layer.imageUrlV2);
   }
 
   return imagesURLs;
