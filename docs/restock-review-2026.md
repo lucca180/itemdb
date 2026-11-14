@@ -15,6 +15,8 @@ As metas desta edição:
 
 Trabalho na branch `feat/restock-review-2026`.
 
+Em 13/11/2026 começou a análise para ampliar o escopo a quem não usa o restock e a deslogados (seção Ampliação do escopo).
+
 ## Status: etapa 1 (planejamento e demo)
 
 Atualizado em 02/11/2026. A etapa 1 entrega o plano e uma demo navegável com dados mockados; nada aqui lê dados reais nem mexe no banco.
@@ -213,3 +215,119 @@ O lançamento fica em 15/12, duas semanas antes das edições anteriores (28/12 
 - [x] **Data de lançamento:** 15/12, com dados de 01/01 a 30/11.
 
 Os protótipos e a demo já foram feitos (seção Status).
+
+## Ampliação do escopo (em análise)
+
+Atualizado em 13/11/2026. A ideia é que o Review 2026 também atenda quem usa o itemdb sem o restock dashboard e quem visita deslogado, com estatísticas e curiosidades sobre itens, preços e listas. Esta seção é só análise: nada de código foi escrito para ela.
+
+### Públicos
+
+Consultas de leitura no banco de 01/01 a 13/11/2026; Umami de 09/03 a 12/11/2026.
+
+| Grupo | Pessoas em 2026 |
+| --- | --- |
+| Contas que fizeram login | 4.566 (de 6.425 no total; 2.680 contas criadas em 2026) |
+| Usaram o restock (`RestockSession`) | 1.024 |
+| Fizeram algo fora do restock | 2.396 |
+| ↳ sem nenhuma sessão de restock | **1.812** |
+| ↳ com restock também | 584 |
+| Fizeram login e não deixaram nenhum rastro no banco | **1.754** |
+| Visitantes no Umami | ~770 mil (8,4 milhões de pageviews) |
+
+"Algo fora do restock" é: criou lista, adicionou item a lista (listas não oficiais), enviou `Feedbacks` (inclui `tradePrice`), votou em `FeedbackVotes` ou reportou `NCTrade`.
+
+Com isso, o Review pessoal passa de cerca de 1.000 para cerca de 2.800 contas. As 1.754 contas sem rastro e o público deslogado só podem receber a parte da comunidade.
+
+Distinct users por fonte em 2026: listas criadas 1.761, itens adicionados a listas 1.862, `Feedbacks` 558, `FeedbackVotes` 456, `NCTrade` 272, `apiKeys` usadas 43, `DataCollecting` 18. Por tipo de `Feedbacks`: `tradePrice` 72.499 envios de 468 pessoas; `priceReport` 488 de 131 pessoas (+255 anônimos). Contas novas por mês: entre 187 (fev) e 328 (jul).
+
+### Ideias para logados sem restock
+
+**Listas**
+- Listas criadas, itens adicionados, quantos vieram de importação e a maior lista.
+- "Sua coleção valorizou X%": preço do item quando entrou na lista (`ListItems.addedAt` × histórico de `ItemPrices`) comparado com o preço atual. Também o item que mais valorizou e o que mais caiu.
+- Valor total em NP das listas e o item mais caro que a pessoa tem ou procura.
+- "Seu item mais raro": o item da lista que aparece em menos listas de outras pessoas. O contrário também: "você e outras 57 pessoas procuram o Coltzan Stamp".
+- Progresso nas listas oficiais (checklists). Combina com o álbum de selos: os itens mais adicionados a listas em 2026 são quase todos selos.
+
+**Contribuição**
+- Lotes de trade precificados, votos, price reports e NC trades reportados.
+- Posição em relação à comunidade ("entre os 5% que mais ajudaram a precificar").
+
+**Conta**
+- "Membro desde"; para contas criadas em 2026, "seu primeiro ano".
+
+### Ideias para a comunidade (logados e deslogados)
+
+Números de 2026 até 13/11:
+
+| Dado | Valor |
+| --- | --- |
+| Atualizações de preço (`ItemPrices`) | 1.097.824, em 47.061 itens |
+| Lotes de trade vistos (`Trades`) | 1.693.282 |
+| Registros de restock / leilão (`RestockAuctionHistory`) | 25.677.167 / 984.366 |
+| Aberturas reportadas (`OpenableItems`, opening_id distintos) | 205.011 |
+| NC trades reportados | 4.392 |
+| Listas criadas / itens adicionados a listas | 10.436 (6.267 dinâmicas) / 4.907.089 (1.648.484 importados, 73.042 itens distintos) |
+| Buscas (`omni-search` no Umami) | 1.339.883 |
+
+Rankings que já saem dos dados:
+
+- Aberturas mais reportadas: Faerie Donation Capsule (10.622), 26th Anniversary Kougra Black Friday GBMC (5.420), NC Mall 19th Sleepover Birthday Mystery Capsule (4.192), Doctors Bag (3.850), Retired GBMC 2026 Mystery Capsule (3.826).
+- NC mais trocados: 26th Anniversary Kougra Black Friday GBMC (382), Styling Studio Supplies (297), Styling Studio Prismatic Brush (204), Dyeworks Hue Brew Potion (146), Deluxe Styling Studio Supplies (128).
+- Itens em mais listas de pessoas diferentes (sem importados e sem dinâmicas): ARGH!!!! DONNA STAMP (59), Coltzan Stamp (57), Midnight Jelly World Stamp (57), Queen Fyora Stamp (57), Commander Garoo Stamp (56).
+- Páginas de item mais vistas (só o caminho `/item/` sem prefixo de idioma; falta somar os outros idiomas): Hungry Fungus (6.798), ARGH!!!! DONNA STAMP (5.686), Cool Negg (4.635), Drakaras Wand (4.119), Corrupted Staff of the Void (3.472).
+- Preço mais volátil (mais atualizações no ano): Petpets Stamp (86), Festival Negg Collectable Charm (82), Bloody Ghost Toast (79), Mound of Rotten Fruit (79).
+
+Outros formatos possíveis: item mais procurado (listas "seeking"), maiores altas e quedas de preço, dia de pico do site e um quiz para deslogados ("qual item ficou mais caro em 2026?") que termina com o convite para fazer login.
+
+### Limitações dos dados
+
+- **Não há itens visitados por pessoa.** O Umami é anônimo e a propriedade `loggedIn` só existe desde 17/10. "Os itens que você mais viu" não dá para fazer.
+- **O ranking ingênuo de altas tem ruído.** Comparando o primeiro preço de 2026 (mínimo 10 mil NP, só NP) com o atual, o topo seria Nimmo Genealogy (10,6 mil → 999.998 NP, 94×), e o Snorkle Jelly aparece em 300 milhões. Precisa de filtro (por exemplo, mínimo de atualizações no ano) ou de revisão manual antes de virar slide.
+- **Itens novos de 2026 não são confiáveis.** `releaseDate` está vazio para 2026, e `Items.addedAt` em 2026 tem 4.250 itens NC, 1.278 NP e 49 PB. Não está verificado se são lançamentos do ano ou dados importados depois.
+- **`ActionLogs` não serve para o Review.** É praticamente só de admins (12 usuários em 2026).
+- **Review pessoal sem login conflita com a decisão "Link público: não entra em 2026".**
+- As consultas que cruzam `ListItems` com `UserList` levaram cerca de 45 s, e a sobreposição de públicos cerca de 35 s. Cabem no script em lote, não numa requisição.
+
+### Perguntas abertas
+
+1. Um Review único que mostra só os slides para os quais a pessoa tem dados (restock, listas, contribuição, comunidade), ou Reviews separados por tipo de usuário?
+2. As 1.754 contas sem rastro recebem só a parte da comunidade, ou o Review pessoal nem aparece para elas?
+3. Aprofundar a "valorização da coleção" e o ranking de altas e quedas com filtro anti-ruído, que são as ideias que mais dependem de validar os dados.
+
+### Consultas usadas
+
+Todas só de leitura. Sobreposição de públicos:
+
+```sql
+WITH act AS (
+  SELECT user_id FROM UserList WHERE createdAt >= '2026-01-01' AND official = 0
+  UNION SELECT l.user_id FROM ListItems li JOIN UserList l ON l.internal_id = li.list_id
+    WHERE li.addedAt >= '2026-01-01' AND l.official = 0
+  UNION SELECT user_id FROM Feedbacks WHERE addedAt >= '2026-01-01' AND user_id IS NOT NULL
+  UNION SELECT user_id FROM FeedbackVotes WHERE addedAt >= '2026-01-01' AND user_id IS NOT NULL
+  UNION SELECT reporter_id FROM NCTrade WHERE addedAt >= '2026-01-01'
+), rs AS (SELECT DISTINCT user_id FROM RestockSession WHERE startedAt >= '2026-01-01'),
+lg AS (SELECT id user_id FROM User WHERE last_login >= '2026-01-01')
+SELECT (SELECT COUNT(*) FROM lg) logged2026,
+  (SELECT COUNT(*) FROM act) active_nonrestock_signal,
+  (SELECT COUNT(*) FROM act WHERE user_id NOT IN (SELECT user_id FROM rs)) active_without_restock,
+  (SELECT COUNT(*) FROM rs WHERE user_id IN (SELECT user_id FROM act)) restock_and_other,
+  (SELECT COUNT(*) FROM lg WHERE user_id NOT IN (SELECT user_id FROM act)
+    AND user_id NOT IN (SELECT user_id FROM rs)) login_only;
+```
+
+Ranking ingênuo de altas de preço (com o ruído descrito acima):
+
+```sql
+WITH f AS (
+  SELECT p.item_iid, p.price first_price FROM ItemPrices p
+  JOIN (SELECT item_iid, MIN(addedAt) a FROM ItemPrices
+        WHERE addedAt >= '2026-01-01' AND manual_check IS NULL GROUP BY item_iid) m
+    ON m.item_iid = p.item_iid AND m.a = p.addedAt
+), l AS (SELECT item_iid, price last_price FROM ItemPrices WHERE isLatest = 1)
+SELECT i.name, f.first_price, l.last_price, ROUND(l.last_price / f.first_price, 1) x
+FROM f JOIN l ON l.item_iid = f.item_iid JOIN Items i ON i.internal_id = f.item_iid
+WHERE f.first_price >= 10000 AND i.isNC = 0
+ORDER BY l.last_price / f.first_price DESC LIMIT 10;
+```
