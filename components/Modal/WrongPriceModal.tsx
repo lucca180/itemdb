@@ -52,8 +52,10 @@ export type WrongPriceModalProps = {
 };
 
 const DAY_MS = 1000 * 60 * 60 * 24;
-/** "Very outdated" reason (and the outdated context card) only for prices at least this old. */
+/** The outdated context card shows for prices at least this old. */
 const OUTDATED_MIN_DAYS = 30;
+/** The "very outdated" report reason is enabled for prices at least this old. */
+const OUTDATED_REPORT_MIN_DAYS = 7;
 /** A price this recent that moved at least 1.5x up or down shows the "just changed" card. */
 const RECENT_CHANGE_DAYS = 3;
 const BIG_CHANGE_UP = 1.5;
@@ -148,7 +150,7 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
   const ageDays = priceDate ? (now.getTime() - priceDate.getTime()) / DAY_MS : 0;
   const situation = getSituation(price, previousPrice, data, ageDays);
   const canReport = !!price?.value;
-  const canReportOutdated = ageDays >= OUTDATED_MIN_DAYS;
+  const canReportOutdated = ageDays >= OUTDATED_REPORT_MIN_DAYS;
   const updatedAgo = priceDate ? format.relativeTime(priceDate, now) : '';
 
   const sendReport = async () => {
@@ -398,7 +400,7 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                   <RadioCard.ItemDescription fontSize="xs">
                     {disabled
                       ? t('ItemPage.wrong-price-reason-outdated-disabled', {
-                          days: OUTDATED_MIN_DAYS,
+                          days: OUTDATED_REPORT_MIN_DAYS,
                         })
                       : t(option.description)}
                   </RadioCard.ItemDescription>
@@ -447,8 +449,8 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                       variant="plain"
                       size="xs"
                       alignSelf="center"
-                      color="whiteAlpha.700"
-                      _hover={{ color: 'white' }}
+                      color="red.300"
+                      _hover={{ color: 'red.200' }}
                       onClick={() => setStep('report')}
                     >
                       {t('ItemPage.wrong-price-report-link')} <LuArrowRight />
@@ -511,6 +513,8 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                         inputProps={{
                           variant: 'filled',
                           placeholder: t('ItemPage.wrong-price-suggested-optional'),
+                          bg: 'blackAlpha.300',
+                          borderRadius: 'md',
                           pl: 3,
                           _placeholder: { color: 'whiteAlpha.600' },
                         }}
@@ -522,14 +526,14 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
             </Dialog.Body>
 
             <Dialog.Footer>
+              <Button variant="ghost" onClick={onClose} size="sm">
+                {t('General.close')}
+              </Button>
               {isReportStep && !isSuccess && (
                 <Button size="sm" disabled={!reason} loading={isSending} onClick={sendReport}>
                   {t('ItemPage.wrong-price-send-report')}
                 </Button>
               )}
-              <Button variant="ghost" onClick={onClose} size="sm">
-                {t('General.close')}
-              </Button>
             </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Positioner>
