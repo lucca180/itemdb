@@ -279,9 +279,14 @@ function usePriceEdit() {
 
 export function ItemPriceModalProvider({
   item,
+  price,
+  previousPrice,
   children,
 }: {
   item: ItemData;
+  /** Latest price and the one before it - used by the wrong price modal. */
+  price?: PriceData;
+  previousPrice?: PriceData;
   children: ReactNode;
 }) {
   const [wrongPriceOpen, setWrongPriceOpen] = useState(false);
@@ -337,6 +342,8 @@ export function ItemPriceModalProvider({
         {wrongPriceOpen && (
           <WrongPriceModal
             item={item}
+            price={price}
+            previousPrice={previousPrice}
             data={wrongPriceData}
             isLoading={wrongPriceLoading}
             isOpen={wrongPriceOpen}
