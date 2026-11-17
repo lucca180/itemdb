@@ -103,6 +103,37 @@ describe('buildItemProcessRows', () => {
     expect(row.specialType).toBeUndefined();
   });
 
+  test.each([
+    'This item is part of a deluxe paint brush set!',
+    'This item is part of a deluxe paintbrush set!',
+  ])('marks PB items as pb + no trade: %s', (description) => {
+    const [row] = buildItemProcessRows([
+      {
+        name: 'Some PB Item',
+        img: 'https://images.neopets.com/items/some_pb_item.gif',
+        description,
+        category: 'Clothes',
+        subText: '(wearable)',
+      },
+    ]);
+
+    expect(row.type).toBe('pb');
+    expect(row.status).toBe('no trade');
+  });
+
+  test('keeps np when the description does not mention a PB set', () => {
+    const [row] = buildItemProcessRows([
+      {
+        name: 'Some Brush',
+        img: 'https://images.neopets.com/items/some_brush.gif',
+        description: 'A paintbrush for painting your pet.',
+      },
+    ]);
+
+    expect(row.type).toBe('np');
+    expect(row.status).toBe('active');
+  });
+
   test('skips invalid images and empty names', () => {
     const rows = buildItemProcessRows([
       {

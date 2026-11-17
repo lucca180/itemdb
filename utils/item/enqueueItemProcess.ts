@@ -110,7 +110,8 @@ export function buildItemProcessRows(
     if (rarity === 500) type = 'nc';
     const isNC = type === 'nc' || rarity === 500;
 
-    if (description?.includes('deluxe paint brush set')) type = 'pb';
+    // Neopets writes both "paint brush" and "paintbrush" in PB item descriptions.
+    if (description && /deluxe paint ?brush set/i.test(description)) type = 'pb';
 
     if (type === 'pb') status = 'no trade';
 
