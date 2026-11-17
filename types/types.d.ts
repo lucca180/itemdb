@@ -849,9 +849,9 @@ export type DTICanonicalAppearance = {
 
 export type DTIPetAppearance = {
   bodyId: string;
+  // No color name: impress-2020 fails the whole query when the color isn't in DTI's color table yet
   color: {
     id: string;
-    name: string;
   };
   id: string;
   isGlitched: boolean;
