@@ -425,6 +425,23 @@ export function getDateNST(timestamp?: number) {
   return new Date(todayNST);
 }
 
+const nstDayKeyFormat = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Los_Angeles',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+/** Calendar-day difference in NST between `target` and `now` (0 = same NST day, 1 = next day). */
+export function getNSTDayDiff(target: Date | string | number, now: Date | number = Date.now()) {
+  const toDayMs = (value: Date | string | number) => {
+    const [year, month, day] = nstDayKeyFormat.format(new Date(value)).split('-').map(Number);
+    return Date.UTC(year, month - 1, day);
+  };
+
+  return Math.round((toDayMs(target) - toDayMs(now)) / 86_400_000);
+}
+
 export type ShopRestockSpecialDay = 'hpd' | 'tyrannia' | 'usukicon' | 'festival' | 'halloween';
 
 export const NORMAL_SHOP_RESTOCK_RARITY_MAX = 100;
