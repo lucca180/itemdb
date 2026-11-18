@@ -3,7 +3,7 @@
 import { Box, Button, Flex, Grid, Image, Text } from '@chakra-ui/react';
 import { useToPng } from '@hugocxl/react-to-image';
 import { useFormatter, useTranslations } from 'next-intl';
-import { Ref, useRef, useState } from 'react';
+import { ReactNode, Ref, useRef, useState } from 'react';
 import { FaCopy, FaDownload, FaShareAlt } from 'react-icons/fa';
 import { useToast } from '@utils/theme/toast';
 import { restockShopInfo } from '@utils/utils';
@@ -207,10 +207,16 @@ export const PetpageBadge = ({
 
 type ShareAction = 'download' | 'copy' | 'share';
 
-export const ShareSlide = ({ data, theme }: SlideProps) => {
+type ShareImageOptions = {
+  fileName: string;
+  title: string;
+  text: string;
+};
+
+/** Renders the element behind `cardRef` to a 1080px wide PNG and downloads, copies or shares it. */
+export const useShareImage = ({ fileName, title, text }: ShareImageOptions) => {
   const t = useTranslations();
   const toast = useToast();
-  const [showBadge, setShowBadge] = useState(false);
   const action = useRef<ShareAction>('download');
   const [pending, setPending] = useState<ShareAction | null>(null);
 
@@ -233,8 +239,6 @@ export const ShareSlide = ({ data, theme }: SlideProps) => {
     });
 
   const handleImage = async (dataUrl: string) => {
-    const fileName = `itemdb-restock-review-${data.year}.png`;
-
     try {
       if (action.current === 'download') {
         const link = document.createElement('a');
@@ -260,8 +264,8 @@ export const ShareSlide = ({ data, theme }: SlideProps) => {
 
       const shareData = {
         files: [new File([blob], fileName, { type: blob.type })],
-        title: t('RestockReview.seo-title', { year: data.year }),
-        text: t('RestockReview.share-text', { year: data.year }),
+        title,
+        text,
       };
       if (!navigator.canShare?.(shareData)) throw new Error('Web Share API not supported');
       await navigator.share(shareData);
@@ -277,6 +281,90 @@ export const ShareSlide = ({ data, theme }: SlideProps) => {
     setPending(next);
     convert();
   };
+
+  return { cardRef, run, isLoading: state.isLoading, pending };
+};
+
+/** Small preview of the story image plus the download, copy and share buttons. */
+export const SharePreview = ({
+  share,
+  children,
+}: {
+  share: ReturnType<typeof useShareImage>;
+  children: ReactNode;
+}) => {
+  const t = useTranslations('RestockReview');
+  const { run, isLoading, pending } = share;
+
+  return (
+    <>
+      <Flex justify="center">
+        <Box
+          w={`${SLIDE_WIDTH / 2}px`}
+          h={`${SLIDE_HEIGHT / 2}px`}
+          overflow="hidden"
+          borderRadius="12px"
+          boxShadow="0 0 0 1px rgba(243, 240, 230, 0.25)"
+        >
+          <Box
+            w={`${SLIDE_WIDTH}px`}
+            h={`${SLIDE_HEIGHT}px`}
+            transform="scale(0.5)"
+            transformOrigin="top left"
+          >
+            {children}
+          </Box>
+        </Box>
+      </Flex>
+      <Grid templateColumns="repeat(3, minmax(0, 1fr))" gap="8px">
+        <Button
+          minH="48px"
+          borderRadius="12px"
+          bg={COLORS.lime}
+          color={COLORS.ink}
+          fontWeight={700}
+          loading={isLoading && pending === 'download'}
+          onClick={() => run('download')}
+        >
+          <FaDownload /> {t('download')}
+        </Button>
+        <Button
+          minH="48px"
+          borderRadius="12px"
+          variant="outline"
+          borderColor="rgba(243, 240, 230, 0.35)"
+          color={COLORS.cream}
+          fontWeight={700}
+          loading={isLoading && pending === 'copy'}
+          onClick={() => run('copy')}
+        >
+          <FaCopy /> {t('copy')}
+        </Button>
+        <Button
+          minH="48px"
+          borderRadius="12px"
+          variant="outline"
+          borderColor="rgba(243, 240, 230, 0.35)"
+          color={COLORS.cream}
+          fontWeight={700}
+          loading={isLoading && pending === 'share'}
+          onClick={() => run('share')}
+        >
+          <FaShareAlt /> {t('share')}
+        </Button>
+      </Grid>
+    </>
+  );
+};
+
+export const ShareSlide = ({ data, theme }: SlideProps) => {
+  const t = useTranslations();
+  const [showBadge, setShowBadge] = useState(false);
+  const share = useShareImage({
+    fileName: `itemdb-restock-review-${data.year}.png`,
+    title: t('RestockReview.seo-title', { year: data.year }),
+    text: t('RestockReview.share-text', { year: data.year }),
+  });
 
   if (showBadge)
     return (
@@ -327,61 +415,9 @@ export const ShareSlide = ({ data, theme }: SlideProps) => {
       >
         {t('RestockReview.share-title', { year: data.year })}
       </Text>
-      <Flex justify="center">
-        <Box
-          w={`${SLIDE_WIDTH / 2}px`}
-          h={`${SLIDE_HEIGHT / 2}px`}
-          overflow="hidden"
-          borderRadius="12px"
-          boxShadow="0 0 0 1px rgba(243, 240, 230, 0.25)"
-        >
-          <Box
-            w={`${SLIDE_WIDTH}px`}
-            h={`${SLIDE_HEIGHT}px`}
-            transform="scale(0.5)"
-            transformOrigin="top left"
-          >
-            <ShareCard data={data} innerRef={cardRef} />
-          </Box>
-        </Box>
-      </Flex>
-      <Grid templateColumns="repeat(3, minmax(0, 1fr))" gap="8px">
-        <Button
-          minH="48px"
-          borderRadius="12px"
-          bg={COLORS.lime}
-          color={COLORS.ink}
-          fontWeight={700}
-          loading={state.isLoading && pending === 'download'}
-          onClick={() => run('download')}
-        >
-          <FaDownload /> {t('RestockReview.download')}
-        </Button>
-        <Button
-          minH="48px"
-          borderRadius="12px"
-          variant="outline"
-          borderColor="rgba(243, 240, 230, 0.35)"
-          color={COLORS.cream}
-          fontWeight={700}
-          loading={state.isLoading && pending === 'copy'}
-          onClick={() => run('copy')}
-        >
-          <FaCopy /> {t('RestockReview.copy')}
-        </Button>
-        <Button
-          minH="48px"
-          borderRadius="12px"
-          variant="outline"
-          borderColor="rgba(243, 240, 230, 0.35)"
-          color={COLORS.cream}
-          fontWeight={700}
-          loading={state.isLoading && pending === 'share'}
-          onClick={() => run('share')}
-        >
-          <FaShareAlt /> {t('RestockReview.share')}
-        </Button>
-      </Grid>
+      <SharePreview share={share}>
+        <ShareCard data={data} innerRef={share.cardRef} />
+      </SharePreview>
       <Button
         minH="48px"
         borderRadius="12px"

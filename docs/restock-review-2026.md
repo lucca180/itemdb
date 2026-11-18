@@ -11,11 +11,32 @@ As metas desta edição:
 - Gerar o Review para todo mundo que tem sessões em 2026 (998 pessoas até outubro), sem fila de espera.
 - Fazer o compartilhamento ser o produto: imagem de story e selo para petpage.
 - Medir tudo no Umami desde o primeiro dia, o que não aconteceu em 2024 nem em 2025.
-- Lançar por volta de 15/12, antes das festas, com dados de 01/01 a 30/11. Dezembro fica de fora e não há atualização depois.
+- Lançar por volta de 15/12, antes das festas, com os dados que chegaram de 01/01 a 06/12 (corte final). O que chegar a partir de 07/12 fica de fora e não há atualização depois.
 
 Trabalho na branch `feat/restock-review-2026`.
 
-Em 13/11/2026 começou a análise para ampliar o escopo a quem não usa o restock e a deslogados (seção Ampliação do escopo).
+Em 13/11/2026 começou a análise para ampliar o escopo a quem não usa o restock e a deslogados (seção Ampliação do escopo). Em 18/11/2026 o Review passou a ter dois capítulos: **Neopia em 2026**, aberto a todos, e **Restock**, para quem tem sessões. O capítulo Pessoal foi descartado (seção Capítulos).
+
+## Status: etapa 2 (capítulos e capítulo Geral)
+
+Atualizado em 18/11/2026.
+
+**Feito**
+
+- `/demo` virou uma lista de capítulos (`ReviewHub.tsx`): o capítulo 1 usa dados reais de 2026 e o capítulo 2 é o Restock com os dados mockados da etapa 1.
+- Player genérico (`StoriesPlayer.tsx`), usado pelos dois capítulos, em tela cheia por cima do site (no desktop o slide ocupa a altura toda; abaixo de 500px de largura ocupa a largura toda, sem bordas), com botão "Capítulos" (ou Esc) para voltar à lista. A navegação usa atualização funcional do índice: antes, toques rápidos ou setas seguidas pulavam menos slides do que deviam.
+- Capítulo Geral (`GeneralSlides.tsx` e `generalData.ts`): 19 slides. **Hoje o código tem um quiz de trivia com placar**: 6 perguntas (item mais visto, caixa mais aberta, item que mais movimentou NP em leilões, preço do Muffin Baking Book, maior alta e maior queda), cada uma logo antes do slide que traz a resposta, e no fim um placar com título (Oráculo de Neopia, Magnata do Trading Post, Explorador Curioso ou Recém-chegado de Kreludor). O story compartilhável mostra esse placar. As respostas ficam no estado do capítulo, então voltar e avançar não as perde. **Esse formato vai ser trocado pelo quiz de personalidade** da seção "Quiz de personalidade", decidido em 18/11.
+- Números abreviados com k, m, bi e tri em PT e com k, m, b e t em EN (`useGeneralFormat` em `GeneralSlides.tsx`).
+- Corte final dos dados em 06/12 (`finalCutoff` em `generalData.ts`, `PERIOD_END` em `mockData.ts`).
+- O compartilhamento virou um hook (`useShareImage`) e um componente (`SharePreview`) reutilizáveis.
+- Textos em EN e PT no namespace `ReviewGeneral`. Lint passando; typecheck só com o erro antigo de `nextjs-progressbar` (pacote não instalado). Testado no navegador em EN e PT, no desktop e no celular (375px).
+
+**Falta** (próxima sessão)
+
+- Implementar o quiz de personalidade (seção "Quiz de personalidade"): trocar as 4 perguntas de trivia pelas 7 perguntas pessoais, manter alta e queda como bônus, calcular o tipo com desempate, criar o slide de resultado por tipo e trocar o story compartilhável pelo tipo. Antes, confirmar os pontos em aberto daquela seção.
+- Fechar o conteúdo e o tom dos slides do Geral com a demo.
+- Recalcular os números do Geral no lote, a partir de 07/12, com dados até 06/12. Os livros ainda estão se ajustando depois da atualização de 02/11.
+- Decidir se o Geral também ganha selo para petpage.
 
 ## Status: etapa 1 (planejamento e demo)
 
@@ -126,7 +147,7 @@ O Review vira uma sequência de slides em tela cheia (9:16 no celular), avançan
 5. Compras mais valiosas: top 5 com o preço na época.
 6. Compra mais rápida.
 7. "O que escapou": o item mais caro perdido e o NP que deixou de ganhar.
-8. Mapa de calor de 01/01 a 30/11, com a maior sequência e o melhor dia.
+8. Mapa de calor de 01/01 a 06/12, com a maior sequência e o melhor dia.
 9. Comparação com a comunidade: "mais rápido que 87% dos restockers do itemdb".
 10. Tipo de restocker (a revelação).
 11. Resumo e compartilhar.
@@ -170,10 +191,10 @@ O Review de 2026 é calculado uma vez, em lote, para todas as cerca de 1.000 pes
 **Processamento**
 
 1. Corrigir a duração em `calculateStats`: juntar os intervalos sobrepostos das sessões antes de somar.
-2. Script em lote, rodado no começo de dezembro, com dados de 01/01 a 30/11 (em NST).
+2. Script em lote, rodado a partir de 07/12, com os dados que chegaram de 01/01 a 06/12 (em NST).
 3. Para cada pessoa, salvar o agregado do ano, o mapa de calor diário, a maior sequência, o melhor dia e o tipo de restocker.
 4. Uma segunda passada sobre os agregados calcula as distribuições da comunidade (percentis e limites dos tipos) e o resumo público.
-5. Sem reprocessamento em janeiro: dezembro fica de fora do Review 2026.
+5. Sem reprocessamento em janeiro: o que chegar a partir de 07/12 fica de fora do Review 2026.
 
 Guardar o agregado anual provavelmente pede mudança no schema (`RestockWrapped` / `WrappedSettings`). A mudança só entra depois da sua confirmação, e a migração é você quem roda.
 
@@ -201,8 +222,9 @@ Os acessos ao selo não aparecem no Umami e precisam dos logs do Cloudflare, com
 | Decisões e protótipos | 02/11 a 13/11 |
 | Correções e script em lote | 09/11 a 27/11 |
 | Stories, imagens e i18n | 16/11 a 09/12 |
-| Processamento em lote | 01/12 a 05/12 |
-| Testes em EN e PT | 07/12 a 11/12 |
+| Corte final dos dados | 06/12 (último dia que entra) |
+| Processamento em lote | 07/12 a 09/12 |
+| Testes em EN e PT com os dados finais | 09/12 a 12/12 |
 | **Lançamento** | **15/12** |
 
 O lançamento fica em 15/12, duas semanas antes das edições anteriores (28/12 e 30/12).
@@ -212,13 +234,138 @@ O lançamento fica em 15/12, duas semanas antes das edições anteriores (28/12 
 - [x] **Barreira de contribuição:** liberado para todos, sem fila nem contribuição.
 - [x] **Link público:** não entra em 2026.
 - [x] **Selo e resumo da comunidade:** entram em 2026.
-- [x] **Data de lançamento:** 15/12, com dados de 01/01 a 30/11.
+- [x] **Data de lançamento:** 15/12.
+- [x] **Corte final (decidido em 18/11):** entram só os dados que chegaram até 06/12/2026. O script em lote pode rodar a partir de 07/12 e gera os dados finais dos dois capítulos.
+- [x] **Números abreviados:** k, m, bi e tri em PT (984k, 1,1m, 28 bi) e k, m, b e t em EN, no lugar de "mil", "mi" e "bi" do formato compacto padrão.
 
 Os protótipos e a demo já foram feitos (seção Status).
 
-## Ampliação do escopo (em análise)
+## Capítulos
 
-Atualizado em 13/11/2026. A ideia é que o Review 2026 também atenda quem usa o itemdb sem o restock dashboard e quem visita deslogado, com estatísticas e curiosidades sobre itens, preços e listas. Esta seção é só análise: nada de código foi escrito para ela.
+Decidido em 18/11/2026.
+
+| Capítulo | Quem vê | Conteúdo |
+| --- | --- | --- |
+| 1. Neopia em 2026 | Todo mundo, inclusive deslogados (que terminam com convite para fazer login) | Números do ano, rankings, inflação por categoria e quiz |
+| 2. Restock | Quem tem `RestockSession` no ano | Os 11 slides da etapa 1 |
+
+O capítulo **Pessoal** foi descartado de vez, inclusive como encarte dentro do Geral. O itemdb não registra comportamento por pessoa (itens vistos, buscas), e o que existe por conta (listas, contribuição, data de criação) não sustenta slides interessantes. Se for preciso em 2027, o caminho é começar a registrar eventos por conta antes.
+
+### Inflação por categoria
+
+Consultas só de leitura em 18/11/2026. As cestas são as checklists oficiais: Book Award (lista 664), Booktastic Book Award (663), Gourmet Food (72), listas com `official_tag` Stamps e Quest Log, só itens NP. O preço inicial é a mediana dos preços confirmados de dez/2025 a jan/2026, e o final é a mediana de set a nov/2026. Entram só itens que valiam a partir de 1.000 NP no início; abaixo disso o preço oscila entre 1 e 600 NP e distorce as porcentagens.
+
+| Categoria | Item típico (mediana) | Itens de 1 mi NP+ | Custo da checklist completa |
+| --- | --- | --- | --- |
+| Book Award | +3,8% | −2,5% | −48,6% |
+| Booktastic | −15,6% | −30,6% | −81,3% |
+| Gourmet Food | −13,1% | −38,0% | −65,9% |
+| Selos | −17,4% | −34,0% | −48,4% (28,8 bi → 14,6 bi NP) |
+| Quest Log | −33,8% | −71,7% | −64,2% |
+
+- **Itens caros caíram, baratos ficaram estáveis.** Na faixa de 1 a 10 mil NP a variação ficou entre −16% e +3%.
+- **Quest log:** 516 prêmios de 100 mil NP ou mais perderam mais de 90% do valor, com picos em março (88), maio (86), julho (84) e setembro (87).
+- **Corrida dos livros:** em 02/11/2026 o Neopets passou a dar mais prêmios pela leitura. Entre 06/11 e 13/11, mais de 900 livros passaram a valer mais de 5× o preço de outubro (Muffin Baking Book de 3,7 mil para 650 mil). O volume diário de atualizações de preço ficou normal, então não é erro de processamento. No lote, o preço final deve ser o de 06/12 (corte final), e não a mediana de set a nov.
+
+### Leilões
+
+Consultas de 18/11/2026, de 01/01 a 13/11. Contam como vendidos os leilões com comprador (`otherInfo` sem `nobody`) e com `Closed` ou `< 30 min`. O preço é o último lance que o itemdb viu, então para os leilões em `< 30 min` o valor é um piso.
+
+| Dado | Valor |
+| --- | --- |
+| Leilões vistos (`RestockAuctionHistory`, `type = 'auction'`) | 984.168 |
+| Leilões vendidos | 291.466, de 19.967 itens |
+| NP movimentado nos vendidos | 9,12 trilhões |
+| Mais NP movimentado | Seasonal Attack Pea (218,6 bi em 3.580 leilões), Coffee and Marshmallows (188,3 bi), Cool Negg (173,8 bi em 29.903 leilões) |
+| Leilões no teto de 2.147.483.647 NP | 6: Mystery Island Kiko Stamp, Eraser of the Dark Faerie, Super Attack Pea (2), Fashionista Stamp, Commander Garoo Stamp |
+
+### Álbum de selos e efeito quest log
+
+- **Álbum:** é a lista oficial "All Collectibles" (9882), com 984 itens de todas as páginas. A conta usa o preço vigente em 01/01 (o último confirmado antes de 2026) e o preço atual, só para os 903 itens que tinham preço nas duas datas: de 51,4 bi para 28,0 bi NP (−45%). 7 itens não têm nenhum preço, entre eles o Fashionista Stamp, que foi vendido em leilão por 2,1 bi.
+- **Quest log:** os pools de 2026 começaram em 05/01, 02/03, 04/05, 06/07 e 07/09, os mesmos meses dos picos de quedas. Para os 687 itens desses 5 pools (só listas "Pool", com `seriesStart`/`seriesEnd`), a mediana do preço nas últimas 3 semanas do pool, comparada com o mês anterior ao pool, caiu 98,6%. 547 itens perderam mais de 90%, e só 4 não caíram.
+
+### Quiz
+
+Para tirar ruído, o início é o maior dos 3 primeiros preços de dez a jan e o fim é o menor dos 3 últimos de set a nov (o contrário para quedas), com pelo menos 5 atualizações em 2026.
+
+| Pergunta | Resposta | Alternativas |
+| --- | --- | --- |
+| Qual item mais ganhou NP? | Day and Night Collectable Scarab (20,6 mi → 135 mi) | Bank Manager Stamp, Wise Gnorbu Stamp, Toothygrin |
+| Qual item mais perdeu NP? | The Darkest Faerie Stamp (600 mi → 3,35 mi) | Igneot Stamp, Jorett Stamp, Faerie Slingshot |
+
+O Korbat Night Sky subiu mais (+155 mi), mas tem só 7 atualizações no ano. Vários preços de alta param logo abaixo de 999.999 NP, o teto da Shop Wizard, então o valor real pode ser maior.
+
+As duas perguntas ficam no quiz de personalidade como **bônus**: mostram a resposta e a variação em % ("mais subiu de preço", +555% para o Day and Night Collectable Scarab), mas não contam para o resultado.
+
+### Quiz de personalidade
+
+Decidido em 18/11/2026; ainda não implementado. O capítulo Geral vira um quiz no estilo Buzzfeed: perguntas pessoais e meio bobinhas, e no fim a pessoa recebe um tipo de Neopiano. O tipo substitui o placar de acertos, e o story compartilhável passa a ser "Meu tipo de Neopiano em 2026".
+
+**Como encaixa:** cada pergunta pessoal entra logo antes do slide de dados do mesmo tema. A pergunta prepara o assunto, e o slide seguinte mostra o dado real. As perguntas de trivia sobre item mais visto, caixa mais aberta, leilões e Muffin Baking Book saem; os dados delas continuam nos slides de ranking. Maior alta e maior queda ficam como bônus, sem pontuação.
+
+**Tipos**
+
+| Tipo | Quem é |
+| --- | --- |
+| O Especulador | Vive de olho no gráfico do itemdb, compra na baixa e vende na alta. |
+| O Colecionador | Álbum de selos, checklists, avatares. O espaço vazio no álbum incomoda. |
+| O Restocker | Reflexo de gato, quatro abas abertas, conhece cada lojista pelo nome. |
+| O Apostador do Caos | Reroll, Wheel of Excitement, lance sem pensar. Confia na sorte. |
+| O Neopiano Raiz | Dailies desde 2005, o pet em primeiro lugar, preço é detalhe. |
+
+**Perguntas** (cada opção soma 1 ponto para o tipo entre colchetes)
+
+1. **A pool do quest log acabou de mudar. Você…** (antes do slide do efeito quest log)
+    - Corre para o SDB vender tudo antes que desvalorize [Especulador]
+    - Atualiza a lista oficial do Weekly Quest para ver se a coleção de selos vai ficar mais completa [Colecionador]
+    - Dá reroll infinito e não vem nada de bom [Caos]
+    - Nem percebeu, você faz as quests pelo seu pet e pronto [Raiz]
+2. **2 de novembro: ler livros passou a dar mais prêmios. Você…** (antes da corrida dos livros)
+    - Comprou 300 Muffin Baking Books a 3,7k antes de todo mundo perceber [Especulador]
+    - Foi para a Booktastic Books dar refresh até o dedo doer [Restocker]
+    - Seu pet já tinha lido tudo, você só soube pelo preço [Raiz]
+    - Vai começar a ler agora [Caos]
+3. **Seu item dos sonhos aparece num leilão com 2 minutos restantes. Você…** (antes dos leilões)
+    - Cobre qualquer lance na hora, custe o que custar [Caos]
+    - Abre o itemdb, confere o preço e dá 1 NP acima do último lance [Especulador]
+    - Ele está na sua lista "Seeking" há 3 anos: é agora ou nunca [Colecionador]
+    - Deixa passar, uma hora ele aparece no restock [Restocker]
+4. **Meia-noite NST. Primeira coisa que você faz?** (antes de "Neopia não parou")
+    - Dailies, todas, na mesma ordem de sempre [Raiz]
+    - Abre quatro lojas em abas separadas [Restocker]
+    - Vê o que mudou de preço no itemdb [Especulador]
+    - Wheel of Excitement, Kiko Pop e Scratchcard: hoje vai [Caos]
+5. **Você acabou de ganhar 100m NP. Você…** (antes da inflação)
+    - Gasta tudo naquele selo que falta no álbum [Colecionador]
+    - Investe em algo que vai subir, tipo um Collectable Scarab [Especulador]
+    - Compra uma paint brush para o seu pet [Raiz]
+    - Compra estoque para revender na sua loja [Restocker]
+6. **Como está o seu SDB?** (antes do álbum de selos)
+    - 3.000 itens que você jura que vai organizar um dia [Raiz]
+    - Você sabe o preço de cada item de cabeça [Especulador]
+    - Selos guardados, porque ainda não teve coragem de colar [Colecionador]
+    - 200 Neggs e uma única Cool Negg que você nunca vai vender [Caos]
+7. **Você ganhou um 26th Anniversary Kougra Black Friday GBMC. Você…** (antes das aberturas ou dos NC mais trocados)
+    - Abre na hora e reporta no itemdb o que saiu [Caos]
+    - Troca fechado, porque vale mais assim [Especulador]
+    - Guarda, porque a coleção precisa dele [Colecionador]
+    - Abre só depois das dailies [Raiz]
+
+A Faerie Donation Capsule saiu da pergunta 7 porque é no-trade. O GBMC pode ser trocado e foi o NC mais trocado do ano (382 trocas).
+
+**Contagem atual por tipo:** Especulador 7, Caos 6, Raiz 6, Colecionador 5, Restocker 4.
+
+**Em aberto**
+
+- O Restocker aparece só nas perguntas 2, 3, 4 e 5, e o Colecionador também está abaixo do Especulador e do Caos. Equilibrar trocando uma opção nas perguntas 1, 6 ou 7, ou trocar o Restocker por outro tipo.
+- A opção "Vai começar a ler agora" (pergunta 2) está como [Caos]; confirmar o tipo.
+- Regra de desempate. Proposta: vence o tipo escolhido na última pergunta empatada; se a pessoa pular perguntas, o resultado sai só com as respondidas.
+- Para cada tipo: texto do resultado, imagem ou item símbolo e um dado do ano ligado a ele (por exemplo, para o Especulador: "9,1 tri NP passaram pelos leilões em 2026").
+- Textos em EN das perguntas e dos tipos.
+
+## Ampliação do escopo (análise de 13/11)
+
+Atualizado em 13/11/2026. A ideia era que o Review 2026 também atendesse quem usa o itemdb sem o restock dashboard e quem visita deslogado, com estatísticas e curiosidades sobre itens, preços e listas. As decisões estão na seção Capítulos; a análise abaixo fica como registro.
 
 ### Públicos
 
@@ -275,7 +422,7 @@ Rankings que já saem dos dados:
 - Aberturas mais reportadas: Faerie Donation Capsule (10.622), 26th Anniversary Kougra Black Friday GBMC (5.420), NC Mall 19th Sleepover Birthday Mystery Capsule (4.192), Doctors Bag (3.850), Retired GBMC 2026 Mystery Capsule (3.826).
 - NC mais trocados: 26th Anniversary Kougra Black Friday GBMC (382), Styling Studio Supplies (297), Styling Studio Prismatic Brush (204), Dyeworks Hue Brew Potion (146), Deluxe Styling Studio Supplies (128).
 - Itens em mais listas de pessoas diferentes (sem importados e sem dinâmicas): ARGH!!!! DONNA STAMP (59), Coltzan Stamp (57), Midnight Jelly World Stamp (57), Queen Fyora Stamp (57), Commander Garoo Stamp (56).
-- Páginas de item mais vistas (só o caminho `/item/` sem prefixo de idioma; falta somar os outros idiomas): Hungry Fungus (6.798), ARGH!!!! DONNA STAMP (5.686), Cool Negg (4.635), Drakaras Wand (4.119), Corrupted Staff of the Void (3.472).
+- Páginas de item mais vistas (o Umami registra quase tudo em `/item/` sem prefixo de idioma; `/pt/item/` tem 1 visita, então não falta somar nada): Hungry Fungus (6.798), ARGH!!!! DONNA STAMP (5.686), Cool Negg (4.635), Drakaras Wand (4.119), Corrupted Staff of the Void (3.472).
 - Preço mais volátil (mais atualizações no ano): Petpets Stamp (86), Festival Negg Collectable Charm (82), Bloody Ghost Toast (79), Mound of Rotten Fruit (79).
 
 Outros formatos possíveis: item mais procurado (listas "seeking"), maiores altas e quedas de preço, dia de pico do site e um quiz para deslogados ("qual item ficou mais caro em 2026?") que termina com o convite para fazer login.

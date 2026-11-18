@@ -5,11 +5,11 @@ import { getStaticAppMetadata } from '@app/utils/appPage';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import { MOCK_REVIEW } from '@components/Hubs/RestockReview/mockData';
-import { ReviewStories } from '@components/Hubs/RestockReview/ReviewStories';
+import { ReviewHub } from '@components/Hubs/RestockReview/ReviewHub';
 import { routing } from '@utils/locales';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('RestockReview');
+  const t = await getTranslations('ReviewGeneral');
 
   return await getStaticAppMetadata({
     title: t('seo-title', { year: MOCK_REVIEW.year }),
@@ -20,11 +20,11 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function RestockReviewDemoPage() {
+export default function ReviewDemoPage() {
   return (
     <Suspense fallback={<AppServerLayoutSkeleton />}>
       <SetMainColor color="#58ab7cc7" />
-      <ReviewStories data={MOCK_REVIEW} />
+      <ReviewHub year={MOCK_REVIEW.year} restock={MOCK_REVIEW} />
     </Suspense>
   );
 }

@@ -64,7 +64,8 @@ const ITEMS = {
 } satisfies Record<string, ReviewItem>;
 
 const PERIOD_START = '2026-01-01';
-const PERIOD_END = '2026-11-30';
+// final cutoff: only data that arrived up to Dec 6; the batch script runs from Dec 7
+const PERIOD_END = '2026-12-06';
 const STREAK = { start: '2026-06-04', end: '2026-07-14' };
 const BEST_DAY = '2026-07-14';
 

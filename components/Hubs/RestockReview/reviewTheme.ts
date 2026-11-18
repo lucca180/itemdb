@@ -23,18 +23,17 @@ export const COLORS = {
 
 export type SlideTheme = 'dark' | 'lime' | 'cream' | 'loss';
 
-export const SLIDE_THEMES: Record<
-  SlideTheme,
-  {
-    bg: string;
-    fg: string;
-    accent: string;
-    muted: string;
-    track: string;
-    buttonBg: string;
-    buttonFg: string;
-  }
-> = {
+export type SlideThemeColors = {
+  bg: string;
+  fg: string;
+  accent: string;
+  muted: string;
+  track: string;
+  buttonBg: string;
+  buttonFg: string;
+};
+
+export const SLIDE_THEMES: Record<SlideTheme, SlideThemeColors> = {
   dark: {
     bg: COLORS.ink,
     fg: COLORS.cream,

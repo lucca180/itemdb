@@ -28,7 +28,7 @@ export type SlideProps = {
 const shopName = (id: number) => restockShopInfo[String(id)]?.name ?? '';
 
 // review dates are calendar days, so format them in UTC to avoid shifting a day
-const useReviewFormat = () => {
+export const useReviewFormat = () => {
   const format = useFormatter();
 
   return {
@@ -62,7 +62,7 @@ export const Eyebrow = ({ children, color }: { children: ReactNode; color: strin
   </Text>
 );
 
-const Display = ({
+export const Display = ({
   children,
   size,
   color,
@@ -115,7 +115,7 @@ export const StampImage = ({
   />
 );
 
-const StatTile = ({ value, label }: { value: string; label: string }) => (
+export const StatTile = ({ value, label }: { value: string; label: string }) => (
   <Flex direction="column" gap="4px" p="14px 12px" borderRadius="12px" bg={COLORS.panel}>
     <Display size="26px">{value}</Display>
     <Text fontSize="12px" color={COLORS.muted}>
@@ -678,7 +678,7 @@ export const TypeSlide = ({ data, theme }: SlideProps) => {
   );
 };
 
-const Chip = ({ children }: { children: ReactNode }) => (
+export const Chip = ({ children }: { children: ReactNode }) => (
   <Text
     p="8px 12px"
     borderRadius="999px"
