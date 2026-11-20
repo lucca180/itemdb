@@ -164,17 +164,18 @@ export function ListPageClient({
   const state = useListPageState({ locale, username, listId, core, initialPreload });
 
   const [contexts, setContexts] = useState<ListContext[]>(initialContexts ?? []);
-  const [groupByContext, setGroupByContext] = useState(true);
+  // the list's saved default; visitors can still switch it on the page
+  const [groupByContext, setGroupByContext] = useState(core.list.groupByContext);
   // undefined = closed, null = open without a focused context
   const [contextsModalFocus, setContextsModalFocus] = useState<number | null | undefined>();
   const [contextsEditorOpen, setContextsEditorOpen] = useState(false);
   const openContextsModal = useCallback((id: number | null) => setContextsModalFocus(id), []);
 
-  // contexts are list content, like the highlight: admins only on official lists
-  const canManageContexts = canEditListInfo(
-    { official: state.list.official, ownerId: state.list.owner.id },
-    user
-  );
+  // contexts are list content, like the highlight: admins only on official lists.
+  // Official lists only for now.
+  const canManageContexts =
+    state.list.official &&
+    canEditListInfo({ official: state.list.official, ownerId: state.list.owner.id }, user);
   const showContextGroups = groupByContext && !state.isEdit && contexts.length > 0;
 
   const color = Color(state.list?.colorHex || '#4A5568');

@@ -308,6 +308,9 @@ export type UserList = {
 
   highlight: string | null;
   highlightText: string | null;
+
+  /** List page opens grouped by context (visitors can still switch) */
+  groupByContext: boolean;
 };
 
 /** Shared note attached to some items of a list (`ListContext` + `ListContextItem`). */

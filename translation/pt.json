@@ -1058,6 +1058,8 @@
     "contexts-button": "Contextos ({count})",
     "contexts-manage": "Gerenciar contextos",
     "contexts-group-by": "Agrupar por contexto",
+    "contexts-group-default": "Agrupar por contexto por padrão?",
+    "contexts-group-default-help": "A lista abre agrupada por contexto quando tiver contextos. Os visitantes ainda podem trocar.",
     "contexts-other-items": "Outros itens",
     "contexts-shared": "{count, plural, one {Só este item} other {# itens compartilham este contexto}}",
     "contexts-see-all": "Ver todos os contextos",

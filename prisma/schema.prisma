@@ -525,7 +525,8 @@ model UserList {
 
   avatarSolutions AvatarSolution[]
 
-  contexts ListContext[]
+  contexts       ListContext[]
+  groupByContext Boolean       @default(false)
 
   @@unique([slug, user_id])
   @@index([official_tag, official])

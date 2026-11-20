@@ -176,9 +176,12 @@ async function fetchListContexts(list: UserList, includeHidden: boolean): Promis
   return ListService.getListContexts(list.internal_id, includeHidden);
 }
 
-/** Contexts of the list; hidden items only for the owner/admin. */
-export const getListContexts = cache((core: ListCore) =>
-  fetchListContexts(core.list, canViewHiddenItems(core))
+/**
+ * Contexts of the list; hidden items only for the owner/admin. Official lists only for now:
+ * other lists show no contexts.
+ */
+export const getListContexts = cache(async (core: ListCore): Promise<ListContext[]> =>
+  core.list.official ? fetchListContexts(core.list, canViewHiddenItems(core)) : []
 );
 
 export async function getListMatches(core: ListCore): Promise<ListItemInfo[]> {

@@ -148,7 +148,9 @@ const CreateListModal = (props: CreateListModalProps) => {
         seriesStart: list.seriesStart,
         seriesEnd: list.seriesEnd,
         listUserTag: list.userTag || undefined,
-        canBeLinked: (list.canBeLinked as boolean | string) == 'true',
+        canBeLinked: String(list.canBeLinked ?? true) === 'true',
+        // selects store 'true'/'false'; untouched fields still hold the list's booleans
+        groupByContext: props.list?.official ? String(list.groupByContext) === 'true' : undefined,
 
         highlight: list.highlight,
         highlightText: list.highlightText,
@@ -566,6 +568,28 @@ const CreateListModal = (props: CreateListModalProps) => {
                       })}
                     </Field.HelperText>
                   </Field.Root>
+                  {/* contexts are official lists only for now */}
+                  {props.list?.official && (
+                    <Field.Root>
+                      <Field.Label color="gray.300">
+                        {t('Lists.contexts-group-default')}
+                      </Field.Label>
+                      <NativeSelect.Root variant="subtle">
+                        <NativeSelect.Field
+                          name="groupByContext"
+                          onChange={handleChange}
+                          value={String(list.groupByContext ?? false)}
+                        >
+                          <option value="true">{t('General.yes')}</option>
+                          <option value="false">{t('General.no')}</option>
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                      <Field.HelperText fontSize={'xs'}>
+                        {t('Lists.contexts-group-default-help')}
+                      </Field.HelperText>
+                    </Field.Root>
+                  )}
                   <Field.Root>
                     <Field.Label color="gray.300">{t('Lists.group-tag')}</Field.Label>
                     <Input

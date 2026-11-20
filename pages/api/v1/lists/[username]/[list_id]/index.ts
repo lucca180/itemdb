@@ -200,6 +200,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       canBeLinked,
       highlight,
       highlightText,
+      groupByContext,
     } = req.body as {
       name?: string;
       description?: string;
@@ -218,6 +219,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       canBeLinked?: boolean;
       highlight?: string;
       highlightText?: string;
+      groupByContext?: boolean;
     };
 
     const hasInfoUpdate =
@@ -237,7 +239,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       listUserTag ||
       canBeLinked ||
       highlight ||
-      highlightText;
+      highlightText ||
+      typeof groupByContext === 'boolean';
 
     if (hasInfoUpdate) {
       // official lists: curators can manage items (handled above), but not the list itself
@@ -301,6 +304,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           slug: slug,
           highlight: highlight?.trim() ?? undefined,
           highlightText: highlightText?.trim() ?? undefined,
+          groupByContext: typeof groupByContext === 'boolean' ? groupByContext : undefined,
           ...ListService.adminListSeoWriteData(req.body, isAdmin),
         },
       });

@@ -123,6 +123,8 @@ export const rawToList = (
     highlight: listRaw.highlight ?? null,
     highlightText: listRaw.highlightText ?? null,
 
+    groupByContext: listRaw.groupByContext ?? false,
+
     itemInfo: !includeItems ? [] : rawToListItems(listRaw.items ?? []),
   };
 };
