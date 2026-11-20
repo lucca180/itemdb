@@ -7,6 +7,7 @@ import { OpenableItems, WearableData } from '@prisma/generated/client';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 import { getManyItems } from '../many';
 import { redis_setDataCount } from '@utils/api/redis';
+import { LogService } from '@services/ActionLogService';
 import {
   CAPSULE_CONTENTS_SYNC_OPENING_ID,
   deduplicateCommunityDrops,
@@ -40,6 +41,8 @@ export const SKIP_ITEMS = [61696, 65743];
 const DROP_ACTIONS = ['add', 'remove', 'set-le'];
 /** PATCH actions on a whole pool. */
 const POOL_ACTIONS = ['rename-pool', 'delete-pool', 'move-pool'];
+/** Hides the computed "unknown" pool of the item (Items.flags). */
+const NO_UNKNOWN_FLAG = 'no-unknown';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -70,13 +73,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
+  let user;
   try {
-    const user = (await CheckAuth(req)).user;
-
-    if (!user || !user.isAdmin) return res.status(401).json({ error: 'Unauthorized' });
+    user = (await CheckAuth(req)).user;
   } catch (e) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+
+  if (!user || !user.isAdmin) return res.status(401).json({ error: 'Unauthorized' });
 
   const id_name = req.query.id_name as string;
   const id = Number(id_name);
@@ -86,7 +90,12 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const item = await getItem(itemQuery);
   if (!item) return res.status(400).json({ error: 'Item not found' });
 
-  const { drop_id, action, poolName, isLE, newPoolName } = req.body;
+  const { drop_id, action, poolName, isLE, newPoolName, enabled } = req.body;
+
+  if (action === 'set-no-unknown') {
+    if (typeof enabled !== 'boolean') return res.status(400).json({ error: 'Missing parameters' });
+    return setNoUnknownFlag(item.internal_id, enabled, user.id, res);
+  }
 
   if (!action || !poolName) return res.status(400).json({ error: 'Missing parameters' });
 
@@ -201,6 +210,49 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   await revalidateItem(item.internal_id, ItemRevalidateTags.drops(item.internal_id));
 
   return res.status(200).json({ dropUpdate: newDrops, sources });
+};
+
+const setNoUnknownFlag = async (
+  internal_id: number,
+  enabled: boolean,
+  uid: string,
+  res: NextApiResponse
+) => {
+  const current = await prisma.items.findUnique({
+    where: { internal_id },
+    select: { flags: true },
+  });
+
+  const oldFlags = current?.flags ?? null;
+  const flags = (oldFlags ?? '')
+    .split(',')
+    .map((flag) => flag.trim())
+    .filter((flag) => flag && flag !== NO_UNKNOWN_FLAG);
+
+  if (enabled) flags.push(NO_UNKNOWN_FLAG);
+
+  const newFlags = flags.length ? flags.join(',') : null;
+
+  if (newFlags !== oldFlags) {
+    await prisma.items.update({ where: { internal_id }, data: { flags: newFlags } });
+
+    await LogService.createLog(
+      'itemUpdate',
+      { flags: { oldVal: oldFlags, newVal: newFlags } },
+      internal_id.toString(),
+      uid
+    );
+
+    // flags are part of the item data, not only of the drops section
+    await revalidateItem(internal_id, ItemRevalidateTags.root(internal_id));
+  }
+
+  const [newDrops, sources] = await Promise.all([
+    getItemDrops(internal_id),
+    getItemDropSources(internal_id),
+  ]);
+
+  return res.status(200).json({ dropUpdate: newDrops, sources, itemFlags: newFlags });
 };
 
 // ---------- helpers ---------- //

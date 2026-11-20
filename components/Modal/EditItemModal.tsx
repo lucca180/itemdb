@@ -24,6 +24,7 @@ import {
   CloseButton,
   Portal,
   Box,
+  Switch,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -292,6 +293,9 @@ const EditItemModal = (props: EditItemModalProps) => {
                           onRetryItemOpenable={onRetryItemOpenable}
                           item={item}
                           savedCanOpen={itemProps.useTypes.canOpen}
+                          onItemFlagsChange={(itemFlags) =>
+                            setItem((prev) => ({ ...prev, itemFlags }))
+                          }
                         />
                       </Tabs.Content>
                     )}
@@ -817,7 +821,17 @@ type OpenableTabProps = {
   item: ItemData;
   /** canOpen as persisted — drops are neither loaded nor shown while it is 'false'. */
   savedCanOpen: ItemData['useTypes']['canOpen'];
+  /** Keeps the Item Info flags field in sync after the no-unknown toggle saves. */
+  onItemFlagsChange?: (itemFlags: string | null) => void;
 };
+
+const NO_UNKNOWN_FLAG = 'no-unknown';
+
+const hasNoUnknownFlag = (flags?: string | null) =>
+  !!flags
+    ?.split(',')
+    .map((flag) => flag.trim())
+    .includes(NO_UNKNOWN_FLAG);
 
 const defaultItemOpenable: ItemOpenable = {
   openings: 0,
@@ -838,7 +852,8 @@ type DropAction =
   | { action: 'set-le'; poolName: string; drop_id: number; isLE: boolean }
   | { action: 'rename-pool'; poolName: string; newPoolName: string }
   | { action: 'delete-pool'; poolName: string }
-  | { action: 'move-pool'; poolName: string; newPoolName: string };
+  | { action: 'move-pool'; poolName: string; newPoolName: string }
+  | { action: 'set-no-unknown'; enabled: boolean };
 
 export const OpenableTab = (props: OpenableTabProps) => {
   const {
@@ -848,6 +863,7 @@ export const OpenableTab = (props: OpenableTabProps) => {
     onRetryItemOpenable,
     item,
     savedCanOpen,
+    onItemFlagsChange,
   } = props;
   const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(
     itemOpenableProps ?? defaultItemOpenable
@@ -926,6 +942,7 @@ export const OpenableTab = (props: OpenableTabProps) => {
       setSources(res.data.sources ?? null);
       // new object so init() always runs and clears the loading state
       setItemOpenable(res.data.dropUpdate ?? { ...defaultItemOpenable });
+      if (body.action === 'set-no-unknown') onItemFlagsChange?.(res.data.itemFlags ?? null);
     } catch (err) {
       console.error(err);
       setActionError('Something went wrong. Try again.');
@@ -1011,6 +1028,25 @@ export const OpenableTab = (props: OpenableTabProps) => {
           {syncMessage}
         </Text>
       )}
+      <Flex flexFlow={'column'} bg="blackAlpha.300" p={2} gap={1}>
+        <Switch.Root
+          size="sm"
+          colorPalette="green"
+          checked={hasNoUnknownFlag(item.itemFlags)}
+          disabled={isLoading}
+          onCheckedChange={(details) =>
+            runAction({ action: 'set-no-unknown', enabled: details.checked })
+          }
+        >
+          <Switch.HiddenInput />
+          <Switch.Control />
+          <Switch.Label fontSize="sm">No unknown pool</Switch.Label>
+        </Switch.Root>
+        <Text fontSize="xs" color="gray.400">
+          Sets the &quot;no-unknown&quot; item flag: drops that would land in the unknown pool are
+          hidden. Saves immediately.
+        </Text>
+      </Flex>
       <Flex flexFlow={'column'} bg="blackAlpha.300" p={2} gap={3}>
         <CreatePrizePoolForm onSubmit={createPool} />
       </Flex>
