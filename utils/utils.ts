@@ -216,6 +216,7 @@ export const categoryToShopID: { [id: string]: string } = {
   'moltaran petpets': '113',
   'springy things': '116',
   'ugga shinies': '117',
+  'bookshelf decor': '118',
   'medieval food': '56',
   refreshments: '63',
 };
@@ -325,6 +326,7 @@ export const shopIDToCategory: { [id: string]: string } = {
   '114': 'moltaran books',
   '116': 'springy things',
   '117': 'ugga shinies',
+  '118': 'bookshelf decor',
 };
 
 export const isMissingInfo = (item: ItemData) => {
@@ -421,6 +423,23 @@ export function getDateNST(timestamp?: number) {
   });
 
   return new Date(todayNST);
+}
+
+const nstDayKeyFormat = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Los_Angeles',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+/** Calendar-day difference in NST between `target` and `now` (0 = same NST day, 1 = next day). */
+export function getNSTDayDiff(target: Date | string | number, now: Date | number = Date.now()) {
+  const toDayMs = (value: Date | string | number) => {
+    const [year, month, day] = nstDayKeyFormat.format(new Date(value)).split('-').map(Number);
+    return Date.UTC(year, month - 1, day);
+  };
+
+  return Math.round((toDayMs(target) - toDayMs(now)) / 86_400_000);
 }
 
 export type ShopRestockSpecialDay = 'hpd' | 'tyrannia' | 'usukicon' | 'festival' | 'halloween';
@@ -1391,7 +1410,20 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
     color: '#d09916',
     id: '117',
   },
+  '118': {
+    name: 'Shelf Indulgence',
+    category: 'Furniture',
+    difficulty: 'Medium',
+    color: '#8172ac',
+    id: '118',
+  },
 };
+
+// newer shopkeeper banners are only published as png
+const PNG_SHOPKEEPER_IDS = new Set(['118']);
+
+export const getShopkeeperImage = (shopId: string | number) =>
+  `https://images.neopets.com/shopkeepers/w${shopId}.${PNG_SHOPKEEPER_IDS.has(String(shopId)) ? 'png' : 'gif'}`;
 
 export const removeOutliers = (arr: number[], n: number) => {
   if (arr.length < 2) return arr;
@@ -1429,13 +1461,17 @@ export const msIntervalFormatted = (ms: number, long = false, precision = 0) => 
   }`;
 };
 
+/** Search lists (admin only) behave like fullSync: their items only come from the sync. */
+export const isFullSyncList = (dynamicType: DynamicListTypes | null | undefined) =>
+  dynamicType === 'fullSync' || dynamicType === 'search';
+
 export const isDynamicActionDisabled = (
   action: 'move' | 'add' | 'remove',
   dynamicType: DynamicListTypes | null
 ) => {
   if (!dynamicType) return false;
 
-  if (dynamicType === 'fullSync') return true;
+  if (isFullSyncList(dynamicType)) return true;
 
   if (dynamicType === 'addOnly') {
     if (action === 'remove') return true;
@@ -1823,7 +1859,7 @@ export const dynamicListCan = (
   if (!list.dynamicType) return true;
 
   // fullSync lists can't be modified manually
-  if (list.dynamicType === 'fullSync') return false;
+  if (isFullSyncList(list.dynamicType)) return false;
 
   if (permission === 'add') {
     if (list.dynamicType === 'addOnly') return true;

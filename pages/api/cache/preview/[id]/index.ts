@@ -88,8 +88,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       let imagesURLs: string[];
       let rawData:
-        | (DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] })
-        | undefined = undefined;
+        (DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] }) | undefined =
+        undefined;
 
       if (isPetStyle) {
         imagesURLs = await handleAltStyle(item.image_id!, item.name, item.item_id);
@@ -208,7 +208,8 @@ const handleRegularStyle = async (
   const imagesURLs = [];
 
   for (const layer of layers) {
-    imagesURLs.push(layer.imageUrlV2);
+    // DTI may have no image for a layer; skip it instead of breaking the whole preview
+    if (layer.imageUrlV2) imagesURLs.push(layer.imageUrlV2);
   }
 
   return [imagesURLs, itemPreviewData];

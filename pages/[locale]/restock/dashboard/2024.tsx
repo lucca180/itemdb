@@ -4,7 +4,7 @@ import { createTranslator, useFormatter } from 'next-intl';
 import { ReactElement } from 'react';
 import Layout from '@components/Layout';
 import { Image, Flex, Grid, GridItem, Heading, Text, Link } from '@chakra-ui/react';
-import { msIntervalFormatted, restockShopInfo } from '@utils/utils';
+import { getShopkeeperImage, msIntervalFormatted, restockShopInfo } from '@utils/utils';
 import { AnimatedNumber } from '@components/Utils/AnimatedNumber';
 import { RestockStats, User } from '@types';
 import ItemCard from '@components/Items/ItemCard';
@@ -82,7 +82,7 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
               .map((shop) => (
                 <GridItem key={shop.id} w={'450px'}>
                   <Image
-                    src={`https://images.neopets.com/shopkeepers/w${shop.id}.gif`}
+                    src={getShopkeeperImage(shop.id)}
                     opacity={0.2}
                     saturate={0.2}
                     alt={shop.name}
@@ -172,7 +172,7 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
             .map((shop) => (
               <GridItem key={shop.id} w={'450px'}>
                 <Image
-                  src={`https://images.neopets.com/shopkeepers/w${shop.id}.gif`}
+                  src={getShopkeeperImage(shop.id)}
                   opacity={0.2}
                   saturate={0.2}
                   alt={shop.name}
@@ -726,7 +726,7 @@ const errorCodeToMessage = (code: string) => {
 
 const getShopImg = (shopId: number) => {
   if (shopId >= 1) {
-    return `https://images.neopets.com/shopkeepers/w${shopId}.gif`;
+    return getShopkeeperImage(shopId);
   }
 
   if (shopId === -1) {

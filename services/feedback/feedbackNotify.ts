@@ -29,7 +29,7 @@ export const submitMailFeedback = async (
   let message = data.content.message || data.content.justification || '';
   message = message.replace(/\n/g, '<br/>');
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: 'itemdb <noreply@itemdb.com.br>',
     to: 'lucca@itemdb.com.br',
     replyTo: email || 'noreply@itemdb.com.br',
@@ -45,6 +45,7 @@ export const submitMailFeedback = async (
       </small>
     `,
   });
+  if (error) console.error('Failed to send feedback email', error.name, error.message);
 };
 
 const escapeHtml = (str: string) =>

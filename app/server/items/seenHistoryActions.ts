@@ -10,6 +10,7 @@ import {
   type SeenHistoryResult,
   type TradeHistoryData,
 } from '@app/server/items/seenHistory';
+import { shouldGateAuctionRelisting } from '@app/server/items/relistingGate';
 
 export type {
   AuctionHistoryData,
@@ -33,7 +34,17 @@ export async function loadAuctionHistory(
   onlySold = false
 ): Promise<SeenHistoryResult<AuctionHistoryData>> {
   const { user } = await getServerCurrentUser();
-  return getAuctionHistory(itemName, { onlySold, userId: user?.id, collapseRelistings: true });
+  const result = await getAuctionHistory(itemName, {
+    onlySold,
+    userId: user?.id,
+    collapseRelistings: true,
+  });
+  if (result.ok) return result;
+
+  return {
+    ok: false,
+    wall: { ...result.wall, gatesRelisting: await shouldGateAuctionRelisting() },
+  };
 }
 
 /** Site adapter for restock history (no auth). */

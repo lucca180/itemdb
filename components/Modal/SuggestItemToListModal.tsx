@@ -16,7 +16,6 @@ import { useState, useTransition } from 'react';
 import { LuX } from 'react-icons/lu';
 import OfficialListSelect from '@components/Input/OfficialListSelect';
 import type { ItemData, UserList } from '@types';
-import { useAuth } from '@utils/auth';
 import { suggestMissingListItems } from '@app/[locale]/lists/[username]/[list_id]/actions';
 import {
   MAX_SUGGESTION_NOTE_LENGTH,
@@ -25,7 +24,7 @@ import {
 
 /**
  * "Suggest this item to an official list" modal (item page). The item is fixed and the user picks
- * the official list it belongs to, plus an optional note. Submits through the same
+ * the official list it belongs to, plus an optional note (logged-out users too). Submits through the same
  * `suggestMissingListItems` server action as the list page modal (SuggestListItemModal).
  */
 export type SuggestItemToListModalProps = {
@@ -44,7 +43,6 @@ type Status = { type: 'idle' } | { type: 'success' } | { type: 'error'; message:
 export default function SuggestItemToListModal(props: SuggestItemToListModalProps) {
   const t = useTranslations();
   const { isOpen, onClose, item, excludeListIds, source } = props;
-  const { user, authLoading, openLogin } = useAuth();
   const [pickedList, setPickedList] = useState<UserList | null>(null);
   const [note, setNote] = useState('');
   const [status, setStatus] = useState<Status>({ type: 'idle' });
@@ -103,14 +101,6 @@ export default function SuggestItemToListModal(props: SuggestItemToListModalProp
     });
   };
 
-  const isLoggedOut = !user && !authLoading;
-
-  // stay on the item page and use the login modal instead of a redirect (`trigger` = card or menu)
-  const handleLogin = () => {
-    handleClose();
-    openLogin('suggest-official-list', { trigger: source });
-  };
-
   return (
     <Dialog.Root
       open={isOpen}
@@ -143,77 +133,66 @@ export default function SuggestItemToListModal(props: SuggestItemToListModalProp
                       b: (chunk) => <b>{chunk}</b>,
                     })}
                   </Text>
-                  {isLoggedOut && (
-                    <Text fontSize="sm" textAlign="center" color="whiteAlpha.800">
-                      {t('Lists.suggest-missing-login-required')}
-                    </Text>
-                  )}
-                  {!isLoggedOut && (
-                    <>
-                      <Field.Root>
-                        <Field.Label color="gray.300">
-                          {t('Lists.suggest-to-list-select')}
-                        </Field.Label>
-                        {pickedList ? (
-                          <Flex
-                            alignItems="center"
-                            gap={2}
-                            bg="blackAlpha.300"
-                            p={2}
-                            borderRadius="md"
-                            w="100%"
-                          >
-                            <Text fontSize="sm" flex={1}>
-                              {pickedList.name}
-                            </Text>
-                            <IconButton
-                              aria-label={t('General.delete')}
-                              size="xs"
-                              variant="ghost"
-                              disabled={isPending}
-                              onClick={() => setPickedList(null)}
-                            >
-                              <LuX />
-                            </IconButton>
-                          </Flex>
-                        ) : (
-                          <OfficialListSelect
-                            isDisabled={isPending}
-                            placeholder={t('Lists.suggest-to-list-placeholder')}
-                            onChange={setPickedList}
-                            excludeListIds={excludeListIds}
-                            excludeDynamic
-                          />
-                        )}
-                      </Field.Root>
-                      <Flex alignItems="center" gap={2} bg="blackAlpha.300" p={1} borderRadius="md">
-                        <Image src={item.image} alt={item.name} boxSize="32px" />
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('Lists.suggest-to-list-select')}</Field.Label>
+                    {pickedList ? (
+                      <Flex
+                        alignItems="center"
+                        gap={2}
+                        bg="blackAlpha.300"
+                        p={2}
+                        borderRadius="md"
+                        w="100%"
+                      >
                         <Text fontSize="sm" flex={1}>
-                          {item.name}
+                          {pickedList.name}
                         </Text>
-                      </Flex>
-                      <Field.Root>
-                        <Field.Label color="gray.300">
-                          {t('Lists.suggest-missing-note')}{' '}
-                          <Text as="span" fontSize="xs" color="gray.400">
-                            ({t('General.optional')})
-                          </Text>
-                        </Field.Label>
-                        <Textarea
-                          variant="subtle"
-                          value={note}
-                          maxLength={MAX_SUGGESTION_NOTE_LENGTH}
-                          placeholder={t('Lists.suggest-to-list-note-placeholder')}
+                        <IconButton
+                          aria-label={t('General.delete')}
+                          size="xs"
+                          variant="ghost"
                           disabled={isPending}
-                          onChange={(e) => setNote(e.target.value)}
-                        />
-                      </Field.Root>
-                      {status.type === 'error' && (
-                        <Text fontSize="sm" textAlign="center" color="red.300">
-                          {status.message}
-                        </Text>
-                      )}
-                    </>
+                          onClick={() => setPickedList(null)}
+                        >
+                          <LuX />
+                        </IconButton>
+                      </Flex>
+                    ) : (
+                      <OfficialListSelect
+                        isDisabled={isPending}
+                        placeholder={t('Lists.suggest-to-list-placeholder')}
+                        onChange={setPickedList}
+                        excludeListIds={excludeListIds}
+                        excludeDynamic
+                      />
+                    )}
+                  </Field.Root>
+                  <Flex alignItems="center" gap={2} bg="blackAlpha.300" p={1} borderRadius="md">
+                    <Image src={item.image} alt={item.name} boxSize="32px" />
+                    <Text fontSize="sm" flex={1}>
+                      {item.name}
+                    </Text>
+                  </Flex>
+                  <Field.Root>
+                    <Field.Label color="gray.300">
+                      {t('Lists.suggest-missing-note')}{' '}
+                      <Text as="span" fontSize="xs" color="gray.400">
+                        ({t('General.optional')})
+                      </Text>
+                    </Field.Label>
+                    <Textarea
+                      variant="subtle"
+                      value={note}
+                      maxLength={MAX_SUGGESTION_NOTE_LENGTH}
+                      placeholder={t('Lists.suggest-to-list-note-placeholder')}
+                      disabled={isPending}
+                      onChange={(e) => setNote(e.target.value)}
+                    />
+                  </Field.Root>
+                  {status.type === 'error' && (
+                    <Text fontSize="sm" textAlign="center" color="red.300">
+                      {status.message}
+                    </Text>
                   )}
                 </Stack>
               )}
@@ -229,24 +208,9 @@ export default function SuggestItemToListModal(props: SuggestItemToListModalProp
                   <Button variant="ghost" mr={3} onClick={handleClose} disabled={isPending}>
                     {t('General.cancel')}
                   </Button>
-                  {isLoggedOut && (
-                    <Button
-                      onClick={handleLogin}
-                      data-umami-event="suggest-missing-login"
-                      data-umami-event-source={source}
-                    >
-                      {t('Layout.login')}
-                    </Button>
-                  )}
-                  {!isLoggedOut && (
-                    <Button
-                      onClick={handleSubmit}
-                      loading={isPending || authLoading}
-                      disabled={!pickedList}
-                    >
-                      {t('General.send')}
-                    </Button>
-                  )}
+                  <Button onClick={handleSubmit} loading={isPending} disabled={!pickedList}>
+                    {t('General.send')}
+                  </Button>
                 </>
               )}
             </Dialog.Footer>

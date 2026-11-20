@@ -95,7 +95,7 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
         },
         {
           label: t('Layout.dailies-and-freebies'),
-          href: '/lists/official/cat/dailies',
+          href: '/lists/official/dailies',
           trackEventLabel: 'dailies-and-freebies',
         },
         {
@@ -109,8 +109,14 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           trackEventLabel: 'dynamic-lists',
         },
         {
+          label: t('Layout.stamp-collecting'),
+          href: '/lists/official/stamps',
+          trackEventLabel: 'stamp-collecting',
+          newUntil: 1795737599000, // 2026-11-26
+        },
+        {
           label: 'Quest Log',
-          href: '/lists/official/cat/quest-log',
+          href: '/lists/official/quest-log',
           trackEventLabel: 'quest-log',
         },
         {
@@ -214,11 +220,6 @@ export function getLayoutNavSections(t: LayoutTranslate): LayoutNavSection[] {
           label: 'Item Data Extractor',
           href: '/contribute',
           trackEventLabel: 'item-data-extractor',
-        },
-        {
-          label: t('Layout.missing-info-hub'),
-          href: '/hub/missing-info',
-          trackEventLabel: 'missing-info-hub',
         },
         {
           label: t('Layout.trade-pricing'),

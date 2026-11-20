@@ -1,13 +1,20 @@
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import { getTrendingCatLists, getTrendingLists } from '@pages/api/v1/beta/trending';
+import { getTrendingLists } from '@pages/api/v1/beta/trending';
 import { ItemService } from '@services/ItemService';
 import { loadRecentlyReleasedCombos } from '@app/server/rainbowPool';
 import { HomeCard } from '@components/Card/HomeCard';
-import { HalloweenHomeCard, HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
+import { BirthdayHomeCard, HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { FeaturedListsGrid } from '@components/Home/FeaturedListsGrid';
 import { ComboTile } from '@app/[locale]/rainbow-pool/components/ComboTile';
+import type { UserList } from '@types';
+import { getOfficialCategory } from '@app/[locale]/lists/official/_categories';
+import { resolveCategory } from '@app/[locale]/lists/official/_categories/resolve';
+import {
+  loadOfficialCategoryLists,
+  loadOfficialListPageviews,
+} from '@app/[locale]/lists/official/loadOfficialLists';
 
 async function getCachedLatestItems() {
   'use cache';
@@ -38,25 +45,38 @@ async function getCachedTrendingItems() {
 }
 
 // The event card shows these lists, so Featured Lists skips them.
-const FESTIVAL_OF_FEARS_TAG = 'Festival of Fears';
-const FESTIVAL_OF_FEARS_YEAR = 2026;
+const BIRTHDAY_CATEGORY = 'neopets-anniversary';
+const BIRTHDAY_TAG = 'Birthday Celebrations';
+const BIRTHDAY_YEAR = 2026;
 
 async function getCachedFeaturedLists() {
   'use cache';
   cacheTag('home-trending-lists');
   cacheLife('homeSlow');
-  return getTrendingLists(3, [FESTIVAL_OF_FEARS_TAG]).catch(() => []);
+  return getTrendingLists(3, [BIRTHDAY_TAG]).catch(() => []);
 }
 
-async function getCachedFestivalOfFearsLists() {
+/**
+ * This year's Birthday Celebration lists, most viewed first (Umami, last 30 days). Built from
+ * the category page data, so lists created today show up before they have pageviews.
+ */
+async function getCachedBirthdayLists() {
   'use cache';
   cacheTag('home-event-card-lists');
   cacheLife('homeSlow');
 
   try {
-    return (await getTrendingCatLists(FESTIVAL_OF_FEARS_TAG, 100)).filter(
-      (list) => new Date(list.createdAt).getFullYear() === FESTIVAL_OF_FEARS_YEAR
-    );
+    const category = getOfficialCategory(BIRTHDAY_CATEGORY);
+    if (!category) return [];
+    const [lists, pageviews] = await Promise.all([
+      loadOfficialCategoryLists(BIRTHDAY_CATEGORY),
+      loadOfficialListPageviews(),
+    ]);
+    const resolved = resolveCategory(category, lists, pageviews);
+    if (resolved.type !== 'editions' || resolved.latest?.year !== BIRTHDAY_YEAR) return [];
+    const views = (l: UserList) => pageviews[(l.slug ?? '').toLowerCase()] ?? 0;
+    // Stable sort: lists without views keep the category's edition order.
+    return [...resolved.latest.lists].sort((a, b) => views(b) - views(a));
   } catch {
     return [];
   }
@@ -165,22 +185,22 @@ async function FeaturedListsHomeCardContent() {
   );
 }
 
-export function FestivalOfFearsHomeCard() {
+export function BirthdayCelebrationHomeCard() {
   return (
-    <Suspense fallback={<HalloweenHomeCard>{null}</HalloweenHomeCard>}>
-      <FestivalOfFearsHomeCardContent />
+    <Suspense fallback={<BirthdayHomeCard>{null}</BirthdayHomeCard>}>
+      <BirthdayCelebrationHomeCardContent />
     </Suspense>
   );
 }
 
-async function FestivalOfFearsHomeCardContent() {
-  const lists = await getCachedFestivalOfFearsLists();
+async function BirthdayCelebrationHomeCardContent() {
+  const lists = await getCachedBirthdayLists();
   if (!lists.length) return null;
 
   return (
-    <HalloweenHomeCard>
-      <FeaturedListsGrid lists={lists.slice(0, 3)} utmContent="halloween-lists" isSmall />
-    </HalloweenHomeCard>
+    <BirthdayHomeCard>
+      <FeaturedListsGrid lists={lists.slice(0, 3)} utmContent="birthday-lists" isSmall />
+    </BirthdayHomeCard>
   );
 }
 

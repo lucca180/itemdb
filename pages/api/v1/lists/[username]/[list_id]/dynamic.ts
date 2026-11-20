@@ -8,6 +8,7 @@ import { isSameHour, startOfHour } from 'date-fns';
 import { ListService } from '@services/ListService';
 import { LogService } from '@services/ActionLogService';
 import { canEditListInfo } from '@utils/list/listPermissions';
+import { logOfficialListAction } from '@services/OfficialListLogService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   // return res.status(405).json({ error: 'Method not allowed' });
@@ -151,6 +152,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
+    await logOfficialListAction(
+      targetList,
+      'setDynamic',
+      { dynamicType, linkedListId: newList.linkedListId },
+      user
+    );
+
     await syncDynamicList(parseInt(list_id), true);
     return res.status(200).json(newList);
   }
@@ -168,6 +176,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       dynamicQuery: queryData,
     },
   });
+
+  await logOfficialListAction(targetList, 'setDynamic', { dynamicType }, user);
 
   await syncDynamicList(parseInt(list_id), true);
   return res.status(200).json(newList);

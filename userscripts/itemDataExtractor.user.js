@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      2.0.1
+// @version      2.0.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -12,7 +12,7 @@
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
 // @require      https://raw.githubusercontent.com/lucca180/itemdb/e7f790917a31289faa1299df1c8322ec0fa1b463/userscripts/hash.min.js#sha256-2qmelWPqbQQc5LCWqzH+/vzmsSj0ToxaNjeDi6h1l2s=
-// @require      https://itemdb.com.br/js/script-utils.js
+// @require      https://itemdb.com.br/js/script-utils.js?v3
 // @connect      itemdb.com.br
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue

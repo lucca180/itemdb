@@ -40,8 +40,9 @@ const adminTools: AdminTool[] = [
   },
   {
     href: '/admin/list-suggestions',
-    title: 'Official List Suggestions',
-    description: 'Review items users suggested as missing from official lists.',
+    title: 'User Suggestions',
+    description:
+      'Review items users suggested as missing from official lists and suggested price contexts.',
     icon: <MdPlaylistAdd />,
     color: '#557f8f',
   },

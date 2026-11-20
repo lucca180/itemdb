@@ -1,11 +1,11 @@
 import React from 'react';
 
 export const LATEST_VERSIONS_CODE = {
-  itemdb_script: 201,
+  itemdb_script: 202,
   itemdb_restock: 204,
-  itemdb_sdbPricer: 211,
+  itemdb_sdbPricer: 212,
   itemdb_albumHelper: 103,
-  itemdb_listImporter: 220,
+  itemdb_listImporter: 230,
   itemdb_sortGallery: 110,
 };
 
@@ -117,10 +117,9 @@ const _getScriptStatus = () => {
 
   for (const key of keys) {
     const script = (window as any)[key];
-    if (script) {
-      scriptStatus[key].status =
-        script.versionCode >= LATEST_VERSIONS_CODE[key] ? 'ok' : 'outdated';
-    }
+    if (!script) continue;
+
+    scriptStatus[key].status = script.versionCode >= LATEST_VERSIONS_CODE[key] ? 'ok' : 'outdated';
 
     // custom override
     if (key === 'itemdb_script') {

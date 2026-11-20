@@ -9,6 +9,7 @@ import { PracticeFaq } from '@components/Hubs/Restock/Practice/PracticeFaq';
 import { PracticePopularShops } from '@components/Hubs/Restock/Practice/PracticePopularShops';
 import { RestockLinkPills } from '@components/Hubs/Restock/RestockLinkPills';
 import { getStaticAppMetadata } from '@app/utils/appPage';
+import { getShopkeeperImage } from '@utils/utils';
 import {
   resolveRestockShopForMetadata,
   resolveRestockShopRoute,
@@ -46,7 +47,7 @@ export async function generateMetadata({ params }: RestockPracticePageProps): Pr
       ...metadata.openGraph,
       images: [
         {
-          url: `https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`,
+          url: getShopkeeperImage(shopInfo.id),
           width: 450,
           height: 150,
           alt: shopInfo.name,

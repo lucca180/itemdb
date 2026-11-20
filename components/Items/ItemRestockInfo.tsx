@@ -10,6 +10,7 @@ import {
   getDateNST,
   getRestockPrice,
   getRestockProfit,
+  getShopkeeperImage,
   halloweenShops,
   isThirdWednesday,
   nextThirdWednesday,
@@ -61,9 +62,7 @@ export default async function ItemRestock(props: Props) {
               <Image
                 src={
                   !isHT
-                    ? `https://images.neopets.com/shopkeepers/w${
-                        categoryToShopID[item.category.toLowerCase()]
-                      }.gif`
+                    ? getShopkeeperImage(categoryToShopID[item.category.toLowerCase()])
                     : 'https://images.neopets.com/faerieland/tower_1.gif'
                 }
                 alt={item.category.toLowerCase() + ' shop'}

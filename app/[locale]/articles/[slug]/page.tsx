@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { cache, Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { notFound } from 'next/navigation';
+import { cacheLifeNotFound } from '@app/utils/cacheLifeNotFound';
 import { SetMainColor } from '@components/Layout/SetMainColor';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import {
@@ -93,9 +94,15 @@ async function ArticlePageContentWrapper({ params }: ArticlePageProps) {
 const loadArticle = cache(async (slug: string): Promise<WP_Article | null> => {
   'use cache';
   cacheTag(fitCacheTag(`article-${slug}`));
-  cacheLife({ stale: 60, revalidate: 60, expire: 3600 });
 
-  return wp_getBySlug(slug);
+  const post = await wp_getBySlug(slug);
+  if (!post) {
+    cacheLifeNotFound();
+    return null;
+  }
+
+  cacheLife({ stale: 60, revalidate: 60, expire: 3600 });
+  return post;
 });
 
 async function loadArticleRecommendations(postId: number): Promise<WP_Article[]> {

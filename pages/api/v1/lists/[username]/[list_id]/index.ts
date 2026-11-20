@@ -5,11 +5,12 @@ import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { SeriesType } from '@prisma/generated/client';
 import { UTCDate } from '@date-fns/utc';
-import { slugify } from '@utils/utils';
+import { isFullSyncList, slugify } from '@utils/utils';
 import { ListService, type PutListItemInput } from '@services/ListService';
-import { listMutationCacheTags } from '@utils/appCacheTags';
+import { listMutationCacheTags, userListsTag } from '@utils/appCacheTags';
 import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
 import { canEditListInfo } from '@utils/list/listPermissions';
+import { logOfficialListAction } from '@services/OfficialListLogService';
 
 export const config = {
   api: {
@@ -44,10 +45,12 @@ async function revalidateListCaches(listId: number, extraListIds: number[] = [])
 
     if (!list) continue;
 
-    const username = list.official ? 'official' : (list.user.username ?? '');
+    const ownerUsername = list.user.username ?? '';
+    const username = list.official ? 'official' : ownerUsername;
 
     await triggerAppRevalidation({
-      tags: listMutationCacheTags(username, id),
+      // official lists are tagged under 'official', but their owner's profile also shows them
+      tags: [...new Set([...listMutationCacheTags(username, id), userListsTag(ownerUsername)])],
     });
   }
 }
@@ -104,9 +107,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(401).json({ error: 'Unauthorized' });
 
     const itemInfo = req.body.itemInfo as ListItemInfo[];
+    const item_iids = itemInfo?.map((item) => item.item_iid);
 
     if (itemInfo?.length && action === 'update') {
       await ListService.updateItems(Number(list_id), itemInfo);
+      await logOfficialListAction(list, 'updateItems', { item_iids }, user);
       await revalidateListCaches(Number(list_id));
     }
 
@@ -116,6 +121,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         itemInfo.map((item) => item.internal_id)
       );
 
+      await logOfficialListAction(list, 'removeItems', { item_iids }, user);
       await revalidateListCaches(Number(list_id));
 
       return res.status(200).json({
@@ -147,6 +153,24 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         items: itemInfo,
         move: shouldDelete,
       });
+
+      const moveAction = shouldDelete ? 'moveItems' : 'copyItems';
+
+      // copying out of an official list doesn't change it
+      if (shouldDelete)
+        await logOfficialListAction(
+          list,
+          moveAction,
+          { toListId: listDest.internal_id, item_iids },
+          user
+        );
+
+      await logOfficialListAction(
+        listDest,
+        moveAction,
+        { fromListId: list.internal_id, item_iids },
+        user
+      );
 
       await revalidateListCaches(Number(list_id), [listDest.internal_id]);
 
@@ -238,7 +262,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           return res.status(400).json({ error: 'List name cannot be a number' });
         }
 
-        slug = await createListSlug(name ?? list.name, list.user_id, nextOfficial);
+        slug = await createListSlug(
+          name ?? list.name,
+          list.user_id,
+          nextOfficial,
+          list.internal_id
+        );
       }
 
       await prisma.userList.update({
@@ -275,6 +304,14 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           ...ListService.adminListSeoWriteData(req.body, isAdmin),
         },
       });
+
+      // also logs a list being made (or no longer) official
+      await logOfficialListAction(
+        { internal_id: list.internal_id, official: list.official || nextOfficial },
+        'updateInfo',
+        { fields: Object.keys(req.body).filter((key) => key !== 'action') },
+        user
+      );
     }
 
     await revalidateListCaches(Number(list_id));
@@ -326,6 +363,12 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
       }
     }
     await ListService.upsertItems(parsedListId, items);
+    await logOfficialListAction(
+      list,
+      'addItems',
+      { item_iids: items.map((item) => Number(item.item_iid)) },
+      user
+    );
     await revalidateListCaches(parsedListId);
 
     return res.status(200).json({ success: true, message: 'items upserted' });
@@ -361,7 +404,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!item_internal_ids || !item_internal_ids.length)
       return res.status(400).json({ error: 'Bad Request' });
 
-    if (list.dynamicType === 'fullSync') justHide = true;
+    if (isFullSyncList(list.dynamicType)) justHide = true;
 
     if (justHide) {
       await ListService.hideItems(
@@ -374,6 +417,13 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
         item_internal_ids.map((iid) => Number(iid))
       );
     }
+
+    await logOfficialListAction(
+      list,
+      justHide ? 'hideItems' : 'removeItems',
+      { item_iids: item_internal_ids.map((iid) => Number(iid)) },
+      user
+    );
 
     await revalidateListCaches(Number(list_id));
 

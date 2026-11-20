@@ -9,6 +9,8 @@ import { Link as I18nLink } from '@i18n/navigation';
 import { getListLink } from '@utils/list/listLink';
 import Markdown from '@components/Utils/Markdown';
 import ItemOfficialListCTA from '@components/Items/ItemOfficialListCTA';
+import Tooltip from '@components/Utils/Tooltip';
+import MainLink from '@components/Utils/MainLink';
 
 type Props = {
   item: ItemData;
@@ -60,6 +62,7 @@ export default async function ItemOfficialLists(props: Props) {
         {officialLists.map((list) => (
           <Flex
             key={list.internal_id}
+            position="relative"
             py={2}
             px={3}
             bg="blackAlpha.500"
@@ -70,6 +73,37 @@ export default async function ItemOfficialLists(props: Props) {
             gap={1}
             alignItems={'center'}
           >
+            {list.dynamicType && (
+              <Tooltip label={t('General.dynamic-list')}>
+                <Flex
+                  asChild
+                  position="absolute"
+                  top="6px"
+                  right="6px"
+                  w="18px"
+                  h="18px"
+                  borderRadius="full"
+                  bg="blackAlpha.500"
+                  _hover={{ bg: 'blackAlpha.700' }}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <MainLink
+                    href="/articles/checklists-and-dynamic-lists"
+                    trackEvent="dynamic-list-badge"
+                    trackEventLabel="item-page"
+                    aria-label={t('General.dynamic-list')}
+                  >
+                    <NextImage
+                      src={DynamicIcon}
+                      alt=""
+                      width={7}
+                      style={{ display: 'inline-block' }}
+                    />
+                  </MainLink>
+                </Flex>
+              </Tooltip>
+            )}
             <Flex mt="-20px" justifyContent={'center'}>
               <Link asChild>
                 <I18nLink href={getListLink(list)}>
@@ -102,15 +136,7 @@ export default async function ItemOfficialLists(props: Props) {
                   data-umami-event-label={list.slug}
                   style={{ color: 'white' }}
                 >
-                  {list.name}{' '}
-                  {list.dynamicType && (
-                    <NextImage
-                      src={DynamicIcon}
-                      alt="dynamic list"
-                      width={10}
-                      style={{ marginLeft: '2px', display: 'inline-block', verticalAlign: 'sub' }}
-                    />
-                  )}
+                  {list.name}
                 </I18nLink>
               </Link>
             </Text>

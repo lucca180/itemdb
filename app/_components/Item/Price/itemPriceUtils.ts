@@ -142,6 +142,13 @@ export function getLatestPrice(prices: PriceData[]) {
   return prices.find((p) => p.isLatest);
 }
 
+/** The price right before the latest one (prices are sorted newest first). */
+export function getPreviousPrice(prices: PriceData[]) {
+  const latestIndex = prices.findIndex((p) => p.isLatest);
+  if (latestIndex === -1) return undefined;
+  return prices[latestIndex + 1];
+}
+
 export function getPriceDiff(prices: PriceData[]) {
   if (prices.length < 2) return null;
   const priceZeroIndex = prices.findIndex((p) => p.isLatest);

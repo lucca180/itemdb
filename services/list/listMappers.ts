@@ -4,7 +4,7 @@
  */
 import { startOfDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
-import type { ListItemInfo, User, UserList, UserListLite } from '@types';
+import type { DynamicListSource, ListItemInfo, User, UserList, UserListLite } from '@types';
 import type { ListItems, UserList as RawList, User as RawUser } from '@prisma/generated/client';
 
 export type ListOwnerRef = RawUser | User | RequiredUserFields;
@@ -20,6 +20,53 @@ type RequiredUserFields = {
   username: string;
   neo_user: string;
   last_login: string;
+};
+
+export type LinkedListSourceRaw = Pick<
+  RawList,
+  'internal_id' | 'name' | 'slug' | 'official' | 'visibility' | 'user_id'
+> & { user: { username: string | null } };
+
+type DynamicListSourceInput = Pick<
+  RawList,
+  'official' | 'user_id' | 'dynamicType' | 'dynamicQuery' | 'linkedListId'
+> & { linkedList?: LinkedListSourceRaw | null };
+
+/**
+ * Official lists keep their header as is, so they have no source to show.
+ * An unlisted source is only revealed to whoever follows it: its link is otherwise a secret.
+ * A search source only says it is one: `dynamicQuery` never reaches the client.
+ */
+export const getDynamicListSource = (
+  listRaw: DynamicListSourceInput,
+  viewerId: string | null | undefined
+): DynamicListSource | null => {
+  if (!listRaw.dynamicType || listRaw.official) return null;
+
+  const { linkedList } = listRaw;
+
+  if (listRaw.linkedListId && linkedList) {
+    const canShow =
+      linkedList.official ||
+      linkedList.visibility === 'public' ||
+      viewerId === linkedList.user_id ||
+      (linkedList.visibility === 'unlisted' && viewerId === listRaw.user_id);
+
+    if (!canShow) return { type: 'privateList' };
+
+    const owner = linkedList.official ? 'official' : linkedList.user.username;
+
+    return {
+      type: 'list',
+      name: linkedList.name,
+      href: `/lists/${owner}/${linkedList.slug ?? linkedList.internal_id}`,
+    };
+  }
+
+  if (listRaw.dynamicQuery) return { type: 'search' };
+
+  // `linkedListId` is `onDelete: SetNull`, and without a source the sync stops
+  return { type: 'deleted' };
 };
 
 export const rawToList = (

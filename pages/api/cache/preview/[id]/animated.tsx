@@ -38,8 +38,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (layers.length === 0) throw 'No layers found';
 
   const elements = layers.map((layer) => {
-    if (!layer.canvasMovieLibraryUrl)
+    if (!layer.canvasMovieLibraryUrl) {
+      if (!layer.imageUrlV2) return null;
       return <img key={layer.id} src={layer.imageUrlV2} alt={layer.id} />;
+    }
 
     return (
       <iframe

@@ -3,6 +3,7 @@ import { Box, Center, Flex, Heading, HStack, Image, Separator, Text } from '@cha
 import { Breadcrumbs } from '@components/Breadcrumbs/Breadcrumbs';
 import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
 import ItemCard from '@components/Items/ItemCard';
+import { LeavingDayBadge } from '@components/Items/LeavingDayBadge';
 import Color from 'color';
 import type { LeavingMallDateGroup } from './buildLeavingMallPageProps';
 import type { ItemData } from '@types';
@@ -60,9 +61,12 @@ export function LeavingMallPageContent({
       <Flex flexFlow="column" alignItems="stretch" flexWrap="wrap" gap={3} mt={3}>
         {itemsByDate.map(({ date, mallData }) => (
           <Flex key={date} flexFlow="column" gap={3}>
-            <Heading as="h2" size="lg">
-              {date}
-            </Heading>
+            <HStack gap={3}>
+              <Heading as="h2" size="lg">
+                {date}
+              </Heading>
+              {mallData[0]?.saleEnd && <LeavingDayBadge saleEnd={mallData[0].saleEnd} size="lg" />}
+            </HStack>
             <HStack gap={3} alignItems="stretch" flexWrap="wrap">
               {mallData.map((mall) => {
                 const item = itemData.find((entry) => entry.internal_id === mall.item_iid);

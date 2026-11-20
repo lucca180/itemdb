@@ -8,13 +8,15 @@ export type DeleteListModalProps = {
   isOpen: boolean;
   selectedLists: number[];
   username: string;
+  /** Single-list delete: shows the list name instead of the list count */
+  listName?: string;
   onClose: () => void;
   refresh: () => void;
 };
 
 const DeleteListModal = (props: DeleteListModalProps) => {
   const t = useTranslations();
-  const { isOpen, onClose, selectedLists: listsIds, refresh, username } = props;
+  const { isOpen, onClose, selectedLists: listsIds, refresh, username, listName } = props;
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const { revalidate } = useLists();
@@ -61,8 +63,10 @@ const DeleteListModal = (props: DeleteListModalProps) => {
         <Dialog.Positioner>
           <Dialog.Content>
             <Dialog.Header>
-              <Dialog.Title textTransform="capitalize">
-                {t('Lists.delete-length-lists', { lists: listsIds.length })}
+              <Dialog.Title textTransform={listName ? undefined : 'capitalize'}>
+                {listName
+                  ? t('Lists.delete-item-name', { x: listName })
+                  : t('Lists.delete-length-lists', { lists: listsIds.length })}
               </Dialog.Title>
             </Dialog.Header>
             <Dialog.CloseTrigger asChild>
@@ -71,11 +75,17 @@ const DeleteListModal = (props: DeleteListModalProps) => {
             <Dialog.Body>
               {!loading && !error && (
                 <Text color="gray.300">
-                  {t.rich('Lists.delete-lists-confirmation', {
-                    b: (chunk) => <b>{chunk}</b>,
-                    br: () => <br />,
-                    lists: listsIds.length,
-                  })}
+                  {listName
+                    ? t.rich('Lists.delete-list-confirmation', {
+                        b: (chunk) => <b>{chunk}</b>,
+                        br: () => <br />,
+                        listName,
+                      })
+                    : t.rich('Lists.delete-lists-confirmation', {
+                        b: (chunk) => <b>{chunk}</b>,
+                        br: () => <br />,
+                        lists: listsIds.length,
+                      })}
                 </Text>
               )}
 

@@ -21,7 +21,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const html = ReactDOMServer.renderToStaticMarkup(
     <AnimatedLayer
       jsAnimationUrl={layer.canvasMovieLibraryUrl}
-      fallbackImageUrl={layer.imageUrlV2}
+      fallbackImageUrl={layer.imageUrlV2 ?? undefined}
     />
   );
 

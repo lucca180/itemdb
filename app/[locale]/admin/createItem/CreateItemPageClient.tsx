@@ -2,7 +2,6 @@
 
 import { Button, Center, Heading, Link, Spinner, Tabs, Text } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
-import axios from 'axios';
 import { useState } from 'react';
 import HeaderCard from '@components/Card/HeaderCard';
 import MainLink from '@components/Utils/MainLink';
@@ -46,11 +45,19 @@ const defaultItem: Partial<ItemData> = {
   mallData: null,
 };
 
+/** Empty inputs come back as '' — send undefined so the API doesn't coerce them to 0. */
+const toOptionalValue = <T,>(value: T | null | undefined) => {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === 'string' && value.trim() === '') return undefined;
+  return typeof value === 'string' ? value.trim() : value;
+};
+
 export function CreateItemPageClient() {
   const toast = useToast();
   const { user, authLoading } = useAuth();
   const [item, setItem] = useState<Partial<ItemData>>(defaultItem);
   const [tags, setTags] = useState<string[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -79,12 +86,16 @@ export function CreateItemPageClient() {
       if (nextTags.includes('neohome')) itemCopy.isNeohome = true;
       else itemCopy.isNeohome = false;
 
+      itemCopy.isBD = nextTags.includes('battledome');
+
       setItem(itemCopy);
     }
   };
 
   const createItem = async () => {
-    if (!item.name || !item.image) {
+    if (isCreating) return;
+
+    if (!item.name?.trim() || !item.image?.trim()) {
       toast({
         id: 'create-item-missing-fields',
         title: 'Missing required fields.',
@@ -103,19 +114,21 @@ export function CreateItemPageClient() {
     if (item.isNeohome) subtext += '(neohome)';
 
     const itemData = {
-      item_id: item.item_id ?? undefined,
-      name: item.name,
-      description: item.description,
-      img: item.image,
+      item_id: toOptionalValue(item.item_id),
+      name: item.name.trim(),
+      description: toOptionalValue(item.description),
+      img: item.image.trim(),
       subText: subtext,
-      estVal: item.estVal ?? undefined,
-      rarity: item.rarity ?? undefined,
-      weight: item.weight ?? undefined,
-      category: item.category ?? undefined,
-      status: item.status ?? undefined,
-      comment: item.comment ?? undefined,
+      estVal: toOptionalValue(item.estVal),
+      rarity: toOptionalValue(item.rarity),
+      weight: toOptionalValue(item.weight),
+      category: toOptionalValue(item.category),
+      status: toOptionalValue(item.status),
       type: item.type,
+      isBD: item.isBD,
     };
+
+    setIsCreating(true);
 
     const toastID = toast({
       id: 'create-item',
@@ -144,12 +157,28 @@ export function CreateItemPageClient() {
         throw new Error(errorBody?.error || `Create failed with status ${res.status}`);
       }
 
-      await axios.post('/api/v1/items/process', {});
+      const result = (await res.json().catch(() => null)) as { count?: number } | null;
+
+      // The API silently skips invalid rows (non-item image URL, unknown category...) and
+      // exact duplicates of an already queued submission — both come back as count 0.
+      if (!result?.count) {
+        throw new Error(
+          'The item was not queued. Check the image URL (images.neopets.com/items/...) and the category, or it may already have been submitted.'
+        );
+      }
+
+      // Fire and forget: draining the queue can take a while and the item shows up once it finishes.
+      fetch('/api/v1/items/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+        keepalive: true,
+      }).catch((err) => console.error(err));
 
       toast.update(toastID, {
         id: toastID,
-        title: 'Item created.',
-        description: 'The item was successfully created.',
+        title: 'Item queued.',
+        description: 'The item will be available as soon as the queue is processed.',
         status: 'success',
         duration: 5000,
       });
@@ -164,6 +193,8 @@ export function CreateItemPageClient() {
         status: 'error',
         duration: 10000,
       });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -216,6 +247,7 @@ export function CreateItemPageClient() {
             item={item as ItemData}
             itemProps={defaultItem as ItemData}
             onChange={handleChange}
+            isCreateMode
           />
         </Tabs.Content>
         <Tabs.Content value="categories">
@@ -226,11 +258,12 @@ export function CreateItemPageClient() {
             item={item as ItemData}
             itemProps={defaultItem as ItemData}
             onChange={handleTagsChange}
+            isCreateMode
           />
         </Tabs.Content>
       </Tabs.Root>
       <Center>
-        <Button colorPalette="green" onClick={createItem}>
+        <Button colorPalette="green" onClick={createItem} loading={isCreating}>
           Create Item
         </Button>
       </Center>

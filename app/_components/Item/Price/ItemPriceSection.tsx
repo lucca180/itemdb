@@ -30,6 +30,7 @@ import {
   buildLastSeenStaticCards,
   getHelpNeededData,
   getLatestPrice,
+  getPreviousPrice,
   getPriceDiff,
 } from '@app/_components/Item/Price/itemPriceUtils';
 import {
@@ -153,18 +154,28 @@ async function LastSeenStats({ item }: ItemProps) {
 
 // --- Orchestrator ---
 
-function ItemPriceModalShell({ item, children }: ItemProps & { children: ReactNode }) {
-  return <ItemPriceModalProvider item={item}>{children}</ItemPriceModalProvider>;
+function ItemPriceModalShell({
+  item,
+  price,
+  previousPrice,
+  children,
+}: ItemProps & { price?: PriceData; previousPrice?: PriceData; children: ReactNode }) {
+  return (
+    <ItemPriceModalProvider item={item} price={price} previousPrice={previousPrice}>
+      {children}
+    </ItemPriceModalProvider>
+  );
 }
 
 async function ItemPriceTradeableCard({ item, prices, hasMore }: ItemPriceShellProps) {
   const [t, format, now] = await Promise.all([getTranslations(), getFormatter(), getCachedNow()]);
   const shouldShowLists = shouldShowTradeLists(item, now);
   const price = getLatestPrice(prices);
+  const previousPrice = getPreviousPrice(prices);
   const priceDiff = getPriceDiff(prices);
 
   return (
-    <ItemPriceModalShell item={item}>
+    <ItemPriceModalShell item={item} price={price} previousPrice={previousPrice}>
       <CardBase color={item.color.rgb} title={t('ItemPage.price-overview')}>
         <Flex gap={3} flexFlow="column">
           <Suspense fallback={null}>

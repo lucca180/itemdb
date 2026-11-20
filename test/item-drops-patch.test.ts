@@ -7,6 +7,7 @@ const prismaMock = vi.hoisted(() => ({
     findFirst: vi.fn(),
     findMany: vi.fn(),
     create: vi.fn(),
+    createMany: vi.fn(),
     updateMany: vi.fn(),
     deleteMany: vi.fn(),
   },
@@ -155,6 +156,83 @@ describe('PATCH /api/v1/items/[id_name]/drops', () => {
     expect(
       (await patch({ action: 'rename-pool', poolName: 'normal', newPoolName: '  ' })).statusCode
     ).toBe(400);
+  });
+
+  describe('move-pool', () => {
+    const OTHER_DROP_ID = 102;
+    const PINNED_DROP_ID = 103;
+
+    const communityRow = (opening_id: string, item_iid: number, limitedEdition = false) => ({
+      internal_id: Math.random(),
+      parent_iid: PARENT_ITEM_ID,
+      opening_id,
+      item_iid,
+      ip_address: null,
+      addedAt: new Date(),
+      notes: null,
+      prizePool: null,
+      limitedEdition,
+      isManual: false,
+    });
+
+    beforeEach(() => {
+      prismaMock.items.findFirst.mockResolvedValue({
+        internal_id: PARENT_ITEM_ID,
+        name: 'Test Capsule',
+        flags: null,
+        isNC: true,
+        canOpen: 'true',
+        canPlay: 'unknown',
+        canEat: 'unknown',
+        canRead: 'unknown',
+      });
+      // drop rows for getItemDrops; the `select` query is the lookup of already pinned drops
+      prismaMock.openableItems.findMany.mockImplementation((args?: { select?: unknown }) =>
+        Promise.resolve(
+          args?.select
+            ? [{ item_iid: PINNED_DROP_ID }]
+            : [
+                communityRow('opening-1', DROP_ID),
+                communityRow('opening-2', OTHER_DROP_ID),
+                communityRow('opening-3', PINNED_DROP_ID),
+              ]
+        )
+      );
+    });
+
+    test('pins every drop of the unknown pool to the target pool', async () => {
+      const res = await patch({
+        action: 'move-pool',
+        poolName: 'unknown',
+        newPoolName: ' Normal 1-1 ',
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(prismaMock.openableItems.updateMany).toHaveBeenCalledWith({
+        where: manualPool('unknown'),
+        data: { prizePool: 'normal-1-1' },
+      });
+      expect(prismaMock.openableItems.createMany).toHaveBeenCalledWith({
+        data: [DROP_ID, OTHER_DROP_ID].map((item_iid) => ({
+          ...manualPool('normal-1-1'),
+          item_iid,
+          limitedEdition: false,
+        })),
+      });
+    });
+
+    test('rejects a pool the item does not have', async () => {
+      const res = await patch({ action: 'move-pool', poolName: 'clothing', newPoolName: 'a' });
+
+      expect(res.statusCode).toBe(400);
+      expect(prismaMock.openableItems.createMany).not.toHaveBeenCalled();
+    });
+
+    test('rejects an empty target name', async () => {
+      const res = await patch({ action: 'move-pool', poolName: 'unknown', newPoolName: ' ' });
+
+      expect(res.statusCode).toBe(400);
+    });
   });
 
   test('deletes only the manual rows of a pool', async () => {

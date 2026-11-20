@@ -2,6 +2,7 @@ import { LogService } from '@services/ActionLogService';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import {
   deleteManualMarker,
+  getManualMarkerById,
   ManualMarkerInputError,
   normalizeMarkerId,
   updateManualMarker,
@@ -11,6 +12,31 @@ import {
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
+
+export async function GET(request: Request, context: RouteContext) {
+  const { user } = await getServerCurrentUser();
+  if (!user?.isAdmin) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+
+  try {
+    const marker = await getManualMarkerById(normalizeMarkerId(id));
+    if (!marker) {
+      return Response.json({ error: 'Marker not found' }, { status: 404 });
+    }
+
+    return Response.json({ marker });
+  } catch (error) {
+    if (error instanceof ManualMarkerInputError) {
+      return Response.json({ error: error.message }, { status: 400 });
+    }
+
+    console.error(error);
+    return Response.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
 
 export async function PATCH(request: Request, context: RouteContext) {
   const { user } = await getServerCurrentUser();

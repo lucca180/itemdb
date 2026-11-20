@@ -10,6 +10,7 @@ import type { ItemPrices } from '@prisma/generated/client';
 import type { User } from '@types';
 import { LogService } from '@services/ActionLogService';
 import type { PriceSkipReason } from '@utils/prices/pricing3';
+import { getPriceDayRange } from '@utils/prices/process-helpers';
 
 export class AdminPricesInputError extends Error {
   constructor(message: string) {
@@ -66,6 +67,17 @@ export async function createAdminPrice(body: CreateAdminPriceRequest): Promise<I
     throw new AdminPricesInputError('Invalid input');
   }
 
+  const utcAddedAt = new UTCDate(new UTCDate(addedAtRaw).setHours(18));
+
+  const sameDayPrice = await prisma.itemPrices.findFirst({
+    where: { item_iid, addedAt: getPriceDayRange(utcAddedAt) },
+    select: { internal_id: true },
+  });
+
+  if (sameDayPrice) {
+    throw new AdminPricesInputError('This item already has a price on this day. Edit it instead.');
+  }
+
   const lastPrice = await prisma.itemPrices.findFirst({
     where: { item_iid },
     orderBy: { addedAt: 'desc' },
@@ -76,7 +88,6 @@ export async function createAdminPrice(body: CreateAdminPriceRequest): Promise<I
     noInflation_id = lastPrice.noInflation_id ?? lastPrice.internal_id;
   }
 
-  const utcAddedAt = new UTCDate(new UTCDate(addedAtRaw).setHours(18));
   const newIsLatest = lastPrice ? lastPrice.addedAt.getTime() < utcAddedAt.getTime() : true;
 
   if (newIsLatest && lastPrice) {

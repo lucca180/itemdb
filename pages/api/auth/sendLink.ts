@@ -42,7 +42,8 @@ async function sendMagicLinkEmail(email: string) {
       text: template.text,
     };
 
-    await resend.emails.send(msg);
+    const { error } = await resend.emails.send(msg);
+    if (error) console.error('Failed to send magic link email', error.name, error.message);
   }
 }
 

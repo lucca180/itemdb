@@ -42,7 +42,6 @@ fragment PetAppearanceForOutfitPreview on PetAppearance {
     isGlitched
     color {
       id
-      name
     }
     species {
       id

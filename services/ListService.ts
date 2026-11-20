@@ -1,4 +1,5 @@
 import {
+  DynamicListSource,
   ItemData,
   ItemIntent,
   ItemV2For,
@@ -32,6 +33,7 @@ import {
   type PutListItemInput,
 } from '@services/list/listItemsWrite';
 import {
+  getDynamicListSource,
   hasAnyOfficialTag,
   parseOfficialTagQuery,
   rawToList,
@@ -44,16 +46,27 @@ import {
   type GetUserListsOptions,
 } from '@services/list/userListsQuery';
 import { fetchListItemsV2, type FetchListItemsV2Result } from '@services/list/listItemsV2';
+import { getItemLists } from '@services/list/itemListsQuery';
+import { getListPriceHistory } from '@services/list/listPriceHistory';
 
 export { LIST_ITEMS_MAX_LIMIT } from '@services/list/listItemsV2';
 import { adminListSeoWriteData, getListSeo } from '@services/list/listSeo';
 
 export {
+  getDynamicListSource,
   hasAnyOfficialTag,
   parseOfficialTagQuery,
   rawToList,
   rawToListItems,
 } from '@services/list/listMappers';
+export type { LinkedListSourceRaw } from '@services/list/listMappers';
+export {
+  filterOfficialLists,
+  filterTradeLists,
+  isListSeriesActive,
+  rankItemOfficialLists,
+} from '@services/list/itemListsQuery';
+export type { GetItemListsOptions, ItemListCollections } from '@services/list/itemListsQuery';
 export type { PutListItemInput, DynamicItemChanges };
 
 export class ListService {
@@ -68,6 +81,10 @@ export class ListService {
   static applyDynamicItemChanges = applyDynamicItemChanges;
   static getListSeo = getListSeo;
   static adminListSeoWriteData = adminListSeoWriteData;
+  /** Lists that hold one item (official and/or public trade lists); viewer-independent. */
+  static getItemLists = getItemLists;
+  /** Price history of an already-authorized list's visible NP items. */
+  static getListPriceHistory = getListPriceHistory;
 
   static init() {
     return ListService.initUser(null);
@@ -134,7 +151,10 @@ export class ListService {
     if (!listRaw || !ListService.canSeeList(listRaw, this.user)) return null;
 
     const didSync = !!(listRaw.dynamicType && !skipSync);
-    if (didSync) await syncDynamicList(listRaw.internal_id);
+    if (didSync && (await syncDynamicList(listRaw.internal_id))) {
+      // listRaw was read before the sync ran
+      listRaw.lastSync = new Date();
+    }
 
     listRaw.visibleItemCount = didSync
       ? await updateCount(listRaw.internal_id)
@@ -156,6 +176,35 @@ export class ListService {
 
     const list: UserList = rawToList(listRaw, listRaw.user);
     return list;
+  }
+
+  /** What a user's dynamic list follows, as this viewer may see it. `list` is already authorized. */
+  async getDynamicSource(list: UserList): Promise<DynamicListSource | null> {
+    if (!list.dynamicType || list.official) return null;
+
+    const listRaw = await prisma.userList.findUnique({
+      where: { internal_id: list.internal_id },
+      select: {
+        official: true,
+        user_id: true,
+        dynamicType: true,
+        dynamicQuery: true,
+        linkedListId: true,
+        linkedList: {
+          select: {
+            internal_id: true,
+            name: true,
+            slug: true,
+            official: true,
+            visibility: true,
+            user_id: true,
+            user: { select: { username: true } },
+          },
+        },
+      },
+    });
+
+    return listRaw ? getDynamicListSource(listRaw, this.user?.id) : null;
   }
 
   async getUserLists(params: GetUserListsParams) {

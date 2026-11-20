@@ -56,12 +56,13 @@ export function PriceHistoryTable({
         markers={markers}
         truncated={hasMore && !expanded}
         isAdmin={isAdmin}
+        showSuggest
         t={t}
         format={format}
         footer={
           hasMore && !expanded ? (
             <Table.Row>
-              <Table.Cell colSpan={isAdmin ? 4 : 3} p={0} border={0}>
+              <Table.Cell colSpan={4} p={0} border={0}>
                 <Button
                   size="xs"
                   variant="ghost"

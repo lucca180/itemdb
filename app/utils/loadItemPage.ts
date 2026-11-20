@@ -9,6 +9,7 @@ import {
 } from '@app/utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { cacheLife } from 'next/cache';
+import { cacheLifeNotFound } from '@app/utils/cacheLifeNotFound';
 import { hasDisplayedDrops } from '@app/_components/Item/Drops/loadItemDrops';
 import { needsDrops } from '@app/_components/Item/itemPageGates';
 import {
@@ -65,24 +66,31 @@ export async function buildItemPageMetadata(item: ItemData, locale: string): Pro
 
 async function resolveItemSlug(slugParam: string): Promise<ItemPageRouteMetadataResult> {
   'use cache';
-  // Set before any early return so no path falls back to the `default` (never-expiring) profile.
-  cacheLife('itemFast');
-  if (!slugParam) return { type: 'notFound' };
+  // Exactly one cacheLife per invocation: 404s are never cached (newly added items show up at once).
+  const notFound = (): ItemPageRouteMetadataResult => {
+    cacheLifeNotFound();
+    return { type: 'notFound' };
+  };
+
+  if (!slugParam) return notFound();
 
   const isIdNumber = !isNaN(Number(slugParam));
   let item: ItemData | null | undefined;
 
   if (isIdNumber) {
     item = await getCachedItem(Number(slugParam));
-    if (!item) return { type: 'notFound' };
-    if (item.slug) return { type: 'redirect', href: `/item/${item.slug}`, item };
+    if (!item) return notFound();
   } else {
     const internalId = await getCachedItemInternalId(slugParam);
     item = internalId ? await getCachedItem(internalId) : null;
-    if (!item) return { type: 'notFound' };
-    if (slugParam !== item.slug) {
-      return { type: 'redirect', href: `/item/${item.slug}`, item };
-    }
+    if (!item) return notFound();
+  }
+
+  cacheLife('itemFast');
+
+  const shouldRedirect = isIdNumber ? Boolean(item.slug) : slugParam !== item.slug;
+  if (shouldRedirect) {
+    return { type: 'redirect', href: `/item/${item.slug}`, item };
   }
 
   return { type: 'ok', item };

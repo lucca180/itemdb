@@ -12,6 +12,7 @@ type TurnstileApi = {
       appearance?: 'always' | 'execute' | 'interaction-only';
       theme?: 'auto' | 'light' | 'dark';
       action?: string;
+      retry?: 'auto' | 'never';
       callback?: (token: string) => void;
       'error-callback'?: () => void;
       'timeout-callback'?: () => void;
@@ -105,6 +106,9 @@ async function getTurnstileToken(siteKey: string): Promise<string> {
         appearance: 'interaction-only',
         theme: 'auto',
         action: 'get-session',
+        // We remove the widget on error and retry ourselves; Turnstile's auto retry
+        // would later reset the removed container ("Nothing to reset found").
+        retry: 'never',
         callback: (token) => {
           cleanup();
           resolve(token);

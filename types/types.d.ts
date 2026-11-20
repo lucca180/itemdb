@@ -317,6 +317,12 @@ export type UserListLite = Pick<
 
 export type DynamicListTypes = 'addOnly' | 'removeOnly' | 'fullSync' | 'search';
 
+export type DynamicListSource =
+  | { type: 'list'; name: string; href: string }
+  | { type: 'privateList' }
+  | { type: 'search' }
+  | { type: 'deleted' };
+
 export type ObligatoryUserList = Required<Pick<UserList, 'itemInfo'>> & UserList;
 
 export type ListItemInfo = {
@@ -569,6 +575,8 @@ type ContributeWallData = {
   /** Goals after the caller's multiplier, so the UI can show progress. */
   tradeGoal?: number;
   voteGoal?: number;
+  /** Site only: the contribute queues are large enough to also gate the auction relisting. */
+  gatesRelisting?: boolean;
 };
 
 type ItemMMEData = {
@@ -795,7 +803,8 @@ export type DTIZoneQuery = {
 
 export type DTILayer = {
   id: string;
-  imageUrlV2: string;
+  // DTI returns null for layers it has no image for (e.g. Vandagyre Pirate "Hind Biology")
+  imageUrlV2: string | null;
   knowGlitches: string[];
   remoteId: string;
   bodyId: string;
@@ -840,9 +849,9 @@ export type DTICanonicalAppearance = {
 
 export type DTIPetAppearance = {
   bodyId: string;
+  // No color name: impress-2020 fails the whole query when the color isn't in DTI's color table yet
   color: {
     id: string;
-    name: string;
   };
   id: string;
   isGlitched: boolean;

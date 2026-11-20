@@ -18,6 +18,7 @@ import type { ItemV2For, UserList } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import { fetchManyItems } from '@app/server/items/actions';
+import { useDynamicListLabels } from '@utils/list/dynamicListLabels';
 import {
   loadDynamicLogs,
   type DynamicLogCursor,
@@ -53,6 +54,7 @@ export type DynamicListLogsModalProps = {
 
 const DynamicListLogsModal = (props: DynamicListLogsModalProps) => {
   const t = useTranslations();
+  const { getFullLabel } = useDynamicListLabels();
   const formatter = useFormatter();
   const { isOpen, onClose, list } = props;
 
@@ -293,7 +295,7 @@ const DynamicListLogsModal = (props: DynamicListLogsModalProps) => {
             <Dialog.Body>
               <Text fontSize="xs" textAlign="center" mb={4} color="gray.400">
                 {t.rich('Lists.dynamic-disclaimer', {
-                  x: list.dynamicType || '',
+                  x: getFullLabel(list),
                   b: (chunk) => <b>{chunk}</b>,
                   Link: (chunk) => (
                     <Link

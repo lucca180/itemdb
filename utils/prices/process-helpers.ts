@@ -1,7 +1,8 @@
 import { Prisma } from '@prisma/generated/client';
 import { Decimal } from '@prisma/client/runtime/client';
 import { coefficientOfVariation } from '@utils/utils';
-import { differenceInCalendarDays, differenceInMonths } from 'date-fns';
+import { differenceInCalendarDays, differenceInMonths, endOfDay, startOfDay } from 'date-fns';
+import { tz } from '@date-fns/tz';
 import { mean, standardDeviation } from 'simple-statistics';
 import prisma from '@utils/prisma';
 import { LogService } from '@services/ActionLogService';
@@ -26,6 +27,15 @@ export const PRICING = {
 
 export const getAutoApproveOwnerNeed = (ownerMin: number) =>
   ownerMin + PRICING.AUTO_APPROVE_OWNER_EXTRA;
+
+/** An item has at most one price per day, and a "day" is the one the site shows (Neopian time). */
+const PRICE_DAY_TZ = tz('America/Los_Angeles');
+
+/** First and last instant of the price day that contains `date`, as plain Dates for Prisma. */
+export const getPriceDayRange = (date: Date) => ({
+  gte: new Date(startOfDay(date, { in: PRICE_DAY_TZ }).getTime()),
+  lte: new Date(endOfDay(date, { in: PRICE_DAY_TZ }).getTime()),
+});
 
 // for a given number, calculate z-score
 export const zScore = (x: number, data: number[]) => {
@@ -69,7 +79,12 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps): ShouldUpdateResult =
   const isPendingCheck = !!oldPriceRaw?.manual_check;
   const isInflation = !!oldPriceRaw.noInflation_id;
 
-  const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPriceRaw.addedAt);
+  const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPriceRaw.addedAt, {
+    in: PRICE_DAY_TZ,
+  });
+
+  // hard stop: never two prices on the same day, not even in force mode or over a pending check
+  if (daysSinceLastUpdate === 0) return SKIP('same_day_update');
 
   // get all price history except the current price and convert to number
   const prices = getPrices(priceHistory);
@@ -87,8 +102,7 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps): ShouldUpdateResult =
     forceMode = forceMode || isPendingCheck;
 
     if (latestDate < oldPriceRaw.addedAt) return SKIP('stale_data');
-    if ((!forceMode && daysSinceLastUpdate <= 1) || !daysSinceLastUpdate)
-      return SKIP('same_day_update');
+    if (!forceMode && daysSinceLastUpdate <= 1) return SKIP('same_day_update');
 
     if (!forceMode && daysSinceLastUpdate < minUpdate && zNewAbs < 2.5)
       return SKIP('awaiting_confirmation');

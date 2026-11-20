@@ -9,7 +9,8 @@ type PriceCheckerPageId =
   | 'gourmet-club'
   | 'neodeck'
   | 'book-award'
-  | 'booktastic';
+  | 'booktastic'
+  | 'archived-bookshelf';
 
 export type PriceCheckerPage = {
   id: PriceCheckerPageId;
@@ -21,6 +22,7 @@ export type PriceCheckerPage = {
     | 'General.neodeck'
     | 'General.book-award'
     | 'General.booktastic-books-award'
+    | 'General.archived-bookshelf'
     | 'PriceChecker.inventory'
     | 'PriceChecker.your-gallery'
     | 'PriceChecker.your-shop'
@@ -109,7 +111,7 @@ export const PRICE_CHECKER_PAGES: PriceCheckerPage[] = [
     id: 'book-award',
     labelKey: 'General.book-award',
     descriptionKey: 'PriceChecker.page-description-book-award',
-    href: 'https://www.neopets.com/quickref.phtml',
+    href: 'https://www.neopets.com/books_read.phtml',
     isChecklist: true,
     imageSrc: 'https://images.neopets.com/themes/h5/basic/images/journal-icon.png',
   },
@@ -117,9 +119,17 @@ export const PRICE_CHECKER_PAGES: PriceCheckerPage[] = [
     id: 'booktastic',
     labelKey: 'General.booktastic-books-award',
     descriptionKey: 'PriceChecker.page-description-booktastic',
-    href: 'https://www.neopets.com/quickref.phtml',
+    href: 'https://www.neopets.com/books_read.phtml?tab=booktastic',
     isChecklist: true,
     imageSrc: 'https://images.neopets.com/spotlight/hub/icons/booktastic.png',
+  },
+  {
+    id: 'archived-bookshelf',
+    labelKey: 'General.archived-bookshelf',
+    descriptionKey: 'PriceChecker.page-description-archived-bookshelf',
+    href: 'https://www.neopets.com/bookshelf/archive-bookshelf.phtml',
+    isChecklist: true,
+    imageSrc: 'https://images.neopets.com/themes/h5/basic/images/v3/bookshelf-icon.svg',
   },
 ];
 

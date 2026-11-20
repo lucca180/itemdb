@@ -2,7 +2,7 @@ import { Badge, Flex, Link, Text, Box, HStack } from '@chakra-ui/react';
 import Color from 'color';
 import MainLink from '@components/Utils/MainLink';
 import { ShopInfo } from '../../../types';
-import { slugify } from '../../../utils/utils';
+import { getShopkeeperImage, slugify } from '../../../utils/utils';
 import NextImage from 'next/image';
 
 type Props = {
@@ -39,7 +39,7 @@ const ShopCard = (props: Props) => {
             <NextImage
               width={325}
               height={108.33}
-              src={`https://images.neopets.com/shopkeepers/w${shop.id}.gif`}
+              src={getShopkeeperImage(shop.id)}
               alt={`${shop.name} thumbnail`}
               style={{ borderRadius: '0.375rem' }}
             />

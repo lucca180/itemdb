@@ -14,11 +14,15 @@ import {
   refreshListData,
 } from './actions';
 import { getListLoadingStrategy, type ListItemsData, type ListPageClientCore } from './listPage';
+import { isChecklist } from '@utils/list/dynamicListLabels';
+import { computeChecklistProgress, type ChecklistProgress } from '@utils/list/checklistProgress';
 import {
   applyDragSortOrder,
   buildListSortTypes,
   computeListQtyCount,
+  filterHiddenItemInfoIds,
   filterItemInfoIdsBySearch,
+  getOnlyHiddenEmptyState,
   hasServerFilters,
   shouldMergeListItems,
   sortItemInfoIds,
@@ -78,6 +82,7 @@ export function useListPageState({
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [listStats, setListStats] = useState<SearchStats | null>(null);
+  const [onlyHidden, setOnlyHidden] = useState(false);
 
   // --- Loading + async race guards ---
   const [isLoading, setLoading] = useState(needsFullLoad);
@@ -195,12 +200,43 @@ export function useListPageState({
   const isStampList = list.officialTag.some((tag) => tag.toLowerCase() === 'stamps');
   const sortTypes = useMemo(() => buildListSortTypes(isStampList), [isStampList]);
 
-  const displayedItemInfoIds = useMemo(
+  const matchingItemInfoIds = useMemo(
     () => filterItemInfoIdsBySearch(itemInfoIds, itemInfo, items, searchQuery),
     [itemInfo, itemInfoIds, items, searchQuery]
   );
 
-  const hasListViewFilter = isServerFiltered || !!searchQuery.trim();
+  const displayedItemInfoIds = useMemo(
+    () =>
+      onlyHidden ? filterHiddenItemInfoIds(matchingItemInfoIds, itemInfo) : matchingItemInfoIds,
+    [itemInfo, matchingItemInfoIds, onlyHidden]
+  );
+
+  const onlyHiddenEmptyState = useMemo(
+    () =>
+      getOnlyHiddenEmptyState({
+        matchingIds: matchingItemInfoIds,
+        itemInfo,
+        onlyHidden,
+        isEdit,
+        isLoading,
+      }),
+    [isEdit, isLoading, itemInfo, matchingItemInfoIds, onlyHidden]
+  );
+
+  const hasListViewFilter = isServerFiltered || !!searchQuery.trim() || onlyHidden;
+
+  const hiddenCount = useMemo(() => computeChecklistProgress(itemInfo).collected, [itemInfo]);
+
+  const tracksProgress = core.isOwner && isChecklist(list);
+
+  // Filters and the first load leave only part of the rows in `itemInfo`: keep the last full count
+  const fullProgress = useMemo(
+    () =>
+      tracksProgress && !isLoading && !isServerFiltered ? computeChecklistProgress(itemInfo) : null,
+    [isLoading, isServerFiltered, itemInfo, tracksProgress]
+  );
+  const [lastProgress, setLastProgress] = useState<ChecklistProgress | null>(null);
+  if (fullProgress && fullProgress !== lastProgress) setLastProgress(fullProgress);
 
   useEffect(() => {
     if (hasListViewFilter) setLockSort(true);
@@ -341,10 +377,16 @@ export function useListPageState({
 
   const handleSelectCheckbox = useCallback(
     (checkAll: boolean) => {
-      setItemSelect(checkAll ? itemInfoIds : []);
+      // Bulk actions can't reach rows this view is not showing
+      setItemSelect(checkAll ? displayedItemInfoIds : []);
     },
-    [itemInfoIds]
+    [displayedItemInfoIds]
   );
+
+  const toggleOnlyHidden = useCallback(() => {
+    setOnlyHidden((current) => !current);
+    setItemSelect([]);
+  }, []);
 
   const handleSort = useCallback(
     (newOrder: number[]) => {
@@ -363,13 +405,7 @@ export function useListPageState({
       id: number,
       value: number | string | null,
       field:
-        | 'amount'
-        | 'capValue'
-        | 'isHighlight'
-        | 'isHidden'
-        | 'order'
-        | 'seriesStart'
-        | 'seriesEnd'
+        'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order' | 'seriesStart' | 'seriesEnd'
     ) => {
       const newInfo = { ...itemInfo } as Record<number, ExtendedListItemInfo>;
       newInfo[id] = { ...newInfo[id] };
@@ -474,6 +510,12 @@ export function useListPageState({
     itemInfo,
     items,
     itemInfoIds,
+    hiddenCount,
+    onlyHidden,
+    toggleOnlyHidden,
+    onlyHiddenEmptyState,
+    tracksProgress,
+    checklistProgress: fullProgress ?? lastProgress,
     itemSelect,
     setItemSelect,
     selectionAction,

@@ -7,7 +7,7 @@ import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
 import { RestockShopSpecialDayTag } from '@components/Hubs/Restock/RestockShopSpecialDayTag';
 import ChakraImage from '@components/Utils/Image';
 import type { ShopInfo } from '@types';
-import type { ShopRestockSpecialDay } from '@utils/utils';
+import { getShopkeeperImage, type ShopRestockSpecialDay } from '@utils/utils';
 
 export type RestockHeaderSpecialDayLabels = Record<ShopRestockSpecialDay, string>;
 
@@ -85,7 +85,7 @@ export default function RestockHeader({
           <ChakraImage
             priority
             quality={90}
-            src={`https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`}
+            src={getShopkeeperImage(shopInfo.id)}
             width={450}
             height={150}
             alt={`${shopInfo.name} thumbnail`}

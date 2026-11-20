@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Price Checker & List Importer
-// @version      2.2.0
+// @version      2.3.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Price check your items, filter, sort and import to your wishlists
@@ -12,13 +12,13 @@
 // @match        *://*.neopets.com/gourmet_club.phtml*
 // @match        *://*.neopets.com/games/neodeck/index.phtml*
 // @match        *://*.neopets.com/books_read.phtml*
-// @match        *://*.neopets.com/moon/books_read.phtml*
 // @match        *://*.neopets.com/quickstock.phtml*
 // @match        *://*.neopets.com/market.phtml?type=your*
 // @match       *://*.neopets.com/neohome/shed*
+// @match        *://*.neopets.com/bookshelf/archive-bookshelf.phtml*
 // @match        *://*.itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://itemdb.com.br/js/script-utils.js?v2
+// @require      https://itemdb.com.br/js/script-utils.js?v3
 // @grant        unsafeWindow
 // @run-at       document-start
 // @noframes
@@ -168,18 +168,29 @@ const itemdb_importer = function() {
   }
 
   function handleBooks(){
-    const meta = { list_id: URLHas('moon') ? 663 : 664 };
-    // some books share the same image - use the name too when the page shows it (english only)
-    const namedItems = !URLHas('moon') && nl === 'en' ? collectNamedBookItems() : null;
+    const config = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).__booksReadConfig;
+    const isBooktastic = config ? config.activeTab === 'booktastic' : URLHas('tab=booktastic');
+    const meta = { list_id: isBooktastic ? 663 : 664 };
+    const books = config?.books ?? [];
 
-    if (namedItems)
-      return { items: namedItems, indexType: 'name_image_id', meta, source: 'books' };
+    // the page ships every book with its item id
+    if (books.length && books.every((book) => book.objInfoId))
+      return { items: collectBookItems(books), indexType: 'item_id', meta, source: 'books' };
 
     return {
-      items: collectImageItems($(".content table img")),
+      items: collectImageItems($("#books-read-app img.br-card-img")),
       indexType: 'image_id',
       source: 'books',
       meta,
+    };
+  }
+
+  function handleArchiveBookshelf(collections){
+    return {
+      items: collectArchiveBookshelfItems(collections),
+      indexType: 'item_id',
+      source: 'bookshelf',
+      meta: { list_id: 31462 },
     };
   }
 
@@ -250,31 +261,14 @@ const itemdb_importer = function() {
     return counts;
   }
 
-  // returns null if any book row is missing its name
-  function collectNamedBookItems() {
+  function collectBookItems(books) {
     const items = {};
-    let isComplete = true;
 
-    $(".content table tr").each(function () {
-      const tds = $(this).children('td');
-      const src = tds.eq(0).find('img').attr('src') ?? '';
-      if (tds.length !== 2 || !src.includes('/items/')) return;
-
-      const name = tds.eq(1).clone().children('i').remove().end().text()
-        .replace(/ /g, ' ')
-        .trim()
-        .replace(/:$/, '')
-        .trim();
-
-      if (!name) {
-        isComplete = false;
-        return false;
-      }
-
-      items[`${name},${getImageID(src)}`] = 1;
+    books.forEach((book) => {
+      items[book.objInfoId] = 1;
     });
 
-    return isComplete && Object.keys(items).length ? items : null;
+    return items;
   }
 
   function collectNeoDeckItems() {
@@ -317,6 +311,32 @@ const itemdb_importer = function() {
     })
 
     return items;
+  }
+
+  function collectArchiveBookshelfItems(collections) {
+    const items = {};
+
+    collections.forEach((collection) => {
+      collection.books.forEach((book) => {
+        if (book.owned) items[book.itemInfoId] = 1;
+      });
+    });
+
+    return items;
+  }
+
+  function fetchArchiveCollections() {
+    // the page itself never sends username here, but the api returns that user's collections
+    const username = (new URL(document.location)).searchParams.get('user');
+
+    return fetch('/servicesneo/bookshelf.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ action: 'getCollections', ...(username && { username }) }),
+    })
+      .then((res) => res.json())
+      .then((res) => res.data.collections);
   }
 
   function canImportStamps() {
@@ -389,7 +409,8 @@ const itemdb_importer = function() {
     });
   if (URLHas('books_read.phtml'))
     mountImportButton({
-      target: URLHas('moon') ? $(".content table").eq(0) : $(".content > div").eq(0),
+      // outside the vue app so it doesn't get re-rendered away
+      target: $("#books-read-app"),
       collector: handleBooks,
       withBreak: true,
     });
@@ -416,6 +437,18 @@ const itemdb_importer = function() {
       where: 'before',
       withBreak: true,
     });
+
+  if (URLHas('bookshelf/archive-bookshelf.phtml'))
+    // fetched before mounting so the click can open the import tab without being blocked as a popup
+    fetchArchiveCollections()
+      .then((collections) => mountImportButton({
+        // the shelf is a unity canvas, so the button goes right above it
+        target: $('.unity-wrapper'),
+        collector: () => handleArchiveBookshelf(collections),
+        where: 'before',
+        withBreak: true,
+      }))
+      .catch((e) => console.error('itemdb List Importer: failed to load bookshelf collections', e));
 }
 
 // only runs the script if the page is fully loaded

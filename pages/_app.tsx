@@ -3,7 +3,7 @@ import '../utils/global.css';
 import { Provider } from 'jotai';
 import { DefaultSeo } from 'next-seo';
 import { getDefaultSEO } from '../utils/SEO';
-import NextNProgress from 'nextjs-progressbar';
+import { ProgressProvider } from '@bprogress/next/pages';
 import Script from 'next/script';
 import { AuthProvider } from '../utils/auth';
 import { NextIntlClientProvider } from 'next-intl';
@@ -62,7 +62,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                 />
               ))}
             </Head>
-            <NextNProgress color="#718096" showOnShallow={true} />
+            <ProgressProvider color="#718096" />
             <DefaultSeo {...getDefaultSEO(locale)} />
             {getLayout(<Component {...pageProps} />, pageProps)}
             <GlobalLoginModal />

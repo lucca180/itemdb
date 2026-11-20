@@ -35,14 +35,20 @@ export async function getRestockShopData(shopInfo: ShopInfo): Promise<RestockSho
   filters.restockProfit = '';
   const result = await ItemService.search('', filters, { intent: 'card' });
 
+  const profitableItems = result.content.filter(
+    (item) => (getRestockProfitV2(item) ?? 0) >= INITIAL_MIN_PROFIT
+  );
+
+  // unpriced items are always listed (sorted to the top) — they're usually the most valuable
+  const profitableSet = new Set(profitableItems);
   const fullItems = result.content
-    .filter((item) => (getRestockProfitV2(item) ?? 0) >= INITIAL_MIN_PROFIT)
+    .filter((item) => isUnpriced(item) || profitableSet.has(item))
     .sort((a, b) => sortItemsByPriceDesc(a, b));
 
   return {
     totalItems: result.content.length,
-    profitableCount: fullItems.length,
-    profitMean: computeProfitMean(fullItems),
+    profitableCount: profitableItems.length,
+    profitMean: computeProfitMean(profitableItems),
     similarShops: getSimilarShops(shopInfo),
     fullItems,
   };
@@ -54,6 +60,10 @@ export async function getRestockShopStats(shopInfo: ShopInfo): Promise<SearchSta
     forceCategory: shopIDToCategory[shopInfo.id],
     isRestock: true,
   }) as Promise<SearchStats>;
+}
+
+function isUnpriced(item: ItemV2For<'card'>) {
+  return item.price?.type !== 'np' || !item.price.value;
 }
 
 function sortItemsByPriceDesc(a: ItemV2For<'card'>, b: ItemV2For<'card'>) {

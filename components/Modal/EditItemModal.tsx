@@ -45,6 +45,7 @@ import dynamic from 'next/dynamic';
 import ItemSelect from '../Input/ItemSelect';
 import { CreatePrizePoolForm } from '@components/Input/CreatePrizePoolForm';
 import { PrizePoolBadges } from '@components/Items/PrizePoolBadges';
+import { UNKNOWN_POOL } from '@utils/item/prizePoolName';
 import type { ItemDropSources } from '@utils/item/itemDropSources';
 import type {
   CapsuleSyncPreview,
@@ -378,11 +379,13 @@ type infoTabProps = {
   item: ItemData;
   itemProps: ItemData;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  /** Admin create-item page: hide fields the create API does not accept. */
+  isCreateMode?: boolean;
 };
 
 export const InfoTab = (props: infoTabProps) => {
   const t = useTranslations();
-  const { item, itemProps, onChange: handleChange } = props;
+  const { item, itemProps, onChange: handleChange, isCreateMode } = props;
   const { user } = useAuth();
 
   const isAdmin = user?.role === 'ADMIN';
@@ -448,34 +451,36 @@ export const InfoTab = (props: infoTabProps) => {
                 color={item.image === itemProps.image ? 'gray.400' : '#fff'}
               />
             </Field.Root>
-            <HStack>
-              <Field.Root>
-                <Field.Label color="gray.300">{t('General.canonical-id')}</Field.Label>
-                <Input
-                  variant="subtle"
-                  type="text"
-                  name="canonical_id"
-                  size="sm"
-                  value={item.canonical_id ?? ''}
-                  onChange={handleChange}
-                  disabled={!isAdmin}
-                  color={item.canonical_id == itemProps.canonical_id ? 'gray.400' : '#fff'}
-                />
-              </Field.Root>
-              <Field.Root>
-                <Field.Label color="gray.300">{t('ItemPage.first-seen')}</Field.Label>
-                <Input
-                  variant="subtle"
-                  type="date"
-                  name="firstSeen"
-                  size="sm"
-                  value={item.firstSeen ? toDateInput(item.firstSeen) : undefined}
-                  onChange={handleChange}
-                  disabled={!isAdmin}
-                  color={item.firstSeen == itemProps.firstSeen ? 'gray.400' : '#fff'}
-                />
-              </Field.Root>
-            </HStack>
+            {!isCreateMode && (
+              <HStack>
+                <Field.Root>
+                  <Field.Label color="gray.300">{t('General.canonical-id')}</Field.Label>
+                  <Input
+                    variant="subtle"
+                    type="text"
+                    name="canonical_id"
+                    size="sm"
+                    value={item.canonical_id ?? ''}
+                    onChange={handleChange}
+                    disabled={!isAdmin}
+                    color={item.canonical_id == itemProps.canonical_id ? 'gray.400' : '#fff'}
+                  />
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label color="gray.300">{t('ItemPage.first-seen')}</Field.Label>
+                  <Input
+                    variant="subtle"
+                    type="date"
+                    name="firstSeen"
+                    size="sm"
+                    value={item.firstSeen ? toDateInput(item.firstSeen) : undefined}
+                    onChange={handleChange}
+                    disabled={!isAdmin}
+                    color={item.firstSeen == itemProps.firstSeen ? 'gray.400' : '#fff'}
+                  />
+                </Field.Root>
+              </HStack>
+            )}
           </Stack>
           <Separator />
           <HStack>
@@ -558,44 +563,48 @@ export const InfoTab = (props: infoTabProps) => {
               />
             </Field.Root>
           </HStack>
-          <Field.Root>
-            <Field.Label color="gray.300">Item Flags</Field.Label>
-            <Input
-              variant="subtle"
-              type="text"
-              name="itemFlags"
-              size="sm"
-              value={item.itemFlags ?? ''}
-              onChange={handleChange}
-              color={item.itemFlags == itemProps.itemFlags ? 'gray.400' : '#fff'}
-              disabled={!isAdmin}
-            />
-            <Field.HelperText fontSize={'xs'}>Use comma for multiple flags</Field.HelperText>
-          </Field.Root>
+          {!isCreateMode && (
+            <Field.Root>
+              <Field.Label color="gray.300">Item Flags</Field.Label>
+              <Input
+                variant="subtle"
+                type="text"
+                name="itemFlags"
+                size="sm"
+                value={item.itemFlags ?? ''}
+                onChange={handleChange}
+                color={item.itemFlags == itemProps.itemFlags ? 'gray.400' : '#fff'}
+                disabled={!isAdmin}
+              />
+              <Field.HelperText fontSize={'xs'}>Use comma for multiple flags</Field.HelperText>
+            </Field.Root>
+          )}
         </>
       )}
-      <Field.Root>
-        <Field.Label color="gray.300">{t('ItemPage.notes')}</Field.Label>
-        <Textarea
-          color={item.comment === itemProps.comment ? 'gray.400' : '#fff'}
-          value={item.comment ?? ''}
-          variant="subtle"
-          name="comment"
-          onChange={handleChange}
-          size="sm"
-        />
-        <Field.HelperText>
-          {t('ItemPage.modalDoNotCopy')}
-          <br />
-          {t.rich('Feedback.modalContributeCallback', {
-            Link: (chunks) => (
-              <Link asChild color="gray.300">
-                <MainLink href="/contribute">{chunks}</MainLink>
-              </Link>
-            ),
-          })}
-        </Field.HelperText>
-      </Field.Root>
+      {!isCreateMode && (
+        <Field.Root>
+          <Field.Label color="gray.300">{t('ItemPage.notes')}</Field.Label>
+          <Textarea
+            color={item.comment === itemProps.comment ? 'gray.400' : '#fff'}
+            value={item.comment ?? ''}
+            variant="subtle"
+            name="comment"
+            onChange={handleChange}
+            size="sm"
+          />
+          <Field.HelperText>
+            {t('ItemPage.modalDoNotCopy')}
+            <br />
+            {t.rich('Feedback.modalContributeCallback', {
+              Link: (chunks) => (
+                <Link asChild color="gray.300">
+                  <MainLink href="/contribute">{chunks}</MainLink>
+                </Link>
+              ),
+            })}
+          </Field.HelperText>
+        </Field.Root>
+      )}
     </Flex>
   );
 };
@@ -609,11 +618,13 @@ type TagSelectProps = {
   tags: string[];
   onChange: (tags: string[], type: 'categories' | 'tags' | 'special') => void;
   onSelectChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  /** Admin create-item page: hide fields the create API does not accept. */
+  isCreateMode?: boolean;
 };
 
 export const CategoriesTab = (props: TagSelectProps) => {
   const t = useTranslations();
-  const { item, onChange: handleChange, onSelectChange } = props;
+  const { item, onChange: handleChange, onSelectChange, isCreateMode } = props;
   const [specialTags, setSpecialTags] = useState<string[]>([]);
   const { user } = useAuth();
 
@@ -704,74 +715,76 @@ export const CategoriesTab = (props: TagSelectProps) => {
           </Stack>
         </Field.Root>
       )}
-      <Field.Root>
-        <Field.Label color="gray.300">{t('ItemPage.usage-type')}</Field.Label>
-        <Stack>
-          <Stack direction="row" alignItems={'center'}>
-            <Badge colorPalette="orange">{t('General.readable')}</Badge>
-            <NativeSelect.Root size="sm" variant="subtle">
-              <NativeSelect.Field
-                value={item.useTypes.canRead}
-                onChange={onSelectChange}
-                name="canRead"
-              >
-                <option value="unknown">Unknown</option>
-                <option value="true">True</option>
-                <option value="false">False</option>
-              </NativeSelect.Field>
-              <NativeSelect.Indicator />
-            </NativeSelect.Root>
-          </Stack>
+      {!isCreateMode && (
+        <Field.Root>
+          <Field.Label color="gray.300">{t('ItemPage.usage-type')}</Field.Label>
+          <Stack>
+            <Stack direction="row" alignItems={'center'}>
+              <Badge colorPalette="orange">{t('General.readable')}</Badge>
+              <NativeSelect.Root size="sm" variant="subtle">
+                <NativeSelect.Field
+                  value={item.useTypes.canRead}
+                  onChange={onSelectChange}
+                  name="canRead"
+                >
+                  <option value="unknown">Unknown</option>
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </Stack>
 
-          <Stack direction="row" alignItems={'center'}>
-            <Badge colorPalette="orange">{t('General.edible')}</Badge>
-            <NativeSelect.Root size="sm" variant="subtle">
-              <NativeSelect.Field
-                value={item.useTypes.canEat}
-                onChange={onSelectChange}
-                name="canEat"
-              >
-                <option value="unknown">Unknown</option>
-                <option value="true">True</option>
-                <option value="false">False</option>
-              </NativeSelect.Field>
-              <NativeSelect.Indicator />
-            </NativeSelect.Root>
-          </Stack>
+            <Stack direction="row" alignItems={'center'}>
+              <Badge colorPalette="orange">{t('General.edible')}</Badge>
+              <NativeSelect.Root size="sm" variant="subtle">
+                <NativeSelect.Field
+                  value={item.useTypes.canEat}
+                  onChange={onSelectChange}
+                  name="canEat"
+                >
+                  <option value="unknown">Unknown</option>
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </Stack>
 
-          <Stack direction="row" alignItems={'center'}>
-            <Badge colorPalette="orange">{t('General.playable')}</Badge>
-            <NativeSelect.Root size="sm" variant="subtle">
-              <NativeSelect.Field
-                value={item.useTypes.canPlay}
-                onChange={onSelectChange}
-                name="canPlay"
-              >
-                <option value="unknown">Unknown</option>
-                <option value="true">True</option>
-                <option value="false">False</option>
-              </NativeSelect.Field>
-              <NativeSelect.Indicator />
-            </NativeSelect.Root>
-          </Stack>
+            <Stack direction="row" alignItems={'center'}>
+              <Badge colorPalette="orange">{t('General.playable')}</Badge>
+              <NativeSelect.Root size="sm" variant="subtle">
+                <NativeSelect.Field
+                  value={item.useTypes.canPlay}
+                  onChange={onSelectChange}
+                  name="canPlay"
+                >
+                  <option value="unknown">Unknown</option>
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </Stack>
 
-          <Stack direction="row" alignItems={'center'}>
-            <Badge colorPalette="orange">{t('General.openable')}</Badge>
-            <NativeSelect.Root size="sm" variant="subtle">
-              <NativeSelect.Field
-                value={item.useTypes.canOpen}
-                onChange={onSelectChange}
-                name="canOpen"
-              >
-                <option value="unknown">Unknown</option>
-                <option value="true">True</option>
-                <option value="false">False</option>
-              </NativeSelect.Field>
-              <NativeSelect.Indicator />
-            </NativeSelect.Root>
+            <Stack direction="row" alignItems={'center'}>
+              <Badge colorPalette="orange">{t('General.openable')}</Badge>
+              <NativeSelect.Root size="sm" variant="subtle">
+                <NativeSelect.Field
+                  value={item.useTypes.canOpen}
+                  onChange={onSelectChange}
+                  name="canOpen"
+                >
+                  <option value="unknown">Unknown</option>
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </Stack>
           </Stack>
-        </Stack>
-      </Field.Root>
+        </Field.Root>
+      )}
       {/* <Field.Root>
         <Field.Label color="gray.300">Tags (max. 15)</Field.Label>
         <TagSelect
@@ -824,7 +837,8 @@ type DropAction =
   | { action: 'remove'; poolName: string; drop_id: number }
   | { action: 'set-le'; poolName: string; drop_id: number; isLE: boolean }
   | { action: 'rename-pool'; poolName: string; newPoolName: string }
-  | { action: 'delete-pool'; poolName: string };
+  | { action: 'delete-pool'; poolName: string }
+  | { action: 'move-pool'; poolName: string; newPoolName: string };
 
 export const OpenableTab = (props: OpenableTabProps) => {
   const {
@@ -1015,6 +1029,7 @@ export const OpenableTab = (props: OpenableTabProps) => {
           <PoolEditor
             key={pool.name}
             pool={pool}
+            poolNames={Object.keys(itemOpenable.pools)}
             drops={itemOpenable.drops}
             dropData={dropData}
             sources={sources}
@@ -1029,6 +1044,8 @@ export const OpenableTab = (props: OpenableTabProps) => {
 
 type PoolEditorProps = {
   pool: PrizePoolData;
+  /** Every pool of the item, offered as targets when moving the unknown pool. */
+  poolNames: string[];
   drops: ItemOpenable['drops'];
   dropData: { [id: number]: ItemData };
   sources: Record<number, ItemDropSources> | null;
@@ -1038,8 +1055,8 @@ type PoolEditorProps = {
 };
 
 const PoolEditor = (props: PoolEditorProps) => {
-  const { pool, drops, dropData, sources, isLoading, onAction, onLocalChange } = props;
-  const [mode, setMode] = useState<'view' | 'rename' | 'delete'>('view');
+  const { pool, poolNames, drops, dropData, sources, isLoading, onAction, onLocalChange } = props;
+  const [mode, setMode] = useState<'view' | 'rename' | 'delete' | 'move'>('view');
   const [addAsLE, setAddAsLE] = useState(false);
 
   const poolItems = Array.from(new Set(pool.items));
@@ -1049,6 +1066,14 @@ const PoolEditor = (props: PoolEditorProps) => {
   ).length;
   const otherCount = poolItems.length - manualCount;
   const canEditPool = isLocal || manualCount > 0;
+  const canMoveAll = pool.name === UNKNOWN_POOL && !isLocal;
+  const moveTargets = poolNames.filter((name) => name !== pool.name);
+
+  const moveAll = (newPoolName: string) => {
+    setMode('view');
+    if (newPoolName === pool.name) return;
+    onAction({ action: 'move-pool', poolName: pool.name, newPoolName });
+  };
 
   const rename = (newPoolName: string) => {
     setMode('view');
@@ -1089,7 +1114,36 @@ const PoolEditor = (props: PoolEditorProps) => {
             </Button>
           </HStack>
         )}
+        {canMoveAll && mode === 'view' && (
+          <Button size="xs" variant="ghost" onClick={() => setMode('move')}>
+            Move all
+          </Button>
+        )}
       </Flex>
+
+      {mode === 'move' && (
+        <Flex flexFlow="column" gap={2} bg="blackAlpha.300" p={2} borderRadius="md">
+          <Text fontSize="xs" color="gray.300">
+            Pins all {poolItems.length} drop(s) of this pool to the target pool with manual rows.
+          </Text>
+          {moveTargets.length > 0 && (
+            <HStack gap={1} flexWrap="wrap">
+              <Text fontSize="xs">Existing pool:</Text>
+              {moveTargets.map((name) => (
+                <Button key={name} size="xs" variant="outline" onClick={() => moveAll(name)}>
+                  {name}
+                </Button>
+              ))}
+            </HStack>
+          )}
+          <Text fontSize="xs">Or a new pool:</Text>
+          <CreatePrizePoolForm
+            submitLabel="Move to new pool"
+            onSubmit={moveAll}
+            onCancel={() => setMode('view')}
+          />
+        </Flex>
+      )}
 
       {mode === 'rename' && (
         <Flex flexFlow="column" gap={2} bg="blackAlpha.300" p={2} borderRadius="md">

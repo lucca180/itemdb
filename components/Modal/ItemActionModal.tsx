@@ -13,6 +13,7 @@ import axios from 'axios';
 import { useRef, useState } from 'react';
 import { ListItemInfo, ObligatoryUserList, UserList, UserListLite } from '@types';
 import ListSelect from '@components/UserLists/ListSelect';
+import { isDynamicActionDisabled } from '@utils/utils';
 import { useTranslations } from 'next-intl';
 
 export type ItemActionModalProps = {
@@ -99,7 +100,11 @@ const ItemActionModal = (props: ItemActionModalProps) => {
               {!loading && !error && ['copy', 'move'].includes(action) && (
                 <Field.Root>
                   <Field.Label color="gray.300">{t('Lists.destination')}</Field.Label>
-                  <ListSelect onChange={setDest} portalRef={contentRef} />
+                  <ListSelect
+                    onChange={setDest}
+                    portalRef={contentRef}
+                    isItemDisabled={(dest) => isDynamicActionDisabled('add', dest.dynamicType)}
+                  />
                   <Field.HelperText>{t('Lists.move-text')}</Field.HelperText>
                 </Field.Root>
               )}

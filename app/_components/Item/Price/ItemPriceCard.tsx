@@ -21,7 +21,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { useFormatter } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import {
   prefetchItemPriceHistory,
   usePrefetchItemTradeLists,
@@ -33,7 +33,7 @@ import {
 import Image from 'next/image';
 import axios from 'axios';
 import { MdHelp, MdOutlineAdd } from 'react-icons/md';
-import { LuAtom } from 'react-icons/lu';
+import { LuAtom, LuMessageSquarePlus } from 'react-icons/lu';
 import { FaFlag } from 'react-icons/fa';
 import { BiEditAlt } from 'react-icons/bi';
 import MainLink from '@components/Utils/MainLink';
@@ -48,6 +48,7 @@ import type { WrongPriceModalProps } from '@components/Modal/WrongPriceModal';
 import type { SaleStatusModalProps } from '@components/Modal/SaleStatusModal';
 import type { CreatePriceModalModalProps } from '@components/Modal/CreatePriceModal';
 import type { SeenHistoryModalProps } from '@components/SeenHistory/SeenHistoryModal';
+import type { SuggestPriceContextModalProps } from '@components/Modal/SuggestPriceContextModal';
 import type { ItemData, PriceData, PricingInfo } from '@types';
 import type {
   ItemPriceEmptyLabels,
@@ -97,6 +98,12 @@ const SeenHistoryModal = dynamic<SeenHistoryModalProps>(
 );
 const AdminEditPriceModal = dynamic<AdminEditPriceModalProps>(
   () => import('@components/Modal/AdminEditPriceModal'),
+  {
+    ssr: false,
+  }
+);
+const SuggestPriceContextModal = dynamic<SuggestPriceContextModalProps>(
+  () => import('@components/Modal/SuggestPriceContextModal'),
   {
     ssr: false,
   }
@@ -252,7 +259,10 @@ type ItemPriceModalContextValue = {
 
 const ItemPriceModalContext = createContext<ItemPriceModalContextValue | null>(null);
 
-type PriceEditContextValue = { onEdit: (price: PriceData) => void };
+type PriceEditContextValue = {
+  onEdit: (price: PriceData) => void;
+  onSuggestContext: (price: PriceData) => void;
+};
 const PriceEditContext = createContext<PriceEditContextValue | null>(null);
 
 function useItemPriceModals() {
@@ -269,9 +279,14 @@ function usePriceEdit() {
 
 export function ItemPriceModalProvider({
   item,
+  price,
+  previousPrice,
   children,
 }: {
   item: ItemData;
+  /** Latest price and the one before it - used by the wrong price modal. */
+  price?: PriceData;
+  previousPrice?: PriceData;
   children: ReactNode;
 }) {
   const [wrongPriceOpen, setWrongPriceOpen] = useState(false);
@@ -280,6 +295,7 @@ export function ItemPriceModalProvider({
   const [createPriceOpen, setCreatePriceOpen] = useState(false);
   const [seenHistory, setSeenHistory] = useState<'tp' | 'auction' | 'restock' | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
+  const [suggestContextPrice, setSuggestContextPrice] = useState<PriceData | null>(null);
   const [wrongPriceData, setWrongPriceData] = useState<PricingInfo>();
   const [wrongPriceLoading, setWrongPriceLoading] = useState(false);
 
@@ -304,7 +320,9 @@ export function ItemPriceModalProvider({
         openSeenHistory: setSeenHistory,
       }}
     >
-      <PriceEditContext.Provider value={{ onEdit: setSelectedPrice }}>
+      <PriceEditContext.Provider
+        value={{ onEdit: setSelectedPrice, onSuggestContext: setSuggestContextPrice }}
+      >
         {!!selectedPrice && (
           <AdminEditPriceModal
             isOpen
@@ -313,9 +331,19 @@ export function ItemPriceModalProvider({
             item={item}
           />
         )}
+        {!!suggestContextPrice && (
+          <SuggestPriceContextModal
+            isOpen
+            price={suggestContextPrice}
+            onClose={() => setSuggestContextPrice(null)}
+            item={item}
+          />
+        )}
         {wrongPriceOpen && (
           <WrongPriceModal
             item={item}
+            price={price}
+            previousPrice={previousPrice}
             data={wrongPriceData}
             isLoading={wrongPriceLoading}
             isOpen={wrongPriceOpen}
@@ -365,6 +393,32 @@ export function PriceTableEditButton({ price }: { price: PriceData }) {
       aria-label="Edit"
     >
       <BiEditAlt />
+    </IconButton>
+  );
+}
+
+/** Opens the "suggest price context" modal for one price row (non-admins). */
+export function PriceTableSuggestButton({ price }: { price: PriceData }) {
+  const t = useTranslations();
+  const { onSuggestContext } = usePriceEdit();
+  const label = t('ItemPage.suggest-price-context');
+
+  return (
+    <IconButton
+      onClick={() => {
+        window.umami?.track('suggest-price-context-open', {
+          hasContext: !!price.context,
+          isLatest: price.isLatest,
+        });
+        onSuggestContext(price);
+      }}
+      size="2xs"
+      colorPalette="whiteAlpha"
+      variant="ghost"
+      aria-label={label}
+      title={label}
+    >
+      <LuMessageSquarePlus />
     </IconButton>
   );
 }

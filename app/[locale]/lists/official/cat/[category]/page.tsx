@@ -1,71 +1,28 @@
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import { SetMainColor } from '@components/Layout/SetMainColor';
-import { getStaticAppMetadata } from '@app/utils/appPage';
+import { permanentRedirect, redirect } from 'next/navigation';
 import { routing, withLocalePrefix, type AppLocale } from '@utils/locales';
-import { getTranslations } from 'next-intl/server';
-import { listCategoriesData } from '@utils/lists/listCategoriesData';
-import { loadOfficialListsCatData } from '../../loadOfficialLists';
-import { OfficialListsCatPageClient } from './OfficialListsCatPageClient';
+import {
+  getOfficialCategory,
+  officialCategorySlugs,
+} from '@app/[locale]/lists/official/_categories';
 
-const ogImage = {
-  url: 'https://images.neopets.com/games/tradingcards/premium/0911.gif',
-  width: 150,
-  height: 150,
-};
-
-type OfficialListsCatPageProps = {
+type LegacyOfficialCatPageProps = {
   params: Promise<{ locale: string; category: string }>;
 };
 
-export async function generateMetadata({ params }: OfficialListsCatPageProps): Promise<Metadata> {
-  const { category } = await params;
-  const catInfo = listCategoriesData[category];
-  if (!catInfo) return {};
-
-  const t = await getTranslations();
-  const pageTitle = catInfo.seoTitle ?? `${catInfo.name} - ${t('General.official-lists')}`;
-  const description = catInfo.seoTitle ? catInfo.description : t('Lists.officialList-description');
-
-  const metadata = await getStaticAppMetadata({
-    title: pageTitle,
-    description,
-    pathname: `/lists/official/cat/${category}`,
-  });
-
-  return {
-    ...metadata,
-    ...(catInfo.seoTitle ? { title: { absolute: catInfo.seoTitle } } : {}),
-    openGraph: {
-      ...metadata.openGraph,
-      images: [ogImage],
-    },
-  };
-}
-
-export default async function OfficialListsCatPage({ params }: OfficialListsCatPageProps) {
+/** Legacy `/lists/official/cat/<slug>` → `/lists/official/<slug>`. */
+export default async function LegacyOfficialCatPage({ params }: LegacyOfficialCatPageProps) {
   const { locale, category } = await params;
+  const config = getOfficialCategory(category);
 
-  if (!listCategoriesData[category]) {
+  if (!config) {
     redirect(withLocalePrefix('/lists/official?cat=' + category, locale as AppLocale));
   }
 
-  const data = await loadOfficialListsCatData(category);
-  if (!data) {
-    redirect(withLocalePrefix('/lists/official?cat=' + category, locale as AppLocale));
-  }
-
-  const mainColor = data.catInfo.color + 'c7';
-
-  return (
-    <>
-      <SetMainColor color={mainColor} />
-      <OfficialListsCatPageClient lists={data.lists} locale={locale} selectedCategory={category} />
-    </>
-  );
+  permanentRedirect(withLocalePrefix(`/lists/official/${config.slug}`, locale as AppLocale));
 }
 
 export function generateStaticParams() {
-  const categories = Object.keys(listCategoriesData);
-  return routing.locales.flatMap((locale) => categories.map((category) => ({ locale, category })));
+  return routing.locales.flatMap((locale) =>
+    officialCategorySlugs.map((category) => ({ locale, category }))
+  );
 }

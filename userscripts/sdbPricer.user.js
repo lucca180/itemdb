@@ -1,13 +1,13 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      2.1.1
+  // @version      2.1.2
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb
   // @website      https://itemdb.com.br
   // @match        *://*.itemdb.com.br/*
   // @match        *://*.neopets.com/safetydeposit.phtml*
-  // @require      https://itemdb.com.br/js/script-utils.js?v2
+  // @require      https://itemdb.com.br/js/script-utils.js?v3
   // @icon         https://itemdb.com.br/favicon.ico
   // @connect      itemdb.com.br
   // @grant        GM_xmlhttpRequest

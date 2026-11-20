@@ -28,5 +28,5 @@ export const SAMPLE_COLLECTIONS: readonly GoalCollectionSlug[] = [
   'all-collectibles',
 ];
 
-export const STAMP_ALBUMS_HREF = '/lists/official/cat/stamps';
+export const STAMP_ALBUMS_HREF = '/lists/official/stamps';
 export const collectionHref = (slug: GoalCollectionSlug) => `/lists/official/${slug}`;

@@ -6,7 +6,10 @@ import { LuMinus } from 'react-icons/lu';
 import type { getFormatter } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
 import Markdown from '@components/Utils/Markdown';
-import { PriceTableEditButton } from '@app/_components/Item/Price/ItemPriceCard';
+import {
+  PriceTableEditButton,
+  PriceTableSuggestButton,
+} from '@app/_components/Item/Price/ItemPriceCard';
 import {
   buildPriceTableData,
   getNextPrice,
@@ -27,6 +30,8 @@ type PriceTableViewProps = {
   /** True when `data` is a partial slice (e.g. summary) of the full price history. */
   truncated?: boolean;
   isAdmin?: boolean;
+  /** Shows the "suggest price context" button on price rows for non-admins (item page). */
+  showSuggest?: boolean;
   /** Item accent color used for price-row borders and context link tint. */
   itemColor: string;
   t: PriceTableTranslate;
@@ -84,11 +89,18 @@ function formatMarkerDate(price: PriceOrMarker, format: PriceTableFormat) {
   return `${start} - ${end}`;
 }
 
+/** Admins edit the price; everyone else suggests its context. */
+function PriceTableActionButton({ price, isAdmin }: { price: PriceData; isAdmin?: boolean }) {
+  if (isAdmin) return <PriceTableEditButton price={price} />;
+  return <PriceTableSuggestButton price={price} />;
+}
+
 function PriceTableRow({
   price,
   sortedData,
   index,
   isAdmin,
+  showSuggest,
   itemColor,
   t,
   format,
@@ -97,17 +109,20 @@ function PriceTableRow({
   sortedData: PriceOrMarker[];
   index: number;
   isAdmin?: boolean;
+  showSuggest?: boolean;
   itemColor: string;
   t: PriceTableTranslate;
   format: PriceTableFormat;
 }) {
   const odd = index % 2 === 0 || undefined;
   const nextPrice = getNextPrice(sortedData, index);
+  // 4th column: admin edit or user "suggest context"
+  const hasActions = !!isAdmin || !!showSuggest;
 
   if (price.marker) {
     return (
       <Table.Row h={42} {...rowProps(odd, `${price.color}85`, price.color)}>
-        <Table.Cell colSpan={isAdmin ? 4 : 3}>
+        <Table.Cell colSpan={hasActions ? 4 : 3}>
           <Flex flexFlow="column" alignItems="center" gap={2} data-marker-body>
             {!!price.badgeText && <Badge>{price.badgeText}</Badge>}
             {!!price.title && (
@@ -136,7 +151,7 @@ function PriceTableRow({
   if (price.value === 0) {
     return (
       <Table.Row h={50} {...rowProps(odd, itemColor)}>
-        <Table.Cell colSpan={isAdmin ? 3 : 4}>
+        <Table.Cell colSpan={hasActions ? 3 : 4}>
           <Flex flexFlow="column" alignItems="center" gap={2}>
             {format.dateTime(new Date(price.addedAt!), {
               year: 'numeric',
@@ -148,9 +163,9 @@ function PriceTableRow({
             </Text>
           </Flex>
         </Table.Cell>
-        {isAdmin && (
+        {hasActions && (
           <Table.Cell>
-            <PriceTableEditButton price={price as PriceData} />
+            <PriceTableActionButton price={price as PriceData} isAdmin={isAdmin} />
           </Table.Cell>
         )}
       </Table.Row>
@@ -211,9 +226,9 @@ function PriceTableRow({
             day: 'numeric',
           })}
         </Table.Cell>
-        {isAdmin && (
+        {hasActions && (
           <Table.Cell>
-            <PriceTableEditButton price={price as PriceData} />
+            <PriceTableActionButton price={price as PriceData} isAdmin={isAdmin} />
           </Table.Cell>
         )}
       </Table.Row>
@@ -248,6 +263,7 @@ export function PriceTableView({
   sortedData: sortedDataProp,
   truncated = false,
   isAdmin,
+  showSuggest,
   itemColor,
   t,
   format,
@@ -278,6 +294,7 @@ export function PriceTableView({
               sortedData={sortedData}
               index={index}
               isAdmin={isAdmin}
+              showSuggest={showSuggest}
               itemColor={itemColor}
               t={t}
               format={format}

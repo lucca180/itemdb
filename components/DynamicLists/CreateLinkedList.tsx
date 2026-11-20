@@ -16,16 +16,26 @@ type CreateLinkedListButtonProps = {
   isImport?: boolean;
   onCreate?: (list: UserList) => void;
   isLoading?: boolean;
+  /** The list can back a Goal Counter */
+  showGoalStep?: boolean;
 };
 
 export const CreateLinkedListButton = (props: CreateLinkedListButtonProps) => {
   const t = useTranslations();
   const { open, onOpen, onClose } = useDisclosure();
-  const { list, isImport, onCreate, isLoading } = props;
+  const { list, isImport, onCreate, isLoading, showGoalStep } = props;
 
   return (
     <>
-      {open && <LinkedListModal isOpen={open} onClose={onClose} list={list} onCreate={onCreate} />}
+      {open && (
+        <LinkedListModal
+          isOpen={open}
+          onClose={onClose}
+          list={list}
+          onCreate={onCreate}
+          showGoalStep={showGoalStep}
+        />
+      )}
 
       <Button
         variant={!isImport ? ['solid', 'ghost'] : 'solid'}

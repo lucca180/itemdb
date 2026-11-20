@@ -6,6 +6,7 @@ import type { ItemV2For } from '@types';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import { ItemCardBadgeV2 } from '@components/Items/v2/ItemCardBadgeV2';
 import { ItemImageV2 } from '@components/Items/v2/ItemImageV2';
+import { LeavingDayBadge } from '@components/Items/LeavingDayBadge';
 import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
 import MainLink from '@components/Utils/MainLink';
 import { GoChevronLeft, GoChevronRight } from 'react-icons/go';
@@ -271,10 +272,13 @@ function HomeItemInner({
                         <ItemCardBadgeV2 item={item} />
                       </Flex>
                     </Flex>
-                    {leaveDateLabel && (
-                      <Text fontSize="xs" color="whiteAlpha.700">
-                        {leaveDateLabel}
-                      </Text>
+                    {leaveDateLabel && saleEnd && (
+                      <Flex alignItems="center" gap={2} flexWrap="wrap">
+                        <LeavingDayBadge saleEnd={saleEnd} size="sm" />
+                        <Text fontSize="xs" color="whiteAlpha.700">
+                          {leaveDateLabel}
+                        </Text>
+                      </Flex>
                     )}
                   </>
                 ) : (

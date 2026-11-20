@@ -1,9 +1,10 @@
 import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
+import { cacheLifeNotFound } from '@app/utils/cacheLifeNotFound';
 import { getItemForPage, getItemInternalId } from '@app/server/items';
 import { getAuctionData, getTradeData } from '@app/server/items/tradingHistoryData';
 import { getLebronItemData } from '@pages/api/v1/items/[id_name]/[tradings]';
-import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
+import { ListService } from '@services/ListService';
 import { getItemPrices } from '@pages/api/v1/items/[id_name]/prices';
 import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';
 import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
@@ -53,10 +54,13 @@ import {
  */
 export const getCachedItem = cache(async (internalId: number) => {
   'use cache';
-  cacheLife('itemFast');
   const item = await getItemForPage(internalId, true);
-  if (!item) return null;
+  if (!item) {
+    cacheLifeNotFound();
+    return null;
+  }
 
+  cacheLife('itemFast');
   cacheTag(itemRootTag(item.internal_id));
   applyItemSectionCacheTags(item.internal_id);
   return item;
@@ -67,8 +71,8 @@ export const getCachedItemInternalId = cache(async (slugOrName: string) => {
   const internalId = await getItemInternalId(slugOrName);
 
   if (!internalId) {
-    // short-lived so newly added items don't 404 for long
-    cacheLife('itemFast');
+    // never cached so newly added items don't 404
+    cacheLifeNotFound();
     return null;
   }
 
@@ -84,7 +88,11 @@ const loadItemListCollections = cache(async (internalId: number, includeTrade: b
   } else {
     applyItemSectionCacheTags(internalId, 'lists');
   }
-  return getItemLists(internalId, { includeOfficial: true, includeTrade });
+  return ListService.getItemLists(internalId, {
+    includeOfficial: true,
+    includeTrade,
+    rankOfficial: true,
+  });
 });
 
 export const getAllOfficialItemLists = cache(async (internalId: number, includeTrade = false) => {

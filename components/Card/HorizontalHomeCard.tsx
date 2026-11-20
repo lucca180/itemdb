@@ -198,6 +198,54 @@ export async function HalloweenHomeCard({ children }: { children: ReactNode }) {
   );
 }
 
+export async function BirthdayHomeCard({ children }: { children: ReactNode }) {
+  const t = await getTranslations();
+  return (
+    <HorizontalHomeCard
+      color="#8ED1FC"
+      bgOpacity="0.4"
+      h={50}
+      w={50}
+      image="https://images.neopets.com/themes/h5/basic/images/birthday25-icon.png"
+      viewAllLink="/lists/official/neopets-anniversary"
+      title={'Birthday Celebration'}
+      isSmall
+      utm_content="birthday-lists"
+      viewAllText={t('General.view-all')}
+      css={{
+        position: 'relative',
+        isolation: 'isolate',
+        overflow: 'hidden',
+        '& .card-icon': {
+          filter: 'drop-shadow(0 0 5px #8ED1FC)',
+        },
+        '& h2': {
+          textShadow: '0 0 10px #8ED1FC',
+        },
+        '&::before': {
+          content: "''",
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: "url('https://images.neopets.com/np27birthday/hub/birthday-bg.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.5,
+          filter: 'blur(10px) brightness(0.5)',
+          zIndex: -1,
+        },
+      }}
+      innerStyle={{
+        border: `2px solid ${Color('#fff').alpha(0.1).hexa()}`,
+      }}
+    >
+      {children}
+    </HorizontalHomeCard>
+  );
+}
+
 export async function WinterStarlightCard({ children }: { children: ReactNode }) {
   const t = await getTranslations();
   return (

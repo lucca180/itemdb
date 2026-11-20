@@ -8,18 +8,20 @@ import { getStaticAppMetadata } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { listPendingSuggestions } from '@services/ListSuggestionService';
-import { ListSuggestionsDashboardClient } from './ListSuggestionsDashboardClient';
+import { listPendingPriceContextSuggestions } from '@services/PriceContextSuggestionService';
+import { SuggestionsTabsClient } from './SuggestionsTabsClient';
 
 /**
- * Admin queue of "missing item" suggestions for official lists.
- * Server component: loads the pending suggestions and hands them to the dashboard client.
+ * Admin queue of user suggestions: "missing item" suggestions for official lists and price
+ * context suggestions for price entries (one tab each).
+ * Server component: loads the pending suggestions and hands them to the tabs client.
  */
 const mainColor = '#557f8fc7';
 
 export async function generateMetadata(): Promise<Metadata> {
   return await getStaticAppMetadata({
-    title: 'Official List Suggestions',
-    description: 'Admin tool for reviewing missing item suggestions on official lists.',
+    title: 'User Suggestions',
+    description: 'Admin tool for reviewing official list and price context suggestions.',
     pathname: '/admin/list-suggestions',
     noindex: true,
     nofollow: true,
@@ -56,12 +58,12 @@ async function ListSuggestionsPageContent() {
             color="#557f8f"
           >
             <Heading as="h1" size="lg">
-              Official List Suggestions
+              User Suggestions
             </Heading>
             <Text fontSize={{ base: 'sm', md: undefined }}>
-              Items users think are missing from official lists, grouped by list. Approving adds the
-              item to the list; rejecting just dismisses the requests. Items already in the list are
-              hidden automatically.
+              Items users think are missing from official lists, and context users suggested for
+              price entries. Approving adds the item to the list or saves the price context;
+              rejecting just dismisses the requests.
             </Text>
           </HeaderCard>
           <ListSuggestionsQueueContent />
@@ -72,9 +74,12 @@ async function ListSuggestionsPageContent() {
 }
 
 async function ListSuggestionsQueueContent() {
-  const groups = await listPendingSuggestions();
+  const [listGroups, priceContextGroups] = await Promise.all([
+    listPendingSuggestions(),
+    listPendingPriceContextSuggestions(),
+  ]);
 
-  return <ListSuggestionsDashboardClient groups={groups} />;
+  return <SuggestionsTabsClient listGroups={listGroups} priceContextGroups={priceContextGroups} />;
 }
 
 export function generateStaticParams() {

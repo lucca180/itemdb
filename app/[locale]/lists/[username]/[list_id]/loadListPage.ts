@@ -183,6 +183,11 @@ export async function getSimilarListsForList(list: UserList): Promise<UserList[]
   return getSimilarLists(list, 3);
 }
 
+/** Depends on the viewer (private sources), so it stays out of `core.list`, a `'use cache'` key. */
+export function getListDynamicSource(core: ListCore) {
+  return ListService.initUser(core.viewer).getDynamicSource(core.list);
+}
+
 export async function getListStats(core: ListCore) {
   const { list, viewer, isOwner } = core;
 

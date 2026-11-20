@@ -3,6 +3,11 @@ import React, { useState, useSyncExternalStore } from 'react';
 import { Link } from '@i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { localizeInternalHref, type AppLocale } from '@utils/locales';
+import { LAYOUT_INK_CSS_VAR, LAYOUT_INK_HOVER_CSS_VAR } from '@components/Layout/LayoutFrame';
+
+/** Nav text follows the tint (dark on light tints); see SetMainColor. */
+const INK = `var(${LAYOUT_INK_CSS_VAR})`;
+const INK_HOVER = { bg: `var(${LAYOUT_INK_HOVER_CSS_VAR})` };
 
 type DropdownButtonProps = {
   label: string;
@@ -55,6 +60,9 @@ export const DropdownButton = (props: DropdownButtonProps) => {
             onMouseLeave={() => setIsOpen(false)}
             px={3}
             h={8}
+            color={INK}
+            _hover={INK_HOVER}
+            _expanded={INK_HOVER}
             outline={'none'}
             _focus={{ outline: 'none' }}
           >
@@ -73,6 +81,9 @@ export const DropdownButton = (props: DropdownButtonProps) => {
             onMouseLeave={() => setIsOpen(false)}
             px={3}
             h={8}
+            color={INK}
+            _hover={INK_HOVER}
+            _expanded={INK_HOVER}
             outline={'none'}
             _focus={{ outline: 'none' }}
           >
@@ -121,10 +132,12 @@ export const DropdownOption = (props: DropdownOptionProps) => {
       py={4}
       px={3}
       borderRadius={0}
+      color={INK}
+      _hover={INK_HOVER}
       data-umami-event="dropdown-link"
       data-umami-event-label={trackEventLabel}
       outline={'none'}
-      _focus={{ outline: 'none', bg: 'whiteAlpha.200' }}
+      _focus={{ outline: 'none', ...INK_HOVER }}
     >
       {props.hardNavigation ? (
         <a href={hardHref}>

@@ -6,7 +6,7 @@ import { tz } from '@date-fns/tz';
 import { UTCDate } from '@date-fns/utc';
 import { Prisma } from '@prisma/generated/client';
 import prisma from '@utils/prisma';
-import { itemRootTag, itemSectionTag } from '@utils/appCacheTags';
+import { itemSectionTag } from '@utils/appCacheTags';
 import {
   MARKER_COLOR_PATTERN,
   MAX_MARKER_BADGE_LENGTH,
@@ -15,6 +15,7 @@ import {
   type ManualMarkerAdminDTO,
   type ManualMarkerCreateRequest,
   type ManualMarkerFields,
+  type ManualMarkerListDTO,
   type ManualMarkerUpdateRequest,
 } from './priceMarkersShared';
 
@@ -25,6 +26,7 @@ export {
   MAX_MARKER_TITLE_LENGTH,
   type ManualMarkerAdminDTO,
   type ManualMarkerCreateRequest,
+  type ManualMarkerListDTO,
   type ManualMarkerUpdateRequest,
 } from './priceMarkersShared';
 
@@ -40,9 +42,15 @@ const markerInclude = {
   },
 } satisfies Prisma.ManualPriceMarkerInclude;
 
+const markerListInclude = {
+  _count: { select: { items: true } },
+} satisfies Prisma.ManualPriceMarkerInclude;
+
 type ManualMarkerWithItems = Prisma.ManualPriceMarkerGetPayload<{ include: typeof markerInclude }>;
 
-function serializeMarker(marker: ManualMarkerWithItems): ManualMarkerAdminDTO {
+function serializeMarkerFields(
+  marker: Omit<ManualMarkerWithItems, 'items'>
+): Omit<ManualMarkerAdminDTO, 'items'> {
   return {
     internal_id: marker.internal_id,
     badgeText: marker.badgeText,
@@ -55,6 +63,12 @@ function serializeMarker(marker: ManualMarkerWithItems): ManualMarkerAdminDTO {
     createdBy: marker.createdBy,
     createdAt: marker.createdAt.toJSON(),
     updatedAt: marker.updatedAt.toJSON(),
+  };
+}
+
+function serializeMarker(marker: ManualMarkerWithItems): ManualMarkerAdminDTO {
+  return {
+    ...serializeMarkerFields(marker),
     items: marker.items
       .map((row) => ({
         internal_id: row.item.internal_id,
@@ -65,13 +79,16 @@ function serializeMarker(marker: ManualMarkerWithItems): ManualMarkerAdminDTO {
   };
 }
 
-export async function listManualMarkers(): Promise<ManualMarkerAdminDTO[]> {
+export async function listManualMarkers(): Promise<ManualMarkerListDTO[]> {
   const markers = await prisma.manualPriceMarker.findMany({
-    include: markerInclude,
+    include: markerListInclude,
     orderBy: { createdAt: 'desc' },
   });
 
-  return markers.map(serializeMarker);
+  return markers.map((marker) => ({
+    ...serializeMarkerFields(marker),
+    itemCount: marker._count.items,
+  }));
 }
 
 export async function getManualMarkerById(id: number): Promise<ManualMarkerAdminDTO | null> {
@@ -221,10 +238,10 @@ export async function deleteManualMarker(id: number): Promise<ManualMarkerDelete
   return { marker: snapshot, affectedItemIds };
 }
 
+/** Section tag only: the root tag would also invalidate every other cached section of the item. */
 async function revalidateMarkersForItems(itemIds: number[]): Promise<void> {
   for (const itemId of itemIds) {
     revalidateTag(itemSectionTag(itemId, 'markers'), 'max');
-    revalidateTag(itemRootTag(itemId), 'max');
   }
 }
 

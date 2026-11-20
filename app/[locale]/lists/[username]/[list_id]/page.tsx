@@ -14,6 +14,7 @@ import { getTranslations } from 'next-intl/server';
 import { stripMarkdown } from '@utils/utils';
 import {
   getListCore,
+  getListDynamicSource,
   getListFullItems,
   getListMatches,
   getListPreload,
@@ -85,10 +86,11 @@ async function ListPageBody({
   list_id: string;
   core: ListCore;
 }) {
-  const [initialPreload, matches, similarLists, goalCounter] = await Promise.all([
+  const [initialPreload, matches, similarLists, dynamicSource, goalCounter] = await Promise.all([
     getListPreload(core),
     getListMatches(core),
     getSimilarListsForList(core.list),
+    getListDynamicSource(core),
     // official album/collection lists show an informational goal counter modal to everyone;
     // on checklists only the owner gets the goal counter button
     core.list.official
@@ -116,6 +118,7 @@ async function ListPageBody({
       initialPreload={initialPreload}
       matches={matches}
       similarLists={similarLists}
+      dynamicSource={dynamicSource}
       goalCounter={goalCounter}
     >
       {useSuspenseFullLoad ? (
