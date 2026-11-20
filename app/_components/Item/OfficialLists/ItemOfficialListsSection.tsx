@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import ItemOfficialLists from '@components/Items/ItemOfficialList';
-import { getOfficialItemLists } from '@app/_components/Item/loadUtils';
+import { getOfficialItemLists, loadItemListContexts } from '@app/_components/Item/loadUtils';
 import { getCachedNow } from '@utils/getCachedNow';
 import { shouldShowTradeLists } from '@utils/utils';
 import { DeferredItemSection } from '@app/_components/Item/page/DeferredItemSection';
@@ -23,10 +23,16 @@ async function ItemOfficialListsSectionContent({ item }: Props) {
     item.internal_id,
     shouldShowTradeLists(item, await getCachedNow())
   );
+  const contexts = lists.length
+    ? await loadItemListContexts(
+        item.internal_id,
+        lists.map((list) => list.internal_id)
+      )
+    : {};
   // an empty list still renders: the card becomes a "make your list official" CTA
   return (
     <DeferredItemSection>
-      <ItemOfficialLists item={item} lists={lists} />
+      <ItemOfficialLists item={item} lists={lists} contexts={contexts} />
     </DeferredItemSection>
   );
 }

@@ -48,6 +48,13 @@ import {
 import { fetchListItemsV2, type FetchListItemsV2Result } from '@services/list/listItemsV2';
 import { getItemLists } from '@services/list/itemListsQuery';
 import { getListPriceHistory } from '@services/list/listPriceHistory';
+import {
+  createListContext,
+  deleteListContext,
+  getItemListContexts,
+  getListContexts,
+  updateListContext,
+} from '@services/list/listContexts';
 
 export { LIST_ITEMS_MAX_LIMIT } from '@services/list/listItemsV2';
 import { adminListSeoWriteData, getListSeo } from '@services/list/listSeo';
@@ -68,6 +75,8 @@ export {
 } from '@services/list/itemListsQuery';
 export type { GetItemListsOptions, ItemListCollections } from '@services/list/itemListsQuery';
 export type { PutListItemInput, DynamicItemChanges };
+export { ListContextError } from '@services/list/listContexts';
+export type { ListContextMutationResult } from '@services/list/listContexts';
 
 export class ListService {
   user: User | null = null;
@@ -85,6 +94,13 @@ export class ListService {
   static getItemLists = getItemLists;
   /** Price history of an already-authorized list's visible NP items. */
   static getListPriceHistory = getListPriceHistory;
+  /** Contexts of an already-authorized list. Hidden items only for the owner/admin. */
+  static getListContexts = getListContexts;
+  /** Contexts that include one item, per list id (item page official list cards). */
+  static getItemListContexts = getItemListContexts;
+  static createListContext = createListContext;
+  static updateListContext = updateListContext;
+  static deleteListContext = deleteListContext;
 
   static init() {
     return ListService.initUser(null);
@@ -245,6 +261,11 @@ export class ListService {
     if (list.official) return true;
     if (viewer && list.user_id === viewer.id) return true;
     return false;
+  }
+
+  /** Contexts of a list as this viewer may see them (hidden items only for the owner/admin). */
+  async getListContextsFor(list: UserList) {
+    return getListContexts(list.internal_id, this.canViewHiddenListItems(list));
   }
 
   private canViewHiddenListItems(list: UserList): boolean {

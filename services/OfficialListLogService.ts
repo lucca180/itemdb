@@ -20,7 +20,10 @@ export type OfficialListAction =
   | 'setDynamic'
   | 'reorder'
   | 'createList'
-  | 'deleteList';
+  | 'deleteList'
+  | 'createContext'
+  | 'updateContext'
+  | 'deleteContext';
 
 /**
  * Writes one `officialList` log row. No-op for non-official lists, so callers can use it

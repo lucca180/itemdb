@@ -525,6 +525,8 @@ model UserList {
 
   avatarSolutions AvatarSolution[]
 
+  contexts ListContext[]
+
   @@unique([slug, user_id])
   @@index([official_tag, official])
   @@index([official, createdAt])
@@ -578,8 +580,40 @@ model ListItems {
   seriesStart DateTime?
   seriesEnd   DateTime?
 
+  contexts ListContextItem[]
+
   @@unique([list_id, item_iid])
   @@index([list_id, isHidden])
+}
+
+// Shared notes ("contexts") attached to some items of a list, e.g. "Bonus 1" or
+// "Stockings 1-5". Many-to-many with ListItems, like ManualPriceMarker/Item.
+model ListContext {
+  internal_id Int      @id @default(autoincrement())
+  list_id     Int
+  list        UserList @relation(fields: [list_id], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  badgeText   String   @db.VarChar(191)
+  title       String?  @db.VarChar(191)
+  description String?  @db.Text
+  color       String   @db.VarChar(9)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items ListContextItem[]
+
+  @@index([list_id])
+}
+
+model ListContextItem {
+  internal_id Int         @id @default(autoincrement())
+  context_id  Int
+  context     ListContext @relation(fields: [context_id], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  listItem_id Int
+  listItem    ListItems   @relation(fields: [listItem_id], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([context_id, listItem_id])
+  @@index([listItem_id])
 }
 
 model OwlsPrice {

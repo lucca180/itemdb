@@ -310,6 +310,22 @@ export type UserList = {
   highlightText: string | null;
 };
 
+/** Shared note attached to some items of a list (`ListContext` + `ListContextItem`). */
+export type ListContext = {
+  internal_id: number;
+  list_id: number;
+  badgeText: string;
+  /** Markdown */
+  title: string | null;
+  /** Markdown */
+  description: string | null;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+  /** `Items.internal_id` of the list items in this context. */
+  itemIids: number[];
+};
+
 export type UserListLite = Pick<
   UserList,
   'internal_id' | 'name' | 'purpose' | 'official' | 'dynamicType' | 'linkedListId' | 'updatedAt'

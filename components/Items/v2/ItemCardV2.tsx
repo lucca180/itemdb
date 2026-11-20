@@ -31,6 +31,11 @@ export type ItemCardV2Props = {
   highlight?: boolean;
   utm_content?: string;
   uniqueID: string;
+  /**
+   * Rendered over the card's top-right corner, outside the item link (so it can hold its own
+   * buttons). The element positions itself, e.g. `ListContextCorner`.
+   */
+  corner?: React.ReactNode;
 };
 
 const ItemCardV2 = (props: ItemCardV2Props) => {
@@ -158,7 +163,7 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
     </Box>
   );
 
-  return (
+  const card = (
     <>
       {isContextMenuLoaded && (
         <ItemCtxMenuV2
@@ -204,6 +209,16 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
         )}
       </CtxTrigger>
     </>
+  );
+
+  if (!props.corner) return card;
+
+  return (
+    // h=100%: same height as the cards around it (they fill their wrapper through the link)
+    <Box position="relative" display="flex" alignSelf="stretch" h="100%">
+      {card}
+      {props.corner}
+    </Box>
   );
 };
 

@@ -34,7 +34,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(405).json({ error: 'Method not allowed' });
 }
 
-async function revalidateListCaches(listId: number, extraListIds: number[] = []) {
+export async function revalidateListCaches(listId: number, extraListIds: number[] = []) {
   const listIds = [listId, ...extraListIds];
 
   for (const id of listIds) {

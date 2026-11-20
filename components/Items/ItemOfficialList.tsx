@@ -1,5 +1,6 @@
 import { Badge, Flex, Link, Text } from '@chakra-ui/react';
-import { ItemData, UserList } from '@types';
+import { ItemData, ListContext, UserList } from '@types';
+import { ListContextFooter } from '@components/UserLists/Contexts/ListContextBadges';
 import CardBase from '@components/Card/CardBase';
 import NextImage from 'next/image';
 import DynamicIcon from '@assets/icons/dynamic.png';
@@ -15,11 +16,13 @@ import MainLink from '@components/Utils/MainLink';
 type Props = {
   item: ItemData;
   lists: UserList[];
+  /** Contexts that include this item, per list id */
+  contexts?: Record<number, ListContext[]>;
 };
 
 export default async function ItemOfficialLists(props: Props) {
   const t = await getTranslations();
-  const { item, lists } = props;
+  const { item, lists, contexts } = props;
   const officialLists = lists.filter((list) => list.official && list.visibility === 'public');
   const color = Color(item.color.hex);
   const excludeListIds = lists.map((list) => list.internal_id);
@@ -152,6 +155,9 @@ export default async function ItemOfficialLists(props: Props) {
             </Text>
             {list.itemInfo?.[0].isHighlight && (
               <Badge>{list.highlight ?? t('ItemPage.exclusive')}</Badge>
+            )}
+            {!!contexts?.[list.internal_id]?.length && (
+              <ListContextFooter contexts={contexts[list.internal_id]} listColor={list.colorHex} />
             )}
           </Flex>
         ))}

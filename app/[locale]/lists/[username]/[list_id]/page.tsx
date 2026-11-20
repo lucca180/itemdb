@@ -13,6 +13,7 @@ import { routing } from '@utils/locales';
 import { getTranslations } from 'next-intl/server';
 import { stripMarkdown } from '@utils/utils';
 import {
+  getListContexts,
   getListCore,
   getListDynamicSource,
   getListFullItems,
@@ -86,19 +87,21 @@ async function ListPageBody({
   list_id: string;
   core: ListCore;
 }) {
-  const [initialPreload, matches, similarLists, dynamicSource, goalCounter] = await Promise.all([
-    getListPreload(core),
-    getListMatches(core),
-    getSimilarListsForList(core.list),
-    getListDynamicSource(core),
-    // official album/collection lists show an informational goal counter modal to everyone;
-    // on checklists only the owner gets the goal counter button
-    core.list.official
-      ? getGoalCounterAlbum(core.list.internal_id)
-      : core.isOwner
-        ? getListGoalCounter(core.list)
-        : null,
-  ]);
+  const [initialPreload, matches, similarLists, dynamicSource, goalCounter, contexts] =
+    await Promise.all([
+      getListPreload(core),
+      getListMatches(core),
+      getSimilarListsForList(core.list),
+      getListDynamicSource(core),
+      // official album/collection lists show an informational goal counter modal to everyone;
+      // on checklists only the owner gets the goal counter button
+      core.list.official
+        ? getGoalCounterAlbum(core.list.internal_id)
+        : core.isOwner
+          ? getListGoalCounter(core.list)
+          : null,
+      getListContexts(core),
+    ]);
   const itemCount = core.list.itemCount ?? 0;
   const { useSuspenseFullLoad } = getListLoadingStrategy(itemCount);
   const clientCore: ListPageClientCore = {
@@ -120,6 +123,7 @@ async function ListPageBody({
       similarLists={similarLists}
       dynamicSource={dynamicSource}
       goalCounter={goalCounter}
+      contexts={contexts}
     >
       {useSuspenseFullLoad ? (
         <Suspense

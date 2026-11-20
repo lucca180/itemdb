@@ -104,6 +104,16 @@ export const getAllOfficialItemLists = cache(async (internalId: number, includeT
   return official;
 });
 
+/** Contexts that include the item, per official list id (list card footers). */
+export const loadItemListContexts = cache(async (internalId: number, listIds: number[]) => {
+  'use cache';
+  // context mutations on official lists revalidate the 'lists' section of the items involved
+  applyItemSectionCacheTags(internalId, 'lists');
+  cacheLife('itemSection');
+
+  return ListService.getItemListContexts(internalId, listIds);
+});
+
 export const getOfficialItemLists = cache(
   async (internalId: number, includeTrade = false): Promise<UserList[]> =>
     (await getAllOfficialItemLists(internalId, includeTrade)).filter(

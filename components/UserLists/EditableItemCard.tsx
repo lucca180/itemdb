@@ -5,6 +5,8 @@ import type { ItemV2For, ListItemInfo, UserList } from '@types';
 import { VStack, Box } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import { dynamicListCan } from '@utils/utils';
+import { useItemListContexts } from '@components/UserLists/Contexts/ListContextsProvider';
+import { ListContextCorner } from '@components/UserLists/Contexts/ListContextBadges';
 
 const EditableFields = dynamic(() => import('./EditableFields'), { ssr: false });
 
@@ -40,6 +42,8 @@ export function EditableItemCard(props: EditableItemCardProps) {
   useEffect(() => {
     setItemInfo(props.itemInfo);
   }, [props.itemInfo]);
+
+  const { contexts, onSeeAll } = useItemListContexts(item?.internal_id);
 
   const isSelected = editMode && (props.selected ?? shouldSelect ?? false);
 
@@ -91,6 +95,11 @@ export function EditableItemCard(props: EditableItemCardProps) {
           disablePrefetch
           capValue={isTrading ? (itemInfo?.capValue ?? undefined) : undefined}
           quantity={itemInfo?.amount ?? undefined}
+          corner={
+            contexts.length ? (
+              <ListContextCorner contexts={contexts} onSeeAll={onSeeAll} />
+            ) : undefined
+          }
         />
       </Box>
       {editMode && (

@@ -8,7 +8,14 @@ import { getListMatchWithViewer } from '@pages/api/v1/lists/match/[...usernames]
 import { getSearchStats } from '@pages/api/v1/search/stats';
 import { ItemService } from '@services/ItemService';
 import { ListService } from '@services/ListService';
-import type { ItemV2For, ListItemInfo, SearchFilters, SearchStats, UserList } from '@types';
+import type {
+  ItemV2For,
+  ListContext,
+  ListItemInfo,
+  SearchFilters,
+  SearchStats,
+  UserList,
+} from '@types';
 import { listItemsTag } from '@utils/appCacheTags';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { withLocalePrefix, type AppLocale } from '@utils/locales';
@@ -158,6 +165,21 @@ export const getListFullItems = cache((core: ListCore) => {
 
   return fetchListFullItems(core.list, includeHidden);
 });
+
+async function fetchListContexts(list: UserList, includeHidden: boolean): Promise<ListContext[]> {
+  'use cache';
+  const username = list.official ? 'official' : (list.owner.username ?? '');
+  // context mutations revalidate every list-items tag of the list
+  cacheTag(listItemsTag(username, list.internal_id, includeHidden ? 'full-owner' : 'full'));
+  cacheLife('homeSection');
+
+  return ListService.getListContexts(list.internal_id, includeHidden);
+}
+
+/** Contexts of the list; hidden items only for the owner/admin. */
+export const getListContexts = cache((core: ListCore) =>
+  fetchListContexts(core.list, canViewHiddenItems(core))
+);
 
 export async function getListMatches(core: ListCore): Promise<ListItemInfo[]> {
   const { list, viewer, isOwner } = core;
