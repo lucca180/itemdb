@@ -868,7 +868,6 @@
     "contexts-group-by": "Group by context",
     "contexts-group-default": "Group by context by default?",
     "contexts-group-default-help": "The list opens grouped by context when it has contexts. Visitors can still switch.",
-    "contexts-other-items": "Other items",
     "contexts-shared": "{count, plural, one {Only this item} other {# items share this context}}",
     "contexts-see-all": "See all contexts",
     "contexts-modal-title": "Contexts in this list",

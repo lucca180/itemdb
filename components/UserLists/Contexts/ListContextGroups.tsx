@@ -1,8 +1,7 @@
 'use client';
 
-import { Box, Center, Flex, Heading, Text } from '@chakra-ui/react';
+import { Box, Center, Flex, Text } from '@chakra-ui/react';
 import { useMemo } from 'react';
-import { useTranslations } from 'next-intl';
 import { LuInfo } from 'react-icons/lu';
 import type { ListContext } from '@types';
 import { ItemList } from '@components/UserLists/ItemList';
@@ -24,10 +23,10 @@ type ListContextGroupsProps = Omit<ListViewportProps, 'activateSort' | 'editMode
 
 /**
  * Main item grid grouped by context (view mode only). An item in several contexts shows up in
- * each of their groups; items without a context go last. Badge-only contexts get no group.
+ * each of their groups; items without a context go last, with no heading. Badge-only contexts
+ * get no group.
  */
 export function ListContextGroups({ contexts, ...listProps }: ListContextGroupsProps) {
-  const t = useTranslations();
   const { ids, itemInfo, items, showHidden } = listProps;
 
   const visibleIds = useMemo(
@@ -130,10 +129,7 @@ export function ListContextGroups({ contexts, ...listProps }: ListContextGroupsP
       ))}
 
       {groups.rest.length > 0 && (
-        <Flex flex="1 1 100%" flexFlow="column" gap={3} pt={3}>
-          <Heading size="md" textAlign="center">
-            {t('Lists.contexts-other-items')}
-          </Heading>
+        <Flex flex="1 1 100%" flexFlow="column" pt={3}>
           {renderItems(groups.rest)}
         </Flex>
       )}

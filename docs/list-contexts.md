@@ -39,7 +39,7 @@ shows:
 
 The rules are `contextShowsBadge` and `contextGroupsItems` in
 `utils/list/listContexts.ts`. The corner color is the first context that shows a
-badge. An item whose only contexts are `badge` lands in "Other items" when grouped.
+badge. An item whose only contexts are `badge` goes with the ungrouped items.
 The "group by context" switch only appears when at least one context groups.
 
 ### Limits (`utils/list/listContexts.ts`)
@@ -191,7 +191,7 @@ The popover lists every context of the item: badge, title, markdown details
   its corner leaves out that group's own context (`ListContextGroupProvider`).
 - Groups with up to 6 items (`SMALL_GROUP_MAX`) render cards directly and can sit
   side by side. Larger groups take the full width and use `ItemList`.
-- Items in no context come last under "Other items".
+- Items in no context come last, with no heading.
 - Hidden items follow the page's "only hidden" filter.
 
 ### Editor (`ListContextsEditorModal`)
