@@ -28,6 +28,10 @@ type StoriesPlayerProps = {
   onExit?: () => void;
   /** Line above the slides, defaults to the sample data notice. */
   notice?: string;
+  /** Slide to open on (read on mount only). */
+  initialIndex?: number;
+  /** Demo controls shown outside the slide, e.g. debug shortcuts. */
+  toolbar?: ReactNode;
 };
 
 // below this width the slide fills the screen edge to edge, like a phone story
@@ -36,9 +40,17 @@ const SIDE_GAP = 32;
 const TOP_GAP = 44;
 const BOTTOM_GAP = 16;
 
-export const StoriesPlayer = ({ stories, brand, handle, onExit, notice }: StoriesPlayerProps) => {
+export const StoriesPlayer = ({
+  stories,
+  brand,
+  handle,
+  onExit,
+  notice,
+  initialIndex = 0,
+  toolbar,
+}: StoriesPlayerProps) => {
   const t = useTranslations('RestockReview');
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(initialIndex);
   const [scale, setScale] = useState(1);
   const [isNarrow, setIsNarrow] = useState(false);
 
@@ -119,6 +131,23 @@ export const StoriesPlayer = ({ stories, brand, handle, onExit, notice }: Storie
         >
           {notice ?? t('demo-notice')}
         </Text>
+      )}
+      {toolbar && (
+        // a column on the left on desktop; a strip at the top of the screen on phones, where the
+        // centered slide usually leaves some room
+        <Flex
+          position="absolute"
+          zIndex={1}
+          gap="4px"
+          p="4px 6px"
+          borderRadius="8px"
+          bg="rgba(5, 10, 8, 0.7)"
+          {...(isNarrow
+            ? { top: '4px', left: '4px', right: '4px', justify: 'center', flexWrap: 'wrap' }
+            : { top: `${TOP_GAP}px`, left: '12px', direction: 'column', align: 'flex-start' })}
+        >
+          {toolbar}
+        </Flex>
       )}
       <Box position="relative" mt={isNarrow ? 0 : `${TOP_GAP - BOTTOM_GAP}px`}>
         <Box

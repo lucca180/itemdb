@@ -17,6 +17,22 @@ Trabalho na branch `feat/restock-review-2026`.
 
 Em 13/11/2026 começou a análise para ampliar o escopo a quem não usa o restock e a deslogados (seção Ampliação do escopo). Em 18/11/2026 o Review passou a ter dois capítulos: **Neopia em 2026**, aberto a todos, e **Restock**, para quem tem sessões. O capítulo Pessoal foi descartado (seção Capítulos).
 
+## Status: etapa 3 (quiz de personalidade)
+
+Atualizado em 20/11/2026.
+
+**Feito**
+
+- O quiz de trivia com placar virou o quiz de personalidade da seção "Quiz de personalidade": 7 perguntas pessoais, alta e queda como bônus, resultado com tipo, descrição, piada, símbolo e dado do ano, e resultado genérico para quem pula perguntas. O capítulo Geral tem 22 slides.
+- O story compartilhável mostra o tipo (ou o resultado genérico) no lugar do placar.
+- Debug na demo: atalhos no canto da tela que pulam para o resultado de cada tipo e para o genérico.
+- Textos em EN e PT no namespace `ReviewGeneral`. Lint e typecheck passando; testado no navegador em PT e EN, no desktop e no celular (375px).
+
+**Falta**
+
+- Revisar os textos marcados como "Ainda em revisão" na seção do quiz.
+- Os itens da etapa 2 que continuam abertos (abaixo).
+
 ## Status: etapa 2 (capítulos e capítulo Geral)
 
 Atualizado em 18/11/2026.
@@ -33,7 +49,6 @@ Atualizado em 18/11/2026.
 
 **Falta** (próxima sessão)
 
-- Implementar o quiz de personalidade (seção "Quiz de personalidade"): trocar as 4 perguntas de trivia pelas 7 perguntas pessoais, manter alta e queda como bônus, calcular o tipo com desempate, criar o slide de resultado por tipo e trocar o story compartilhável pelo tipo. Antes, confirmar os pontos em aberto daquela seção.
 - Fechar o conteúdo e o tom dos slides do Geral com a demo.
 - Recalcular os números do Geral no lote, a partir de 07/12, com dados até 06/12. Os livros ainda estão se ajustando depois da atualização de 02/11.
 - Decidir se o Geral também ganha selo para petpage.
@@ -299,69 +314,85 @@ As duas perguntas ficam no quiz de personalidade como **bônus**: mostram a resp
 
 ### Quiz de personalidade
 
-Decidido em 18/11/2026; ainda não implementado. O capítulo Geral vira um quiz no estilo Buzzfeed: perguntas pessoais e meio bobinhas, e no fim a pessoa recebe um tipo de Neopiano. O tipo substitui o placar de acertos, e o story compartilhável passa a ser "Meu tipo de Neopiano em 2026".
+Decidido em 18/11/2026; perguntas e dados dos tipos fechados em 20/11/2026 e já na demo. O capítulo Geral virou um quiz no estilo Buzzfeed: perguntas pessoais e meio bobinhas, e no fim a pessoa recebe um tipo de Neopiano. O tipo substitui o placar de acertos, e o story compartilhável passa a ser "Meu tipo de Neopiano em 2026".
 
-**Como encaixa:** cada pergunta pessoal entra logo antes do slide de dados do mesmo tema. A pergunta prepara o assunto, e o slide seguinte mostra o dado real. As perguntas de trivia sobre item mais visto, caixa mais aberta, leilões e Muffin Baking Book saem; os dados delas continuam nos slides de ranking. Maior alta e maior queda ficam como bônus, sem pontuação.
+**Como encaixa:** cada pergunta pessoal entra logo antes do slide de dados do mesmo tema. As perguntas de trivia sobre item mais visto, caixa mais aberta, leilões e Muffin Baking Book saíram; os dados delas continuam nos slides de ranking. Maior alta e maior queda ficaram como bônus, sem pontuação, com a chamada "Você sabe mesmo o que rolou em 2026?".
 
 **Tipos**
 
+São 4 tipos, e cada pergunta tem uma opção para cada tipo, então todos somam 7 pontos. O Restocker saiu do capítulo Geral porque o capítulo 2 já revela o tipo de restocker. O Apostador do Caos foi trocado pela Fashionista.
+
 | Tipo | Quem é |
 | --- | --- |
-| O Especulador | Vive de olho no gráfico do itemdb, compra na baixa e vende na alta. |
-| O Colecionador | Álbum de selos, checklists, avatares. O espaço vazio no álbum incomoda. |
-| O Restocker | Reflexo de gato, quatro abas abertas, conhece cada lojista pelo nome. |
-| O Apostador do Caos | Reroll, Wheel of Excitement, lance sem pensar. Confia na sorte. |
-| O Neopiano Raiz | Dailies desde 2005, o pet em primeiro lugar, preço é detalhe. |
+| Especulador | Quer lucrar do jeito que a comunidade respeita: restock e vender os itens caros que encontra no cofre. Não é quem compra tudo o que está à venda para revender mais caro, o que a comunidade condena. |
+| Colecionador | Quer completar a coleção: álbum de selos e checklists. |
+| Fashionista | Itens NC como customização: deixar o pet bonito e estiloso. Styling Studio, Dyeworks, valor Lebron e histórico de trocas. |
+| Neopiano Raiz | Gosta de jogar e se dedica, sem tryhardar: diários, quest log, banco rendendo juros. |
 
-**Perguntas** (cada opção soma 1 ponto para o tipo entre colchetes)
+**Dado do ano de cada tipo**
 
-1. **A pool do quest log acabou de mudar. Você…** (antes do slide do efeito quest log)
-    - Corre para o SDB vender tudo antes que desvalorize [Especulador]
-    - Atualiza a lista oficial do Weekly Quest para ver se a coleção de selos vai ficar mais completa [Colecionador]
-    - Dá reroll infinito e não vem nada de bom [Caos]
-    - Nem percebeu, você faz as quests pelo seu pet e pronto [Raiz]
-2. **2 de novembro: ler livros passou a dar mais prêmios. Você…** (antes da corrida dos livros)
-    - Comprou 300 Muffin Baking Books a 3,7k antes de todo mundo perceber [Especulador]
-    - Foi para a Booktastic Books dar refresh até o dedo doer [Restocker]
-    - Seu pet já tinha lido tudo, você só soube pelo preço [Raiz]
-    - Vai começar a ler agora [Caos]
-3. **Seu item dos sonhos aparece num leilão com 2 minutos restantes. Você…** (antes dos leilões)
-    - Cobre qualquer lance na hora, custe o que custar [Caos]
-    - Abre o itemdb, confere o preço e dá 1 NP acima do último lance [Especulador]
-    - Ele está na sua lista "Seeking" há 3 anos: é agora ou nunca [Colecionador]
-    - Deixa passar, uma hora ele aparece no restock [Restocker]
-4. **Meia-noite NST. Primeira coisa que você faz?** (antes de "Neopia não parou")
-    - Dailies, todas, na mesma ordem de sempre [Raiz]
-    - Abre quatro lojas em abas separadas [Restocker]
-    - Vê o que mudou de preço no itemdb [Especulador]
-    - Wheel of Excitement, Kiko Pop e Scratchcard: hoje vai [Caos]
-5. **Você acabou de ganhar 100m NP. Você…** (antes da inflação)
+Fechados em 20/11, com dados até 20/11 (consultas só de leitura). Nenhum repete o que já aparece nos stories. "Itens novos" segue a regra do "Descoberto em" da página do item (`mapFirstSeen` em `app/server/items/v2.ts`): `item_id` ≥ 85020, sem PB e `addedAt` no ano.
+
+| Tipo | Dado |
+| --- | --- |
+| Especulador | O Love Bomb, que vale 290m NP, foi visto restocando 13 vezes pelo itemdb em 2026. Conta só o que usuários do itemdb viram; ele pode ter aparecido mais vezes. |
+| Colecionador | 73 itens novos entraram no álbum de selos em 2026 (lista "All Collectibles"). |
+| Fashionista | 4.365 itens NC novos em 2026, sendo 1.713 wearables e 2.048 Pet Styles. |
+| Neopiano Raiz | 1.268 itens NP novos em 2026, sendo 828 r101 e 10 no trade. |
+
+Também foram descartados: listas oficiais criadas no ano, avatares novos (a tabela do itemdb só tem avatares de itens) e livros novos.
+
+**Perguntas** (na ordem em que aparecem; a opção de cada tipo entre colchetes)
+
+1. **Você tem uma hora livre para jogar Neopets. O que faz?** (antes de "Neopia não parou")
+    - Uma sessão de restock [Especulador]
+    - Caça os itens que faltam para completar a sua coleção [Colecionador]
+    - Confere os tópicos de troca NC nos fóruns [Fashionista]
+    - Corre para fazer os diários [Raiz]
+2. **Chegou uma proposta de troca para você. Você…** (antes dos NC mais trocados)
+    - Confere no itemdb se o negócio vale a pena [Especulador]
+    - Só aceita se vier aquele item que falta na coleção [Colecionador]
+    - Confere o valor Lebron e o histórico de trocas antes de responder [Fashionista]
+    - Aceita se for bom para os dois lados [Raiz]
+3. **Seu item dos sonhos apareceu para negociar. Você…** (antes dos leilões)
+    - Vê o que tem de valor no cofre para oferecer em troca [Especulador]
+    - É a peça que falta para completar a sua coleção: é agora ou nunca [Colecionador]
+    - Corre para a Trade List e torce para ter algo para trocar [Fashionista]
+    - Já tem o NP guardado para oferecer em pure [Raiz]
+4. **Você acabou de ganhar 100m NP. Você…** (antes da inflação)
+    - Tenta descolar algo valioso nos leilões [Especulador]
     - Gasta tudo naquele selo que falta no álbum [Colecionador]
-    - Investe em algo que vai subir, tipo um Collectable Scarab [Especulador]
-    - Compra uma paint brush para o seu pet [Raiz]
-    - Compra estoque para revender na sua loja [Restocker]
-6. **Como está o seu SDB?** (antes do álbum de selos)
-    - 3.000 itens que você jura que vai organizar um dia [Raiz]
-    - Você sabe o preço de cada item de cabeça [Especulador]
+    - Compra um petpet caro que combine com o seu pet [Fashionista]
+    - Bota no banco para render juros [Raiz]
+5. **Como está o seu SDB?** (antes do álbum de selos)
+    - Toda vez que você abre, acha algo que dá para vender bem [Especulador]
     - Selos guardados, porque ainda não teve coragem de colar [Colecionador]
-    - 200 Neggs e uma única Cool Negg que você nunca vai vender [Caos]
-7. **Você ganhou um 26th Anniversary Kougra Black Friday GBMC. Você…** (antes das aberturas ou dos NC mais trocados)
-    - Abre na hora e reporta no itemdb o que saiu [Caos]
-    - Troca fechado, porque vale mais assim [Especulador]
-    - Guarda, porque a coleção precisa dele [Colecionador]
-    - Abre só depois das dailies [Raiz]
+    - Várias GBCs e itens esperando a troca certa [Fashionista]
+    - Milhares de itens que você jura que vai organizar um dia [Raiz]
+6. **A pool do quest log acabou de mudar. Você…** (antes do efeito quest log)
+    - Corre para vender o que tem antes que desvalorize [Especulador]
+    - Torce para vir um selo para a sua coleção nessa pool [Colecionador]
+    - Torce para vir pincéis ou petpets que combinem com o seu pet [Fashionista]
+    - Dá reroll no prêmio até vir algo valioso da nova pool para completar seu streak [Raiz]
+7. **Os livros ganharam prêmios, troféus e avatares, e chegou a Pet Bookshelf. Você…** (antes da corrida dos livros)
+    - Foi ver se tinha algum livro no cofre que agora vale uma fortuna [Especulador]
+    - Foi atrás dos livros que faltavam na checklist do Book Award [Colecionador]
+    - Foi direto personalizar a Pet Bookshelf [Fashionista]
+    - Seu pet já tinha lido a maior parte, e os avatares vieram sem esforço [Raiz]
 
-A Faerie Donation Capsule saiu da pergunta 7 porque é no-trade. O GBMC pode ser trocado e foi o NC mais trocado do ano (382 trocas).
+Na tela, a ordem das opções muda de pergunta para pergunta, e a resposta pode ser trocada até o fim.
 
-**Contagem atual por tipo:** Especulador 7, Caos 6, Raiz 6, Colecionador 5, Restocker 4.
+**Regras**
 
-**Em aberto**
+- **Desempate:** vence o tipo escolhido na última pergunta respondida entre os empatados.
+- **Pulou alguma pergunta:** resultado genérico ("Neopiano de 2026"), sem tipo, também no story.
 
-- O Restocker aparece só nas perguntas 2, 3, 4 e 5, e o Colecionador também está abaixo do Especulador e do Caos. Equilibrar trocando uma opção nas perguntas 1, 6 ou 7, ou trocar o Restocker por outro tipo.
-- A opção "Vai começar a ler agora" (pergunta 2) está como [Caos]; confirmar o tipo.
-- Regra de desempate. Proposta: vence o tipo escolhido na última pergunta empatada; se a pessoa pular perguntas, o resultado sai só com as respondidas.
-- Para cada tipo: texto do resultado, imagem ou item símbolo e um dado do ano ligado a ele (por exemplo, para o Especulador: "9,1 tri NP passaram pelos leilões em 2026").
-- Textos em EN das perguntas e dos tipos.
+**Ainda em revisão** (na demo como rascunho)
+
+- Texto da abertura (placeholder: "Responda com sinceridade: no fim, a gente diz que tipo de Neopiano você foi").
+- Descrição e piada de cada tipo, e o texto do resultado genérico.
+- Símbolos dos tipos: Love Bomb, Oscar Stamp e Sunset Journal (itens novos em mais listas de pessoas diferentes) e Styling Studio Supplies, que não é novo.
+- Nomes em EN: Speculator, Collector, Fashionista, Old-School Neopian.
 
 ## Ampliação do escopo (análise de 13/11)
 

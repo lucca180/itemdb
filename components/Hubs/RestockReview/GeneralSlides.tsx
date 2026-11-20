@@ -4,14 +4,19 @@ import { Box, Button, Flex, Grid, Image, Text } from '@chakra-ui/react';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { ComponentType, ReactNode, Ref, useState } from 'react';
 import {
-  BOOK_QUIZ_START,
   GENERAL_REVIEW,
   GeneralReviewData,
-  QUIZ_ORDER,
-  QuizId,
-  QuizOption,
+  NEOPIAN_TYPES,
+  NeopianType,
+  PERSONALITY_QUESTIONS,
+  PersonalityAnswers,
+  QuestionId,
   RankedItem,
-  getResultTier,
+  TRIVIA_ORDER,
+  TriviaId,
+  TriviaOption,
+  answersFor,
+  getNeopianType,
 } from './generalData';
 import { SharePreview, useShareImage } from './ReviewShare';
 import { Display, Eyebrow, StampImage, StatTile, useReviewFormat } from './ReviewSlides';
@@ -30,7 +35,12 @@ type GeneralSlideProps = {
   theme: SlideThemeColors;
 };
 
-type Answers = Partial<Record<QuizId, number>>;
+type Answers = {
+  personality: PersonalityAnswers;
+  trivia: Partial<Record<TriviaId, number>>;
+};
+
+const NO_ANSWERS: Answers = { personality: {}, trivia: {} };
 
 const LOGO = '/logo_icon.svg';
 
@@ -142,10 +152,10 @@ export const GeneralIntroSlide = ({ data }: GeneralSlideProps) => {
   const t = useTranslations('ReviewGeneral');
   const f = useGeneralFormat();
   const [a, b, c, d, e] = [
-    data.quizzes.drop.options[0].item!,
+    data.trivia.drop.options[0].item,
     data.bookRush.examples[0].item,
     data.mostWanted[0].item,
-    data.quizzes.rise.options[0].item!,
+    data.trivia.rise.options[0].item,
     data.openables[0].item,
   ];
 
@@ -173,7 +183,7 @@ export const GeneralIntroSlide = ({ data }: GeneralSlideProps) => {
           {t('intro-title', { year: data.year })}
         </Display>
         <Text fontSize="16px" lineHeight="1.45">
-          {t('intro-text', { date: f.longDay(data.dataUntil), count: QUIZ_ORDER.length })}
+          {t('intro-text', { date: f.longDay(data.dataUntil) })}
         </Text>
       </Flex>
     </>
@@ -581,79 +591,98 @@ export const GeneralBookRushSlide = ({ data, theme }: GeneralSlideProps) => {
   );
 };
 
-type QuizSlideProps = GeneralSlideProps & {
-  id: QuizId;
-  picked?: number;
-  onPick: (index: number) => void;
+type PersonalitySlideProps = GeneralSlideProps & {
+  id: QuestionId;
+  picked?: NeopianType;
+  onPick: (type: NeopianType) => void;
 };
 
-export const QuizSlide = ({ data, theme, id, picked, onPick }: QuizSlideProps) => {
+/** A personality question: one option per type, no right answer, the pick can change. */
+export const PersonalitySlide = ({ data, theme, id, picked, onPick }: PersonalitySlideProps) => {
   const t = useTranslations('ReviewGeneral');
-  const f = useGeneralFormat();
-  const quiz = data.quizzes[id];
-  const answer = quiz.options[0];
-  const revealed = picked !== undefined;
-  const current = QUIZ_ORDER.indexOf(id) + 1;
-
-  const optionLabel = (option: QuizOption) =>
-    option.item ? option.item.name : `${f.compact(option.value ?? 0)} NP`;
-
-  const optionDetail = (option: QuizOption) => {
-    if (id === 'rise' || id === 'drop') {
-      const start = option.start ?? 0;
-      const end = option.end ?? 0;
-      return `${f.compact(start)} → ${f.compact(end)} NP (${f.signedPercent(((end - start) / start) * 100)})`;
-    }
-    if (id === 'viewed') return t('viewed-value', { count: f.number(option.value ?? 0) });
-    if (id === 'opened') return t('openables-value', { count: f.number(option.value ?? 0) });
-    if (id === 'auction') return `${f.compact(option.value ?? 0)} NP`;
-    return null;
-  };
-
-  const rich = {
-    item: answer.item?.name ?? '',
-    value: f.number(answer.value ?? 0),
-    compact: f.compact(answer.value ?? 0),
-    count: f.number(answer.count ?? 0),
-    start: f.compact(answer.start ?? BOOK_QUIZ_START),
-    end: f.compact(answer.end ?? answer.value ?? 0),
-    pct: f.signedPercent((((answer.end ?? 0) - (answer.start ?? 0)) / (answer.start || 1)) * 100),
-    b: (chunk: ReactNode) => <strong>{chunk}</strong>,
-  };
+  const index = PERSONALITY_QUESTIONS.findIndex((question) => question.id === id);
+  const question = PERSONALITY_QUESTIONS[index];
 
   return (
     <>
       <Eyebrow color={theme.accent}>
-        {t('quiz-eyebrow', { current, total: QUIZ_ORDER.length })}
+        {t('question-eyebrow', { current: index + 1, total: PERSONALITY_QUESTIONS.length })}
       </Eyebrow>
       <Display size="28px" lineHeight="1.1">
-        {t(`quiz-${id}-title`, {
-          year: data.year,
-          start: f.compact(BOOK_QUIZ_START),
-        })}
+        {t(`question-${id}-title`, { year: data.year })}
       </Display>
-      {id === 'books' && (
-        <Flex align="center" gap="10px">
-          <ItemThumb src={data.bookRush.examples[0].item.image} alt="" size={48} />
-          <Text fontSize="14px" fontWeight={700}>
-            {data.bookRush.examples[0].item.name}
-          </Text>
-        </Flex>
-      )}
       <Flex direction="column" gap="8px">
-        {quiz.order.map((i) => {
-          const option = quiz.options[i];
+        {question.options.map((type) => {
+          const isPicked = picked === type;
+
+          return (
+            <Button
+              key={type}
+              h="auto"
+              minH="52px"
+              p="10px 14px"
+              borderRadius="12px"
+              justifyContent="flex-start"
+              whiteSpace="normal"
+              textAlign="left"
+              bg={isPicked ? theme.accent : theme.track}
+              color={isPicked ? theme.bg : theme.fg}
+              aria-pressed={isPicked}
+              onClick={() => onPick(type)}
+            >
+              <Text fontSize="14px" fontWeight={700} lineHeight="1.25">
+                {t(`question-${id}-${type}`)}
+              </Text>
+            </Button>
+          );
+        })}
+      </Flex>
+      <Text fontSize="13px" color={theme.muted}>
+        {t('question-hint')}
+      </Text>
+    </>
+  );
+};
+
+type TriviaSlideProps = GeneralSlideProps & {
+  id: TriviaId;
+  picked?: number;
+  onPick: (index: number) => void;
+};
+
+/** Bonus trivia: reveals the right answer and doesn't count for the type. */
+export const TriviaSlide = ({ data, theme, id, picked, onPick }: TriviaSlideProps) => {
+  const t = useTranslations('ReviewGeneral');
+  const f = useGeneralFormat();
+  const trivia = data.trivia[id];
+  const answer = trivia.options[0];
+  const revealed = picked !== undefined;
+  const current = TRIVIA_ORDER.indexOf(id) + 1;
+
+  const change = (option: TriviaOption) =>
+    f.signedPercent(((option.end - option.start) / option.start) * 100);
+
+  return (
+    <>
+      <Eyebrow color={theme.accent}>
+        {t('bonus-eyebrow', { current, total: TRIVIA_ORDER.length })}
+      </Eyebrow>
+      <Display size="28px" lineHeight="1.1">
+        {t(`quiz-${id}-title`, { year: data.year })}
+      </Display>
+      <Flex direction="column" gap="8px">
+        {trivia.order.map((i) => {
+          const option = trivia.options[i];
           const isAnswer = i === 0;
           const isPicked = picked === i;
           const highlight = revealed && isAnswer;
-          const detail = revealed ? optionDetail(option) : null;
 
           return (
             <Button
               key={i}
               h="auto"
               minH="52px"
-              p={option.item ? '6px 12px 6px 6px' : '6px 14px'}
+              p="6px 12px 6px 6px"
               borderRadius="12px"
               justifyContent="flex-start"
               gap="10px"
@@ -668,14 +697,14 @@ export const QuizSlide = ({ data, theme, id, picked, onPick }: QuizSlideProps) =
               _disabled={{ cursor: 'default' }}
               onClick={() => onPick(i)}
             >
-              {option.item && <ItemThumb src={option.item.image} alt="" />}
+              <ItemThumb src={option.item.image} alt="" />
               <Flex direction="column" flex="1" gap="2px">
                 <Text fontSize="14px" fontWeight={700} lineHeight="1.2">
-                  {optionLabel(option)}
+                  {option.item.name}
                 </Text>
-                {detail && (
+                {revealed && (
                   <Text fontSize="12px" fontWeight={500}>
-                    {detail}
+                    {`${f.compact(option.start)} → ${f.compact(option.end)} NP (${change(option)})`}
                   </Text>
                 )}
               </Flex>
@@ -693,22 +722,54 @@ export const QuizSlide = ({ data, theme, id, picked, onPick }: QuizSlideProps) =
           <Text as="span" fontWeight={700}>
             {picked === 0 ? t('quiz-right') : t('quiz-wrong')}
           </Text>{' '}
-          {t.rich(`quiz-${id}-answer`, rich)}
+          {t.rich(`quiz-${id}-answer`, {
+            item: answer.item.name,
+            start: f.compact(answer.start),
+            end: f.compact(answer.end),
+            pct: change(answer),
+            b: (chunk: ReactNode) => <strong>{chunk}</strong>,
+          })}
         </Text>
       ) : (
         <Text fontSize="13px" color={theme.muted}>
-          {t('quiz-hint')}
+          {t('bonus-hint', { year: data.year })}
         </Text>
       )}
     </>
   );
 };
 
-const useScore = (answers: Answers) => {
-  const score = QUIZ_ORDER.filter((id) => answers[id] === 0).length;
-  const answered = QUIZ_ORDER.filter((id) => answers[id] !== undefined).length;
-  const tier = getResultTier(score, QUIZ_ORDER.length);
-  return { score, answered, total: QUIZ_ORDER.length, tier };
+/** The fact of the year shown with each type. */
+const useTypeFact = (data: GeneralReviewData) => {
+  const t = useTranslations('ReviewGeneral');
+  const f = useGeneralFormat();
+  const { speculator, collector, fashionista, oldschool } = data.neopianTypes;
+  const year = data.year;
+
+  return (type: NeopianType) => {
+    if (type === 'speculator')
+      return t('type-speculator-fact', {
+        item: speculator.item.name,
+        price: f.compact(speculator.price),
+        count: f.number(speculator.seen),
+        year,
+      });
+    if (type === 'collector')
+      return t('type-collector-fact', { count: f.number(collector.albumItems), year });
+    if (type === 'fashionista')
+      return t('type-fashionista-fact', {
+        total: f.number(fashionista.nc),
+        wearables: f.number(fashionista.wearables),
+        styles: f.number(fashionista.petStyles),
+        year,
+      });
+    return t('type-oldschool-fact', {
+      total: f.number(oldschool.np),
+      r101: f.number(oldschool.r101),
+      noTrade: f.number(oldschool.noTrade),
+      year,
+    });
+  };
 };
 
 export const GeneralResultSlide = ({
@@ -717,44 +778,48 @@ export const GeneralResultSlide = ({
   answers,
 }: GeneralSlideProps & { answers: Answers }) => {
   const t = useTranslations('ReviewGeneral');
-  const { score, answered, total, tier } = useScore(answers);
+  const factOf = useTypeFact(data);
+  const type = getNeopianType(answers.personality);
+
+  if (!type)
+    return (
+      <>
+        <Eyebrow color={theme.accent}>{t('result-eyebrow', { year: data.year })}</Eyebrow>
+        <Display size="52px" lineHeight="0.95">
+          {t('result-generic', { year: data.year })}
+        </Display>
+        <Text fontSize="16px" lineHeight="1.45">
+          {t('result-generic-text', { year: data.year })}
+        </Text>
+        <Text fontSize="14px" color={theme.muted}>
+          {t('result-generic-cta')}
+        </Text>
+      </>
+    );
 
   return (
     <>
-      <Eyebrow color={theme.accent}>{t('result-eyebrow')}</Eyebrow>
-      <Flex align="baseline" gap="8px">
-        <Text
-          className={displayFont.className}
-          fontWeight={800}
-          fontSize="150px"
-          lineHeight="0.85"
-          letterSpacing="-0.05em"
-        >
-          {score}
-        </Text>
-        <Display size="48px">/{total}</Display>
+      <Eyebrow color={theme.accent}>{t('result-eyebrow', { year: data.year })}</Eyebrow>
+      <Flex align="center" gap="18px" mt="4px">
+        <StampImage item={data.neopianTypes[type].item} size={72} rotate={-6} />
+        <Display size="36px" lineHeight="0.95">
+          {t(`type-${type}`)}
+        </Display>
       </Flex>
-      <Text fontSize="16px">{t('result-score', { score, total })}</Text>
-      <Text
-        className={pixelFont.className}
-        fontSize="13px"
-        letterSpacing="0.06em"
-        color={theme.muted}
-        mt="12px"
-      >
-        {t('result-you-are')}
-      </Text>
-      <Display size="52px" lineHeight="0.95">
-        {t(`tier-${tier}`)}
-      </Display>
       <Text fontSize="16px" lineHeight="1.45">
-        {t(`tier-${tier}-text`, { year: data.year })}
+        {t(`type-${type}-text`)}
       </Text>
-      {answered < total && (
-        <Text fontSize="13px" color={theme.muted}>
-          {t('result-skipped', { count: total - answered })}
+      <Text fontSize="15px" fontWeight={700} lineHeight="1.4">
+        {t(`type-${type}-joke`)}
+      </Text>
+      <Flex direction="column" gap="6px" p="12px 14px" borderRadius="12px" bg={theme.track}>
+        <Text className={pixelFont.className} fontSize="11px" letterSpacing="0.06em">
+          {t('numbers-eyebrow')}
         </Text>
-      )}
+        <Text fontSize="14px" lineHeight="1.4">
+          {factOf(type)}
+        </Text>
+      </Flex>
     </>
   );
 };
@@ -771,7 +836,7 @@ export const GeneralShareCard = ({
 }) => {
   const t = useTranslations('ReviewGeneral');
   const f = useGeneralFormat();
-  const { score, total, tier } = useScore(answers);
+  const type = getNeopianType(answers.personality);
   const album = Math.round((1 - data.stampAlbum.end / data.stampAlbum.start) * 100);
 
   const facts = [
@@ -800,30 +865,24 @@ export const GeneralShareCard = ({
         </Text>
       </Flex>
       <Text className={pixelFont.className} fontSize="12px" letterSpacing="0.06em" mt="16px">
-        {t('story-quiz', { year: data.year })}
+        {t('story-type', { year: data.year })}
       </Text>
-      <Flex align="baseline" gap="6px">
-        <Text
-          className={displayFont.className}
-          fontWeight={800}
-          fontSize="170px"
-          lineHeight="0.8"
-          letterSpacing="-0.05em"
-        >
-          {score}
-        </Text>
-        <Text className={displayFont.className} fontWeight={800} fontSize="56px">
-          /{total}
-        </Text>
-      </Flex>
+      {type && (
+        <Box>
+          <StampImage item={data.neopianTypes[type].item} size={96} rotate={-6} />
+        </Box>
+      )}
       <Text
         className={displayFont.className}
         fontWeight={800}
-        fontSize="46px"
+        fontSize="52px"
         lineHeight="0.95"
         letterSpacing="-0.02em"
       >
-        {t(`tier-${tier}`)}
+        {type ? t(`type-${type}`) : t('result-generic', { year: data.year })}
+      </Text>
+      <Text fontSize="16px" lineHeight="1.4" fontWeight={700}>
+        {type ? t(`type-${type}-joke`) : t('result-generic-text', { year: data.year })}
       </Text>
       <Text fontSize="15px" lineHeight="1.4" color="#2E3F36">
         {t('story-challenge')}
@@ -917,34 +976,40 @@ export const GeneralShareSlide = ({
 
 type Step =
   | { kind: 'slide'; theme: SlideTheme; Slide: ComponentType<GeneralSlideProps> }
-  | { kind: 'quiz'; theme: SlideTheme; id: QuizId }
+  | { kind: 'question'; theme: SlideTheme; id: QuestionId }
+  | { kind: 'trivia'; theme: SlideTheme; id: TriviaId }
   | { kind: 'result'; theme: SlideTheme }
   | { kind: 'share'; theme: SlideTheme };
 
-// each quiz comes right before the slide that answers it
+// each question comes right before the slide with the data on the same subject
 const STEPS: Step[] = [
   { kind: 'slide', theme: 'lime', Slide: GeneralIntroSlide },
+  { kind: 'question', theme: 'cream', id: 'free-hour' },
   { kind: 'slide', theme: 'dark', Slide: GeneralNumbersSlide },
-  { kind: 'quiz', theme: 'cream', id: 'viewed' },
   { kind: 'slide', theme: 'dark', Slide: GeneralViewedSlide },
-  { kind: 'quiz', theme: 'lime', id: 'opened' },
   { kind: 'slide', theme: 'cream', Slide: GeneralOpenablesSlide },
+  { kind: 'question', theme: 'lime', id: 'trade-offer' },
   { kind: 'slide', theme: 'dark', Slide: GeneralNcSlide },
   { kind: 'slide', theme: 'dark', Slide: GeneralWantedSlide },
-  { kind: 'quiz', theme: 'cream', id: 'auction' },
+  { kind: 'question', theme: 'cream', id: 'dream-item' },
   { kind: 'slide', theme: 'dark', Slide: GeneralAuctionsSlide },
+  { kind: 'question', theme: 'lime', id: 'jackpot' },
   { kind: 'slide', theme: 'dark', Slide: GeneralInflationSlide },
+  { kind: 'question', theme: 'cream', id: 'sdb' },
   { kind: 'slide', theme: 'lime', Slide: GeneralStampAlbumSlide },
+  { kind: 'question', theme: 'cream', id: 'quest-pool' },
   { kind: 'slide', theme: 'loss', Slide: GeneralQuestLogSlide },
-  { kind: 'quiz', theme: 'lime', id: 'books' },
+  { kind: 'question', theme: 'lime', id: 'books' },
   { kind: 'slide', theme: 'cream', Slide: GeneralBookRushSlide },
-  { kind: 'quiz', theme: 'lime', id: 'rise' },
-  { kind: 'quiz', theme: 'loss', id: 'drop' },
+  { kind: 'trivia', theme: 'lime', id: 'rise' },
+  { kind: 'trivia', theme: 'loss', id: 'drop' },
   { kind: 'result', theme: 'lime' },
   { kind: 'share', theme: 'dark' },
 ];
 
 export const GENERAL_SLIDE_COUNT = STEPS.length;
+
+const RESULT_INDEX = STEPS.findIndex((step) => step.kind === 'result');
 
 type GeneralStoriesProps = {
   data?: GeneralReviewData;
@@ -960,19 +1025,59 @@ export const GeneralStories = ({
   const t = useTranslations('ReviewGeneral');
   const f = useReviewFormat();
   // lives here so answers survive going back and forth between slides
-  const [answers, setAnswers] = useState<Answers>({});
+  const [answers, setAnswers] = useState<Answers>(NO_ANSWERS);
+  // demo only: remounts the player on the result slide with the answers of one type
+  const [debugJump, setDebugJump] = useState<{ key: number; index: number } | null>(null);
+
+  const jumpToResult = (type: NeopianType | null) => {
+    setAnswers({ personality: type ? answersFor(type) : {}, trivia: {} });
+    setDebugJump((prev) => ({ key: (prev?.key ?? 0) + 1, index: RESULT_INDEX }));
+  };
+
+  const debugButtons = (
+    <>
+      <Text fontSize="11px" fontWeight={700} color="whiteAlpha.700">
+        Debug
+      </Text>
+      {NEOPIAN_TYPES.map((type) => (
+        <Button key={type} size="2xs" variant="subtle" onClick={() => jumpToResult(type)}>
+          {t(`type-${type}`)}
+        </Button>
+      ))}
+      <Button size="2xs" variant="subtle" onClick={() => jumpToResult(null)}>
+        {t('result-generic', { year: data.year })}
+      </Button>
+    </>
+  );
 
   const stories: Story[] = STEPS.map((step) => ({
     theme: step.theme,
     render: (colors: SlideThemeColors) => {
-      if (step.kind === 'quiz')
+      if (step.kind === 'question')
         return (
-          <QuizSlide
+          <PersonalitySlide
             data={data}
             theme={colors}
             id={step.id}
-            picked={answers[step.id]}
-            onPick={(index) => setAnswers((prev) => ({ ...prev, [step.id]: index }))}
+            picked={answers.personality[step.id]}
+            onPick={(type) =>
+              setAnswers((prev) => ({
+                ...prev,
+                personality: { ...prev.personality, [step.id]: type },
+              }))
+            }
+          />
+        );
+      if (step.kind === 'trivia')
+        return (
+          <TriviaSlide
+            data={data}
+            theme={colors}
+            id={step.id}
+            picked={answers.trivia[step.id]}
+            onPick={(index) =>
+              setAnswers((prev) => ({ ...prev, trivia: { ...prev.trivia, [step.id]: index } }))
+            }
           />
         );
       if (step.kind === 'result')
@@ -993,10 +1098,13 @@ export const GeneralStories = ({
 
   return (
     <StoriesPlayer
+      key={debugJump?.key ?? 0}
+      initialIndex={debugJump?.index}
       brand={t('brand', { year: data.year })}
       notice={t('demo-notice', { date: f.day(data.dataUntil) })}
       onExit={onExit}
       stories={stories}
+      toolbar={debugButtons}
     />
   );
 };

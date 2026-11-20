@@ -11,23 +11,42 @@ export type InflationCategory = 'books' | 'booktastic' | 'gourmet' | 'stamps' | 
 
 export type RankedItem = { item: ReviewItem; value: number; count?: number };
 
-export type QuizId = 'viewed' | 'opened' | 'auction' | 'books' | 'rise' | 'drop';
+/** Bonus trivia after the personality quiz: shows the answer but doesn't count for the result. */
+export type TriviaId = 'rise' | 'drop';
 
-/** One answer. Items show their image; `value`, `count`, `start` and `end` feed the reveal. */
-export type QuizOption = {
-  item?: ReviewItem;
-  value?: number;
-  count?: number;
-  start?: number;
-  end?: number;
+/** One trivia answer, with the price at the start and at the end of the year. */
+export type TriviaOption = {
+  item: ReviewItem;
+  start: number;
+  end: number;
 };
 
-export type Quiz = {
-  id: QuizId;
+export type Trivia = {
+  id: TriviaId;
   /** The first option is always the right answer. */
-  options: QuizOption[];
+  options: TriviaOption[];
   /** Display order (indexes into `options`), so the answer isn't always first. */
   order: number[];
+};
+
+export type NeopianType = 'speculator' | 'collector' | 'fashionista' | 'oldschool';
+
+export const NEOPIAN_TYPES: NeopianType[] = ['speculator', 'collector', 'fashionista', 'oldschool'];
+
+export type QuestionId =
+  'free-hour' | 'trade-offer' | 'dream-item' | 'jackpot' | 'sdb' | 'quest-pool' | 'books';
+
+/**
+ * Symbol and fact of the year of each type on the result slide. "New" items follow the item page
+ * "first seen" rule: item_id >= 85020, not PB, added in the year.
+ */
+export type NeopianTypesData = {
+  /** An expensive item seen restocking by itemdb users (it may have restocked more times). */
+  speculator: { item: ReviewItem; price: number; seen: number };
+  /** New items in the "All Collectibles" list. */
+  collector: { item: ReviewItem; albumItems: number };
+  fashionista: { item: ReviewItem; nc: number; wearables: number; petStyles: number };
+  oldschool: { item: ReviewItem; np: number; r101: number; noTrade: number };
 };
 
 export type GeneralReviewData = {
@@ -91,7 +110,8 @@ export type GeneralReviewData = {
     books: number;
     examples: { item: ReviewItem; start: number; end: number }[];
   };
-  quizzes: Record<QuizId, Quiz>;
+  trivia: Record<TriviaId, Trivia>;
+  neopianTypes: NeopianTypesData;
 };
 
 const img = (file: string) => `https://images.neopets.com/items/${file}`;
@@ -138,6 +158,9 @@ const ITEMS = {
   zafaraAgent: item('Zafara Double Agent', 'goldtradingcardback.gif'),
   fyoraBoxes: item('Small Fyora Spring Gift Boxes', 'gif_fyora_smallboxes.gif'),
   toothbrushSword: item('Toothbrush Sword', 'bd_toothbrush_sword.gif'),
+  loveBomb: item('Love Bomb', 'bd_lovebomb.gif'),
+  oscarStamp: item('Oscar Stamp', 'st_oscar.gif'),
+  sunsetJournal: item('Sunset Journal', 'boo_sunset_journal.gif'),
 };
 
 export const GENERAL_REVIEW: GeneralReviewData = {
@@ -238,42 +261,7 @@ export const GENERAL_REVIEW: GeneralReviewData = {
       { item: ITEMS.bruceDarblat, start: 12000, end: 520000 },
     ],
   },
-  quizzes: {
-    viewed: {
-      id: 'viewed',
-      options: [
-        { item: ITEMS.hungryFungus, value: 6865 },
-        { item: ITEMS.donna, value: 5748 },
-        { item: ITEMS.coolNegg, value: 5043 },
-        { item: ITEMS.drakarasWand, value: 4163 },
-      ],
-      order: [2, 1, 0, 3],
-    },
-    opened: {
-      id: 'opened',
-      options: [
-        { item: ITEMS.donationCapsule, value: 10622 },
-        { item: ITEMS.kougraGbmc, value: 5420 },
-        { item: ITEMS.sleepoverCapsule, value: 4192 },
-        { item: ITEMS.doctorsBag, value: 3850 },
-      ],
-      order: [1, 3, 2, 0],
-    },
-    auction: {
-      id: 'auction',
-      options: [
-        { item: ITEMS.seasonalPea, value: 218606050814, count: 3580 },
-        { item: ITEMS.coffeeMarshmallows, value: 188343370895, count: 1646 },
-        { item: ITEMS.coolNegg, value: 173807964942, count: 29903 },
-        { item: ITEMS.donna, value: 169150375223, count: 1034 },
-      ],
-      order: [2, 0, 3, 1],
-    },
-    books: {
-      id: 'books',
-      options: [{ value: 650000 }, { value: 6900 }, { value: 65000 }, { value: 6500000 }],
-      order: [1, 2, 0, 3],
-    },
+  trivia: {
     // conservative values: highest of the first 3 prices of the year vs lowest of the last 3 (and
     // the other way around for drops), with at least 5 price updates in 2026
     rise: {
@@ -297,18 +285,46 @@ export const GENERAL_REVIEW: GeneralReviewData = {
       order: [1, 3, 0, 2],
     },
   },
+  // Nov 20 read-only queries; symbols are provisional (most listed new items, except the Styling
+  // Studio Supplies, which isn't new)
+  neopianTypes: {
+    speculator: { item: ITEMS.loveBomb, price: 290000000, seen: 13 },
+    collector: { item: ITEMS.oscarStamp, albumItems: 73 },
+    fashionista: { item: ITEMS.stylingSupplies, nc: 4365, wearables: 1713, petStyles: 2048 },
+    oldschool: { item: ITEMS.sunsetJournal, np: 1268, r101: 828, noTrade: 10 },
+  },
 };
 
-/** Book quiz: the price the Muffin Baking Book had before the rush. */
-export const BOOK_QUIZ_START = 3700;
+/** Personality questions in the order they show up, with one option per type in display order. */
+export const PERSONALITY_QUESTIONS: { id: QuestionId; options: NeopianType[] }[] = [
+  { id: 'free-hour', options: ['speculator', 'fashionista', 'collector', 'oldschool'] },
+  { id: 'trade-offer', options: ['collector', 'speculator', 'oldschool', 'fashionista'] },
+  { id: 'dream-item', options: ['fashionista', 'collector', 'oldschool', 'speculator'] },
+  { id: 'jackpot', options: ['oldschool', 'speculator', 'fashionista', 'collector'] },
+  { id: 'sdb', options: ['speculator', 'oldschool', 'collector', 'fashionista'] },
+  { id: 'quest-pool', options: ['collector', 'fashionista', 'speculator', 'oldschool'] },
+  { id: 'books', options: ['oldschool', 'speculator', 'fashionista', 'collector'] },
+];
 
-export const QUIZ_ORDER: QuizId[] = ['viewed', 'opened', 'auction', 'books', 'rise', 'drop'];
+export const TRIVIA_ORDER: TriviaId[] = ['rise', 'drop'];
 
-export type ResultTier = 'oracle' | 'tycoon' | 'explorer' | 'newcomer';
+export type PersonalityAnswers = Partial<Record<QuestionId, NeopianType>>;
 
-export const getResultTier = (score: number, total: number): ResultTier => {
-  if (score === total) return 'oracle';
-  if (score >= total - 2) return 'tycoon';
-  if (score >= 2) return 'explorer';
-  return 'newcomer';
+/**
+ * The type picked the most; on a tie, the tied type picked in the latest question wins. Null (the
+ * generic result) unless every question was answered.
+ */
+export const getNeopianType = (answers: PersonalityAnswers): NeopianType | null => {
+  const picks = PERSONALITY_QUESTIONS.map(({ id }) => answers[id]);
+  if (picks.some((pick) => !pick)) return null;
+
+  const counts = new Map<NeopianType, number>();
+  picks.forEach((pick) => counts.set(pick!, (counts.get(pick!) ?? 0) + 1));
+  const best = Math.max(...counts.values());
+
+  return picks.findLast((pick) => counts.get(pick!) === best) ?? null;
 };
+
+/** Answers that lead straight to a type, for the demo debug shortcuts. */
+export const answersFor = (type: NeopianType): PersonalityAnswers =>
+  Object.fromEntries(PERSONALITY_QUESTIONS.map(({ id }) => [id, type]));
