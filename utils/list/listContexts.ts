@@ -12,11 +12,25 @@ export const MAX_LIST_CONTEXTS = 100;
 /** hex (#rgb / #rrggbb / #rrggbbaa), within the `@db.VarChar(9)` column. */
 export const LIST_CONTEXT_COLOR_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
+/**
+ * Where a context shows. `grouping`: only groups items (no item card corner). `badge`: only the
+ * item card corner (no group). The contexts modal and the item page footer show every mode.
+ */
+export const LIST_CONTEXT_MODES = ['both', 'grouping', 'badge'] as const;
+export type ListContextMode = (typeof LIST_CONTEXT_MODES)[number];
+
+/** Shown in item card corners (and their popover). */
+export const contextShowsBadge = (context: { mode: ListContextMode }) =>
+  context.mode !== 'grouping';
+/** Gets its own group when the list is grouped by context. */
+export const contextGroupsItems = (context: { mode: ListContextMode }) => context.mode !== 'badge';
+
 export type ListContextFields = {
   badgeText: string;
   title: string | null;
   description: string | null;
   color: string;
+  mode: ListContextMode;
   /** `Items.internal_id` of items already in the list. Replaces the context's items. */
   itemIids: number[];
 };

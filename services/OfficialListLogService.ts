@@ -23,7 +23,8 @@ export type OfficialListAction =
   | 'deleteList'
   | 'createContext'
   | 'updateContext'
-  | 'deleteContext';
+  | 'deleteContext'
+  | 'reorderContexts';
 
 /**
  * Writes one `officialList` log row. No-op for non-official lists, so callers can use it

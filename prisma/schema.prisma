@@ -537,6 +537,12 @@ model UserList {
   @@fulltext([name, description])
 }
 
+enum ListContextMode {
+  both
+  grouping
+  badge
+}
+
 enum SeriesType {
   listCreation
   itemAddition
@@ -590,13 +596,17 @@ model ListItems {
 // Shared notes ("contexts") attached to some items of a list, e.g. "Bonus 1" or
 // "Stockings 1-5". Many-to-many with ListItems, like ManualPriceMarker/Item.
 model ListContext {
-  internal_id Int      @id @default(autoincrement())
+  internal_id Int             @id @default(autoincrement())
   list_id     Int
-  list        UserList @relation(fields: [list_id], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
-  badgeText   String   @db.VarChar(191)
-  title       String?  @db.VarChar(191)
-  description String?  @db.Text
-  color       String   @db.VarChar(9)
+  list        UserList        @relation(fields: [list_id], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  badgeText   String          @db.VarChar(191)
+  title       String?         @db.VarChar(191)
+  description String?         @db.Text
+  color       String          @db.VarChar(9)
+  /// position in the list's contexts (ties: internal_id); the first one leads item cards
+  order       Int             @default(0)
+  /// where the context shows: item card corner, group by context, or both
+  mode        ListContextMode @default(both)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

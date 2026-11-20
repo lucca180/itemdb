@@ -47,6 +47,7 @@ import A11yTooltip from '@components/Utils/Tooltip';
 import { useKeyboardShortcut } from '@utils/useKeyboardShortcut';
 import { useAuth } from '@utils/auth';
 import { canEditListInfo } from '@utils/list/listPermissions';
+import { contextGroupsItems } from '@utils/list/listContexts';
 import { ListContextsProvider } from '@components/UserLists/Contexts/ListContextsProvider';
 import { ListContextGroups } from '@components/UserLists/Contexts/ListContextGroups';
 import type { ListContextsModalProps } from '@components/UserLists/Contexts/ListContextsModal';
@@ -176,7 +177,9 @@ export function ListPageClient({
   const canManageContexts =
     state.list.official &&
     canEditListInfo({ official: state.list.official, ownerId: state.list.owner.id }, user);
-  const showContextGroups = groupByContext && !state.isEdit && contexts.length > 0;
+  // badge-only contexts don't group, so the switch needs at least one that does
+  const hasGroupingContexts = contexts.some(contextGroupsItems);
+  const showContextGroups = groupByContext && !state.isEdit && hasGroupingContexts;
 
   const color = Color(state.list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
@@ -506,7 +509,7 @@ export function ListPageClient({
                   <LuPencil /> {t('Lists.contexts-manage')}
                 </Button>
               )}
-              {contexts.length > 0 && !state.isEdit && (
+              {hasGroupingContexts && !state.isEdit && (
                 <Switch.Root
                   size="sm"
                   colorPalette="whiteAlpha"

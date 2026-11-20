@@ -323,6 +323,10 @@ export type ListContext = {
   /** Markdown */
   description: string | null;
   color: string;
+  /** Position in the list (ties: internal_id); contexts come sorted by it */
+  order: number;
+  /** `both`, `grouping` (no item card corner) or `badge` (no group) */
+  mode: 'both' | 'grouping' | 'badge';
   createdAt: string;
   updatedAt: string;
   /** `Items.internal_id` of the list items in this context. */

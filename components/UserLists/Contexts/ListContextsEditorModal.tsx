@@ -15,6 +15,7 @@ import {
   IconButton,
   Image,
   Input,
+  NativeSelect,
   Portal,
   SimpleGrid,
   Stack,
@@ -22,10 +23,36 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import axios from 'axios';
 import { useTranslations } from 'next-intl';
-import { LuListPlus, LuPencil, LuPlus, LuSave, LuTrash2, LuX } from 'react-icons/lu';
+import {
+  LuGripVertical,
+  LuListPlus,
+  LuPencil,
+  LuPlus,
+  LuSave,
+  LuTrash2,
+  LuX,
+} from 'react-icons/lu';
+import {
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { ItemV2For, ListContext, ListItemInfo, UserList } from '@types';
 import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import { useToast } from '@utils/theme/toast';
@@ -34,7 +61,10 @@ import {
   MAX_LIST_CONTEXT_BADGE_LENGTH,
   MAX_LIST_CONTEXT_DESCRIPTION_LENGTH,
   MAX_LIST_CONTEXT_TITLE_LENGTH,
+  LIST_CONTEXT_MODES,
+  contextShowsBadge,
   type ListContextFields,
+  type ListContextMode,
 } from '@utils/list/listContexts';
 import {
   ListContextPanel,
@@ -47,7 +77,7 @@ const SWATCHES = ['#2f855a', '#b7791f', '#805ad5', '#2b6cb0', '#c53030', '#c0562
 
 type Form = { id: number | null; badgeText: string; title: string; description: string } & Pick<
   ListContextFields,
-  'color' | 'itemIids'
+  'color' | 'mode' | 'itemIids'
 >;
 
 const emptyForm = (): Form => ({
@@ -56,6 +86,7 @@ const emptyForm = (): Form => ({
   title: '',
   description: '',
   color: SWATCHES[0],
+  mode: 'both',
   itemIids: [],
 });
 
@@ -65,6 +96,7 @@ const toForm = (context: ListContext): Form => ({
   title: context.title ?? '',
   description: context.description ?? '',
   color: context.color,
+  mode: context.mode,
   itemIids: context.itemIids,
 });
 
@@ -94,6 +126,12 @@ export default function ListContextsEditorModal({
   const [notFound, setNotFound] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const apiBase = `/api/v1/lists/${list.official ? 'official' : list.owner.username}/${list.internal_id}/contexts`;
 
@@ -201,6 +239,37 @@ export default function ListContextsEditorModal({
     }
   };
 
+  // saved right away; the order also decides which context leads an item's corner
+  const reorder = async ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+
+    const from = contexts.findIndex((ctx) => ctx.internal_id === active.id);
+    const to = contexts.findIndex((ctx) => ctx.internal_id === over.id);
+    if (from < 0 || to < 0) return;
+
+    const previous = contexts;
+    const next = arrayMove(contexts, from, to).map((ctx, order) => ({ ...ctx, order }));
+    onContextsChange(next);
+
+    setSaving(true);
+    try {
+      const res = await axios.patch<ListContext[]>(apiBase, {
+        contextIds: next.map((ctx) => ctx.internal_id),
+      });
+      onContextsChange(res.data);
+      toast({
+        id: 'list-contexts-order-saved',
+        title: t('Lists.contexts-order-saved'),
+        status: 'success',
+      });
+    } catch (err) {
+      onContextsChange(previous);
+      showError(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const validColor = LIST_CONTEXT_COLOR_PATTERN.test(form.color.trim());
   const canSave = !!form.badgeText.trim() && validColor && !saving;
 
@@ -211,6 +280,8 @@ export default function ListContextsEditorModal({
     title: form.title || null,
     description: form.description || null,
     color: validColor ? form.color : SWATCHES[0],
+    order: 0,
+    mode: form.mode,
     createdAt: '',
     updatedAt: '',
     itemIids: form.itemIids,
@@ -244,54 +315,79 @@ export default function ListContextsEditorModal({
                       <Text color="gray.400">{t('Lists.contexts-empty')}</Text>
                     </Center>
                   )}
+                  {contexts.length > 1 && (
+                    <Text fontSize="xs" color="gray.400">
+                      {t('Lists.contexts-reorder-help')}
+                    </Text>
+                  )}
                   <Stack gap={2} maxH={{ lg: '560px' }} overflowY="auto" pr={1}>
-                    {contexts.map((context) => (
-                      <Flex
-                        key={context.internal_id}
-                        alignItems="center"
-                        gap={2}
-                        p={2}
-                        borderRadius="md"
-                        bg={form.id === context.internal_id ? 'whiteAlpha.200' : 'blackAlpha.300'}
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={reorder}
+                    >
+                      <SortableContext
+                        items={contexts.map((ctx) => ctx.internal_id)}
+                        strategy={verticalListSortingStrategy}
+                        disabled={saving}
                       >
-                        <Badge
-                          style={{ backgroundColor: context.color }}
-                          color={contextTextColor(context.color)}
-                          maxW="140px"
-                          truncate
-                          textTransform="none"
-                        >
-                          {context.badgeText}
-                        </Badge>
-                        <Text fontSize="xs" color="gray.400" flex="1">
-                          {confirmDelete === context.internal_id
-                            ? t('Lists.contexts-delete-confirm')
-                            : t('Lists.contexts-item-count', { count: context.itemIids.length })}
-                        </Text>
-                        <IconButton
-                          aria-label={t('Lists.contexts-editing', { badge: context.badgeText })}
-                          size="xs"
-                          variant="ghost"
-                          disabled={saving}
-                          onClick={() => {
-                            setConfirmDelete(null);
-                            setForm(toForm(context));
-                          }}
-                        >
-                          <LuPencil />
-                        </IconButton>
-                        <IconButton
-                          aria-label={t('General.delete')}
-                          size="xs"
-                          variant={confirmDelete === context.internal_id ? 'solid' : 'ghost'}
-                          colorPalette="red"
-                          disabled={saving}
-                          onClick={() => remove(context)}
-                        >
-                          <LuTrash2 />
-                        </IconButton>
-                      </Flex>
-                    ))}
+                        {contexts.map((context) => (
+                          <SortableContextRow
+                            key={context.internal_id}
+                            id={context.internal_id}
+                            dragLabel={t('Lists.contexts-drag', { badge: context.badgeText })}
+                            dragDisabled={saving || contexts.length < 2}
+                            bg={
+                              form.id === context.internal_id ? 'whiteAlpha.200' : 'blackAlpha.300'
+                            }
+                          >
+                            <Badge
+                              style={{ backgroundColor: context.color }}
+                              color={contextTextColor(context.color)}
+                              maxW="140px"
+                              truncate
+                              textTransform="none"
+                            >
+                              {context.badgeText}
+                            </Badge>
+                            {context.mode !== 'both' && (
+                              <Badge size="sm" variant="outline" textTransform="none">
+                                {t(`Lists.contexts-mode-${context.mode}-short`)}
+                              </Badge>
+                            )}
+                            <Text fontSize="xs" color="gray.400" flex="1">
+                              {confirmDelete === context.internal_id
+                                ? t('Lists.contexts-delete-confirm')
+                                : t('Lists.contexts-item-count', {
+                                    count: context.itemIids.length,
+                                  })}
+                            </Text>
+                            <IconButton
+                              aria-label={t('Lists.contexts-editing', { badge: context.badgeText })}
+                              size="xs"
+                              variant="ghost"
+                              disabled={saving}
+                              onClick={() => {
+                                setConfirmDelete(null);
+                                setForm(toForm(context));
+                              }}
+                            >
+                              <LuPencil />
+                            </IconButton>
+                            <IconButton
+                              aria-label={t('General.delete')}
+                              size="xs"
+                              variant={confirmDelete === context.internal_id ? 'solid' : 'ghost'}
+                              colorPalette="red"
+                              disabled={saving}
+                              onClick={() => remove(context)}
+                            >
+                              <LuTrash2 />
+                            </IconButton>
+                          </SortableContextRow>
+                        ))}
+                      </SortableContext>
+                    </DndContext>
                   </Stack>
                 </Stack>
 
@@ -365,6 +461,30 @@ export default function ListContextsEditorModal({
                       />
                     </HStack>
                   </Field.Root>
+                  <Field.Root>
+                    <Field.Label>{t('Lists.contexts-mode')}</Field.Label>
+                    <NativeSelect.Root size="sm" variant="subtle">
+                      <NativeSelect.Field
+                        value={form.mode}
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            mode: e.target.value as ListContextMode,
+                          }))
+                        }
+                      >
+                        {LIST_CONTEXT_MODES.map((mode) => (
+                          <option key={mode} value={mode}>
+                            {t(`Lists.contexts-mode-${mode}`)}
+                          </option>
+                        ))}
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                    <Field.HelperText fontSize="xs">
+                      {t(`Lists.contexts-mode-${form.mode}-help`)}
+                    </Field.HelperText>
+                  </Field.Root>
                   <Box>
                     <Text fontSize="sm" fontWeight="bold" mb={2}>
                       {t('Lists.contexts-preview')}
@@ -376,7 +496,11 @@ export default function ListContextsEditorModal({
                           disableLink
                           uniqueID="list-context-preview"
                           item={previewItem}
-                          corner={<ListContextCorner contexts={[previewContext]} />}
+                          corner={
+                            contextShowsBadge(previewContext) ? (
+                              <ListContextCorner contexts={[previewContext]} />
+                            ) : undefined
+                          }
                         />
                       )}
                       <Box
@@ -521,5 +645,62 @@ export default function ListContextsEditorModal({
         </Dialog.Positioner>
       </Portal>
     </Dialog.Root>
+  );
+}
+
+/** A row of the context list; dragged by its handle so the buttons keep their clicks. */
+function SortableContextRow({
+  id,
+  dragLabel,
+  dragDisabled,
+  bg,
+  children,
+}: {
+  id: number;
+  dragLabel: string;
+  dragDisabled: boolean;
+  bg: string;
+  children: ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  return (
+    <Flex
+      ref={setNodeRef}
+      alignItems="center"
+      gap={2}
+      p={2}
+      pl={1}
+      borderRadius="md"
+      bg={bg}
+      position="relative"
+      zIndex={isDragging ? 1 : undefined}
+      boxShadow={isDragging ? 'lg' : undefined}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+    >
+      <IconButton
+        ref={setActivatorNodeRef}
+        aria-label={dragLabel}
+        size="xs"
+        variant="ghost"
+        color="gray.400"
+        cursor={dragDisabled ? 'default' : isDragging ? 'grabbing' : 'grab'}
+        disabled={dragDisabled}
+        touchAction="none"
+        {...attributes}
+        {...listeners}
+      >
+        <LuGripVertical />
+      </IconButton>
+      {children}
+    </Flex>
   );
 }

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { ListContext } from '@types';
+import { contextShowsBadge } from '@utils/list/listContexts';
 
 type ListContextsValue = {
   byIid: Map<number, ListContext[]>;
@@ -26,7 +27,10 @@ export function groupContextsByItem(contexts: ListContext[]) {
   return byIid;
 }
 
-/** Makes the list contexts available to the item cards rendered below it. */
+/**
+ * Makes the list contexts available to the item cards rendered below it. Grouping-only contexts
+ * are left out: they never show in an item card corner.
+ */
 export function ListContextsProvider({
   contexts,
   onSeeAll,
@@ -37,7 +41,7 @@ export function ListContextsProvider({
   children: ReactNode;
 }) {
   const value = useMemo(
-    () => ({ byIid: groupContextsByItem(contexts), onSeeAll }),
+    () => ({ byIid: groupContextsByItem(contexts.filter(contextShowsBadge)), onSeeAll }),
     [contexts, onSeeAll]
   );
 

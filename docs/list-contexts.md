@@ -8,6 +8,8 @@ special inside that list (e.g. "Bonus 3" or "Completion prize") when the single
 - A context belongs to **one list** and can include **many of its items**.
 - An item can be in **many contexts** of the same list.
 - Contexts are independent of `highlight`, which is unchanged.
+- **For now, only official lists show contexts.** The API still accepts contexts on
+  other lists (owners can write them), but their pages neither load nor show them.
 
 ---
 
@@ -15,7 +17,7 @@ special inside that list (e.g. "Bonus 3" or "Completion prize") when the single
 
 | Model | Columns | Notes |
 | --- | --- | --- |
-| `ListContext` | `list_id`, `badgeText`, `title?`, `description?`, `color`, `createdAt`, `updatedAt` | Deleted with the list (cascade) |
+| `ListContext` | `list_id`, `badgeText`, `title?`, `description?`, `color`, `order`, `mode`, `createdAt`, `updatedAt` | Deleted with the list (cascade) |
 | `ListContextItem` | `context_id`, `listItem_id` | Unique per pair; deleted with the context **or the list item** (cascade) |
 
 The link points to the `ListItems` row, not to the item. An item removed from the
@@ -23,6 +25,22 @@ list leaves its contexts automatically.
 
 The API and the `ListContext` type (`types/types.d.ts`) speak **item ids**
 (`Items.internal_id`) in `itemIids`. The service resolves them to `ListItems` rows.
+
+### Mode
+
+`ListContext.mode` (enum `ListContextMode`, default `both`) decides where a context
+shows:
+
+| Mode | Item card corner (and its popover) | Own group in "group by context" | Contexts modal and item page footer |
+| --- | --- | --- | --- |
+| `both` | Yes | Yes | Yes |
+| `grouping` | No | Yes | Yes |
+| `badge` | Yes | No | Yes |
+
+The rules are `contextShowsBadge` and `contextGroupsItems` in
+`utils/list/listContexts.ts`. The corner color is the first context that shows a
+badge. An item whose only contexts are `badge` lands in "Other items" when grouped.
+The "group by context" switch only appears when at least one context groups.
 
 ### Limits (`utils/list/listContexts.ts`)
 
@@ -32,6 +50,7 @@ The API and the `ListContext` type (`types/types.d.ts`) speak **item ids**
 | `title` | Optional markdown, at most 191 characters. An empty string is stored as `null`. |
 | `description` | Optional markdown (`Text`). `MAX_LIST_CONTEXT_DESCRIPTION_LENGTH` (2000) is enforced only by the editor UI. |
 | `color` | Hex `#rgb`, `#rrggbb` or `#rrggbbaa` (`LIST_CONTEXT_COLOR_PATTERN`). |
+| `mode` | One of `LIST_CONTEXT_MODES` (`both`, `grouping`, `badge`). Missing or `null` means `both`. |
 | Contexts per list | At most `MAX_LIST_CONTEXTS` (100). |
 | `itemIids` | Positive integers, deduplicated. Each one must already be in the list. |
 
@@ -45,13 +64,20 @@ enforced by `test/listItemsWrite.guard.test.ts`.
 
 | Function | Use |
 | --- | --- |
-| `getListContexts(listId, includeHidden)` | Every context of a list, in creation order. |
+| `getListContexts(listId, includeHidden)` | Every context of a list, in the list's order. |
 | `getItemListContexts(itemIid, listIds)` | Contexts that include one item, keyed by list id. Used by the item page. |
 | `createListContext` / `updateListContext` / `deleteListContext` | Mutations. Each returns `{ context, affectedItemIids }`. |
+| `reorderListContexts(listId, contextIds)` | Sets `order` for every context. Returns `{ contexts, affectedItemIids }`. |
 | `listService.getListContextsFor(list)` | `getListContexts` with `includeHidden` set from the viewer (owner or admin). |
 
-- **Order matters.** Contexts are sorted by `internal_id` ascending. The first
-  context of an item decides the corner color and the footer badge.
+- **Order matters.** Contexts are sorted by `order`, then `internal_id` (rows created
+  before `order` existed all have 0). The first context of an item decides the
+  corner color and the footer badge. Groups follow the same order.
+- **New contexts go last** (`order` = current max + 1).
+- **Reorder** needs every context of the list exactly once in `contextIds`. A missing,
+  repeated or foreign id fails with a 400, so a stale editor can't drop positions.
+  `affectedItemIids` is every item in any context, because an item's first
+  context may have changed.
 - **Hidden items.** Links to hidden list items are dropped from `itemIids` unless
   `includeHidden` is set. `getItemListContexts` always drops them.
 - **Item replace semantics.** `itemIids` on update **replaces** the context's items.
@@ -72,6 +98,7 @@ this list).
 | --- | --- | --- |
 | `GET` | `/api/v1/lists/[username]/[list_id]/contexts` | `ListContext[]`. `username` can be `official`, and `list_id` can be an id or a slug. |
 | `POST` | `/api/v1/lists/[username]/[list_id]/contexts` | `ListContextCreateRequest` → the created context |
+| `PATCH` | `/api/v1/lists/[username]/[list_id]/contexts` | `{ contextIds: number[] }` in the new order → every context (with hidden items) |
 | `PATCH` | `/api/v1/lists/[username]/[list_id]/contexts/[context_id]` | `ListContextUpdateRequest` (partial) → the updated context |
 | `DELETE` | `/api/v1/lists/[username]/[list_id]/contexts/[context_id]` | `{ success: true }` |
 
@@ -95,8 +122,8 @@ Write routes need the numeric `list_id`. The `username` segment is not checked.
 ### After a mutation (`afterContextMutation`)
 
 1. On official lists, the change is logged with `logOfficialListAction`:
-   `createContext`, `updateContext` or `deleteContext`, with the context id, badge
-   and item ids.
+   `createContext`, `updateContext` or `deleteContext` (context id, badge and item
+   ids), or `reorderContexts` (context ids in the new order).
 2. `revalidateListCaches(list_id)` invalidates the list-items tags (preload, full
    and full-owner), and those tags also cover the list page contexts.
 3. On official lists, the `lists` section tag of every affected item is
@@ -112,8 +139,9 @@ Write routes need the numeric `list_id`. The `username` segment is not checked.
 | Item page | `loadItemListContexts(iid, listIds)` in `app/_components/Item/loadUtils.ts` | `'use cache'`, the item's `lists` section tag, `cacheLife('itemSection')` |
 
 The list page uses the `full-owner` tag when the viewer can see hidden items, so
-an owner's entry is never served to other viewers. The item page only loads
-contexts when the item has official lists.
+an owner's entry is never served to other viewers. It skips the query for lists
+that are not official. The item page only loads contexts when the item has
+official lists.
 
 ---
 
@@ -128,8 +156,11 @@ contexts when the item has official lists.
   - **"Contexts (N)"**, which opens `ListContextsModal` with every context and
     its items. This button appears when the list has contexts.
   - **"Manage contexts"**, which opens `ListContextsEditorModal`. This button
-    appears for viewers who pass `canEditListInfo`.
-  - **"Group by context"**, a switch that is on by default and hidden in edit mode.
+    appears on official lists for viewers who pass `canEditListInfo` (admins).
+  - **"Group by context"**, a switch hidden in edit mode. It starts from the list's
+    `UserList.groupByContext` (default `false`), which is set by "Group by context
+    by default?" in the edit list modal (official lists only). A visitor's switch
+    is not saved.
 - After a save, the editor updates the page state directly, without a reload.
 
 ### Item card corner (`ListContextCorner`)
@@ -173,6 +204,9 @@ context list, the form (with a live card preview), and the item picker.
 - **Paste tab:** one entry per line or comma-separated, matched against list items
   by `Items.internal_id` or by exact name (case-insensitive). Entries that don't
   match are listed back.
+- **Order:** drag a context by its handle (`@dnd-kit`, mouse, touch or keyboard).
+  The new order is saved right away with the `PATCH` route, and the change is
+  undone if the request fails.
 - Delete asks for a second click to confirm.
 
 ### Item page (`ItemOfficialList.tsx`)
@@ -192,5 +226,7 @@ without "see all".
 - validation;
 - item resolution;
 - replace semantics;
+- order on create and reorder validation;
+- mode validation and partial updates;
 - revalidation tags;
 - hidden filtering.

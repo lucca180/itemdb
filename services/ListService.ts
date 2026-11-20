@@ -53,6 +53,7 @@ import {
   deleteListContext,
   getItemListContexts,
   getListContexts,
+  reorderListContexts,
   updateListContext,
 } from '@services/list/listContexts';
 
@@ -76,7 +77,10 @@ export {
 export type { GetItemListsOptions, ItemListCollections } from '@services/list/itemListsQuery';
 export type { PutListItemInput, DynamicItemChanges };
 export { ListContextError } from '@services/list/listContexts';
-export type { ListContextMutationResult } from '@services/list/listContexts';
+export type {
+  ListContextMutationResult,
+  ListContextReorderResult,
+} from '@services/list/listContexts';
 
 export class ListService {
   user: User | null = null;
@@ -101,6 +105,8 @@ export class ListService {
   static createListContext = createListContext;
   static updateListContext = updateListContext;
   static deleteListContext = deleteListContext;
+  /** Sets the order of every context of a list. */
+  static reorderListContexts = reorderListContexts;
 
   static init() {
     return ListService.initUser(null);

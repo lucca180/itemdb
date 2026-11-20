@@ -13,6 +13,7 @@ import {
   contextTextColor,
 } from '@components/UserLists/Contexts/ListContextPopover';
 import { ListContextGroupProvider } from '@components/UserLists/Contexts/ListContextsProvider';
+import { contextGroupsItems } from '@utils/list/listContexts';
 
 /** Groups up to this size render their cards directly and can sit side by side. */
 const SMALL_GROUP_MAX = 6;
@@ -23,7 +24,7 @@ type ListContextGroupsProps = Omit<ListViewportProps, 'activateSort' | 'editMode
 
 /**
  * Main item grid grouped by context (view mode only). An item in several contexts shows up in
- * each of their groups; items without a context go last.
+ * each of their groups; items without a context go last. Badge-only contexts get no group.
  */
 export function ListContextGroups({ contexts, ...listProps }: ListContextGroupsProps) {
   const t = useTranslations();
@@ -41,6 +42,7 @@ export function ListContextGroups({ contexts, ...listProps }: ListContextGroupsP
   const groups = useMemo(() => {
     const grouped = new Set<number>();
     const byContext = contexts
+      .filter(contextGroupsItems)
       .map((context) => {
         const iids = new Set(context.itemIids);
         const groupIds = visibleIds.filter((id) => iids.has(itemInfo[id].item_iid));

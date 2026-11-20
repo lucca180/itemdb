@@ -10,6 +10,7 @@ const prismaMock = vi.hoisted(() => {
       findUnique: vi.fn(),
       findUniqueOrThrow: vi.fn(),
       count: vi.fn(),
+      aggregate: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -17,7 +18,9 @@ const prismaMock = vi.hoisted(() => {
     listContextItem: { createMany: vi.fn(), deleteMany: vi.fn() },
     $transaction: vi.fn(),
   };
-  mock.$transaction.mockImplementation((fn: (tx: typeof mock) => unknown) => fn(mock));
+  mock.$transaction.mockImplementation((arg: unknown) =>
+    Array.isArray(arg) ? Promise.all(arg) : (arg as (tx: typeof mock) => unknown)(mock)
+  );
   return mock;
 });
 const checkAuthMock = vi.hoisted(() => vi.fn());
@@ -61,6 +64,8 @@ const contextRow = (
   title: null,
   description: null,
   color: '#d69e2e',
+  order: 0,
+  mode: 'both',
   createdAt: DATE,
   updatedAt: DATE,
   items: items.map((listItem) => ({ listItem })),
@@ -94,6 +99,7 @@ const req = (method: string, query: Record<string, string>, body: unknown = {}) 
 beforeEach(() => {
   vi.clearAllMocks();
   prismaMock.listContext.count.mockResolvedValue(0);
+  prismaMock.listContext.aggregate.mockResolvedValue({ _max: { order: 2 } });
   prismaMock.listContext.create.mockResolvedValue({ internal_id: 5 });
 });
 
@@ -176,6 +182,9 @@ describe('POST /api/v1/lists/[username]/[list_id]/contexts', () => {
         title: null,
         description: null,
         color: '#d69e2e',
+        // after the last context (max order 2)
+        order: 3,
+        mode: 'both',
       },
     });
     expect(prismaMock.listContextItem.createMany).toHaveBeenCalledWith({
@@ -277,7 +286,10 @@ describe('GET /api/v1/lists/[username]/[list_id]/contexts', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toMatchObject([{ internal_id: 5, itemIids: [2] }]);
     expect(prismaMock.listContext.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { list_id: 10 }, orderBy: { internal_id: 'asc' } })
+      expect.objectContaining({
+        where: { list_id: 10 },
+        orderBy: [{ order: 'asc' }, { internal_id: 'asc' }],
+      })
     );
     expect(res.headers['Cache-Control']).toContain('s-maxage');
   });
@@ -370,6 +382,44 @@ describe('PATCH/DELETE /api/v1/lists/[username]/[list_id]/contexts/[context_id]'
     expect(prismaMock.listContextItem.deleteMany).not.toHaveBeenCalled();
   });
 
+  test('mode can be changed on its own', async () => {
+    checkAuthMock.mockResolvedValue({ user: ADMIN });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    prismaMock.listContext.findUnique.mockResolvedValue(contextRow());
+    prismaMock.listContext.findUniqueOrThrow.mockResolvedValue(contextRow({ mode: 'grouping' }));
+    const res = mockRes();
+
+    await contextHandle(
+      req('PATCH', { username: 'official', list_id: '10', context_id: '5' }, { mode: 'grouping' }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(prismaMock.listContext.update).toHaveBeenCalledWith({
+      where: { internal_id: 5 },
+      data: { mode: 'grouping' },
+    });
+    expect(res.body).toMatchObject({ mode: 'grouping' });
+  });
+
+  test('unknown modes are rejected', async () => {
+    checkAuthMock.mockResolvedValue({ user: ADMIN });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    const res = mockRes();
+
+    await contextsHandle(
+      req(
+        'POST',
+        { username: 'official', list_id: '10' },
+        { badgeText: 'A', color: '#fff', mode: 'hidden' }
+      ),
+      res
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(prismaMock.listContext.create).not.toHaveBeenCalled();
+  });
+
   test('admins delete a context', async () => {
     checkAuthMock.mockResolvedValue({ user: ADMIN });
     prismaMock.userList.findUnique.mockResolvedValue(officialList);
@@ -405,5 +455,87 @@ describe('PATCH/DELETE /api/v1/lists/[username]/[list_id]/contexts/[context_id]'
 
     expect(res.statusCode).toBe(403);
     expect(prismaMock.listContext.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe('PATCH /api/v1/lists/[username]/[list_id]/contexts (reorder)', () => {
+  test('admins reorder the contexts of a list', async () => {
+    checkAuthMock.mockResolvedValue({ user: ADMIN });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    prismaMock.listContext.findMany
+      .mockResolvedValueOnce([{ internal_id: 5 }, { internal_id: 6 }])
+      .mockResolvedValueOnce([
+        contextRow({ internal_id: 6, order: 0 }, [{ item_iid: 8, isHidden: true }]),
+        contextRow({ internal_id: 5, order: 1 }, [{ item_iid: 7, isHidden: false }]),
+      ]);
+    prismaMock.listContext.update.mockResolvedValue({});
+    const res = mockRes();
+
+    await contextsHandle(
+      req('PATCH', { username: 'official', list_id: '10' }, { contextIds: [6, '5'] }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(prismaMock.listContext.update).toHaveBeenCalledWith({
+      where: { internal_id: 6 },
+      data: { order: 0 },
+    });
+    expect(prismaMock.listContext.update).toHaveBeenCalledWith({
+      where: { internal_id: 5 },
+      data: { order: 1 },
+    });
+    expect(prismaMock.listContext.findMany).toHaveBeenLastCalledWith(
+      expect.objectContaining({ orderBy: [{ order: 'asc' }, { internal_id: 'asc' }] })
+    );
+    // the editor needs hidden items too
+    expect(res.body).toMatchObject([
+      { internal_id: 6, order: 0, itemIids: [8] },
+      { internal_id: 5, order: 1, itemIids: [7] },
+    ]);
+    expect(logOfficialListActionMock).toHaveBeenCalledWith(
+      expect.objectContaining({ internal_id: 10 }),
+      'reorderContexts',
+      { context_ids: [6, 5] },
+      ADMIN
+    );
+
+    const tags = vi.mocked(triggerAppRevalidation).mock.calls.flatMap(([p]) => p.tags);
+    expect(tags).toContain('item-7-lists');
+    expect(tags).toContain('item-8-lists');
+  });
+
+  test.each([
+    ['a context is missing', [6]],
+    ['a context is repeated', [5, 5]],
+    ['a context belongs to another list', [5, 99]],
+    ['the ids are not a list', 5],
+  ])('rejected when %s', async (_, contextIds) => {
+    checkAuthMock.mockResolvedValue({ user: ADMIN });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    prismaMock.listContext.findMany.mockResolvedValue([{ internal_id: 5 }, { internal_id: 6 }]);
+    const res = mockRes();
+
+    await contextsHandle(
+      req('PATCH', { username: 'official', list_id: '10' }, { contextIds }),
+      res
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(prismaMock.listContext.update).not.toHaveBeenCalled();
+  });
+
+  test('curators cannot reorder contexts of official lists', async () => {
+    checkAuthMock.mockResolvedValue({ user: CURATOR });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    const res = mockRes();
+
+    await contextsHandle(
+      req('PATCH', { username: 'official', list_id: '10' }, { contextIds: [5] }),
+      res
+    );
+
+    expect(res.statusCode).toBe(403);
+    expect(prismaMock.listContext.update).not.toHaveBeenCalled();
   });
 });

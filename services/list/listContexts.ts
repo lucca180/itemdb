@@ -13,11 +13,13 @@ import prisma from '@utils/prisma';
 import { Prisma } from '@prisma/generated/client';
 import {
   LIST_CONTEXT_COLOR_PATTERN,
+  LIST_CONTEXT_MODES,
   MAX_LIST_CONTEXTS,
   MAX_LIST_CONTEXT_BADGE_LENGTH,
   MAX_LIST_CONTEXT_TITLE_LENGTH,
   type ListContextCreateRequest,
   type ListContextFields,
+  type ListContextMode,
   type ListContextUpdateRequest,
 } from '@utils/list/listContexts';
 
@@ -44,6 +46,8 @@ function serializeContext(row: ContextRow, includeHidden: boolean): ListContext 
     title: row.title,
     description: row.description,
     color: row.color,
+    order: row.order,
+    mode: row.mode,
     createdAt: row.createdAt.toJSON(),
     updatedAt: row.updatedAt.toJSON(),
     itemIids: row.items
@@ -53,7 +57,13 @@ function serializeContext(row: ContextRow, includeHidden: boolean): ListContext 
   };
 }
 
-/** Every context of a list, oldest first (the first one is what item cards show). */
+/** The list's own order; ties (rows from before `order` existed) fall back to creation order. */
+const contextOrderBy = [
+  { order: 'asc' },
+  { internal_id: 'asc' },
+] satisfies Prisma.ListContextOrderByWithRelationInput[];
+
+/** Every context of a list, in the list's order (the first one is what item cards show). */
 export async function getListContexts(
   listId: number,
   includeHidden = false
@@ -61,7 +71,7 @@ export async function getListContexts(
   const rows = await prisma.listContext.findMany({
     where: { list_id: listId },
     include: contextInclude,
-    orderBy: { internal_id: 'asc' },
+    orderBy: contextOrderBy,
   });
 
   return rows.map((row) => serializeContext(row, includeHidden));
@@ -83,7 +93,7 @@ export async function getItemListContexts(
       items: { some: { listItem: { item_iid: itemIid, isHidden: false } } },
     },
     include: contextInclude,
-    orderBy: { internal_id: 'asc' },
+    orderBy: contextOrderBy,
   });
 
   const byList: Record<number, ListContext[]> = {};
@@ -113,13 +123,21 @@ export async function createListContext(
   }
 
   const created = await prisma.$transaction(async (tx) => {
+    // new contexts go last
+    const last = await tx.listContext.aggregate({
+      where: { list_id: listId },
+      _max: { order: true },
+    });
+
     const context = await tx.listContext.create({
       data: {
         list_id: listId,
+        order: (last._max.order ?? -1) + 1,
         badgeText: fields.badgeText!,
         title: fields.title ?? null,
         description: fields.description ?? null,
         color: fields.color!,
+        mode: fields.mode!,
       },
     });
 
@@ -165,6 +183,7 @@ export async function updateListContext(
         ...(fields.title !== undefined ? { title: fields.title } : {}),
         ...(fields.description !== undefined ? { description: fields.description } : {}),
         ...(fields.color !== undefined ? { color: fields.color } : {}),
+        ...(fields.mode !== undefined ? { mode: fields.mode } : {}),
       },
     });
 
@@ -208,6 +227,51 @@ export async function deleteListContext(
 
   const context = serializeContext(existing, true);
   return { context, affectedItemIids: context.itemIids };
+}
+
+export type ListContextReorderResult = {
+  contexts: ListContext[];
+  /** Items in any context: the first context of an item (corner, footer) may have changed. */
+  affectedItemIids: number[];
+};
+
+/**
+ * Sets the order of a list's contexts. `contextIds` must hold every context of the list exactly
+ * once, so a stale editor can't silently drop or duplicate positions.
+ */
+export async function reorderListContexts(
+  listId: number,
+  contextIds: unknown
+): Promise<ListContextReorderResult> {
+  if (!Array.isArray(contextIds)) throw new ListContextError('Invalid contextIds');
+
+  const ids = contextIds.map((raw) => Number(raw));
+  if (ids.some((id) => !Number.isInteger(id) || id <= 0) || new Set(ids).size !== ids.length) {
+    throw new ListContextError('Invalid contextIds');
+  }
+
+  const existing = await prisma.listContext.findMany({
+    where: { list_id: listId },
+    select: { internal_id: true },
+  });
+
+  const existingIds = new Set(existing.map((row) => row.internal_id));
+  if (ids.length !== existingIds.size || ids.some((id) => !existingIds.has(id))) {
+    throw new ListContextError('contextIds must list every context of this list once');
+  }
+
+  await prisma.$transaction(
+    ids.map((id, order) =>
+      prisma.listContext.update({ where: { internal_id: id }, data: { order } })
+    )
+  );
+
+  const contexts = await getListContexts(listId, true);
+
+  return {
+    contexts,
+    affectedItemIids: [...new Set(contexts.flatMap((context) => context.itemIids))],
+  };
 }
 
 async function findListContext(listId: number, contextId: number): Promise<ContextRow> {
@@ -262,6 +326,10 @@ function normalizeFields(
     fields.color = normalizeColor(body.color);
   }
 
+  if (body.mode !== undefined || !partial) {
+    fields.mode = normalizeMode(body.mode);
+  }
+
   if (body.itemIids !== undefined) {
     fields.itemIids = normalizeItemIids(body.itemIids);
   }
@@ -301,6 +369,16 @@ function normalizeColor(value: unknown): string {
   }
 
   return value.trim();
+}
+
+/** Missing (or null) means `both`, like the column default. */
+function normalizeMode(value: unknown): ListContextMode {
+  if (value === undefined || value === null) return 'both';
+  if (typeof value !== 'string' || !LIST_CONTEXT_MODES.includes(value as ListContextMode)) {
+    throw new ListContextError(`Invalid mode (expected ${LIST_CONTEXT_MODES.join(', ')})`);
+  }
+
+  return value as ListContextMode;
 }
 
 function normalizeItemIids(value: unknown): number[] {

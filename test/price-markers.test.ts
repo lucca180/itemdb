@@ -56,6 +56,7 @@ function listFixture(overrides: Partial<UserList> & Pick<UserList, 'name'>): Use
     userTag: null,
     highlight: null,
     highlightText: null,
+    groupByContext: false,
     ...rest,
   };
 }

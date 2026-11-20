@@ -16,9 +16,10 @@ import { revalidateListCaches } from '@pages/api/v1/lists/[username]/[list_id]';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
+  if (req.method === 'PATCH') return PATCH(req, res);
 
   if (req.method == 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH');
     return res.status(200).json({});
   }
 
@@ -80,6 +81,30 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
+// reorder: `contextIds` holds every context of the list, in the new order
+const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
+  const auth = await loadEditableList(req, res);
+  if (!auth) return;
+
+  const { list, user } = auth;
+
+  try {
+    const result = await ListService.reorderListContexts(list.internal_id, req.body?.contextIds);
+
+    await afterContextChange(
+      list,
+      user,
+      'reorderContexts',
+      { context_ids: result.contexts.map((context) => context.internal_id) },
+      result.affectedItemIids
+    );
+
+    return res.status(200).json(result.contexts);
+  } catch (e: any) {
+    return sendContextError(res, e);
+  }
+};
+
 type EditableList = { internal_id: number; official: boolean; user_id: string };
 
 /**
@@ -135,23 +160,35 @@ export async function afterContextMutation(
   action: OfficialListAction,
   result: ListContextMutationResult
 ) {
-  await logOfficialListAction(
+  await afterContextChange(
     list,
+    user,
     action,
     {
       context_id: result.context.internal_id,
       badgeText: result.context.badgeText,
       item_iids: result.context.itemIids,
     },
-    user
+    result.affectedItemIids
   );
+}
+
+/** Logs the change (official lists) and revalidates the list and the affected item pages. */
+async function afterContextChange(
+  list: EditableList,
+  user: User,
+  action: OfficialListAction,
+  logData: Record<string, unknown>,
+  affectedItemIids: number[]
+) {
+  await logOfficialListAction(list, action, logData, user);
 
   await revalidateListCaches(list.internal_id);
 
   // item page official list cards show the contexts of that item
-  if (list.official && result.affectedItemIids.length) {
+  if (list.official && affectedItemIids.length) {
     await triggerAppRevalidation({
-      tags: result.affectedItemIids.map((iid) => itemSectionTag(iid, 'lists')),
+      tags: affectedItemIids.map((iid) => itemSectionTag(iid, 'lists')),
     });
   }
 }
