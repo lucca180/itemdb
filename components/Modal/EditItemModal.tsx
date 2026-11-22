@@ -27,7 +27,7 @@ import {
   Switch,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   EditItemFeedbackJSON,
   ItemData,
@@ -57,6 +57,7 @@ import MainLink from '@components/Utils/MainLink';
 import { usePathname } from '@i18n/navigation';
 import { useTranslations } from 'next-intl';
 import SpeciesSelect from '../Input/SpeciesSelect';
+import { petpetNameRecordToEntries, suggestPetpetFromItemName } from '@utils/petpet-catalog-match';
 import { deseaseList_en } from '../../utils/utils';
 import NeoColorSelect from '../Input/NeoColorSelect';
 import { UTCDate } from '@date-fns/utc';
@@ -1817,6 +1818,44 @@ export const PetpetTab = (props: PetpetTabProps) => {
   const [unsavedChanges, setUnsavedChanges] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [isLoading, setLoading] = useState<boolean>(false);
+  const [catalog, setCatalog] = useState<{
+    species: Record<string, string>;
+    colors: Record<string, string>;
+  } | null>(null);
+
+  // One catalog fetch feeds both selects and the name-based suggestions below them.
+  useEffect(() => {
+    let cancelled = false;
+    axios
+      .get<{ species?: Record<string, string>; colors?: Record<string, string> }>(
+        '/api/petpet-catalog'
+      )
+      .then((res) => {
+        if (cancelled) return;
+        setCatalog({ species: res.data.species ?? {}, colors: res.data.colors ?? {} });
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!cancelled) setCatalog({ species: {}, colors: {} });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const speciesNames = useMemo(() => Object.values(catalog?.species ?? {}), [catalog]);
+  const colorNames = useMemo(() => Object.values(catalog?.colors ?? {}), [catalog]);
+
+  // "Red Pepito" → Pepito / Red, shown as a one-click suggestion under each select.
+  const suggestion = useMemo(() => {
+    if (!catalog) return { species: null, color: null };
+    return suggestPetpetFromItemName(
+      item.name,
+      petpetNameRecordToEntries(catalog.species),
+      petpetNameRecordToEntries(catalog.colors)
+    );
+  }, [catalog, item.name]);
 
   useEffect(() => {
     if (!petpetData) return;
@@ -1904,19 +1943,43 @@ export const PetpetTab = (props: PetpetTabProps) => {
         </Text>
       )}
       <VStack bg="blackAlpha.300" p={2} borderRadius={'sm'}>
-        <HStack>
-          <NeoColorSelect
-            isPetpet
-            onChange={(v) => handleSelectChange(v, 'color')}
-            value={petpetInfo.color}
-            placeHolder="Color"
-          />
-          <SpeciesSelect
-            isPetpet
-            onChange={(v) => handleSelectChange(v as string, 'species')}
-            value={petpetInfo.species}
-            placeHolder="Species"
-          />
+        <HStack alignItems="flex-start">
+          <VStack gap={1}>
+            <NeoColorSelect
+              isPetpet
+              colors={colorNames}
+              onChange={(v) => handleSelectChange(v, 'color')}
+              value={petpetInfo.color}
+              placeHolder="Color"
+            />
+            {suggestion.color && suggestion.color !== petpetInfo.color && (
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={() => handleSelectChange(suggestion.color!, 'color')}
+              >
+                Use {suggestion.color}
+              </Button>
+            )}
+          </VStack>
+          <VStack gap={1}>
+            <SpeciesSelect
+              isPetpet
+              species={speciesNames}
+              onChange={(v) => handleSelectChange(v as string, 'species')}
+              value={petpetInfo.species}
+              placeHolder="Species"
+            />
+            {suggestion.species && suggestion.species !== petpetInfo.species && (
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={() => handleSelectChange(suggestion.species!, 'species')}
+              >
+                Use {suggestion.species}
+              </Button>
+            )}
+          </VStack>
         </HStack>
         <NativeSelect.Root variant="subtle">
           <NativeSelect.Field
