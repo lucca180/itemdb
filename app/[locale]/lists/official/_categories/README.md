@@ -15,6 +15,7 @@ _categories/
   events.ts     # Festival of Neggs, Altador Cup, Birthday, Winter Starlight Celebration — layout 'editions'
   fallback.ts   # Dailies — no curation yet ("All lists")
   stamps.ts     # Stamp Album — layout 'groups' + album split (see below)
+  battledome.ts # Battledome — layout 'groups' (arenas + Premium featured)
 ../_components/
   OfficialCategoryPage.tsx    # server: route helpers, data, metadata, FAQPage JSON-LD
   OfficialCategoryClient.tsx  # UI

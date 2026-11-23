@@ -1,4 +1,5 @@
 import type { OfficialCategoryConfig } from './types';
+import { battledome } from './battledome';
 import { questLog } from './quest-log';
 import {
   altadorCup,
@@ -18,6 +19,7 @@ const categories: OfficialCategoryConfig[] = [
   neopetsAnniversary,
   questLog,
   stamps,
+  battledome,
 ];
 
 export const officialCategories: Record<string, OfficialCategoryConfig> = Object.fromEntries(
