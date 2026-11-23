@@ -33,7 +33,9 @@ export function LayoutFrame({
   mainMinH,
 }: LayoutFrameProps) {
   return (
-    <Flex flexFlow="column" minH="100vh">
+    // overflowX clip (not hidden, which would break sticky): full-bleed sections use 100vw,
+    // which includes the vertical scrollbar width and would otherwise add a horizontal scroll.
+    <Flex flexFlow="column" minH="100vh" overflowX="clip">
       {siteAlert}
       <Flex
         as="header"
