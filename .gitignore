@@ -32,6 +32,7 @@ next-env.d.ts
 .playwright-mcp/
 
 .pool-watchdog.lock
+.cleanup-price-process.lock
 .pool-watchdog-state.json
 
 *.log
