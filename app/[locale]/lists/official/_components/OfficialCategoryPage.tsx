@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import { Suspense } from 'react';
+import type { UserList } from '@types';
 import { getTranslations } from 'next-intl/server';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { SetMainColor } from '@components/Layout/SetMainColor';
@@ -10,7 +12,9 @@ import { needsPageviews, resolveCategory } from '@app/[locale]/lists/official/_c
 import {
   groupStampAlbums,
   isStampsCategory,
+  type StampAlbums,
 } from '@app/[locale]/lists/official/_categories/stamps';
+import type { OfficialCategoryConfig } from '@app/[locale]/lists/official/_categories/types';
 import {
   loadOfficialCategoryArticles,
   loadOfficialCategoryLists,
@@ -70,14 +74,15 @@ export function OfficialCategoryRoute(props: OfficialCategoryRouteProps) {
 async function OfficialCategoryContent({ slug, params }: OfficialCategoryRouteProps) {
   const { locale } = await params;
   const category = requireCategory(slug);
-  const [lists, related, pageviews, albums] = await Promise.all([
+  const [lists, related, albums] = await Promise.all([
     loadOfficialCategoryLists(category.slug),
     loadOfficialCategoryArticles(category.slug),
-    needsPageviews(category) ? loadOfficialListPageviews() : undefined,
     isStampsCategory(category) ? loadStampAlbums() : undefined,
   ]);
-  const base = resolveCategory(category, lists, pageviews);
+  const base = resolveCategory(category, lists);
   const resolved = albums ? groupStampAlbums(base, albums) : base;
+  // Not awaited: the client streams these cards in after the shell.
+  const popular = needsPageviews(category) ? loadPopularLists(category, lists, albums) : undefined;
 
   const faqJsonLd = category.faq?.length
     ? {
@@ -107,7 +112,25 @@ async function OfficialCategoryContent({ slug, params }: OfficialCategoryRoutePr
         resolved={resolved}
         related={related}
         albums={albums}
+        popular={popular}
       />
     </>
   );
+}
+
+/**
+ * `featured.popular` lists, resolved at request time only (`connection()`), so they stream
+ * after the shell. The 30-day Umami query takes seconds when its cache entry is cold or past
+ * `revalidate`, and a shell regeneration would wait on it; request-time reads serve the stale
+ * entry and refresh it in the background.
+ */
+async function loadPopularLists(
+  category: OfficialCategoryConfig,
+  lists: UserList[],
+  albums?: StampAlbums
+): Promise<UserList[]> {
+  await connection();
+  const base = resolveCategory(category, lists, await loadOfficialListPageviews());
+  const resolved = albums ? groupStampAlbums(base, albums) : base;
+  return resolved.type === 'groups' ? resolved.featured.popular : [];
 }

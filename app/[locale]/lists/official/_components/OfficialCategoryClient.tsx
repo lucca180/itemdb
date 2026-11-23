@@ -11,13 +11,14 @@ import {
   HStack,
   Image as ChakraImg,
   Link,
+  Skeleton,
   Text,
   VStack,
 } from '@chakra-ui/react';
 import Color from 'color';
 import dynamic from 'next/dynamic';
 import { useFormatter, useTranslations } from 'next-intl';
-import { createContext, Fragment, useContext, useState } from 'react';
+import { createContext, Fragment, Suspense, use, useContext, useState } from 'react';
 import { LuDownload } from 'react-icons/lu';
 import type { UserList, WP_Article } from '@types';
 import MainLink from '@components/Utils/MainLink';
@@ -52,6 +53,8 @@ type Props = {
   related: WP_Article[];
   /** Stamp Album only: cost and avatar per album page */
   albums?: StampAlbums;
+  /** `featured.popular` lists; resolved at request time, so they stream in after the shell */
+  popular?: Promise<UserList[]>;
 };
 
 // ---------- helpers ----------
@@ -167,8 +170,7 @@ export function OfficialCategoryClient(props: Props) {
   const hasFeatured =
     resolved.type === 'tracks' ||
     (resolved.type === 'editions' && !!resolved.latest) ||
-    (resolved.type === 'groups' &&
-      resolved.featured.lists.length + resolved.featured.popular.length > 0);
+    (resolved.type === 'groups' && (resolved.featured.lists.length > 0 || !!props.popular));
   // Featured cards only overlap the hero when they come right after it.
   const overlap = hasFeatured && sections[0] === 'featured';
 
@@ -188,14 +190,15 @@ export function OfficialCategoryClient(props: Props) {
                 <LatestEdition edition={resolved.latest} accent={accent} />
               )}
               {resolved.type === 'groups' && (
-                <NowGrid
-                  cards={[
-                    ...resolved.featured.lists.map((list) => ({
-                      list,
-                      label: resolved.featured.label,
-                    })),
-                    ...resolved.featured.popular.map((list) => ({ list, label: t('popular') })),
-                  ]}
+                <FeaturedGrid
+                  pinned={resolved.featured.lists.map((list) => ({
+                    list,
+                    label: resolved.featured.label,
+                  }))}
+                  popular={props.popular}
+                  placeholders={
+                    config.layout.type === 'groups' ? (config.layout.featured?.popular ?? 0) : 0
+                  }
                   accent={accent}
                 />
               )}
@@ -894,25 +897,73 @@ const LatestEdition = ({ edition, accent }: { edition: EditionGroup; accent: str
 };
 
 /** Featured cards: one card stays narrow, more cards fill a grid. */
+type NowCardData = { list: UserList; label?: string };
+
 const NowGrid = ({
   cards,
+  placeholders = 0,
   accent,
 }: {
-  cards: { list: UserList; label?: string }[];
+  cards: NowCardData[];
+  /** Skeleton cards shown while the popular lists stream in */
+  placeholders?: number;
   accent: string;
-}) => (
-  <Grid
-    templateColumns={
-      cards.length === 1 ? '1fr' : { base: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' }
-    }
-    maxW={cards.length === 1 ? '520px' : undefined}
-    gap={3}
-  >
-    {cards.map(({ list, label }) => (
-      <NowCard key={list.internal_id} list={list} label={label} accent={accent} />
-    ))}
-  </Grid>
-);
+}) => {
+  const count = cards.length + placeholders;
+  return (
+    <Grid
+      templateColumns={count === 1 ? '1fr' : { base: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' }}
+      maxW={count === 1 ? '520px' : undefined}
+      gap={3}
+    >
+      {cards.map(({ list, label }) => (
+        <NowCard key={list.internal_id} list={list} label={label} accent={accent} />
+      ))}
+      {Array.from({ length: placeholders }, (_, i) => (
+        <Skeleton key={`placeholder-${i}`} minH="120px" ml="36px" borderRadius="md" />
+      ))}
+    </Grid>
+  );
+};
+
+/** Pinned cards render with the shell; the popular ones stream in (see `Props.popular`). */
+const FeaturedGrid = ({
+  pinned,
+  popular,
+  placeholders,
+  accent,
+}: {
+  pinned: NowCardData[];
+  popular?: Promise<UserList[]>;
+  placeholders: number;
+  accent: string;
+}) => {
+  if (!popular) return <NowGrid cards={pinned} accent={accent} />;
+  return (
+    <Suspense fallback={<NowGrid cards={pinned} placeholders={placeholders} accent={accent} />}>
+      <PopularNowGrid pinned={pinned} popular={popular} accent={accent} />
+    </Suspense>
+  );
+};
+
+const PopularNowGrid = ({
+  pinned,
+  popular,
+  accent,
+}: {
+  pinned: NowCardData[];
+  popular: Promise<UserList[]>;
+  accent: string;
+}) => {
+  const t = useTranslations('OfficialCategory');
+  const lists = use(popular);
+  return (
+    <NowGrid
+      cards={[...pinned, ...lists.map((list) => ({ list, label: t('popular') }))]}
+      accent={accent}
+    />
+  );
+};
 
 const Editions = ({ resolved, accent }: { resolved: Editions; accent: string }) => {
   const t = useTranslations('OfficialCategory');

@@ -91,21 +91,27 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 /**
  * Umami pageviews of official list pages over the last 30 days, by list slug (locales summed).
  * Shared by every category; empty when Umami fails, so the page never depends on it.
+ * `days`: the 30-day query takes seconds on Umami and the ranking barely moves within a day.
  */
 async function loadOfficialListPageviewsCached(): Promise<Record<string, number>> {
   'use cache';
   cacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-pageviews`);
-  cacheLife('hours');
+  cacheLife('days');
 
+  const views = await getUmamiPathPageviews('lists/official/', { windowMs: THIRTY_DAYS_MS });
+  // Throw instead of caching `{}` for a day: a failed entry isn't stored, so the previous one
+  // keeps being served (or the next read retries). Umami errors also come back as no rows.
+  if (!views.size) throw new Error('Umami returned no official list pageviews');
+  return Object.fromEntries([...views].map(([slug, n]) => [slug.toLowerCase(), n]));
+}
+
+export const loadOfficialListPageviews = cache(async (): Promise<Record<string, number>> => {
   try {
-    const views = await getUmamiPathPageviews('lists/official/', { windowMs: THIRTY_DAYS_MS });
-    return Object.fromEntries([...views].map(([slug, n]) => [slug.toLowerCase(), n]));
+    return await loadOfficialListPageviewsCached();
   } catch {
     return {};
   }
-}
-
-export const loadOfficialListPageviews = cache(loadOfficialListPageviewsCached);
+});
 
 /**
  * Cost and avatar of every Stamp Album page (official `stamps` lists that aren't a goal
