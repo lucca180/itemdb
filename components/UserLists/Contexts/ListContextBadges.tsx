@@ -64,7 +64,7 @@ export function ListContextCorner({
   if (!contexts.length) return null;
 
   return (
-    <ListContextPopover contexts={contexts} onSeeAll={onSeeAll}>
+    <ListContextPopover contexts={contexts} onSeeAll={onSeeAll} trackAs="list-corner">
       <FoldCorner contexts={contexts} />
     </ListContextPopover>
   );
@@ -124,7 +124,7 @@ export function ListContextFooter({
   if (!contexts.length) return null;
 
   return (
-    <ListContextPopover contexts={contexts}>
+    <ListContextPopover contexts={contexts} trackAs="item-footer">
       <FooterButton contexts={contexts} listColor={listColor} />
     </ListContextPopover>
   );

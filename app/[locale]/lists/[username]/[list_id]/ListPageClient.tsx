@@ -50,6 +50,7 @@ import { canEditListInfo } from '@utils/list/listPermissions';
 import { contextGroupsItems } from '@utils/list/listContexts';
 import { ListContextsProvider } from '@components/UserLists/Contexts/ListContextsProvider';
 import { ListContextGroups } from '@components/UserLists/Contexts/ListContextGroups';
+import { useTrackListContext } from '@components/UserLists/Contexts/ListContextPopover';
 import type { ListContextsModalProps } from '@components/UserLists/Contexts/ListContextsModal';
 import type { ListContextsEditorModalProps } from '@components/UserLists/Contexts/ListContextsEditorModal';
 import { LuPencil } from 'react-icons/lu';
@@ -171,6 +172,7 @@ export function ListPageClient({
   const [contextsModalFocus, setContextsModalFocus] = useState<number | null | undefined>();
   const [contextsEditorOpen, setContextsEditorOpen] = useState(false);
   const openContextsModal = useCallback((id: number | null) => setContextsModalFocus(id), []);
+  const trackContext = useTrackListContext();
 
   // contexts are list content, like the highlight: admins only on official lists.
   // Official lists only for now.
@@ -495,7 +497,17 @@ export function ListPageClient({
           {(contexts.length > 0 || canManageContexts) && (
             <Flex gap={3} flexWrap="wrap" justifyContent="center" alignItems="center">
               {contexts.length > 0 && (
-                <Button size="sm" variant="subtle" onClick={() => openContextsModal(null)}>
+                <Button
+                  size="sm"
+                  variant="subtle"
+                  onClick={() => {
+                    trackContext('list-contexts-modal', {
+                      label: 'button',
+                      list: state.list.internal_id,
+                    });
+                    openContextsModal(null);
+                  }}
+                >
                   {t('Lists.contexts-button', { count: contexts.length })}
                 </Button>
               )}
@@ -514,7 +526,15 @@ export function ListPageClient({
                   size="sm"
                   colorPalette="whiteAlpha"
                   checked={groupByContext}
-                  onCheckedChange={(e) => setGroupByContext(e.checked)}
+                  onCheckedChange={(e) => {
+                    // A data attribute here counts twice: the label click also clicks its hidden input
+                    trackContext('list-context-group-by', {
+                      label: e.checked ? 'on' : 'off',
+                      default: core.list.groupByContext ? 'on' : 'off',
+                      list: state.list.internal_id,
+                    });
+                    setGroupByContext(e.checked);
+                  }}
                   display="flex"
                   alignItems="center"
                 >

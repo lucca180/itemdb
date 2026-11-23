@@ -93,7 +93,7 @@ export function ListContextGroups({ contexts, ...listProps }: ListContextGroupsP
           style={{ borderTop: `3px solid ${context.color}` }}
         >
           <Center>
-            <ListContextPopover contexts={[context]}>
+            <ListContextPopover contexts={[context]} trackAs="list-group">
               <Flex
                 as="button"
                 alignItems="center"
