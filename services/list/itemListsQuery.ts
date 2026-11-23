@@ -22,14 +22,22 @@ export type GetItemListsOptions = {
   includeOfficial?: boolean;
   includeTrade?: boolean;
   /**
-   * Ranks official lists for the item page instead of creation order: active series first
-   * (`seriesStart < now < seriesEnd`), then lists where the item is a highlight, then by visible
-   * size (smallest = most specific). Non-official lists keep creation order.
+   * Ranks official lists for the item page instead of creation order (see
+   * `rankItemOfficialLists`). Non-official lists keep creation order.
    */
   rankOfficial?: boolean;
 };
 
 const TRADE_LIST_ACTIVE_MS = 180 * 24 * 60 * 60 * 1000;
+
+/** Lists below this visible size are ranked newest first; the rest come after, smallest first. */
+export const RANK_BY_CREATION_MAX_ITEMS = 300;
+
+type ItemListsResult = {
+  lists: UserList[];
+  /** Lists where the item is in at least one context. */
+  contextListIds: Set<number>;
+};
 
 type ItemListRow = RawList & {
   user: {
@@ -44,6 +52,8 @@ type ItemListRow = RawList & {
     seriesStart: string | null;
     seriesEnd: string | null;
   })[];
+  /** 1 when the item's list row is in at least one context */
+  hasContext: number | bigint;
 };
 
 export function filterOfficialLists(lists: UserList[]): UserList[] {
@@ -70,25 +80,51 @@ export function isListSeriesActive(
 }
 
 /**
- * Item page order for the official lists that hold one item: active series first, then lists
- * where the item is a highlight, then smallest lists (most specific) first. Ties keep the
- * incoming order (creation order). Lists without a count go last within their group.
+ * Item page order for the official lists that hold one item:
+ * 1. active series;
+ * 2. lists where the item is a highlight;
+ * 3. lists where the item is in a context (`contextListIds`);
+ * 4. lists with fewer than `RANK_BY_CREATION_MAX_ITEMS` visible items, newest first;
+ * 5. the rest by size, smallest first (lists without a count last).
+ * Ties keep the incoming order (creation order).
  */
-export function rankItemOfficialLists(lists: UserList[], now: number): UserList[] {
-  const keyed = lists.map((list) => ({
-    list,
-    active: isListSeriesActive(list, now) ? 1 : 0,
-    highlight: list.itemInfo?.[0]?.isHighlight ? 1 : 0,
-    size: list.itemCount ?? Number.MAX_SAFE_INTEGER,
-  }));
+export function rankItemOfficialLists(
+  lists: UserList[],
+  now: number,
+  contextListIds: ReadonlySet<number> = new Set()
+): UserList[] {
+  const keyed = lists.map((list) => {
+    const size = list.itemCount ?? Number.MAX_SAFE_INTEGER;
+    const createdAt = new Date(list.createdAt).getTime();
+    return {
+      list,
+      active: isListSeriesActive(list, now) ? 1 : 0,
+      highlight: list.itemInfo?.[0]?.isHighlight ? 1 : 0,
+      context: contextListIds.has(list.internal_id) ? 1 : 0,
+      small: size < RANK_BY_CREATION_MAX_ITEMS ? 1 : 0,
+      createdAt: Number.isNaN(createdAt) ? 0 : createdAt,
+      size,
+    };
+  });
 
-  keyed.sort((a, b) => b.active - a.active || b.highlight - a.highlight || a.size - b.size);
+  keyed.sort(
+    (a, b) =>
+      b.active - a.active ||
+      b.highlight - a.highlight ||
+      b.context - a.context ||
+      b.small - a.small ||
+      (a.small && b.small ? b.createdAt - a.createdAt : 0) ||
+      a.size - b.size
+  );
 
   return keyed.map((entry) => entry.list);
 }
 
-function mapItemListRows(id: number, listsRaw: ItemListRow[]): UserList[] {
-  return listsRaw.map((list) => {
+function mapItemListRows(id: number, listsRaw: ItemListRow[]): ItemListsResult {
+  const contextListIds = new Set<number>();
+  const lists = listsRaw.map((list) => {
+    if (Number(list.hasContext)) contextListIds.add(list.internal_id);
+
     const newList = rawToList(list, list.user, false);
     const item = list.items.find((item) => item.item_iid === id)!;
 
@@ -98,9 +134,11 @@ function mapItemListRows(id: number, listsRaw: ItemListRow[]): UserList[] {
 
     return newList;
   });
+
+  return { lists, contextListIds };
 }
 
-async function queryItemLists(id: number, listCondition: Prisma.Sql): Promise<UserList[]> {
+async function queryItemLists(id: number, listCondition: Prisma.Sql): Promise<ItemListsResult> {
   const listsRaw = (await prisma.$queryRaw`
   SELECT 
     ul.*,
@@ -132,7 +170,12 @@ async function queryItemLists(id: number, listCondition: Prisma.Sql): Promise<Us
         'seriesStart', li_filter.seriesStart,
         'seriesEnd', li_filter.seriesEnd
       )
-    ) as items
+    ) as items,
+
+    -- Item page ranking: the item's list row is in at least one context (indexed by listItem_id)
+    EXISTS (
+      SELECT 1 FROM ListContextItem lci WHERE lci.listItem_id = li_filter.internal_id
+    ) as hasContext
 
     -- OPTIMIZATION STRATEGY: Inverted Join
     -- Instead of scanning Lists and checking if they have the item (EXISTS),
@@ -161,15 +204,15 @@ async function queryItemLists(id: number, listCondition: Prisma.Sql): Promise<Us
   return mapItemListRows(id, listsRaw);
 }
 
-async function queryOfficialItemLists(id: number): Promise<UserList[]> {
+async function queryOfficialItemLists(id: number): Promise<ItemListsResult> {
   return queryItemLists(id, Prisma.sql`ul.official = 1`);
 }
 
-async function queryTradeItemLists(id: number): Promise<UserList[]> {
+async function queryTradeItemLists(id: number): Promise<ItemListsResult> {
   return queryItemLists(id, Prisma.sql`ul.visibility = 'public' AND ul.purpose != 'none'`);
 }
 
-async function queryItemListsUnified(id: number): Promise<UserList[]> {
+async function queryItemListsUnified(id: number): Promise<ItemListsResult> {
   return queryItemLists(
     id,
     Prisma.sql`(
@@ -186,9 +229,9 @@ export const getItemLists = async (
   const includeOfficial = options.includeOfficial ?? true;
   const includeTrade = options.includeTrade ?? false;
   const rankOfficial = options.rankOfficial ?? false;
-  const toOfficial = (lists: UserList[]) => {
+  const toOfficial = ({ lists, contextListIds }: ItemListsResult) => {
     const official = filterOfficialLists(lists);
-    return rankOfficial ? rankItemOfficialLists(official, Date.now()) : official;
+    return rankOfficial ? rankItemOfficialLists(official, Date.now(), contextListIds) : official;
   };
 
   if (!includeOfficial && !includeTrade) {
@@ -196,20 +239,21 @@ export const getItemLists = async (
   }
 
   if (includeOfficial && includeTrade) {
-    const lists = await queryItemListsUnified(id);
+    const result = await queryItemListsUnified(id);
     return {
-      official: toOfficial(lists),
-      trade: filterTradeLists(lists),
+      official: toOfficial(result),
+      trade: filterTradeLists(result.lists),
     };
   }
 
+  const empty: ItemListsResult = { lists: [], contextListIds: new Set() };
   const [officialLists, tradeLists] = await Promise.all([
-    includeOfficial ? queryOfficialItemLists(id) : Promise.resolve([]),
-    includeTrade ? queryTradeItemLists(id) : Promise.resolve([]),
+    includeOfficial ? queryOfficialItemLists(id) : Promise.resolve(empty),
+    includeTrade ? queryTradeItemLists(id) : Promise.resolve(empty),
   ]);
 
   return {
     official: toOfficial(officialLists),
-    trade: filterTradeLists(tradeLists),
+    trade: filterTradeLists(tradeLists.lists),
   };
 };
