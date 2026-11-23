@@ -44,16 +44,14 @@ async function getCachedTrendingItems() {
   return ItemService.getTrending(20).catch(() => []);
 }
 
-// The event card shows these lists, so Featured Lists skips them.
 const BIRTHDAY_CATEGORY = 'neopets-anniversary';
-const BIRTHDAY_TAG = 'Birthday Celebrations';
 const BIRTHDAY_YEAR = 2026;
 
 async function getCachedFeaturedLists() {
   'use cache';
   cacheTag('home-trending-lists');
   cacheLife('homeSlow');
-  return getTrendingLists(3, [BIRTHDAY_TAG]).catch(() => []);
+  return getTrendingLists(3).catch(() => []);
 }
 
 /**
