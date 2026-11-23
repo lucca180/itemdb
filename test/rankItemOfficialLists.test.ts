@@ -47,6 +47,93 @@ describe('isListSeriesActive', () => {
 describe('rankItemOfficialLists', () => {
   const activeSeries = { seriesStart: '2026-11-01T18:00:00Z', seriesEnd: '2026-11-16T18:00:00Z' };
 
+  // NOW is 2026-11-08T12:00Z: 60 days before is 2026-09-09T12:00Z
+  const recentEnd = { seriesStart: '2026-09-01T00:00:00Z', seriesEnd: '2026-10-01T00:00:00Z' };
+  const oldEnd = { seriesStart: '2026-07-01T00:00:00Z', seriesEnd: '2026-08-01T00:00:00Z' };
+
+  it('puts series that ended less than 60 days ago before newer and smaller lists', () => {
+    const lists = [
+      list(1, { itemCount: 5, createdAt: '2026-11-01T00:00:00Z' }),
+      list(2, { itemCount: 5000, ...recentEnd }),
+    ];
+    expect(ids(rankItemOfficialLists(lists, NOW))).toEqual([2, 1]);
+  });
+
+  it('puts contexts before recently ended series', () => {
+    const lists = [list(1, { itemCount: 10, ...recentEnd }), list(2, { itemCount: 500 })];
+    expect(ids(rankItemOfficialLists(lists, NOW, new Set([2])))).toEqual([2, 1]);
+  });
+
+  it('puts series that ended 60+ days ago after small lists and before other big lists', () => {
+    const lists = [
+      list(1, { itemCount: 400 }),
+      list(2, { itemCount: 5000, ...oldEnd }),
+      list(3, { itemCount: 10, createdAt: '2025-01-01T00:00:00Z' }),
+      list(4, { itemCount: 20, createdAt: '2026-01-01T00:00:00Z', ...oldEnd }),
+    ];
+    // list 4 is small and newer than list 3, but its old series skips the creation date rule;
+    // lists 2 and 4 share the series date, so size breaks the tie
+    expect(ids(rankItemOfficialLists(lists, NOW))).toEqual([3, 4, 2, 1]);
+  });
+
+  it('counts a series that ended exactly 60 days ago as old', () => {
+    const lists = [
+      list(1, { itemCount: 500 }),
+      list(2, { itemCount: 1000, seriesEnd: '2026-09-09T12:00:00Z' }),
+    ];
+    expect(ids(rankItemOfficialLists(lists, NOW))).toEqual([2, 1]);
+  });
+
+  it('orders active series by most recent series date, before highlights', () => {
+    const lists = [
+      list(1, {
+        itemCount: 5,
+        highlight: true,
+        seriesStart: '2026-10-01T00:00:00Z',
+        seriesEnd: '2026-12-01T00:00:00Z',
+      }),
+      list(2, { itemCount: 900, ...activeSeries }),
+    ];
+    expect(ids(rankItemOfficialLists(lists, NOW))).toEqual([2, 1]);
+  });
+
+  it('orders recently ended series by most recent series date, falling back to the end date', () => {
+    const lists = [
+      list(1, { itemCount: 5, ...recentEnd }),
+      list(2, {
+        itemCount: 5,
+        seriesStart: '2026-09-20T00:00:00Z',
+        seriesEnd: '2026-10-20T00:00:00Z',
+      }),
+      list(3, { itemCount: 5, seriesEnd: '2026-10-10T00:00:00Z' }),
+    ];
+    expect(ids(rankItemOfficialLists(lists, NOW))).toEqual([3, 2, 1]);
+  });
+
+  it('orders big lists with old series by most recent series date before size', () => {
+    const lists = [
+      list(1, {
+        itemCount: 400,
+        seriesStart: '2026-05-01T00:00:00Z',
+        seriesEnd: '2026-06-01T00:00:00Z',
+      }),
+      list(2, { itemCount: 5000, ...oldEnd }),
+    ];
+    expect(ids(rankItemOfficialLists(lists, NOW))).toEqual([2, 1]);
+  });
+
+  it('treats upcoming series as no series', () => {
+    const lists = [
+      list(1, {
+        itemCount: 400,
+        seriesStart: '2026-12-01T00:00:00Z',
+        seriesEnd: '2026-12-31T00:00:00Z',
+      }),
+      list(2, { itemCount: 300 }),
+    ];
+    expect(ids(rankItemOfficialLists(lists, NOW))).toEqual([2, 1]);
+  });
+
   it('orders lists with 300+ items by smallest first', () => {
     const lists = [
       list(1, { itemCount: 3996 }),

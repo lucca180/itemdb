@@ -33,6 +33,9 @@ const TRADE_LIST_ACTIVE_MS = 180 * 24 * 60 * 60 * 1000;
 /** Lists below this visible size are ranked newest first; the rest come after, smallest first. */
 export const RANK_BY_CREATION_MAX_ITEMS = 300;
 
+/** A series that ended less than this long ago still ranks above other lists. */
+export const RECENT_SERIES_END_MS = 60 * 24 * 60 * 60 * 1000;
+
 type ItemListsResult = {
   lists: UserList[];
   /** Lists where the item is in at least one context. */
@@ -80,13 +83,36 @@ export function isListSeriesActive(
 }
 
 /**
- * Item page order for the official lists that hold one item:
+ * How long ago the list's series ended (`seriesEnd <= now`), or `null` when it has no end date or
+ * has not ended yet (active or upcoming).
+ */
+function msSinceSeriesEnd(list: Pick<UserList, 'seriesEnd'>, now: number): number | null {
+  if (!list.seriesEnd) return null;
+  const end = new Date(list.seriesEnd).getTime();
+  if (Number.isNaN(end) || end > now) return null;
+  return now - end;
+}
+
+/** Series date for ranking: `seriesStart`, or `seriesEnd` when the list has no start. */
+function seriesDate(list: Pick<UserList, 'seriesStart' | 'seriesEnd'>): number {
+  const date = list.seriesStart ?? list.seriesEnd;
+  const time = date ? new Date(date).getTime() : NaN;
+  return Number.isNaN(time) ? 0 : time;
+}
+
+/**
+ * Item page order for the official lists that hold one item. Each rule only breaks the ties left
+ * by the rules above it, and lists inside each series group (1, 4 and 6) are ordered by series date
+ * (`seriesDate`), most recent first:
  * 1. active series;
  * 2. lists where the item is a highlight;
  * 3. lists where the item is in a context (`contextListIds`);
- * 4. lists with fewer than `RANK_BY_CREATION_MAX_ITEMS` visible items, newest first;
- * 5. the rest by size, smallest first (lists without a count last).
- * Ties keep the incoming order (creation order).
+ * 4. series that ended less than `RECENT_SERIES_END_MS` ago;
+ * 5. lists with fewer than `RANK_BY_CREATION_MAX_ITEMS` visible items, newest first (lists whose
+ *    series ended `RECENT_SERIES_END_MS` ago or more skip this rule, whatever their size);
+ * 6. series that ended `RECENT_SERIES_END_MS` ago or more;
+ * 7. size, smallest first (lists without a count last).
+ * Upcoming series count as no series. Ties keep the incoming order (creation order).
  */
 export function rankItemOfficialLists(
   lists: UserList[],
@@ -96,24 +122,38 @@ export function rankItemOfficialLists(
   const keyed = lists.map((list) => {
     const size = list.itemCount ?? Number.MAX_SAFE_INTEGER;
     const createdAt = new Date(list.createdAt).getTime();
+    const sinceEnd = msSinceSeriesEnd(list, now);
+    const oldEnd = sinceEnd !== null && sinceEnd >= RECENT_SERIES_END_MS;
     return {
       list,
       active: isListSeriesActive(list, now) ? 1 : 0,
       highlight: list.itemInfo?.[0]?.isHighlight ? 1 : 0,
       context: contextListIds.has(list.internal_id) ? 1 : 0,
-      small: size < RANK_BY_CREATION_MAX_ITEMS ? 1 : 0,
+      recentEnd: sinceEnd !== null && sinceEnd < RECENT_SERIES_END_MS ? 1 : 0,
+      small: !oldEnd && size < RANK_BY_CREATION_MAX_ITEMS ? 1 : 0,
+      oldEnd: oldEnd ? 1 : 0,
+      seriesDate: seriesDate(list),
       createdAt: Number.isNaN(createdAt) ? 0 : createdAt,
       size,
     };
   });
 
+  type Keyed = (typeof keyed)[number];
+  const bySeriesDate = (a: Keyed, b: Keyed, group: 'active' | 'recentEnd' | 'oldEnd') =>
+    a[group] && b[group] ? b.seriesDate - a.seriesDate : 0;
+
   keyed.sort(
     (a, b) =>
       b.active - a.active ||
+      bySeriesDate(a, b, 'active') ||
       b.highlight - a.highlight ||
       b.context - a.context ||
+      b.recentEnd - a.recentEnd ||
+      bySeriesDate(a, b, 'recentEnd') ||
       b.small - a.small ||
       (a.small && b.small ? b.createdAt - a.createdAt : 0) ||
+      b.oldEnd - a.oldEnd ||
+      bySeriesDate(a, b, 'oldEnd') ||
       a.size - b.size
   );
 
