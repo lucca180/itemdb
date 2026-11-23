@@ -15,6 +15,8 @@ export interface MainLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElem
   prefetch?: boolean | 'auto';
   trackEvent?: string;
   trackEventLabel?: string;
+  /** Extra Umami event data sent with `trackEvent`, next to `label`. */
+  trackEventData?: Record<string, string | number | boolean>;
   isExternal?: boolean;
   style?: React.CSSProperties;
   hardNavigation?: boolean;
@@ -38,6 +40,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       prefetch,
       trackEvent,
       trackEventLabel,
+      trackEventData,
       isExternal,
       style,
       hardNavigation,
@@ -64,7 +67,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
     const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
       onClick?.(event);
       if (trackEvent) {
-        window.umami?.track(trackEvent, { label: trackEventLabel });
+        window.umami?.track(trackEvent, { ...trackEventData, label: trackEventLabel });
       }
     };
 

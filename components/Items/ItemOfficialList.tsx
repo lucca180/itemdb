@@ -35,6 +35,9 @@ export default async function ItemOfficialLists(props: Props) {
 
   const linkColor = color.lightness(70).hex();
 
+  // 1-based place in the ranked order (rankItemOfficialLists), out of `total`
+  const trackPosition = (index: number) => ({ position: index + 1, total: officialLists.length });
+
   if (!officialLists.length) {
     return (
       <CardBase title={title} color={item.color.hex}>
@@ -62,7 +65,7 @@ export default async function ItemOfficialLists(props: Props) {
         flexWrap={'wrap'}
         css={{ '& a': { color: linkColor } }}
       >
-        {officialLists.map((list) => (
+        {officialLists.map((list, index) => (
           <Flex
             key={list.internal_id}
             position="relative"
@@ -109,7 +112,13 @@ export default async function ItemOfficialLists(props: Props) {
             )}
             <Flex mt="-20px" justifyContent={'center'}>
               <Link asChild>
-                <I18nLink href={getListLink(list)}>
+                <MainLink
+                  href={getListLink(list)}
+                  prefetch="auto"
+                  trackEvent="item-official-list"
+                  trackEventLabel={list.slug ?? undefined}
+                  trackEventData={{ ...trackPosition(index), part: 'cover' }}
+                >
                   <Flex
                     width={'40px'}
                     height={'40px'}
@@ -128,19 +137,21 @@ export default async function ItemOfficialLists(props: Props) {
                       />
                     )}
                   </Flex>
-                </I18nLink>
+                </MainLink>
               </Link>
             </Flex>
             <Text textAlign="center" fontSize="sm" fontWeight="bold" css={{ textWrap: 'balance' }}>
               <Link asChild>
-                <I18nLink
+                <MainLink
                   href={getListLink(list)}
-                  data-umami-event="item-official-list"
-                  data-umami-event-label={list.slug}
+                  prefetch="auto"
+                  trackEvent="item-official-list"
+                  trackEventLabel={list.slug ?? undefined}
+                  trackEventData={{ ...trackPosition(index), part: 'name' }}
                   style={{ color: 'white' }}
                 >
                   {list.name}
-                </I18nLink>
+                </MainLink>
               </Link>
             </Text>
             <Text
