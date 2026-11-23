@@ -15,7 +15,7 @@ _categories/
   events.ts     # Festival of Neggs, Altador Cup, Birthday, Winter Starlight Celebration — layout 'editions'
   fallback.ts   # Dailies — no curation yet ("All lists")
   stamps.ts     # Stamp Album — layout 'groups' + album split (see below)
-  battledome.ts # Battledome — layout 'groups' (arenas + Premium featured)
+  battledome.ts # Battledome — layout 'groups' (arenas by tag "Arena" + Premium featured)
 ../_components/
   OfficialCategoryPage.tsx    # server: route helpers, data, metadata, FAQPage JSON-LD
   OfficialCategoryClient.tsx  # UI
@@ -46,7 +46,9 @@ that makes `/lists/official` hit `official/page.tsx`).
 - `tags`: `official_tag` values (case-insensitive) loaded for the page. A tag belongs to one category.
 - `lists?: ListMatch`: extra official lists by slug, for lists that don't have the category tag
   yet (e.g. Birthday Map on Birthday Celebration). Their breadcrumbs still follow their first tag.
-- `ListMatch`: exact `slugs` and/or `slugPrefix` (string or array), case-insensitive.
+- `ListMatch`: exact `slugs`, `slugPrefix` (string or array) and/or `tags` (any `official_tag`, so a
+  secondary tag like the "Arena" in "Battledome, Arena" works), all case-insensitive. Keep the
+  category tag first: list breadcrumbs follow the first tag.
 - `archive?: ListMatch`: forced into the collapsed archive regardless of layout.
 - `layout`:
   - **`tracks`**: current list(s) + history per track (e.g. Quest Log weekly / daily / NeoPass).

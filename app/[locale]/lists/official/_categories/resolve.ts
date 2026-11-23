@@ -73,7 +73,9 @@ export const matches = (list: UserList, m?: ListMatch) => {
   const slug = slugOf(list);
   if (m.slugs?.some((s) => s.toLowerCase() === slug)) return true;
   const prefixes = m.slugPrefix ? [m.slugPrefix].flat() : [];
-  return prefixes.some((p) => slug.startsWith(p.toLowerCase()));
+  if (prefixes.some((p) => slug.startsWith(p.toLowerCase()))) return true;
+  const tags = m.tags?.map((t) => t.toLowerCase()) ?? [];
+  return (list.officialTag ?? []).some((t) => tags.includes(t.toLowerCase()));
 };
 
 /** Config badges that apply to a list, in config order. */

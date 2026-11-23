@@ -25,17 +25,8 @@ export const battledome = {
         id: 'arenas',
         title: 'Arenas',
         description: 'One list per arena, with the prizes from its 1-Player Challengers.',
-        match: {
-          slugs: [
-            'central-arena',
-            'cosmic-dome',
-            'dome-of-the-deep',
-            'neocola-centre',
-            'pango-palladium',
-            'rattling-cauldron',
-            'ugga-dome',
-          ],
-        },
+        // Arena lists are tagged "Battledome, Arena" (Battledome first: it drives the breadcrumb).
+        match: { tags: ['arena'] },
       },
     ],
   },

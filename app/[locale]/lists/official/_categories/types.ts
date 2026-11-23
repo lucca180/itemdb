@@ -3,10 +3,12 @@
  * See README.md in this folder.
  */
 
-/** Selects lists by slug. Every rule is written by the team, case by case. */
+/** Selects lists by slug or official tag. Every rule is written by the team, case by case. */
 export type ListMatch = {
   slugs?: string[];
   slugPrefix?: string | string[];
+  /** Any of these `official_tag` values (case-insensitive), e.g. the "Arena" in "Battledome, Arena". */
+  tags?: string[];
 };
 
 export type TracksLayout = {

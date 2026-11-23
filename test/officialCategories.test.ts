@@ -290,6 +290,26 @@ describe('resolveCategory — groups fallback', () => {
     if (noViews.type !== 'groups') throw new Error('expected groups');
     expect(noViews.featured.popular).toEqual([]);
   });
+
+  it('matches groups by any official tag, case-insensitively', () => {
+    const config: OfficialCategoryConfig = {
+      ...baseConfig,
+      layout: {
+        type: 'groups',
+        groups: [{ id: 'arenas', title: 'Arenas', match: { tags: ['arena'] } }],
+      },
+    };
+    const lists = [
+      list('a', { officialTag: ['Battledome', 'Arena'] }),
+      list('b', { officialTag: ['Battledome'] }),
+      list('c', { officialTag: ['ARENA'] }),
+      list('d'),
+    ];
+    const resolved = resolveCategory(config, lists);
+    if (resolved.type !== 'groups') throw new Error('expected groups');
+    expect(slugsOf(resolved.groups[0].lists)).toEqual(['a', 'c']);
+    expect(slugsOf(resolved.other)).toEqual(['b', 'd']);
+  });
 });
 
 describe('resolveSections', () => {
