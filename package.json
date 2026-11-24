@@ -41,7 +41,7 @@
     "@napi-rs/canvas": "^1.2.0",
     "@prisma/adapter-mariadb": "7.10.1",
     "@prisma/client": "7.10.1",
-    "@sentry/nextjs": "^11.16.0",
+    "@sentry/nextjs": "^11.17.0",
     "@trieb.work/nextjs-turbo-redis-cache": "patch:@trieb.work/nextjs-turbo-redis-cache@npm%3A1.18.1#~/.yarn/patches/@trieb.work-nextjs-turbo-redis-cache-npm-1.18.1-bcbb995a3a.patch",
     "@tycrek/discord-hookr": "^0.1.0",
     "@umami/api-client": "^0.80.0",
