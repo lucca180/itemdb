@@ -776,7 +776,78 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
     !shouldJoinZone &&
     petpetSQL.length === 0;
 
+  // Browsing without text has the same problem: the payload joins ran for every item (and
+  // `count(*) OVER()` materialized all of them) just to keep one page. When the WHERE and the sort
+  // only touch Items columns, the page is picked from Items alone — the (canonical_id, name)
+  // index serves the default name sort and stops after the page — and the payload joins run for
+  // those rows only. Items is aliased `temp` there, so the shared temp.* predicates apply as-is.
+  const lateJoinSortColumns: Record<string, string> = {
+    name: 'name',
+    id: 'item_id',
+    added: 'addedAt',
+    weight: 'weight',
+    estVal: 'est_val',
+    rarity: 'rarity',
+  };
+  const lateJoinSortColumn = lateJoinSortColumns[sortBy];
+  // The UI always sends empty ranges (`price: ['', '']`), so look at what actually becomes a
+  // predicate above instead of needsPrices/needsOwlsPrice.
+  const hasPricePredicate =
+    priceFilter.length > 0 && (priceFilter[0] !== '' || priceFilter[1] !== '');
+  const hasNcValuePredicate =
+    ncValueFilter.length > 0 && (ncValueFilter[0] !== '' || ncValueFilter[1] !== '');
+  const canLateJoinItems =
+    !!lateJoinSortColumn &&
+    query === '' &&
+    !isColorSearch &&
+    !isCountMode &&
+    !isFacetsMode &&
+    // filters that read joined tables (price, restock profit, NC value, sale status, secondary
+    // color, zone, petpet) keep the full derived table
+    !hasPricePredicate &&
+    restockProfit === '' &&
+    !hasNcValuePredicate &&
+    !isSaleStatusFilter &&
+    !needsItemColor &&
+    !shouldJoinZone &&
+    petpetSQL.length === 0;
+
   const itemsQuery = (includeStats: boolean) => {
+    // Only with stats: what the late-join saves is `count(*) OVER()` materializing every match.
+    // Without it the old query already streams the name index and stops at the LIMIT, and for
+    // large limits (dynamic list syncs, whole-list loads) re-sorting the joined rows in a temp
+    // table made it ~20% slower.
+    if (canLateJoinItems && includeStats) {
+      const sortColumn = Prisma.raw(lateJoinSortColumn);
+
+      // internal_id breaks name ties in the same direction, so the index order still applies
+      // and pages don't overlap.
+      return Prisma.sql`
+        ${itemsSelect}
+          ${priceSelect}
+          ${ncValueSelect}
+          ${saleStatsSelect}
+          ${owlsPriceSelect}
+          ${ncMallSelect}
+          ${includeStats ? Prisma.sql`, (SELECT COUNT(*) FROM Items as temp ${whereQuery}) AS full_count` : Prisma.empty}
+        FROM (
+          SELECT temp.internal_id
+          FROM Items as temp
+          ${whereQuery}
+          ORDER BY temp.${sortColumn} ${sortDirSQL}, temp.internal_id ${sortDirSQL}
+          LIMIT ${limit} OFFSET ${page * limit}
+        ) as top
+        JOIN Items as a on a.internal_id = top.internal_id
+        ${itemColorJoin}
+        ${priceJoin}
+        ${ncValueJoin}
+        ${saleStatsJoin}
+        ${owlsPriceJoin}
+        ${ncMallJoin}
+        ORDER BY a.${sortColumn} ${sortDirSQL}, a.internal_id ${sortDirSQL}
+      `;
+    }
+
     const statsQuery = includeStats ? Prisma.sql`,count(*) OVER() AS full_count` : Prisma.empty;
 
     if (!canLateJoinColor)
