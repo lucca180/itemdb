@@ -209,11 +209,24 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     ...priceUpdates,
   ]);
 
+  // Bundles that already have any opening (manual, reported or from an earlier sync) are left
+  // alone. One grouped lookup instead of a query per bundle on every sync.
+  const bundleParentIds = bundles.flatMap((bundle) =>
+    bundle.dbItem ? [bundle.dbItem.internal_id] : []
+  );
+  const openedBundles = bundleParentIds.length
+    ? await prisma.openableItems.groupBy({
+        by: ['parent_iid'],
+        where: { parent_iid: { in: bundleParentIds } },
+      })
+    : [];
+  const openedBundleIds = new Set(openedBundles.map((row) => row.parent_iid));
+
   const prom = [];
   for (const bundle of bundles) {
-    if (!bundle.dbItem) continue;
+    if (!bundle.dbItem || openedBundleIds.has(bundle.dbItem.internal_id)) continue;
 
-    prom.push(processBundle(bundle.item, bundle.dbItem?.internal_id));
+    prom.push(processBundle(bundle.item, bundle.dbItem.internal_id));
   }
 
   await Promise.all(prom);
@@ -247,11 +260,12 @@ const checkDataChanged = (currentData: dbMallData, newData: NCMallData) => {
   );
 };
 
+/** Creates the openings of a bundle that has none yet (the caller checks that). */
 const processBundle = async (data: NCMallData, parent_iid: number) => {
   const contentIds = new Set<number>(data.bundleContent || []);
   if (contentIds.size === 0) return null;
 
-  const allItemsProm = prisma.items.findMany({
+  const allItems = await prisma.items.findMany({
     where: {
       item_id: {
         in: Array.from(contentIds),
@@ -262,16 +276,6 @@ const processBundle = async (data: NCMallData, parent_iid: number) => {
       internal_id: true,
     },
   });
-
-  const itemOpeningsProm = prisma.openableItems.findFirst({
-    where: {
-      parent_iid: parent_iid,
-    },
-  });
-
-  const [allItems, existingOpenings] = await Promise.all([allItemsProm, itemOpeningsProm]);
-
-  if (existingOpenings) return null;
 
   const bundleSize = data.bundleContent!.length || 0;
 
