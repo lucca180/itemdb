@@ -4,7 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 const prismaMock = vi.hoisted(() => {
   const mock = {
     userList: { findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
-    listItems: { findMany: vi.fn() },
+    listItems: { findMany: vi.fn(), updateMany: vi.fn() },
     listContext: {
       findMany: vi.fn(),
       findUnique: vi.fn(),
@@ -477,6 +477,204 @@ describe('PATCH/DELETE /api/v1/lists/[username]/[list_id]/contexts/[context_id]'
 
     expect(res.statusCode).toBe(403);
     expect(prismaMock.listContext.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe('series dates of the context items', () => {
+  const date = (day: string) => new Date(`${day}T18:00:00.000Z`);
+
+  const ROWS = [
+    { internal_id: 101, item_iid: 1, seriesStart: null, seriesEnd: null },
+    { internal_id: 102, item_iid: 2, seriesStart: date('2026-05-21'), seriesEnd: null },
+    {
+      internal_id: 103,
+      item_iid: 3,
+      seriesStart: date('2026-11-19'),
+      seriesEnd: date('2026-12-01'),
+    },
+  ];
+
+  const patchDates = async (seriesDates: unknown, extra: Record<string, unknown> = {}) => {
+    checkAuthMock.mockResolvedValue({ user: ADMIN });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    prismaMock.listContext.findUnique.mockResolvedValue(
+      contextRow(
+        {},
+        ROWS.map((row) => ({ item_iid: row.item_iid, isHidden: row.item_iid === 3 }))
+      )
+    );
+    prismaMock.listContext.findUniqueOrThrow.mockResolvedValue(
+      contextRow(
+        {},
+        ROWS.map((row) => ({ item_iid: row.item_iid, isHidden: row.item_iid === 3 }))
+      )
+    );
+    prismaMock.listItems.findMany.mockResolvedValue(ROWS);
+
+    const res = mockRes();
+    await contextHandle(
+      req(
+        'PATCH',
+        { username: 'official', list_id: '10', context_id: '5' },
+        { ...extra, seriesDates }
+      ),
+      res
+    );
+    return res;
+  };
+
+  const updates = () => prismaMock.listItems.updateMany.mock.calls.map(([args]) => args);
+
+  test('saving a context without seriesDates leaves the items alone', async () => {
+    const res = await patchDates(undefined, { color: '#000' });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toMatchObject({ itemDates: [] });
+    expect(prismaMock.listItems.findMany).not.toHaveBeenCalled();
+    expect(prismaMock.listItems.updateMany).not.toHaveBeenCalled();
+  });
+
+  test('fills only empty dates, each one on its own', async () => {
+    const res = await patchDates({ seriesStart: '2026-11-19', seriesEnd: '2026-12-31' });
+
+    expect(res.statusCode).toBe(200);
+    expect(prismaMock.listItems.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { list_id: 10, contexts: { some: { context_id: 5 } } },
+      })
+    );
+    expect(updates()).toEqual([
+      {
+        where: { list_id: 10, internal_id: { in: [101] } },
+        data: { seriesStart: date('2026-11-19'), seriesEnd: date('2026-12-31') },
+      },
+      {
+        where: { list_id: 10, internal_id: { in: [102] } },
+        data: { seriesStart: date('2026-05-21'), seriesEnd: date('2026-12-31') },
+      },
+    ]);
+    expect(res.body).toMatchObject({
+      itemDates: [
+        {
+          internal_id: 101,
+          seriesStart: '2026-11-19T18:00:00.000Z',
+          seriesEnd: '2026-12-31T18:00:00.000Z',
+        },
+        {
+          internal_id: 102,
+          seriesStart: '2026-05-21T18:00:00.000Z',
+          seriesEnd: '2026-12-31T18:00:00.000Z',
+        },
+      ],
+    });
+  });
+
+  test('overwrite replaces dates, hidden items too, and groups equal dates', async () => {
+    const res = await patchDates({ seriesStart: '2026-11-01', overwrite: true });
+
+    expect(res.statusCode).toBe(200);
+    expect(updates()).toEqual([
+      {
+        where: { list_id: 10, internal_id: { in: [101, 102] } },
+        data: { seriesStart: date('2026-11-01'), seriesEnd: null },
+      },
+      {
+        where: { list_id: 10, internal_id: { in: [103] } },
+        data: { seriesStart: date('2026-11-01'), seriesEnd: date('2026-12-01') },
+      },
+    ]);
+    expect(logOfficialListActionMock).toHaveBeenCalledWith(
+      expect.objectContaining({ internal_id: 10 }),
+      'updateContext',
+      {
+        context_id: 5,
+        badgeText: 'Bonus 1',
+        item_iids: [1, 2, 3],
+        seriesDates: { seriesStart: '2026-11-01', overwrite: true },
+      },
+      ADMIN
+    );
+  });
+
+  test('null clears a date; items without it are not written', async () => {
+    const res = await patchDates({ seriesEnd: null, overwrite: true });
+
+    expect(res.statusCode).toBe(200);
+    expect(updates()).toEqual([
+      {
+        where: { list_id: 10, internal_id: { in: [103] } },
+        data: { seriesStart: date('2026-11-19'), seriesEnd: null },
+      },
+    ]);
+
+    // only redated items refresh NC Insights
+    const tags = vi.mocked(triggerAppRevalidation).mock.calls.flatMap(([p]) => p.tags);
+    expect(tags.filter((tag) => tag.endsWith('nc-insights'))).toEqual(['item-3-nc-insights']);
+  });
+
+  test('a new context can set the dates of its items', async () => {
+    checkAuthMock.mockResolvedValue({ user: ADMIN });
+    prismaMock.userList.findUnique.mockResolvedValue(officialList);
+    prismaMock.listItems.findMany
+      .mockResolvedValueOnce([{ internal_id: 101, item_iid: 1 }])
+      .mockResolvedValueOnce([ROWS[0]]);
+    prismaMock.listContext.findUniqueOrThrow.mockResolvedValue(
+      contextRow({}, [{ item_iid: 1, isHidden: false }])
+    );
+    const res = mockRes();
+
+    await contextsHandle(
+      req(
+        'POST',
+        { username: 'official', list_id: '10' },
+        {
+          badgeText: 'Pool 7',
+          color: '#fff',
+          itemIids: [1],
+          seriesDates: { seriesStart: '2026-11-19' },
+        }
+      ),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(updates()).toEqual([
+      {
+        where: { list_id: 10, internal_id: { in: [101] } },
+        data: { seriesStart: date('2026-11-19'), seriesEnd: null },
+      },
+    ]);
+  });
+
+  test('an item cannot end before it starts', async () => {
+    const res = await patchDates({ seriesEnd: '2026-06-01', overwrite: true });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toEqual({ error: 'Series end before series start: 3' });
+    expect(prismaMock.listItems.updateMany).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ['no date', { overwrite: true }],
+    ['a year before 1990', { seriesStart: '1989-12-31' }],
+    ['a year with typos', { seriesStart: '0206-05-21' }],
+    ['a year after 2100', { seriesEnd: '2101-01-01' }],
+    ['a day that does not exist', { seriesStart: '2026-02-30' }],
+    ['another format', { seriesStart: '11/19/2026' }],
+    ['clearing without overwrite', { seriesStart: null }],
+    ['an invalid overwrite', { seriesStart: '2026-11-19', overwrite: 'yes' }],
+  ])('rejects %s', async (_, seriesDates) => {
+    const res = await patchDates(seriesDates);
+
+    expect(res.statusCode).toBe(400);
+    expect(prismaMock.listContext.update).not.toHaveBeenCalled();
+    expect(prismaMock.listItems.updateMany).not.toHaveBeenCalled();
+  });
+
+  test.each(['1990-01-01', '2100-12-31'])('accepts the limit %s', async (seriesStart) => {
+    const res = await patchDates({ seriesStart });
+
+    expect(res.statusCode).toBe(200);
   });
 });
 

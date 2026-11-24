@@ -64,7 +64,9 @@ import {
   LIST_CONTEXT_MODES,
   contextShowsBadge,
   type ListContextFields,
+  type ListContextItemDates,
   type ListContextMode,
+  type ListContextSaveResponse,
 } from '@utils/list/listContexts';
 import {
   ListContextPanel,
@@ -72,6 +74,11 @@ import {
 } from '@components/UserLists/Contexts/ListContextPopover';
 import { ListContextCorner } from '@components/UserLists/Contexts/ListContextBadges';
 import { groupContextsByItem } from '@components/UserLists/Contexts/ListContextsProvider';
+import {
+  ListContextSeriesDatesFields,
+  emptySeriesDatesForm,
+  resolveSeriesDatesForm,
+} from '@components/UserLists/Contexts/ListContextSeriesDatesFields';
 
 const SWATCHES = ['#2f855a', '#b7791f', '#805ad5', '#2b6cb0', '#c53030', '#c05621', '#4a5568'];
 
@@ -106,6 +113,10 @@ export type ListContextsEditorModalProps = {
   onContextsChange: (contexts: ListContext[]) => void;
   itemInfo: Record<string, ListItemInfo>;
   items: Record<string, ItemV2For<'card'>>;
+  /** The page has item edits that weren't saved yet */
+  hasUnsavedChanges: boolean;
+  /** Series dates changed together with a context */
+  onItemDatesChange: (itemDates: ListContextItemDates[]) => void;
   onClose: () => void;
 };
 
@@ -116,11 +127,14 @@ export default function ListContextsEditorModal({
   onContextsChange,
   itemInfo,
   items,
+  hasUnsavedChanges,
+  onItemDatesChange,
   onClose,
 }: ListContextsEditorModalProps) {
   const t = useTranslations();
   const toast = useToast();
   const [form, setForm] = useState<Form>(emptyForm);
+  const [datesForm, setDatesForm] = useState(emptySeriesDatesForm);
   const [search, setSearch] = useState('');
   const [pasteText, setPasteText] = useState('');
   const [notFound, setNotFound] = useState<string[]>([]);
@@ -143,6 +157,19 @@ export default function ListContextsEditorModal({
         .sort((a, b) => a.name.localeCompare(b.name)),
     [itemInfo, items]
   );
+
+  const formRows = useMemo(() => {
+    const iids = new Set(form.itemIids);
+    return Object.values(itemInfo).filter((info) => iids.has(info.item_iid));
+  }, [form.itemIids, itemInfo]);
+
+  const datesState = resolveSeriesDatesForm(datesForm, formRows);
+
+  /** Opens a context (or a new one); the dates form never carries over. */
+  const openForm = (next: Form) => {
+    setForm(next);
+    setDatesForm(emptySeriesDatesForm());
+  };
 
   const contextsByItem = useMemo(() => groupContextsByItem(contexts), [contexts]);
 
@@ -199,19 +226,24 @@ export default function ListContextsEditorModal({
       ...fields,
       title: fields.title || null,
       description: fields.description || null,
+      seriesDates: datesState.change ?? undefined,
     };
 
     try {
-      if (id) {
-        const res = await axios.patch<ListContext>(`${apiBase}/${id}`, body);
-        onContextsChange(contexts.map((ctx) => (ctx.internal_id === id ? res.data : ctx)));
-      } else {
-        const res = await axios.post<ListContext>(apiBase, body);
-        onContextsChange([...contexts, res.data]);
-      }
+      const res = id
+        ? await axios.patch<ListContextSaveResponse>(`${apiBase}/${id}`, body)
+        : await axios.post<ListContextSaveResponse>(apiBase, body);
+      const { itemDates, ...context } = res.data;
+
+      onContextsChange(
+        id
+          ? contexts.map((ctx) => (ctx.internal_id === id ? context : ctx))
+          : [...contexts, context]
+      );
+      onItemDatesChange(itemDates);
 
       toast({ id: 'list-contexts-saved', title: t('Lists.contexts-saved'), status: 'success' });
-      setForm(emptyForm());
+      openForm(emptyForm());
     } catch (err) {
       showError(err);
     } finally {
@@ -229,7 +261,7 @@ export default function ListContextsEditorModal({
     try {
       await axios.delete(`${apiBase}/${context.internal_id}`);
       onContextsChange(contexts.filter((ctx) => ctx.internal_id !== context.internal_id));
-      if (form.id === context.internal_id) setForm(emptyForm());
+      if (form.id === context.internal_id) openForm(emptyForm());
       toast({ id: 'list-contexts-deleted', title: t('Lists.contexts-deleted'), status: 'success' });
     } catch (err) {
       showError(err);
@@ -271,7 +303,7 @@ export default function ListContextsEditorModal({
   };
 
   const validColor = LIST_CONTEXT_COLOR_PATTERN.test(form.color.trim());
-  const canSave = !!form.badgeText.trim() && validColor && !saving;
+  const canSave = !!form.badgeText.trim() && validColor && datesState.isValid && !saving;
 
   const previewContext: ListContext = {
     internal_id: form.id ?? -1,
@@ -292,22 +324,28 @@ export default function ListContextsEditorModal({
     <Dialog.Root
       open
       onOpenChange={(e) => !e.open && onClose()}
-      size={{ base: 'full', md: 'cover' }}
+      size="full"
       scrollBehavior="inside"
     >
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          {/* `full` on mobile sets minH 100dvh and square corners; md+ sizes don't undo them */}
-          <Dialog.Content bg="gray.800" minH={{ md: 'auto' }} borderRadius={{ md: 'l3' }}>
+          <Dialog.Content bg="gray.800">
             <Dialog.Header>
               <Dialog.Title>{t('Lists.contexts-manage')}</Dialog.Title>
             </Dialog.Header>
-            <Dialog.Body>
-              <SimpleGrid columns={{ base: 1, lg: 3 }} gap={5} alignItems="start">
+            {/* lg+: the columns fill the screen and scroll on their own */}
+            <Dialog.Body display={{ lg: 'flex' }} flexDirection="column" minH={0}>
+              <SimpleGrid
+                columns={{ base: 1, lg: 3 }}
+                gap={5}
+                flex={{ lg: '1' }}
+                minH={{ lg: 0 }}
+                gridTemplateRows={{ lg: 'minmax(0, 1fr)' }}
+              >
                 {/* existing contexts */}
-                <Stack gap={2} bg="blackAlpha.400" borderRadius="md" p={3}>
-                  <Button size="sm" colorPalette="pink" onClick={() => setForm(emptyForm())}>
+                <Stack gap={2} bg="blackAlpha.400" borderRadius="md" p={3} minH={0}>
+                  <Button size="sm" colorPalette="pink" onClick={() => openForm(emptyForm())}>
                     <LuPlus /> {t('Lists.contexts-new')}
                   </Button>
                   {!contexts.length && (
@@ -320,7 +358,7 @@ export default function ListContextsEditorModal({
                       {t('Lists.contexts-reorder-help')}
                     </Text>
                   )}
-                  <Stack gap={2} maxH={{ lg: '560px' }} overflowY="auto" pr={1}>
+                  <Stack gap={2} minH={0} overflowY={{ lg: 'auto' }} pr={1}>
                     <DndContext
                       sensors={sensors}
                       collisionDetection={closestCenter}
@@ -369,7 +407,7 @@ export default function ListContextsEditorModal({
                               disabled={saving}
                               onClick={() => {
                                 setConfirmDelete(null);
-                                setForm(toForm(context));
+                                openForm(toForm(context));
                               }}
                             >
                               <LuPencil />
@@ -392,7 +430,13 @@ export default function ListContextsEditorModal({
                 </Stack>
 
                 {/* form */}
-                <Stack gap={4} bg="blackAlpha.400" borderRadius="md" p={3}>
+                <Stack
+                  gap={4}
+                  bg="blackAlpha.400"
+                  borderRadius="md"
+                  p={3}
+                  overflowY={{ lg: 'auto' }}
+                >
                   <Heading size="sm">
                     {form.id
                       ? t('Lists.contexts-editing', { badge: form.badgeText })
@@ -518,14 +562,37 @@ export default function ListContextsEditorModal({
                 </Stack>
 
                 {/* items */}
-                <Stack gap={3} bg="blackAlpha.400" borderRadius="md" p={3}>
+                <Stack
+                  gap={3}
+                  bg="blackAlpha.400"
+                  borderRadius="md"
+                  p={3}
+                  overflowY={{ lg: 'auto' }}
+                >
                   <Heading size="sm">{t('Lists.contexts-items')}</Heading>
-                  <Tabs.Root defaultValue="list" variant="line" colorPalette="pink" size="sm">
+                  <Tabs.Root
+                    defaultValue="list"
+                    variant="line"
+                    colorPalette="pink"
+                    size="sm"
+                    display="flex"
+                    flexDirection="column"
+                    flex={{ lg: '1 0 260px' }}
+                    minH={0}
+                  >
                     <Tabs.List>
                       <Tabs.Trigger value="list">{t('Lists.contexts-list-items')}</Tabs.Trigger>
                       <Tabs.Trigger value="paste">{t('Lists.contexts-paste')}</Tabs.Trigger>
                     </Tabs.List>
-                    <Tabs.Content value="list" pt={3}>
+                    <Tabs.Content
+                      value="list"
+                      pt={3}
+                      flex="1"
+                      minH={0}
+                      display="flex"
+                      flexDirection="column"
+                      _closed={{ display: 'none' }}
+                    >
                       <Input
                         size="sm"
                         variant="subtle"
@@ -533,8 +600,16 @@ export default function ListContextsEditorModal({
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         mb={2}
+                        flexShrink={0}
                       />
-                      <Stack gap={1} maxH="380px" overflowY="auto" pr={1}>
+                      <Stack
+                        gap={1}
+                        flex="1"
+                        minH={0}
+                        maxH={{ base: '380px', lg: 'none' }}
+                        overflowY="auto"
+                        pr={1}
+                      >
                         {filtered.map((item) => {
                           const others = (contextsByItem.get(item.internal_id) ?? []).filter(
                             (context) => context.internal_id !== form.id
@@ -618,12 +693,23 @@ export default function ListContextsEditorModal({
                   <Text fontSize="sm" color="gray.400">
                     {t('Lists.contexts-selected', { count: form.itemIids.length })}
                   </Text>
+                  {/* items only use their own dates when the list has a series type */}
+                  {list.seriesType && (
+                    <ListContextSeriesDatesFields
+                      form={datesForm}
+                      onChange={setDatesForm}
+                      state={datesState}
+                      rows={formRows}
+                      items={items}
+                      hasUnsavedChanges={hasUnsavedChanges}
+                    />
+                  )}
                 </Stack>
               </SimpleGrid>
             </Dialog.Body>
             <Dialog.Footer>
               {form.id && (
-                <Button variant="outline" size="sm" onClick={() => setForm(emptyForm())}>
+                <Button variant="outline" size="sm" onClick={() => openForm(emptyForm())}>
                   <LuX /> {t('General.cancel')}
                 </Button>
               )}

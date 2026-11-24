@@ -4,6 +4,7 @@ import {
   afterContextMutation,
   loadEditableList,
   sendContextError,
+  toSaveResponse,
 } from '@pages/api/v1/lists/[username]/[list_id]/contexts';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -37,7 +38,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     const result = await ListService.updateListContext(list.internal_id, contextId, req.body);
     await afterContextMutation(list, user, 'updateContext', result);
 
-    return res.status(200).json(result.context);
+    return res.status(200).json(toSaveResponse(result));
   } catch (e) {
     return sendContextError(res, e);
   }

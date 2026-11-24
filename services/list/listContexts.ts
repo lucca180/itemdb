@@ -11,6 +11,7 @@
 import type { ListContext } from '@types';
 import prisma from '@utils/prisma';
 import { Prisma } from '@prisma/generated/client';
+import { setItemsSeriesDates } from '@services/list/listItemsWrite';
 import {
   LIST_CONTEXT_COLOR_PATTERN,
   LIST_CONTEXT_MODES,
@@ -19,9 +20,18 @@ import {
   MAX_LIST_CONTEXT_TITLE_LENGTH,
   type ListContextCreateRequest,
   type ListContextFields,
+  type ListContextItemDates,
   type ListContextMode,
+  type ListContextSeriesDates,
   type ListContextUpdateRequest,
 } from '@utils/list/listContexts';
+import {
+  MAX_SERIES_DATE,
+  MIN_SERIES_DATE,
+  isValidSeriesDay,
+  planSeriesDatesChange,
+  seriesDayToDate,
+} from '@utils/list/seriesDates';
 
 export class ListContextError extends Error {
   constructor(
@@ -127,6 +137,12 @@ export type ListContextMutationResult = {
   context: ListContext;
   /** Items whose contexts changed (before and after), for cache revalidation. */
   affectedItemIids: number[];
+  /** Set when the mutation also changed the series dates of the context's items. */
+  seriesDates?: {
+    change: ListContextSeriesDates;
+    itemDates: ListContextItemDates[];
+    changedItemIids: number[];
+  };
 };
 
 export async function createListContext(
@@ -134,6 +150,7 @@ export async function createListContext(
   body: ListContextCreateRequest
 ): Promise<ListContextMutationResult> {
   const fields = normalizeFields(body, false);
+  const datesChange = normalizeSeriesDates(body.seriesDates);
   const links = await resolveListItems(listId, fields.itemIids ?? []);
 
   const count = await prisma.listContext.count({ where: { list_id: listId } });
@@ -141,7 +158,7 @@ export async function createListContext(
     throw new ListContextError(`A list can have at most ${MAX_LIST_CONTEXTS} contexts`);
   }
 
-  const created = await prisma.$transaction(async (tx) => {
+  const { created, seriesDates } = await prisma.$transaction(async (tx) => {
     // new contexts go last
     const last = await tx.listContext.aggregate({
       where: { list_id: listId },
@@ -170,15 +187,19 @@ export async function createListContext(
       });
     }
 
-    return tx.listContext.findUniqueOrThrow({
-      where: { internal_id: context.internal_id },
-      include: contextInclude,
-    });
+    return {
+      seriesDates: await changeContextSeriesDates(listId, context.internal_id, datesChange, tx),
+      created: await tx.listContext.findUniqueOrThrow({
+        where: { internal_id: context.internal_id },
+        include: contextInclude,
+      }),
+    };
   });
 
   return {
     context: serializeContext(created, true),
     affectedItemIids: links.map((link) => link.item_iid),
+    seriesDates,
   };
 }
 
@@ -189,12 +210,13 @@ export async function updateListContext(
 ): Promise<ListContextMutationResult> {
   const existing = await findListContext(listId, contextId);
   const fields = normalizeFields(body, true);
+  const datesChange = normalizeSeriesDates(body.seriesDates);
   const nextLinks =
     fields.itemIids !== undefined ? await resolveListItems(listId, fields.itemIids) : null;
 
   const prevItemIids = existing.items.map((link) => link.listItem.item_iid);
 
-  const updated = await prisma.$transaction(async (tx) => {
+  const { updated, seriesDates } = await prisma.$transaction(async (tx) => {
     await tx.listContext.update({
       where: { internal_id: contextId },
       data: {
@@ -221,10 +243,13 @@ export async function updateListContext(
       }
     }
 
-    return tx.listContext.findUniqueOrThrow({
-      where: { internal_id: contextId },
-      include: contextInclude,
-    });
+    return {
+      seriesDates: await changeContextSeriesDates(listId, contextId, datesChange, tx),
+      updated: await tx.listContext.findUniqueOrThrow({
+        where: { internal_id: contextId },
+        include: contextInclude,
+      }),
+    };
   });
 
   const nextItemIids = nextLinks?.map((link) => link.item_iid) ?? prevItemIids;
@@ -232,6 +257,58 @@ export async function updateListContext(
   return {
     context: serializeContext(updated, true),
     affectedItemIids: [...new Set([...prevItemIids, ...nextItemIids])],
+    seriesDates,
+  };
+}
+
+/**
+ * Changes the series dates of every item in the context, hidden ones too. The dates belong to the
+ * list items: nothing is stored in the context, and later saves don't touch them.
+ */
+async function changeContextSeriesDates(
+  listId: number,
+  contextId: number,
+  change: ListContextSeriesDates | null,
+  tx: Prisma.TransactionClient
+): Promise<ListContextMutationResult['seriesDates']> {
+  if (!change) return undefined;
+
+  const listItems = await tx.listItems.findMany({
+    where: { list_id: listId, contexts: { some: { context_id: contextId } } },
+    select: { internal_id: true, item_iid: true, seriesStart: true, seriesEnd: true },
+  });
+
+  const { changed, invalid } = planSeriesDatesChange(
+    listItems.map((row) => ({
+      ...row,
+      seriesStart: row.seriesStart?.toJSON() ?? null,
+      seriesEnd: row.seriesEnd?.toJSON() ?? null,
+    })),
+    change
+  );
+
+  if (invalid.length) {
+    throw new ListContextError(
+      `Series end before series start: ${invalid.map((row) => row.item_iid).join(', ')}`
+    );
+  }
+
+  const rows = changed.map(({ row, seriesStart, seriesEnd }) => ({
+    internal_id: row.internal_id,
+    seriesStart: seriesStart ? seriesDayToDate(seriesStart) : null,
+    seriesEnd: seriesEnd ? seriesDayToDate(seriesEnd) : null,
+  }));
+
+  await setItemsSeriesDates(listId, rows, tx);
+
+  return {
+    change,
+    itemDates: rows.map((row) => ({
+      internal_id: row.internal_id,
+      seriesStart: row.seriesStart?.toJSON() ?? null,
+      seriesEnd: row.seriesEnd?.toJSON() ?? null,
+    })),
+    changedItemIids: changed.map(({ row }) => row.item_iid),
   };
 }
 
@@ -398,6 +475,38 @@ function normalizeMode(value: unknown): ListContextMode {
   }
 
   return value as ListContextMode;
+}
+
+/** `null` when the request doesn't change dates. */
+function normalizeSeriesDates(value: unknown): ListContextSeriesDates | null {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'object') throw new ListContextError('Invalid seriesDates');
+
+  const { overwrite = false, ...days } = value as Record<string, unknown>;
+  if (typeof overwrite !== 'boolean') throw new ListContextError('Invalid seriesDates');
+
+  const change: ListContextSeriesDates = { overwrite };
+
+  for (const field of ['seriesStart', 'seriesEnd'] as const) {
+    const day = days[field];
+    if (day === undefined) continue;
+
+    if (day === null) {
+      if (!overwrite) throw new ListContextError(`Clearing ${field} needs overwrite`);
+    } else if (typeof day !== 'string' || !isValidSeriesDay(day)) {
+      throw new ListContextError(
+        `Invalid ${field} (expected YYYY-MM-DD between ${MIN_SERIES_DATE} and ${MAX_SERIES_DATE})`
+      );
+    }
+
+    change[field] = day;
+  }
+
+  if (change.seriesStart === undefined && change.seriesEnd === undefined) {
+    throw new ListContextError('Invalid seriesDates');
+  }
+
+  return change;
 }
 
 function normalizeItemIids(value: unknown): number[] {

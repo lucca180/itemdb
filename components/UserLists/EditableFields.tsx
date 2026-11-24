@@ -2,18 +2,13 @@ import { VStack, NumberInput, Checkbox, Text, Input, Flex, Box } from '@chakra-u
 import { useTranslations } from 'next-intl';
 import { EditableItemCardProps } from './EditableItemCard';
 import { ListItemInfo } from '../../types';
+import { MAX_SERIES_DATE, MIN_SERIES_DATE, isSeriesDateInputValid } from '@utils/list/seriesDates';
 
 export type EditableFieldsProps = EditableItemCardProps & {
   handleItemInfoChange: (
     value: number | string,
     field:
-      | 'amount'
-      | 'capValue'
-      | 'isHighlight'
-      | 'isHidden'
-      | 'order'
-      | 'seriesStart'
-      | 'seriesEnd'
+      'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order' | 'seriesStart' | 'seriesEnd'
   ) => void;
   itemInfo: ListItemInfo | undefined;
 };
@@ -87,6 +82,9 @@ const EditableFields = (props: EditableFieldsProps) => {
               type="date"
               variant="subtle"
               borderRightRadius="md"
+              min={MIN_SERIES_DATE}
+              max={MAX_SERIES_DATE}
+              aria-invalid={!isSeriesDateInputValid(itemInfo?.seriesStart) || undefined}
               value={itemInfo?.seriesStart?.split('T')[0] || ''}
               onChange={(e) => handleItemInfoChange(e.target.value, 'seriesStart')}
             />
@@ -99,6 +97,9 @@ const EditableFields = (props: EditableFieldsProps) => {
               type="date"
               variant="subtle"
               borderRightRadius="md"
+              min={MIN_SERIES_DATE}
+              max={MAX_SERIES_DATE}
+              aria-invalid={!isSeriesDateInputValid(itemInfo?.seriesEnd) || undefined}
               value={itemInfo?.seriesEnd?.split('T')[0] || ''}
               onChange={(e) => handleItemInfoChange(e.target.value, 'seriesEnd')}
             />

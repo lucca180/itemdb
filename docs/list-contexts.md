@@ -42,6 +42,24 @@ The rules are `contextShowsBadge` and `contextGroupsItems` in
 badge. An item whose only contexts are `badge` goes with the ungrouped items.
 The "group by context" switch only appears when at least one context groups.
 
+### Series dates
+
+Contexts **don't store dates**. Series dates belong to the list items
+(`ListItems.seriesStart` / `seriesEnd`). `seriesDates` on create/update is a one-off
+change to the items of the context, hidden ones too, saved in the same transaction:
+
+| Field | Rule |
+| --- | --- |
+| `seriesStart`, `seriesEnd` | `YYYY-MM-DD` sets the date, `null` clears it (needs `overwrite`), left out means not changed. At least one is required. |
+| `overwrite` | `false` (default) only fills empty dates, each field on its own. `true` replaces them. |
+
+- Saving a context without `seriesDates` never touches the items' dates.
+- Removing an item from a context, or deleting the context, keeps the item's dates.
+- Dates go from `MIN_SERIES_DATE` (1990-01-01) to `MAX_SERIES_DATE` (2100-12-31) and are
+  stored at 18:00 UTC (`utils/list/seriesDates.ts`).
+- If any item would end before it starts, the whole request fails with a 400.
+- The rules are `planSeriesDatesChange`, shared by the service and the editor preview.
+
 ### Limits (`utils/list/listContexts.ts`)
 
 | Field | Rule |
@@ -66,7 +84,7 @@ enforced by `test/listItemsWrite.guard.test.ts`.
 | --- | --- |
 | `getListContexts(listId, includeHidden)` | Every context of a list, in the list's order. |
 | `getItemListContexts(itemIid, listIds)` | Contexts that include one item, keyed by list id. Used by the item page. |
-| `createListContext` / `updateListContext` / `deleteListContext` | Mutations. Each returns `{ context, affectedItemIids }`. |
+| `createListContext` / `updateListContext` / `deleteListContext` | Mutations. Each returns `{ context, affectedItemIids, seriesDates? }`. |
 | `reorderListContexts(listId, contextIds)` | Sets `order` for every context. Returns `{ contexts, affectedItemIids }`. |
 | `listService.getListContextsFor(list)` | `getListContexts` with `includeHidden` set from the viewer (owner or admin). |
 
@@ -97,9 +115,9 @@ this list).
 | Method | Route | Body / result |
 | --- | --- | --- |
 | `GET` | `/api/v1/lists/[username]/[list_id]/contexts` | `ListContext[]`. `username` can be `official`, and `list_id` can be an id or a slug. |
-| `POST` | `/api/v1/lists/[username]/[list_id]/contexts` | `ListContextCreateRequest` → the created context |
+| `POST` | `/api/v1/lists/[username]/[list_id]/contexts` | `ListContextCreateRequest` → `ListContextSaveResponse` (the created context and `itemDates`, the list items whose dates changed) |
 | `PATCH` | `/api/v1/lists/[username]/[list_id]/contexts` | `{ contextIds: number[] }` in the new order → every context (with hidden items) |
-| `PATCH` | `/api/v1/lists/[username]/[list_id]/contexts/[context_id]` | `ListContextUpdateRequest` (partial) → the updated context |
+| `PATCH` | `/api/v1/lists/[username]/[list_id]/contexts/[context_id]` | `ListContextUpdateRequest` (partial) → `ListContextSaveResponse` |
 | `DELETE` | `/api/v1/lists/[username]/[list_id]/contexts/[context_id]` | `{ success: true }` |
 
 ### Permissions
@@ -127,7 +145,9 @@ Write routes need the numeric `list_id`. The `username` segment is not checked.
 2. `revalidateListCaches(list_id)` invalidates the list-items tags (preload, full
    and full-owner), and those tags also cover the list page contexts.
 3. On official lists, the `lists` section tag of every affected item is
-   revalidated, so the item page footer updates.
+   revalidated, so the item page footer and the price chart markers update. Items
+   whose series dates changed also get `nc-insights`. When `seriesDates` was sent, it is
+   part of the log.
 
 ---
 
@@ -196,7 +216,7 @@ The popover lists every context of the item: badge, title, markdown details
 
 ### Editor (`ListContextsEditorModal`)
 
-The editor is styled like `/admin/price-markers`. It has three columns: the
+The editor is full-screen and styled like `/admin/price-markers`. It has three columns: the
 context list, the form (with a live card preview), and the item picker.
 
 - **Pick tab:** search by name and toggle items. Each item shows the other
@@ -207,6 +227,12 @@ context list, the form (with a live card preview), and the item picker.
 - **Order:** drag a context by its handle (`@dnd-kit`, mouse, touch or keyboard).
   The new order is saved right away with the `PATCH` route, and the change is
   undone if the request fails.
+- **Series dates** (`ListContextSeriesDatesFields`, only when the list has a
+  `seriesType`): don't change (default), fill empty, overwrite or clear. It shows the
+  dates the items have now and how many will change. "Fill empty" starts from the date
+  most of the dated items have. It goes back to "don't change" after each save, and is
+  disabled while the page has unsaved item edits. The response's `itemDates` update the
+  page state.
 - Delete asks for a second click to confirm.
 
 ### Item page (`ItemOfficialList.tsx`)
@@ -229,4 +255,5 @@ without "see all".
 - order on create and reorder validation;
 - mode validation and partial updates;
 - revalidation tags;
+- series dates (fill, overwrite, clear, limits);
 - hidden filtering.

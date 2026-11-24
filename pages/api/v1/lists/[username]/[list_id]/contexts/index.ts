@@ -11,6 +11,7 @@ import {
   type ListContextMutationResult,
 } from '@services/ListService';
 import { logOfficialListAction, type OfficialListAction } from '@services/OfficialListLogService';
+import type { ListContextSaveResponse } from '@utils/list/listContexts';
 import { revalidateListCaches } from '@pages/api/v1/lists/[username]/[list_id]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -75,7 +76,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     const result = await ListService.createListContext(list.internal_id, req.body);
     await afterContextMutation(list, user, 'createContext', result);
 
-    return res.status(200).json(result.context);
+    return res.status(200).json(toSaveResponse(result));
   } catch (e: any) {
     return sendContextError(res, e);
   }
@@ -168,10 +169,18 @@ export async function afterContextMutation(
       context_id: result.context.internal_id,
       badgeText: result.context.badgeText,
       item_iids: result.context.itemIids,
+      ...(result.seriesDates ? { seriesDates: result.seriesDates.change } : {}),
     },
-    result.affectedItemIids
+    result.affectedItemIids,
+    result.seriesDates?.changedItemIids
   );
 }
+
+/** The saved context, plus the list items whose series dates changed with it. */
+export const toSaveResponse = (result: ListContextMutationResult): ListContextSaveResponse => ({
+  ...result.context,
+  itemDates: result.seriesDates?.itemDates ?? [],
+});
 
 /** Logs the change (official lists) and revalidates the list and the affected item pages. */
 async function afterContextChange(
@@ -179,16 +188,21 @@ async function afterContextChange(
   user: User,
   action: OfficialListAction,
   logData: Record<string, unknown>,
-  affectedItemIids: number[]
+  affectedItemIids: number[],
+  redatedItemIids: number[] = []
 ) {
   await logOfficialListAction(list, action, logData, user);
 
   await revalidateListCaches(list.internal_id);
 
-  // item page official list cards show the contexts of that item
+  // item page official list cards show the contexts of that item ('lists' also covers the price
+  // chart markers); series dates show in NC Insights too
   if (list.official && affectedItemIids.length) {
     await triggerAppRevalidation({
-      tags: affectedItemIids.map((iid) => itemSectionTag(iid, 'lists')),
+      tags: [
+        ...affectedItemIids.map((iid) => itemSectionTag(iid, 'lists')),
+        ...redatedItemIids.map((iid) => itemSectionTag(iid, 'nc-insights')),
+      ],
     });
   }
 }

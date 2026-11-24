@@ -26,6 +26,12 @@ import { useTranslations } from 'next-intl';
 import { useLists } from '../../utils/useLists';
 import MainLink from '@components/Utils/MainLink';
 import { canDeleteList, canEditListInfo } from '@utils/list/listPermissions';
+import {
+  MAX_SERIES_DATE,
+  MIN_SERIES_DATE,
+  isSeriesDateInputValid,
+  seriesDay,
+} from '@utils/list/seriesDates';
 import DeleteListModal from '@components/Modal/DeleteListModal';
 import { useRouter } from '@i18n/navigation';
 import { useToast } from '@utils/theme/toast';
@@ -120,6 +126,11 @@ const CreateListModal = (props: CreateListModalProps) => {
       })
       .catch(() => undefined);
   }, [isOpen, user?.isAdmin, user?.username, props.list?.internal_id, props.list?.owner?.username]);
+
+  // the date inputs only show for this series type
+  const hasInvalidDates =
+    list.seriesType === 'listDates' &&
+    (!isSeriesDateInputValid(list.seriesStart) || !isSeriesDateInputValid(list.seriesEnd));
 
   const saveChanges = async () => {
     setLoading(true);
@@ -337,26 +348,31 @@ const CreateListModal = (props: CreateListModalProps) => {
                           </Field.Root>
                           {list.seriesType === 'listDates' && (
                             <>
-                              <Field.Root>
+                              <Field.Root invalid={!isSeriesDateInputValid(list.seriesStart)}>
                                 <Field.Label color="gray.300">Series Start</Field.Label>
                                 <Input
                                   variant="subtle"
                                   type="date"
                                   name="seriesStart"
                                   onChange={handleChange}
+                                  min={MIN_SERIES_DATE}
+                                  max={MAX_SERIES_DATE}
                                   value={list.seriesStart?.split('T')[0] ?? ''}
                                 />
+                                <Field.ErrorText>{t('Lists.series-dates-invalid')}</Field.ErrorText>
                               </Field.Root>
-                              <Field.Root>
+                              <Field.Root invalid={!isSeriesDateInputValid(list.seriesEnd)}>
                                 <Field.Label color="gray.300">Series End</Field.Label>
                                 <Input
                                   variant="subtle"
                                   type="date"
                                   name="seriesEnd"
                                   onChange={handleChange}
-                                  min={list.seriesStart || undefined}
+                                  min={seriesDay(list.seriesStart) ?? MIN_SERIES_DATE}
+                                  max={MAX_SERIES_DATE}
                                   value={list.seriesEnd?.split('T')[0] ?? ''}
                                 />
+                                <Field.ErrorText>{t('Lists.series-dates-invalid')}</Field.ErrorText>
                               </Field.Root>
                             </>
                           )}
@@ -679,7 +695,7 @@ const CreateListModal = (props: CreateListModalProps) => {
                   <Button variant="ghost" onClick={handleCancel} mr={3}>
                     {t('General.cancel')}
                   </Button>
-                  <Button onClick={saveChanges} disabled={!list.name}>
+                  <Button onClick={saveChanges} disabled={!list.name || hasInvalidDates}>
                     {props.list ? t('General.save') : t('General.create')}
                   </Button>
                 </>

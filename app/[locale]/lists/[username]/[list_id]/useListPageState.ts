@@ -16,6 +16,8 @@ import {
 import { getListLoadingStrategy, type ListItemsData, type ListPageClientCore } from './listPage';
 import { isChecklist } from '@utils/list/dynamicListLabels';
 import { computeChecklistProgress, type ChecklistProgress } from '@utils/list/checklistProgress';
+import type { ListContextItemDates } from '@utils/list/listContexts';
+import { isSeriesDateInputValid } from '@utils/list/seriesDates';
 import {
   applyDragSortOrder,
   buildListSortTypes,
@@ -443,6 +445,19 @@ export function useListPageState({
     [itemInfo, itemSelect]
   );
 
+  /** Series dates already saved by the contexts editor. */
+  const applyItemDates = useCallback((itemDates: ListContextItemDates[]) => {
+    if (!itemDates.length) return;
+
+    setItemInfo((prev) => {
+      const next = { ...prev };
+      for (const { internal_id, seriesStart, seriesEnd } of itemDates) {
+        if (next[internal_id]) next[internal_id] = { ...next[internal_id], seriesStart, seriesEnd };
+      }
+      return next;
+    });
+  }, []);
+
   const cntxAction = useCallback(
     (item: ItemV2For<'card'>, action: 'move' | 'delete') => {
       const infoId = itemInfoIds.find((id) => itemInfo[id].item_iid === item.internal_id);
@@ -454,6 +469,27 @@ export function useListPageState({
   );
 
   const saveChanges = useCallback(async () => {
+    const changedItems = Object.values(itemInfo).filter((item) => item.hasChanged);
+
+    // the date inputs only show on official lists with a series type
+    const hasInvalidDates =
+      list.official &&
+      !!list.seriesType &&
+      changedItems.some(
+        (item) =>
+          !isSeriesDateInputValid(item.seriesStart) || !isSeriesDateInputValid(item.seriesEnd)
+      );
+
+    if (hasInvalidDates) {
+      toast({
+        id: 'list-page-invalid-dates',
+        title: t('Lists.series-dates-invalid'),
+        status: 'error',
+        duration: 5000,
+      });
+      return;
+    }
+
     setHasChangesState(false);
     toast.closeAll();
 
@@ -463,8 +499,6 @@ export function useListPageState({
       status: 'loading',
       duration: Infinity,
     });
-
-    const changedItems = Object.values(itemInfo).filter((item) => item.hasChanged);
 
     try {
       const res = await axios.post(`/api/v1/lists/${list.owner.username}/${list.internal_id}`, {
@@ -493,7 +527,16 @@ export function useListPageState({
         duration: 5000,
       });
     }
-  }, [itemInfo, list.internal_id, list.owner.username, refreshList, t, toast]);
+  }, [
+    itemInfo,
+    list.internal_id,
+    list.official,
+    list.owner.username,
+    list.seriesType,
+    refreshList,
+    t,
+    toast,
+  ]);
 
   return {
     canEdit,
@@ -544,6 +587,7 @@ export function useListPageState({
     handleSort,
     handleItemInfoChange,
     handleSelectedItemsBulkChange,
+    applyItemDates,
     cntxAction,
     saveChanges,
   };

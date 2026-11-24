@@ -115,6 +115,32 @@ export async function updateItems(listId: number, items: ListItemInfo[]) {
 }
 
 /**
+ * Sets series dates of some list items. Runs inside the caller's transaction, because the dates
+ * are saved together with the list context they come from. Visibility doesn't change, so
+ * `visibleItemCount` needs no refresh.
+ */
+export async function setItemsSeriesDates(
+  listId: number,
+  rows: { internal_id: number; seriesStart: Date | null; seriesEnd: Date | null }[],
+  tx: Prisma.TransactionClient
+) {
+  // most rows end up with the same dates: one query per pair
+  const groups = new Map<string, typeof rows>();
+  for (const row of rows) {
+    const key = `${row.seriesStart?.getTime()}|${row.seriesEnd?.getTime()}`;
+    groups.set(key, [...(groups.get(key) ?? []), row]);
+  }
+
+  for (const group of groups.values()) {
+    const { seriesStart, seriesEnd } = group[0];
+    await tx.listItems.updateMany({
+      where: { list_id: listId, internal_id: { in: group.map((row) => row.internal_id) } },
+      data: { seriesStart, seriesEnd },
+    });
+  }
+}
+
+/**
  * Hard-deletes list items by row `internal_id` (POST `action=delete`).
  *
  * @param listId - Source list; used for count refresh and `updatedAt`.

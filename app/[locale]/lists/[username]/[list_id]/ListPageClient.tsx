@@ -281,6 +281,8 @@ export function ListPageClient({
             onContextsChange={setContexts}
             itemInfo={state.itemInfo}
             items={state.items}
+            hasUnsavedChanges={state.hasChanges}
+            onItemDatesChange={state.applyItemDates}
             onClose={() => setContextsEditorOpen(false)}
           />
         )}

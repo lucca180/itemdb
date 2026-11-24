@@ -1,6 +1,8 @@
 /**
  * List contexts: limits and request shapes shared by the API and the list UI.
  */
+import type { ListContext, ListItemInfo } from '@types';
+import type { SeriesDatesChange } from '@utils/list/seriesDates';
 
 /** Shown in item card corners and list card footers, so kept short (column is VarChar(191)). */
 export const MAX_LIST_CONTEXT_BADGE_LENGTH = 40;
@@ -35,5 +37,16 @@ export type ListContextFields = {
   itemIids: number[];
 };
 
-export type ListContextCreateRequest = Partial<ListContextFields>;
-export type ListContextUpdateRequest = Partial<ListContextFields>;
+/** One-off change to the series dates of the context's items; contexts don't store dates. */
+export type ListContextSeriesDates = SeriesDatesChange;
+
+export type ListContextCreateRequest = Partial<ListContextFields> & {
+  seriesDates?: ListContextSeriesDates;
+};
+export type ListContextUpdateRequest = ListContextCreateRequest;
+
+/** List items whose series dates changed with the context. */
+export type ListContextItemDates = Pick<ListItemInfo, 'internal_id' | 'seriesStart' | 'seriesEnd'>;
+
+/** Create/update response. */
+export type ListContextSaveResponse = ListContext & { itemDates: ListContextItemDates[] };
