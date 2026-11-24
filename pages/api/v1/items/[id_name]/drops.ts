@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '.';
-import { ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
+import { ItemData, ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { OpenableItems, WearableData } from '@prisma/generated/client';
@@ -726,6 +726,11 @@ export const getItemParent = async (item_iid: number, itemLimit?: number) => {
   const candidateParentIds = Array.from(
     new Set(eligibleDrops.map((drop) => drop.parent_iid as number))
   );
+
+  // Most items come from no openable: skip the parent lookups (Prisma still sends `WHERE 1=0`).
+  if (candidateParentIds.length === 0) {
+    return { parents_iid: [] as number[], itemData: [] as ItemData[] };
+  }
 
   const matchingItemIds = new Set(eligibleDrops.map((drop) => drop.item_iid));
 

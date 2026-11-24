@@ -15,7 +15,7 @@ const prismaMock = vi.hoisted(() => {
       update: vi.fn(),
       delete: vi.fn(),
     },
-    listContextItem: { createMany: vi.fn(), deleteMany: vi.fn() },
+    listContextItem: { findMany: vi.fn(), createMany: vi.fn(), deleteMany: vi.fn() },
     $transaction: vi.fn(),
   };
   mock.$transaction.mockImplementation((arg: unknown) =>
@@ -273,11 +273,11 @@ describe('GET /api/v1/lists/[username]/[list_id]/contexts', () => {
       updatedAt: DATE,
       user: { ...CURATOR, neo_user: null, last_login: DATE },
     });
-    prismaMock.listContext.findMany.mockResolvedValue([
-      contextRow({}, [
-        { item_iid: 2, isHidden: false },
-        { item_iid: 1, isHidden: true },
-      ]),
+    // the links come from a separate query
+    prismaMock.listContext.findMany.mockResolvedValue([contextRow()]);
+    prismaMock.listContextItem.findMany.mockResolvedValue([
+      { context_id: 5, listItem: { item_iid: 2, isHidden: false } },
+      { context_id: 5, listItem: { item_iid: 1, isHidden: true } },
     ]);
     const res = mockRes();
 
@@ -291,7 +291,29 @@ describe('GET /api/v1/lists/[username]/[list_id]/contexts', () => {
         orderBy: [{ order: 'asc' }, { internal_id: 'asc' }],
       })
     );
+    expect(prismaMock.listContextItem.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { context_id: { in: [5] } } })
+    );
     expect(res.headers['Cache-Control']).toContain('s-maxage');
+  });
+
+  test('a list without contexts skips the links query', async () => {
+    checkAuthMock.mockResolvedValue({ user: null });
+    prismaMock.userList.findFirst.mockResolvedValue({
+      ...officialList,
+      visibleItemCount: 2,
+      createdAt: DATE,
+      updatedAt: DATE,
+      user: { ...CURATOR, neo_user: null, last_login: DATE },
+    });
+    prismaMock.listContext.findMany.mockResolvedValue([]);
+    const res = mockRes();
+
+    await contextsHandle(req('GET', { username: 'official', list_id: 'event-prizes' }), res);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual([]);
+    expect(prismaMock.listContextItem.findMany).not.toHaveBeenCalled();
   });
 });
 
@@ -465,9 +487,13 @@ describe('PATCH /api/v1/lists/[username]/[list_id]/contexts (reorder)', () => {
     prismaMock.listContext.findMany
       .mockResolvedValueOnce([{ internal_id: 5 }, { internal_id: 6 }])
       .mockResolvedValueOnce([
-        contextRow({ internal_id: 6, order: 0 }, [{ item_iid: 8, isHidden: true }]),
-        contextRow({ internal_id: 5, order: 1 }, [{ item_iid: 7, isHidden: false }]),
+        contextRow({ internal_id: 6, order: 0 }),
+        contextRow({ internal_id: 5, order: 1 }),
       ]);
+    prismaMock.listContextItem.findMany.mockResolvedValue([
+      { context_id: 6, listItem: { item_iid: 8, isHidden: true } },
+      { context_id: 5, listItem: { item_iid: 7, isHidden: false } },
+    ]);
     prismaMock.listContext.update.mockResolvedValue({});
     const res = mockRes();
 

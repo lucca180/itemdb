@@ -45,17 +45,14 @@ export async function getManualPriceMarkers(
   item: Pick<PriceMarkerItemRef, 'internal_id' | 'firstSeen'>,
   now = new Date()
 ): Promise<ManualPriceMarkerDTO[]> {
-  const rows = await prisma.manualPriceMarkerItem.findMany({
-    where: { item_iid: item.internal_id },
-    select: { marker: true },
-    orderBy: { marker_id: 'asc' },
+  // One query: selecting `marker` through ManualPriceMarkerItem costs a second round trip, even
+  // for the (common) item without markers.
+  const markers = await prisma.manualPriceMarker.findMany({
+    where: { items: { some: { item_iid: item.internal_id } } },
+    orderBy: { internal_id: 'asc' },
   });
 
-  return resolveManualMarkers(
-    rows.map((row) => row.marker),
-    item,
-    now
-  );
+  return resolveManualMarkers(markers, item, now);
 }
 
 /**

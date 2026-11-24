@@ -63,16 +63,39 @@ const contextOrderBy = [
   { internal_id: 'asc' },
 ] satisfies Prisma.ListContextOrderByWithRelationInput[];
 
+/**
+ * Contexts matching `where`, in the list's order, with their item links. Most lists and items
+ * have no context, and `include: contextInclude` would still cost two extra round trips
+ * (`IN (NULL)`) on an empty result, so the links are only loaded when a context exists.
+ */
+async function findContextRows(where: Prisma.ListContextWhereInput): Promise<ContextRow[]> {
+  const contexts = await prisma.listContext.findMany({ where, orderBy: contextOrderBy });
+  if (!contexts.length) return [];
+
+  const links = await prisma.listContextItem.findMany({
+    where: { context_id: { in: contexts.map((context) => context.internal_id) } },
+    select: { context_id: true, ...contextInclude.items.select },
+  });
+
+  const linksByContext = new Map<number, ContextRow['items']>();
+  for (const { context_id, listItem } of links) {
+    const contextLinks = linksByContext.get(context_id) ?? [];
+    contextLinks.push({ listItem });
+    linksByContext.set(context_id, contextLinks);
+  }
+
+  return contexts.map((context) => ({
+    ...context,
+    items: linksByContext.get(context.internal_id) ?? [],
+  }));
+}
+
 /** Every context of a list, in the list's order (the first one is what item cards show). */
 export async function getListContexts(
   listId: number,
   includeHidden = false
 ): Promise<ListContext[]> {
-  const rows = await prisma.listContext.findMany({
-    where: { list_id: listId },
-    include: contextInclude,
-    orderBy: contextOrderBy,
-  });
+  const rows = await findContextRows({ list_id: listId });
 
   return rows.map((row) => serializeContext(row, includeHidden));
 }
@@ -87,13 +110,9 @@ export async function getItemListContexts(
 ): Promise<Record<number, ListContext[]>> {
   if (!listIds.length) return {};
 
-  const rows = await prisma.listContext.findMany({
-    where: {
-      list_id: { in: listIds },
-      items: { some: { listItem: { item_iid: itemIid, isHidden: false } } },
-    },
-    include: contextInclude,
-    orderBy: contextOrderBy,
+  const rows = await findContextRows({
+    list_id: { in: listIds },
+    items: { some: { listItem: { item_iid: itemIid, isHidden: false } } },
   });
 
   const byList: Record<number, ListContext[]> = {};
