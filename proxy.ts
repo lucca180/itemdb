@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import * as Redis from '@utils/api/redis';
 import { isLikelyBrowser, normalizeIP, verifyApiToken } from '@utils/api/api-utils';
 import * as Sentry from '@sentry/nextjs';
@@ -86,6 +86,8 @@ export function proxy(request: NextRequest) {
   const currentPath = getCurrentPath(request.nextUrl.pathname, request.nextUrl.search);
   const pageRequestHeaders = new Headers(request.headers);
   pageRequestHeaders.set('x-itemdb-current-path', currentPath);
+  // API keys are only valid on `/api/`: never forward them to pages / server actions.
+  pageRequestHeaders.delete('x-itemdb-token');
 
   const intlRequest = new NextRequest(request.url, {
     headers: pageRequestHeaders,
@@ -129,9 +131,8 @@ export const apiMiddleware = async (request: NextRequest) => {
 
   const pathname = request.nextUrl.pathname;
 
-  let ip =
-    requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
-  ip = ip ? normalizeIP(ip) : undefined;
+  const clientIp = getClientIp(request);
+  const ip = clientIp ? normalizeIP(clientIp) : undefined;
 
   const { score, isLikely: isBrowser } = isLikelyBrowser(request);
   requestHeaders.set('x-itemdb-score', score.toString());

@@ -1,7 +1,7 @@
 import { after } from 'next/server';
 import prisma from '@utils/prisma';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
-import { getRequestClientIp } from '@utils/api/clientIp';
+import { getClientIp } from '@utils/api/clientIp';
 import { FEEDBACK_VOTE_TARGET, getVoteMultiplier } from '@utils/feedback/voteRules';
 import { submitHookFeedback, submitMailFeedback } from '@services/feedback/feedbackNotify';
 import { reportBackgroundError } from '@utils/api/reportBackgroundError';
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
   if (!pageInfo) pageInfo = request.headers.get('referer') ?? undefined;
   if (!pageInfo) return text('Missing required fields', 400);
 
-  const ip = getRequestClientIp(request);
+  const ip = getClientIp(request);
   const obj = {
     ip: ip,
     pageRef: pageInfo,

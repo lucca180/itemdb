@@ -1,6 +1,6 @@
 import prisma from '../../../utils/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import { User, UserRoles } from '../../../types';
 import { startOfDay } from 'date-fns';
 import { User as PrismaUser } from '@prisma/generated/client';
@@ -20,7 +20,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     await consumeMagicToken(token, email);
 
-    const ip = requestIp.getClientIp(req) || '';
+    const ip = getClientIp(req) || '';
     const normalizedEmail = email.toLowerCase();
 
     const dbUser = await prisma.user.upsert({

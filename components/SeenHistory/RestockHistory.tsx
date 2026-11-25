@@ -4,6 +4,8 @@ import { Table, Text, Flex, HStack, Spinner, Center } from '@chakra-ui/react';
 import type { ItemData, ItemRestockData } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
+import { SeenHistoryError } from './SeenHistoryError';
+import { SEEN_HISTORY_SWR_OPTIONS, unwrapRateLimit } from './seenHistoryRequest';
 import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
 import { loadRestockHistory } from '@app/server/items/seenHistoryActions';
 
@@ -21,10 +23,15 @@ export const RestockHistory = (props: RestockHistoryProps) => {
   const t = useTranslations();
 
   const {
-    data,
+    data: result,
     error,
     isLoading: loading,
-  } = useSWRImmutable(['seen-history', 'restock', item.name], () => loadRestockHistory(item.name));
+  } = useSWRImmutable(
+    ['seen-history', 'restock', item.name],
+    () => unwrapRateLimit(loadRestockHistory(item.name)),
+    SEEN_HISTORY_SWR_OPTIONS
+  );
+  const data = result?.data;
 
   return (
     <Flex flexFlow="column">
@@ -48,15 +55,14 @@ export const RestockHistory = (props: RestockHistoryProps) => {
         />
         <SeenHistoryStatusCard
           title={t('ItemPage.last-seen-stock')}
-          status={`${
-            !data?.recent?.[0]?.addedAt
-              ? ''
-              : format.dateTime(new Date(data.recent[0].addedAt), {
-                  dateStyle: 'short',
-                  timeStyle: 'short',
-                  timeZone: 'america/los_angeles',
-                })
-          } NST`}
+          status={
+            data?.recent[0] &&
+            `${format.dateTime(new Date(data.recent[0].addedAt), {
+              dateStyle: 'short',
+              timeStyle: 'short',
+              timeZone: 'america/los_angeles',
+            })} NST`
+          }
           loading={loading}
         />
       </HStack>
@@ -67,11 +73,7 @@ export const RestockHistory = (props: RestockHistoryProps) => {
           })}
         </Text>
         {!loading && !error && <RestockHistoryTable data={data?.recent ?? []} />}
-        {error && !loading && (
-          <Text textAlign="center" fontSize="xs" color="red.300">
-            {t('General.error')}
-          </Text>
-        )}
+        {error && !loading && <SeenHistoryError error={error} />}
         {loading && (
           <Center>
             <Spinner />

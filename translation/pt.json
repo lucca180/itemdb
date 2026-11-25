@@ -302,6 +302,7 @@
     "total-units-stocked": "Quantidade Estocada",
     "unique-restocks": "Restocks Únicos",
     "seen-history-psa": "Esses dados não são 100% precisos e não podem ser interpretados como todas as vezes em que o item esteve disponível neste local.",
+    "seen-history-rate-limited": "Você carregou muitos dados em pouco tempo. Tente novamente em {x, plural, one {# minuto} other {# minutos}}.",
     "latest-x-restocks": "Últimos {x} Restocks",
     "latest-x-auctions": "Últimos {x} Leilões",
     "latest-x-trades": "Últimos {x} Lotes de Troca",

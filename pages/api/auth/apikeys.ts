@@ -2,7 +2,7 @@ import { CheckAuth } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { submitMailFeedback } from '@services/feedback/feedbackNotify';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
@@ -64,7 +64,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 
   if (!apiKey || apiKey.user_id !== user.id)
     return res.status(404).json({ error: 'API key not found' });
-  const ip = requestIp.getClientIp(req) || '';
+  const ip = getClientIp(req) || '';
 
   const feedbackData = {
     content: {

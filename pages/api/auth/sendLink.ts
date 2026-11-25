@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CreateEmailOptions, Resend } from 'resend';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import { getEmail } from '@utils/email';
 import prisma from '@utils/prisma';
 import { createMagicToken } from '@utils/auth/magicLink';
@@ -63,7 +63,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       .status(400)
       .json({ success: false, code: 'invalid-cred', message: 'Invalid credential' });
 
-  const ip = requestIp.getClientIp(req);
+  const ip = getClientIp(req);
   const rate = await consumeLoginRateLimit(ip);
 
   if (!rate.allowed) {

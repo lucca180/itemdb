@@ -300,6 +300,7 @@
     "total-units-stocked": "Total Units Stocked",
     "last-seen-stock": "Last Seen Stock",
     "seen-history-psa": "This data is not 100% accurate and cannot be interpreted as all the times the item was available on this location.",
+    "seen-history-rate-limited": "You've loaded too much data in a short time. Please try again in {x, plural, one {# minute} other {# minutes}}.",
     "latest-x-restocks": "Latest {x} Restocks",
     "latest-x-auctions": "Latest {x} Auctions",
     "latest-x-trades": "Latest {x} Trade Lots",

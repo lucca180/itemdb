@@ -4,7 +4,7 @@ import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { reportBackgroundError } from '@utils/api/reportBackgroundError';
 import { FeedbackCommitError } from '@services/feedback/feedbackCommit';
 import { autoApproveTradeFeedback } from '@services/feedback/tradeAutoApprove';
-import { getRequestClientIp } from '@utils/api/clientIp';
+import { getClientIp } from '@utils/api/clientIp';
 import type { TradeData } from '@types';
 import {
   FEEDBACK_VOTE_TARGET,
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     if (existing && existing.user_id !== user.id)
       return Response.json({ success: true, message: 'already processed' });
 
-    const ip = getRequestClientIp(request);
+    const ip = getClientIp(request);
 
     // resubmitting replaces the user's own pending suggestion
     const deleteOwn = existing

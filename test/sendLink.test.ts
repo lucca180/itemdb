@@ -18,9 +18,7 @@ vi.mock('resend', () => ({
     emails = { send: vi.fn() };
   },
 }));
-vi.mock('request-ip', () => ({
-  default: { getClientIp: () => '1.2.3.4' },
-}));
+vi.mock('@utils/api/clientIp', () => ({ getClientIp: () => '1.2.3.4' }));
 
 import handle from '../pages/api/auth/sendLink';
 

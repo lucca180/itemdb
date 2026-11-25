@@ -5,6 +5,8 @@ import type { ContributeWallData, ItemAuctionData, ItemData } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
 import useSWR from 'swr';
 import useSWRImmutable from 'swr/immutable';
+import { SeenHistoryError } from './SeenHistoryError';
+import { GATED_SWR_OPTIONS, SEEN_HISTORY_SWR_OPTIONS, unwrapRateLimit } from './seenHistoryRequest';
 import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
 import { ContributeWall } from '../Utils/ContributeWall';
 import { loadAuctionHistory } from '@app/server/items/seenHistoryActions';
@@ -18,9 +20,6 @@ import {
   AuctionRelistingGate,
   useAuctionRelistingGate,
 } from '@components/Auctions/AuctionRelistingGate';
-
-/** Re-check contribute gate / sold auctions periodically while the modal is open. */
-const GATED_REFRESH_MS = 60_000;
 
 type Props = {
   data: ItemAuctionData[];
@@ -45,8 +44,10 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
     data: recentResult,
     error: recentError,
     isLoading: loading,
-  } = useSWRImmutable(['seen-history', 'auction', item.name, false], () =>
-    loadAuctionHistory(item.name, false)
+  } = useSWRImmutable(
+    ['seen-history', 'auction', item.name, false],
+    () => unwrapRateLimit(loadAuctionHistory(item.name, false)),
+    SEEN_HISTORY_SWR_OPTIONS
   );
 
   const {
@@ -55,8 +56,8 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
     isLoading: soldLoading,
   } = useSWR(
     ['seen-history', 'auction', item.name, true],
-    () => loadAuctionHistory(item.name, true),
-    { refreshInterval: GATED_REFRESH_MS, revalidateOnFocus: true }
+    () => unwrapRateLimit(loadAuctionHistory(item.name, true)),
+    GATED_SWR_OPTIONS
   );
 
   const data = recentResult?.ok ? recentResult.data : null;
@@ -81,7 +82,11 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
         />
         <SeenHistoryStatusCard
           title={t('ItemPage.total-sold')}
-          status={`${data?.sold} (${data?.sold ? ((data.sold / data.total) * 100).toFixed(0) : 0}%)`}
+          status={
+            data
+              ? `${data.sold} (${data.sold ? ((data.sold / data.total) * 100).toFixed(0) : 0}%)`
+              : undefined
+          }
           loading={loading}
         />
         <SeenHistoryStatusCard
@@ -123,11 +128,7 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
             </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="recent" pb={0} px={1}>
-            {recentError && !loading && (
-              <Text textAlign="center" fontSize="xs" color="red.300">
-                {t('General.error')}
-              </Text>
-            )}
+            {recentError && !loading && <SeenHistoryError error={recentError} />}
             {!loading && !recentError && (
               <AuctionHistoryTable
                 data={data?.recent ?? []}
@@ -142,11 +143,7 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
           </Tabs.Content>
           <Tabs.Content value="sold" pb={0} px={1}>
             {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
-            {soldError && !wall && !soldLoading && (
-              <Text textAlign="center" fontSize="xs" color="red.300">
-                {t('General.error')}
-              </Text>
-            )}
+            {soldError && !wall && !soldLoading && <SeenHistoryError error={soldError} />}
             {!wall && !soldError && soldData && (
               <AuctionHistoryTable data={soldData.recent ?? []} />
             )}

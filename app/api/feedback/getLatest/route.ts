@@ -3,7 +3,7 @@ import prisma from '@utils/prisma';
 import type { FeedbackParsed, TradeData } from '@types';
 import type { Feedbacks } from '@prisma/generated/client';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
-import { getRequestClientIp } from '@utils/api/clientIp';
+import { getClientIp } from '@utils/api/clientIp';
 import { AUTO_PRICE_UID, isNewFeedbackAccount } from '@utils/feedback/voteRules';
 
 export async function GET(request: NextRequest) {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   if (user.banned) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-  const ip_address = getRequestClientIp(request);
+  const ip_address = getClientIp(request);
   const user_id = user.id;
   // new accounts can only vote on auto priced feedbacks
   const onlyAuto = isNewFeedbackAccount(user);

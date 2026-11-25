@@ -2,7 +2,7 @@
 
 import { updateTag } from 'next/cache';
 import { headers } from 'next/headers';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import type { SearchFilters, SearchStats, UserList } from '@types';
 import { defaultFilters, getFiltersDiff } from '@utils/parseFilters';
 import { listMutationCacheTags } from '@utils/appCacheTags';
@@ -97,10 +97,7 @@ export async function suggestMissingListItems(
 > {
   try {
     const { user } = await getServerCurrentUser();
-    // server actions have no req object: build a req-like one so request-ip can read the headers
-    const headerStore = await headers();
-    const reqLike = { headers: Object.fromEntries(headerStore.entries()) };
-    const ip = requestIp.getClientIp(reqLike as Parameters<typeof requestIp.getClientIp>[0]);
+    const ip = getClientIp(await headers());
 
     const result = await submitListSuggestion({
       listId,

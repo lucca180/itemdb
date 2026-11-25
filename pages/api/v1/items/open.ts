@@ -3,7 +3,7 @@ import Chance from 'chance';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from './many';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import { validateExtractorHash } from '@utils/api/hashValidator';
 import { GRAM_OPTION_NOTE } from '@utils/item/itemDropEvidence';
 import { getImageId } from '@utils/item/imageId';
@@ -96,7 +96,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (exists) return res.status(400).json({ error: 'opening_id already exists' });
 
-  const ip_address = requestIp.getClientIp(req);
+  const ip_address = getClientIp(req);
 
   const parentData = Object.values(itemsData).find((data: any) => data.name === parentItem.name);
 

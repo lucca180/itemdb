@@ -3,7 +3,7 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import Chance from 'chance';
 import { Prisma } from '@prisma/generated/client';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 
 const chance = new Chance();
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -33,7 +33,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 
   const instanceID = chance.hash({ length: 15 });
 
-  const ip = requestIp.getClientIp(req);
+  const ip = getClientIp(req);
 
   const createMany: Prisma.DataCollectingCreateManyInput[] = itemList.map((item) => ({
     instance_id: instanceID,

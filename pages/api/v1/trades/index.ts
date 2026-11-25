@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import pMap from 'p-map';
 import prisma from '../../../../utils/prisma';
 import { ItemData, TradeData } from '../../../../types';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import { CheckAuth } from '../../../../utils/googleCloud';
 
 import { Prisma } from '@prisma/generated/client';
@@ -210,7 +210,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       wishlist: lot.wishList.trim(),
       owner: lot.owner,
       ownerHash: lot.ownerHash,
-      ip_address: requestIp.getClientIp(req),
+      ip_address: getClientIp(req),
       priced:
         isPriced || (!lot.instantBuy && (lot.wishList === 'none' || shouldSkipTrade(lot.wishList))),
       processed:
@@ -276,7 +276,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
-  await processTradePrice(trade, requestIp.getClientIp(req));
+  await processTradePrice(trade, getClientIp(req));
 
   return res.status(200).json({ success: true, message: false });
 };

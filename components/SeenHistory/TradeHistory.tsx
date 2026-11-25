@@ -5,13 +5,12 @@ import type { ItemData } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
 import useSWR from 'swr';
 import useSWRImmutable from 'swr/immutable';
+import { SeenHistoryError } from './SeenHistoryError';
+import { GATED_SWR_OPTIONS, SEEN_HISTORY_SWR_OPTIONS, unwrapRateLimit } from './seenHistoryRequest';
 import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
 import TradeTable from '../Trades/TradeTable';
 import { ContributeWall } from '../Utils/ContributeWall';
 import { loadTradeHistory } from '@app/server/items/seenHistoryActions';
-
-/** Re-check contribute gate / priced trades periodically while the modal is open. */
-const GATED_REFRESH_MS = 60_000;
 
 export type TradeHistoryProps = {
   item: ItemData;
@@ -26,18 +25,21 @@ export const TradeHistory = (props: TradeHistoryProps) => {
     data: recentResult,
     error: recentError,
     isLoading: loading,
-  } = useSWRImmutable(['seen-history', 'trades', item.name, false], () =>
-    loadTradeHistory(item.name, false)
+  } = useSWRImmutable(
+    ['seen-history', 'trades', item.name, false],
+    () => unwrapRateLimit(loadTradeHistory(item.name, false)),
+    SEEN_HISTORY_SWR_OPTIONS
   );
 
   const {
     data: pricedResult,
     error: pricedError,
     isLoading: pricedLoading,
-  } = useSWR(['seen-history', 'trades', item.name, true], () => loadTradeHistory(item.name, true), {
-    refreshInterval: GATED_REFRESH_MS,
-    revalidateOnFocus: true,
-  });
+  } = useSWR(
+    ['seen-history', 'trades', item.name, true],
+    () => unwrapRateLimit(loadTradeHistory(item.name, true)),
+    GATED_SWR_OPTIONS
+  );
 
   const data = recentResult?.ok ? recentResult.data : null;
   const soldData = pricedResult?.ok ? pricedResult.data : null;
@@ -70,15 +72,14 @@ export const TradeHistory = (props: TradeHistoryProps) => {
         />
         <SeenHistoryStatusCard
           title={t('ItemPage.last-trade-lot')}
-          status={`${
-            !data?.recent?.[0]?.addedAt
-              ? ''
-              : format.dateTime(new Date(data.recent[0].addedAt), {
-                  dateStyle: 'short',
-                  timeStyle: 'short',
-                  timeZone: 'america/los_angeles',
-                })
-          } NST`}
+          status={
+            data?.recent[0] &&
+            `${format.dateTime(new Date(data.recent[0].addedAt), {
+              dateStyle: 'short',
+              timeStyle: 'short',
+              timeZone: 'america/los_angeles',
+            })} NST`
+          }
           loading={loading}
         />
       </HStack>
@@ -103,11 +104,7 @@ export const TradeHistory = (props: TradeHistoryProps) => {
             </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value="recent" textAlign="left">
-            {recentError && !loading && (
-              <Text textAlign="center" fontSize="xs" color="red.300">
-                {t('General.error')}
-              </Text>
-            )}
+            {recentError && !loading && <SeenHistoryError error={recentError} />}
             {!loading && !recentError && (
               <Box maxH="500px" overflow="auto">
                 {data?.recent.map((trade) => (
@@ -128,11 +125,7 @@ export const TradeHistory = (props: TradeHistoryProps) => {
           </Tabs.Content>
           <Tabs.Content value="priced" textAlign="left">
             {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
-            {pricedError && !wall && !pricedLoading && (
-              <Text textAlign="center" fontSize="xs" color="red.300">
-                {t('General.error')}
-              </Text>
-            )}
+            {pricedError && !wall && !pricedLoading && <SeenHistoryError error={pricedError} />}
             {!wall && !pricedError && soldData && (
               <Box maxH="500px" overflow="auto">
                 {soldData.recent.map((trade) => (

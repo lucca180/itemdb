@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import hash from 'object-hash';
 import { PriceProcess, Prisma } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
@@ -106,7 +106,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       otherInfo: otherInfo?.toString() as string | undefined,
 
       language: lang as string,
-      ip_address: requestIp.getClientIp(req) as string | undefined,
+      ip_address: getClientIp(req) as string | undefined,
 
       neo_id: excludeNeoId.includes(type) ? undefined : (neo_id as number | undefined),
 
@@ -176,9 +176,7 @@ export const getLatestPricedItems = async (limit: number, includeCount = false) 
 
 export const newCreatePriceProcessFlow = async (
   dataList:
-    | Prisma.PriceProcess2UncheckedCreateInput[]
-    | Prisma.PriceProcessCreateInput[]
-    | PriceProcess[],
+    Prisma.PriceProcess2UncheckedCreateInput[] | Prisma.PriceProcessCreateInput[] | PriceProcess[],
   skipLastSeen = false,
   skipProcessed = false
 ) => {

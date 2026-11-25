@@ -1,7 +1,7 @@
 import { after } from 'next/server';
 import prisma from '@utils/prisma';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
-import { getRequestClientIp } from '@utils/api/clientIp';
+import { getClientIp } from '@utils/api/clientIp';
 import {
   AUTO_PRICE_UID,
   FEEDBACK_VOTE_TARGET,
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     ]);
 
     // deciding/committing (pricing, xp...) doesn't block the voter
-    const ip = getRequestClientIp(request);
+    const ip = getClientIp(request);
     after(async () => {
       try {
         if (!feedback.processed) await commitFeedbackIfDecided(feedback_id, ip);

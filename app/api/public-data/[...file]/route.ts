@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import { LogService } from '@services/ActionLogService';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { DUMPS_BUCKET, fileExists, getDumpSignedUrl } from '@utils/googleCloud';
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 
   const signedUrl = await getDumpSignedUrl(key);
-  const ip = requestIp.getClientIp(request as never);
+  const ip = getClientIp(request);
 
   await LogService.createLog('publicDataDownload', { file: key }, key, user.id, ip);
 

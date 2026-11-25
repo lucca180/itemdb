@@ -1,7 +1,7 @@
 import { BattleData } from '@types';
 import prisma from '@utils/prisma';
 import { NextApiRequest, NextApiResponse } from 'next';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') return POST(req, res);
@@ -40,7 +40,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
       battle_id: data.battleId,
       battle_data: JSON.stringify(data),
       item_list: ids.toString(),
-      ip_address: requestIp.getClientIp(req),
+      ip_address: getClientIp(req),
     },
   });
 

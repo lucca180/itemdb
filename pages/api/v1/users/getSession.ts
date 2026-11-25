@@ -2,7 +2,7 @@ import { CheckAuth } from '@utils/googleCloud';
 import { createSession } from '@utils/api/redis';
 import { verifyTurnstileToken } from '@utils/api/turnstile';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -11,7 +11,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (hasCookie) return res.status(400).json({ error: 'Invalid request' });
 
   const token = typeof req.body?.token === 'string' ? req.body.token : undefined;
-  const ip = requestIp.getClientIp(req) || undefined;
+  const ip = getClientIp(req) || undefined;
   const turnstileOk = await verifyTurnstileToken(token, ip);
   if (!turnstileOk) return res.status(401).json({ error: 'Invalid request' });
 

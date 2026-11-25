@@ -7,7 +7,7 @@ import {
   normalizeIP,
   verifySessionToken,
 } from './api-utils';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import * as Sentry from '@sentry/nextjs';
 
 const API_CONST = {
@@ -132,8 +132,7 @@ export const getBanTTL = async (ip: string) => {
  * Coverage is enforced by test/item-quota-routes.guard.test.ts.
  */
 export const redis_setDataCount = async (count: number, req: NextApiRequest) => {
-  const ip = requestIp.getClientIp(req);
-  return redis_setItemCount(ip, count, req);
+  return redis_setItemCount(getClientIp(req), count, req);
 };
 
 /**
@@ -144,14 +143,7 @@ export const redis_setDataCount = async (count: number, req: NextApiRequest) => 
  * Coverage is enforced by test/item-quota-routes.guard.test.ts.
  */
 export async function trackItemQuota(count: number, request: NextRequest): Promise<void> {
-  // Same extraction as `proxy.ts` for App Router / Edge requests.
-  const ip =
-    requestIp.getClientIp(request as any) ||
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('cf-connecting-ip') ||
-    null;
-
-  return redis_setItemCount(ip, count, request);
+  return redis_setItemCount(getClientIp(request), count, request);
 }
 
 /** `NextRequest` (App Router / Edge) already parses headers/cookies/URL — `NextApiRequest` (Pages) hasn't. */
@@ -164,20 +156,32 @@ export const redis_setItemCount = async (
   itemCount: number,
   req: NextApiRequest | NextRequest
 ) => {
+  const edge = isNextRequest(req);
+  const apiToken = edge
+    ? (req.headers.get('x-itemdb-token') ?? undefined)
+    : firstHeaderValue(req.headers['x-itemdb-token']);
+  const sessionCookie = edge
+    ? req.cookies.get('idb-session-id')?.value
+    : req.cookies['idb-session-id'];
+
+  return countItems(ip, itemCount, { apiToken, sessionCookie });
+};
+
+/**
+ * Quota core. Callers choose which credentials count: server actions are not public API, so
+ * they never pass `apiToken` (see `@utils/api/actionQuota`).
+ */
+export const countItems = async (
+  ip: string | null | undefined,
+  itemCount: number,
+  { apiToken, sessionCookie }: { apiToken?: string; sessionCookie?: string }
+) => {
   try {
     if (!ip || !itemCount || !redis) return;
 
-    const edge = isNextRequest(req);
-    const apiToken = edge
-      ? (req.headers.get('x-itemdb-token') ?? undefined)
-      : firstHeaderValue(req.headers['x-itemdb-token']);
     if (apiToken) return incrementApiKey(apiToken, itemCount);
 
     let limit = API_CONST.MIN_LIMIT_COUNT as number;
-
-    const sessionCookie = edge
-      ? req.cookies.get('idb-session-id')?.value
-      : req.cookies['idb-session-id'];
 
     ip = normalizeIP(ip);
 

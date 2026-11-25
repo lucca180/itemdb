@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import { getManyItems } from './many';
 import { redis_setDataCount } from '@utils/api/redis';
 import { validateExtractorHash } from '@utils/api/hashValidator';
@@ -75,7 +75,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const result = await enqueueItemsToProcess(items, {
       language: lang,
-      ipAddress: requestIp.getClientIp(req),
+      ipAddress: getClientIp(req),
       meta: {
         itemdbVersion: (meta as string) || 'direct-api',
         dataSource: payload.dataSource || 'unknown',

@@ -5,7 +5,7 @@ import prisma from '../../../../utils/prisma';
 import { Prisma } from '@prisma/generated/client';
 import { LebronTrade, NCTradeItem, NCTradeReport } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';
-import requestIp from 'request-ip';
+import { getClientIp } from '@utils/api/clientIp';
 import { UTCDate } from '@date-fns/utc';
 const LEBRON_URL = process.env.LEBRON_API_URL;
 
@@ -37,7 +37,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse<any>) {
   if (!user || user.banned || !user.neopetsUser)
     return res.status(401).json({ error: 'Unauthorized' });
 
-  const ip = requestIp.getClientIp(req);
+  const ip = getClientIp(req);
 
   const itemsCreate: Prisma.ncTradeItemsCreateManyTradeInput[] = [];
 
