@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Stamp Album Helper
-// @version      2.0.0
+// @version      2.1.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Shows the price of your missing stamps, your album progress and imports it to your itemdb checklist
@@ -10,6 +10,8 @@
 // @require      https://itemdb.com.br/js/script-utils.js?v3
 // @connect      itemdb.com.br
 // @grant        GM_xmlhttpRequest
+// @grant        GM_getValue
+// @grant        GM_setValue
 // @grant        unsafeWindow
 // ==/UserScript==
 
@@ -30,7 +32,7 @@ if(!window.location.href.includes("neopets.com")) return;
  *
  *  < Stamp Album Helper by u/Eat_Wooloo_As_Mutton and updated by itemdb >
  *
- *  - Missing stamps show their image (faded) and price
+ *  - Missing stamps show their image (faded) and price (switch "Prices on stamps" below the album)
  *  - Click a stamp to see its rarity, price and where to search it (arrow keys move between stamps)
  *  - Progress bar with the NP needed to complete the album and an import to your itemdb checklist
  *
@@ -90,6 +92,14 @@ $("head").append(`<style>
   .idb-bar > img { display: block; flex-shrink: 0; }
   .idb-error { color: #FEB2B2; }
   .idb-error a { color: #fff; }
+  /* price toggle (switch below the progress bar) */
+  .idb-bar-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .idb-toggle-row { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; padding: 0; margin-left: auto; cursor: pointer; color: #A0AEC0; font: 11px -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .idb-toggle-row:hover { color: #fff; }
+  .idb-switch { width: 26px; height: 14px; border-radius: 999px; background: #4A5568; position: relative; flex-shrink: 0; transition: background .15s; }
+  .idb-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .idb-toggle-row.on .idb-switch { background: ${ACCENT}; }
+  .idb-toggle-row.on .idb-switch::after { left: 14px; }
   .idb-progress { height: 8px; border-radius: 999px; background: #2D3748; overflow: hidden; display: flex; flex: none; }
   .idb-progress > div { height: 100%; background: ${ACCENT}; border-radius: 999px; }
   .idb-progress > .idb-unreleased { margin-left: auto; border-radius: 0 999px 999px 0; background: repeating-linear-gradient(135deg, #4A5568 0 3px, #2D3748 3px 6px); }
@@ -260,6 +270,23 @@ function stats() {
   };
 }
 
+// ---------- price toggle ---------- //
+// on by default, saved per browser; hides the chips on the stamps (price and "Not out yet"), the checks stay
+let showPrices = GM_getValue("showPrices", true);
+
+function priceToggle() {
+  const title = showPrices ? "Hide prices on the stamps" : "Show prices on the stamps";
+  return `<button class="idb-toggle-row idb-price-toggle ${showPrices ? "on" : ""}" title="${title}" aria-pressed="${showPrices}">
+      <span class="idb-switch"></span>Prices on stamps
+    </button>`;
+}
+
+function togglePrices() {
+  showPrices = !showPrices;
+  GM_setValue("showPrices", showPrices);
+  render();
+}
+
 // ---------- grid ---------- //
 // price chip on each missing stamp (green = cheaper half), check on the owned ones
 function gridOverlays() {
@@ -270,6 +297,7 @@ function gridOverlays() {
     s.$cell.addClass("idb-cell").find(".idb-chip, .idb-check").remove();
 
     if (s.owned) s.$cell.append('<span class="idb-check">✓</span>');
+    else if (!showPrices) return;
     else if (s.data) {
       const p = priceOf(s);
       s.$cell.append(`<span class="idb-chip ${!p ? "none" : p <= cheapLimit ? "cheap" : ""}">${priceText(s, true)}</span>`);
@@ -349,7 +377,10 @@ function progressBar() {
         <div style="width:${pct(st.owned)}%"></div>
         ${st.unreleased ? `<div class="idb-unreleased" style="width:${pct(st.unreleased)}%"></div>` : ""}
       </div>
-      ${st.unreleased ? `<span class="idb-hint">${st.unreleased} stamp${st.unreleased > 1 ? "s" : ""} not released yet</span>` : ""}
+      <div class="idb-bar-footer">
+        ${st.unreleased ? `<span class="idb-hint">${st.unreleased} stamp${st.unreleased > 1 ? "s" : ""} not released yet</span>` : ""}
+        ${priceToggle()}
+      </div>
     </div>
     ${importButton}
     <a class="idb-btn ghost" href="${albumLink}" target="_blank" title="View on itemdb">→</a>
@@ -385,7 +416,8 @@ $("body")
   })
   .on("click", ".idb-arrow", function () { step(Number($(this).attr("data-dir"))); })
   .on("click", ".idb-ssw", function () { sswopen($(this).attr("data-item")); })
-  .on("click", ".idb-import", submitImport);
+  .on("click", ".idb-import", submitImport)
+  .on("click", ".idb-price-toggle", togglePrices);
 
 $(document).on("keydown", (e) => {
   if (selected == null || $(e.target).is("input, textarea, select")) return;
