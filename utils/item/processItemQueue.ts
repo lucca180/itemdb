@@ -336,25 +336,31 @@ export async function updateOrAddDB(
       // re-arts (name matches, image doesn't).
       // Renames match any row, even without a confirmed item_id: name typos fixed later on
       // prize-code/event items (which rarely get an item_id) would otherwise duplicate.
+      // With an item_id, only rows without one can be a rename: a row with a different item_id
+      // is a different item that reuses the art (e.g. capsule variants).
       const renameGuard = await prisma.items.findFirst({
         where: {
           image_id: item.image_id,
           name: { not: item.name },
+          ...(item.item_id ? { item_id: null } : {}),
         },
         select: { internal_id: true },
       });
       if (renameGuard) throw `'name' Merge Conflict with (${renameGuard.internal_id})`;
 
       // Re-arts still require a confirmed item_id: a shared name alone is a weaker signal.
-
-      const reArtGuard = await prisma.items.findFirst({
-        where: {
-          name: item.name,
-          image_id: { not: item.image_id },
-          item_id: { not: null },
-        },
-        select: { internal_id: true },
-      });
+      // Skipped when the incoming row has an item_id: no row has it (noMatchAtAll), so any hit
+      // would carry a different item_id, i.e. a different item with the same name.
+      const reArtGuard = item.item_id
+        ? null
+        : await prisma.items.findFirst({
+            where: {
+              name: item.name,
+              image_id: { not: item.image_id },
+              item_id: { not: null },
+            },
+            select: { internal_id: true },
+          });
       if (reArtGuard) throw `'image' Merge Conflict with (${reArtGuard.internal_id})`;
     }
 

@@ -146,4 +146,25 @@ describe('updateOrAddDB dedup guard', () => {
     expect(renameCall[0].where).toEqual({ image_id: 'y', name: { not: 'X' } });
     expect(reArtCall[0].where.item_id).toEqual({ not: null });
   });
+
+  test('rename guard with an item_id only matches rows without item_id (same art, different item_id = different item)', async () => {
+    prismaMock.items.findFirst.mockResolvedValue(null);
+
+    const result = await updateOrAddDB(
+      itemProcess({ item_id: 101426, name: 'Capsule Variant', image_id: 'shared_art' }),
+      newCtx()
+    );
+
+    expect(result).toBeDefined();
+    expect(result?.item_id).toBe(101426);
+    // re-art guard is skipped: any hit would have a different item_id
+    expect(prismaMock.items.findFirst).toHaveBeenCalledTimes(1);
+    const [renameCall] = prismaMock.items.findFirst.mock.calls;
+    expect(renameCall[0].where).toEqual({
+      image_id: 'shared_art',
+      name: { not: 'Capsule Variant' },
+      item_id: null,
+    });
+    expect(prismaMock.itemProcess.update).not.toHaveBeenCalled();
+  });
 });
