@@ -220,6 +220,8 @@ export class ListService {
             official: true,
             visibility: true,
             user_id: true,
+            description: true,
+            official_tag: true,
             user: { select: { username: true } },
           },
         },

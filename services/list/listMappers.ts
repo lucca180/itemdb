@@ -6,6 +6,7 @@ import { startOfDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import type { DynamicListSource, ListItemInfo, User, UserList, UserListLite } from '@types';
 import type { ListItems, UserList as RawList, User as RawUser } from '@prisma/generated/client';
+import { getChecklistImportPage, isStampsList } from '@utils/list/checklistImportPage';
 
 export type ListOwnerRef = RawUser | User | RequiredUserFields;
 
@@ -25,7 +26,9 @@ type RequiredUserFields = {
 export type LinkedListSourceRaw = Pick<
   RawList,
   'internal_id' | 'name' | 'slug' | 'official' | 'visibility' | 'user_id'
-> & { user: { username: string | null } };
+> &
+  // only used to point an official source's checklists to the Neopets page to import from
+  Partial<Pick<RawList, 'description' | 'official_tag'>> & { user: { username: string | null } };
 
 type DynamicListSourceInput = Pick<
   RawList,
@@ -55,11 +58,16 @@ export const getDynamicListSource = (
     if (!canShow) return { type: 'privateList' };
 
     const owner = linkedList.official ? 'official' : linkedList.user.username;
+    const importPage = getChecklistImportPage({
+      ...linkedList,
+      isStamps: isStampsList(splitOfficialTag(linkedList.official_tag ?? null)),
+    });
 
     return {
       type: 'list',
       name: linkedList.name,
       href: `/lists/${owner}/${linkedList.slug ?? linkedList.internal_id}`,
+      ...(importPage && { importPage }),
     };
   }
 

@@ -20,6 +20,7 @@ import CardBase from '@components/Card/CardBase';
 import MainLink from '@components/Utils/MainLink';
 import Image from 'next/image';
 import DynamicIcon from '@assets/icons/dynamic.png';
+import { isChecklist } from '@utils/list/dynamicListLabels';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import Color from 'color';
@@ -47,10 +48,14 @@ type Props = {
     tryAgainLater: string;
     saving: string;
     hidden: string;
+    /** Checklists call hidden items "collected" */
+    collected: string;
     highlight: string;
     listNoDescription: string;
     markAsHidden: string;
     unmarkAsHidden: string;
+    markAsCollected: string;
+    unmarkAsCollected: string;
     markAsHighlight: string;
     unmarkAsHighlight: string;
     changeQuantity: string;
@@ -182,7 +187,9 @@ export function MyListsCard({ item, labels, lists: serverLists }: Props) {
                         {list.itemInfo[0].amount}x
                       </Badge>
                       {list.itemInfo[0].isHidden && (
-                        <Badge fontSize={'0.7rem'}>{labels.hidden}</Badge>
+                        <Badge fontSize={'0.7rem'}>
+                          {isChecklist(list) ? labels.collected : labels.hidden}
+                        </Badge>
                       )}
                       {list.itemInfo[0].isHighlight && (
                         <Badge fontSize={'0.7rem'} colorPalette="orange">
@@ -220,9 +227,13 @@ export function MyListsCard({ item, labels, lists: serverLists }: Props) {
                             fontSize={'sm'}
                             onClick={() => doAction(list, 'hide')}
                           >
-                            {list.itemInfo[0].isHidden
-                              ? labels.unmarkAsHidden
-                              : labels.markAsHidden}
+                            {isChecklist(list)
+                              ? list.itemInfo[0].isHidden
+                                ? labels.unmarkAsCollected
+                                : labels.markAsCollected
+                              : list.itemInfo[0].isHidden
+                                ? labels.unmarkAsHidden
+                                : labels.markAsHidden}
                           </Menu.Item>
                           <Menu.Item
                             value="highlight"

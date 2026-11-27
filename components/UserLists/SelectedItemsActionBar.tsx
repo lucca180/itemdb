@@ -11,6 +11,8 @@ type SelectedItemsActionBarProps = {
   selectedItems: ListItemInfo[];
   totalItems: number;
   canRemove: boolean;
+  /** Checklists call hidden items "collected" */
+  isChecklist?: boolean;
   onSelectItems: (checkAll: boolean) => void;
   onClearSelection: () => void;
   onToggleField: (field: ToggleField, value: boolean) => void;
@@ -21,6 +23,7 @@ export function SelectedItemsActionBar({
   selectedItems,
   totalItems,
   canRemove,
+  isChecklist = false,
   onSelectItems,
   onClearSelection,
   onToggleField,
@@ -119,7 +122,13 @@ export function SelectedItemsActionBar({
                         cursor="pointer"
                         _hover={{ bg: 'whiteAlpha.200' }}
                       >
-                        {allHidden ? t('ItemPage.unmark-as-hidden') : t('ItemPage.mark-as-hidden')}
+                        {isChecklist
+                          ? allHidden
+                            ? t('Lists.unmark-as-collected')
+                            : t('Lists.mark-as-collected')
+                          : allHidden
+                            ? t('ItemPage.unmark-as-hidden')
+                            : t('ItemPage.mark-as-hidden')}
                       </Menu.Item>
                       <Menu.Item
                         value="toggle-highlight"

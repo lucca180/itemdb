@@ -5,6 +5,8 @@ import { LuCircleCheck, LuEyeOff, LuLock } from 'react-icons/lu';
 import MainLink from '@components/Utils/MainLink';
 import A11yTooltip from '@components/Utils/Tooltip';
 import type { ChecklistProgress } from '@utils/list/checklistProgress';
+import type { ChecklistImportPage } from '@utils/list/checklistImportPage';
+import { useScriptStatus } from '@utils/scriptUtils';
 
 type ChecklistProgressCardProps = {
   /** `null` while the hidden items are loading */
@@ -13,13 +15,19 @@ type ChecklistProgressCardProps = {
   cost: ReactNode;
   /** Nothing new will arrive, so a complete list can't promise it */
   sourceDeleted?: boolean;
+  /** Neopets page to import from; used once the List Importer is installed */
+  importPage?: ChecklistImportPage | null;
   onHide: () => void;
 };
 
 export function ChecklistProgressCard(props: ChecklistProgressCardProps) {
-  const { progress, cost, sourceDeleted, onHide } = props;
+  const { progress, cost, sourceDeleted, importPage, onHide } = props;
   const t = useTranslations();
   const format = useFormatter();
+  const { scriptStatus } = useScriptStatus();
+  // without the script, the import page explains how to set it up
+  const importHref =
+    importPage && scriptStatus?.itemdb_listImporter?.status === 'ok' ? importPage.href : null;
 
   if (!progress) return <Skeleton w="full" h="84px" borderRadius="lg" />;
 
@@ -115,7 +123,12 @@ export function ChecklistProgressCard(props: ChecklistProgressCardProps) {
             colorPalette="orange"
             display={{ base: isEmpty ? 'inline-flex' : 'none', md: 'inline-flex' }}
           >
-            <MainLink href="/lists/import" trackEvent="checklist-progress-import">
+            <MainLink
+              href={importHref ?? '/lists/import'}
+              isExternal={!!importHref}
+              trackEvent="checklist-progress-import"
+              trackEventLabel={importHref ? 'import-page' : 'guide'}
+            >
               {t('Lists.import-items')}
             </MainLink>
           </Button>

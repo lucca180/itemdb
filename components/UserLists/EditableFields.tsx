@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { EditableItemCardProps } from './EditableItemCard';
 import { ListItemInfo } from '../../types';
 import { MAX_SERIES_DATE, MIN_SERIES_DATE, isSeriesDateInputValid } from '@utils/list/seriesDates';
+import { isChecklist } from '@utils/list/dynamicListLabels';
 
 export type EditableFieldsProps = EditableItemCardProps & {
   handleItemInfoChange: (
@@ -134,7 +135,9 @@ const EditableFields = (props: EditableFieldsProps) => {
         <Checkbox.HiddenInput />
         <Checkbox.Control />
         <Checkbox.Label>
-          <Text fontSize="xs">{t('Lists.hidden')}?</Text>
+          <Text fontSize="xs">
+            {list && isChecklist(list) ? t('Lists.collected') : t('Lists.hidden')}?
+          </Text>
         </Checkbox.Label>
       </Checkbox.Root>
     </VStack>

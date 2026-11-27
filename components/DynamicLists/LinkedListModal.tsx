@@ -2,6 +2,7 @@ import { UserList } from '@types';
 import { useAuth } from '@utils/auth';
 import { useTranslations } from 'next-intl';
 import CreateDynamicListDialog from '@components/DynamicLists/CreateDynamicListDialog';
+import { getChecklistImportPage, isStampsList } from '@utils/list/checklistImportPage';
 
 export type LinkedListModalProps = {
   isOpen: boolean;
@@ -44,6 +45,10 @@ const LinkedListModal = (props: LinkedListModalProps) => {
           onCreate({ ...newList, dynamicType: mode, linkedListId: list.internal_id }))
       }
       showGoalStep={showGoalStep}
+      importPage={getChecklistImportPage({
+        ...list,
+        isStamps: isStampsList(list.officialTag),
+      })}
     />
   );
 };

@@ -19,7 +19,7 @@ export const stamps = {
   kicker: "Collector's guide",
   tagline: 'Find the cheapest album page to finish next.',
   intro: [
-    'Planning your next avatar? The album pages below are sorted by cost, cheapest first. Import your items to see which stamps you already have.',
+    'Planning your next avatar? The album pages below are sorted by cost, cheapest first. Create a checklist to see which stamps you already have.',
   ],
   layout: {
     type: 'groups',
@@ -28,8 +28,16 @@ export const stamps = {
   },
   faq: [
     {
-      q: "How do I see which stamps I'm missing?",
-      a: 'Import your items and itemdb will show which stamps on each checklist you already have.',
+      q: 'Do I have to add stamps one by one?',
+      a: 'No. With the List Importer, one click on each album page marks every stamp you have there. Without the script, you can select them in your checklist and mark them as collected.',
+    },
+    {
+      q: 'Can itemdb read my whole album at once?',
+      a: 'One page at a time: open each page of your album and click the import button. With one checklist per album page, the right one is picked for you.',
+    },
+    {
+      q: 'What happens when new stamps come out?',
+      a: 'They show up in your checklist on their own, so it never goes out of date. You never need to rebuild it.',
     },
     {
       q: 'Which stamps are the most expensive?',

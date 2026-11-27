@@ -9,7 +9,9 @@ import {
   Grid,
   Heading,
   HStack,
+  Icon,
   Image as ChakraImg,
+  SimpleGrid,
   Link,
   Skeleton,
   Text,
@@ -19,7 +21,12 @@ import Color from 'color';
 import dynamic from 'next/dynamic';
 import { useFormatter, useTranslations } from 'next-intl';
 import { createContext, Fragment, Suspense, use, useContext, useState } from 'react';
-import { LuDownload } from 'react-icons/lu';
+import { LuArrowRight, LuBookOpen, LuListChecks, LuStamp } from 'react-icons/lu';
+import type { IconType } from 'react-icons';
+import {
+  ChecklistAutoUpdateBanner,
+  ChecklistHowToTabs,
+} from '@components/UserLists/ChecklistGuide';
 import type { UserList, WP_Article } from '@types';
 import MainLink from '@components/Utils/MainLink';
 import Image from '@components/Utils/Image';
@@ -222,6 +229,7 @@ export function OfficialCategoryClient(props: Props) {
         if (resolved.type === 'editions') return <Editions resolved={resolved} accent={accent} />;
         return (
           <TrackSection section="group">
+            <Box id="lists" scrollMarginTop="80px" />
             {resolved.groups.map((g) => (
               <Section key={g.id} title={g.title} hint={g.description} count={g.lists.length}>
                 <ListGrid lists={g.lists} accent={accent} />
@@ -483,38 +491,13 @@ const GuideBubble = ({ config }: { config: OfficialCategoryConfig }) => (
 const CTA_SAMPLE = `stamps-${SAMPLE_STAMP_ALBUMS[0].id}`;
 const [CTA_SAMPLE_W, CTA_SAMPLE_H] = GOAL_SIZES.mosaic;
 
-/** Stamp Album only: import items (checklists) and goal counters. */
+/** Stamp Album only: how to track the album with checklists, and goal counters. */
 const StampsCta = ({ accent }: { accent: string }) => {
   const t = useTranslations('OfficialCategory');
   const track = useTrack();
   return (
-    <Grid mt={8} templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={3}>
-      <Flex
-        direction="column"
-        gap={2}
-        p={4}
-        borderRadius="xl"
-        bg={rgba(accent, 0.08)}
-        border="1px solid"
-        borderColor={rgba(accent, 0.3)}
-      >
-        <HStack gap={2}>
-          <LuDownload color={accent} />
-          <Text fontWeight="bold">{t('stamps-cta-import-title')}</Text>
-        </HStack>
-        <Text fontSize="sm" color="whiteAlpha.800" flex="1">
-          {t('stamps-cta-import-text')}
-        </Text>
-        <Button asChild size="sm" alignSelf="flex-start" colorPalette="gray" variant="subtle">
-          <MainLink
-            href="/lists/import"
-            prefetch={false}
-            onClick={() => track('official-category-cta', { cta: 'import' })}
-          >
-            {t('stamps-cta-import-button')}
-          </MainLink>
-        </Button>
-      </Flex>
+    <Flex direction="column" mt={8} gap={3}>
+      <StampsGuide accent={accent} />
       <Flex
         gap={4}
         p={4}
@@ -560,9 +543,127 @@ const StampsCta = ({ accent }: { accent: string }) => {
           />
         </Flex>
       </Flex>
-    </Grid>
+    </Flex>
   );
 };
+
+/** Stamp Album guide: pick a checklist format, then mark the stamps you own (with or without a script) */
+const StampsGuide = ({ accent }: { accent: string }) => {
+  const t = useTranslations('OfficialCategory');
+  const track = useTrack();
+
+  return (
+    <Box
+      as="section"
+      borderRadius="xl"
+      borderWidth="1px"
+      borderColor={rgba(accent, 0.33)}
+      bg={`linear-gradient(145deg, ${rgba(accent, 0.12)}, ${rgba(accent, 0.02)})`}
+      p={{ base: 4, md: 6 }}
+    >
+      <Flex direction="column" gap={5}>
+        <Flex align="center" gap={3}>
+          <Flex
+            boxSize="42px"
+            flexShrink={0}
+            borderRadius="md"
+            align="center"
+            justify="center"
+            bg={rgba(accent, 0.2)}
+          >
+            <Icon as={LuStamp} color={accent} boxSize={5} />
+          </Flex>
+          <Box>
+            <Heading as="h2" size="lg">
+              {t('stamps-guide-title')}
+            </Heading>
+            <Text fontSize="sm" color="gray.300">
+              {t('stamps-guide-text')}
+            </Text>
+          </Box>
+        </Flex>
+
+        <ChecklistAutoUpdateBanner accent={accent} variant="stamps" />
+
+        <Box>
+          <Heading as="h3" size="sm" mb={2}>
+            {t('stamps-guide-step-1')}
+          </Heading>
+          <SimpleGrid columns={{ base: 1, md: 2 }} gap={3}>
+            <StampsFormatCard
+              accent={accent}
+              icon={LuBookOpen}
+              title={t('stamps-format-page-title')}
+              body={t('stamps-format-page')}
+              cta={
+                <a href="#lists" onClick={() => track('official-category-cta', { cta: 'pages' })}>
+                  {t('stamps-format-page-cta')} <LuArrowRight />
+                </a>
+              }
+            />
+            <StampsFormatCard
+              accent={accent}
+              icon={LuListChecks}
+              title={t('stamps-format-all-title')}
+              body={t('stamps-format-all')}
+              isPrimary
+              cta={
+                <MainLink
+                  href="/lists/official/all-collectibles"
+                  prefetch={false}
+                  onClick={() => track('official-category-cta', { cta: 'all-collectibles' })}
+                >
+                  {t('stamps-format-all-cta')} <LuArrowRight />
+                </MainLink>
+              }
+            />
+          </SimpleGrid>
+        </Box>
+
+        <Box>
+          <Heading as="h3" size="sm" mb={2}>
+            {t('stamps-guide-step-2')}
+          </Heading>
+          <ChecklistHowToTabs variant="stamps" trackFrom="stamps-category" />
+        </Box>
+      </Flex>
+    </Box>
+  );
+};
+
+const StampsFormatCard = (props: {
+  accent: string;
+  icon: IconType;
+  title: string;
+  body: string;
+  cta: React.ReactNode;
+  isPrimary?: boolean;
+}) => (
+  <Flex
+    direction="column"
+    gap={2}
+    p={4}
+    borderRadius="lg"
+    bg="blackAlpha.300"
+    borderWidth="1px"
+    borderColor="whiteAlpha.100"
+  >
+    <Icon as={props.icon} color={props.accent} boxSize={5} />
+    <Text fontWeight="bold">{props.title}</Text>
+    <Text fontSize="sm" color="gray.300" flex="1">
+      {props.body}
+    </Text>
+    <Button
+      asChild
+      size="sm"
+      alignSelf="flex-start"
+      variant={props.isPrimary ? 'solid' : 'outline'}
+      colorPalette="yellow"
+    >
+      {props.cta}
+    </Button>
+  </Flex>
+);
 
 // ---------- cards ----------
 

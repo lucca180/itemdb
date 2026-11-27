@@ -1,20 +1,33 @@
 'use client';
 
-import { Alert, Box, Button, Flex, Heading, Link, SimpleGrid, Text } from '@chakra-ui/react';
+import {
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Icon,
+  Link,
+  SimpleGrid,
+  Text,
+} from '@chakra-ui/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { LuArrowRight } from 'react-icons/lu';
+import type { IconType } from 'react-icons';
+import { LuArrowLeftRight, LuArrowRight, LuListChecks, LuTag } from 'react-icons/lu';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
 import HeaderCard from '@components/Card/HeaderCard';
 import MainLink from '@components/Utils/MainLink';
 import { useScriptStatus } from '@utils/scriptUtils';
+import { TampermonkeyExtraStep } from '@components/UserLists/ChecklistGuide';
 import { PriceCheckerPageCard } from '@app/[locale]/tools/price-checker/PriceCheckerPageCard';
 import { inventoryPages } from '@app/[locale]/tools/price-checker/priceCheckerPages';
 import {
+  DYNAMIC_LIST_ACCENT,
   PRICE_CHECKER_ACCENT,
   PRICE_CHECKER_ACCENT_LIGHT,
 } from '@app/[locale]/tools/price-checker/priceCheckerTheme';
 import { ImportDynamicLists } from './ImportDynamicLists';
-import { ImportHowItWorks } from './ImportHowItWorks';
 
 const FAQ = ['safe', 'trouble', 'price', 'mobile'] as const;
 
@@ -45,9 +58,11 @@ export function ImportPageClient() {
 
       <Flex direction="column" gap={{ base: 8, md: 10 }} w="full" maxW="1100px">
         <OutdatedListImporterAlert />
-        <ImportHowItWorks />
+        <GoalPicker />
 
-        <Box as="section">
+        <ImportDynamicLists />
+
+        <Box as="section" id="inventory" scrollMarginTop="80px">
           <Text
             color={PRICE_CHECKER_ACCENT_LIGHT}
             fontSize="xs"
@@ -55,14 +70,17 @@ export function ImportPageClient() {
             letterSpacing="0.14em"
             textTransform="uppercase"
           >
-            {t('ImportPage.choose-source')}
+            {t('ImportPage.inventory-eyebrow')}
           </Text>
           <Heading as="h2" size="lg" mt={1}>
             {t('ImportPage.inventory-pages')}
           </Heading>
-          <Text color="gray.400" fontSize="sm" mt={1} mb={4}>
+          <Text color="gray.400" fontSize="sm" mt={1}>
             {t('ImportPage.inventory-hint')}
           </Text>
+          <Box mt={1} mb={4}>
+            <TampermonkeyExtraStep trackFrom="import-page-inventory" />
+          </Box>
           <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap={3}>
             {inventoryPages.map((page) => (
               <PriceCheckerPageCard
@@ -74,8 +92,6 @@ export function ImportPageClient() {
             ))}
           </SimpleGrid>
         </Box>
-
-        <ImportDynamicLists />
 
         <AdvancedImportCard />
 
@@ -138,6 +154,102 @@ export function ImportPageClient() {
         </Box>
       </Flex>
     </>
+  );
+}
+
+type Goal = {
+  id: string;
+  icon: IconType;
+  accent: string;
+  href: string;
+  /** Section on this page; otherwise another page */
+  isAnchor?: boolean;
+  isPopular?: boolean;
+};
+
+const GOALS: Goal[] = [
+  {
+    id: 'collections',
+    icon: LuListChecks,
+    accent: DYNAMIC_LIST_ACCENT,
+    href: '#collections',
+    isAnchor: true,
+    isPopular: true,
+  },
+  {
+    id: 'inventory',
+    icon: LuArrowRight,
+    accent: PRICE_CHECKER_ACCENT_LIGHT,
+    href: '#inventory',
+    isAnchor: true,
+  },
+  { id: 'prices', icon: LuTag, accent: 'blue.300', href: '/tools/price-checker' },
+  { id: 'migrate', icon: LuArrowLeftRight, accent: 'gray.300', href: '/lists/import/advanced' },
+];
+
+/** "What do you want to do?": each goal jumps to its section or page */
+function GoalPicker() {
+  const t = useTranslations();
+
+  return (
+    <Box as="section">
+      <Heading as="h2" size="lg" mb={3}>
+        {t('ImportPage.picker-title')}
+      </Heading>
+      <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap={3}>
+        {GOALS.map((goal) => {
+          const content = (
+            <Flex direction="column" gap={2} h="full">
+              <Flex justify="space-between" align="center">
+                <Icon as={goal.icon} boxSize={5} color={goal.accent} />
+                {goal.isPopular && (
+                  <Badge size="xs" colorPalette="orange">
+                    {t('ImportPage.picker-popular')}
+                  </Badge>
+                )}
+              </Flex>
+              <Text fontWeight="bold">{t(`ImportPage.picker-${goal.id}-title`)}</Text>
+              <Text fontSize="sm" color="gray.400" lineHeight="1.5">
+                {t(`ImportPage.picker-${goal.id}`)}
+              </Text>
+            </Flex>
+          );
+
+          return (
+            <Box
+              key={goal.id}
+              asChild
+              p={4}
+              borderRadius="xl"
+              borderWidth="1px"
+              borderColor="whiteAlpha.200"
+              bg="whiteAlpha.50"
+              transition="all 0.15s"
+              _hover={{ bg: 'whiteAlpha.100', borderColor: goal.accent }}
+            >
+              {goal.isAnchor ? (
+                <a
+                  href={goal.href}
+                  onClick={() => window.umami?.track('import-page-goal', { label: goal.id })}
+                >
+                  {content}
+                </a>
+              ) : (
+                <MainLink
+                  viaNextLink
+                  prefetch={false}
+                  href={goal.href}
+                  trackEvent="import-page-goal"
+                  trackEventLabel={goal.id}
+                >
+                  {content}
+                </MainLink>
+              )}
+            </Box>
+          );
+        })}
+      </SimpleGrid>
+    </Box>
   );
 }
 

@@ -13,7 +13,6 @@ import {
   Switch,
   IconButton,
   useDisclosure,
-  Link,
   Kbd,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
@@ -562,28 +561,6 @@ export function ListPageClient({
               {t('General.tip')}: {t('Lists.user-list-tip-1')}
             </Text>
           )}
-          {state.isStampList && (
-            <Text
-              textAlign="center"
-              fontSize="xs"
-              color="gray.400"
-              display={{ base: 'none', md: 'inline' }}
-            >
-              {t('General.tip')}:{' '}
-              {t.rich('Lists.stamp-script-tip', {
-                Link: (chunk) => (
-                  <Link
-                    color="gray.200"
-                    href="/articles/userscripts"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {chunk}
-                  </Link>
-                ),
-              })}
-            </Text>
-          )}
 
           {/* Drag-sort is only available in custom sort without active filters/search. */}
           {state.isEdit && state.sortInfo.sortBy === 'custom' && (
@@ -798,6 +775,7 @@ export function ListPageClient({
             selectedItems={state.selectedItems}
             totalItems={state.displayedItemInfoIds.length}
             canRemove={dynamicListCan(state.list, 'remove')}
+            isChecklist={isChecklist(state.list)}
             onSelectItems={state.handleSelectCheckbox}
             onClearSelection={() => state.setItemSelect([])}
             onToggleField={state.handleSelectedItemsBulkChange}

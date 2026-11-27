@@ -26,6 +26,7 @@ import MainLink from '@components/Utils/MainLink';
 import { useAuth } from '@utils/auth';
 import { useLists } from '@utils/useLists';
 import { dynamicListCan } from '@utils/utils';
+import { isChecklist } from '@utils/list/dynamicListLabels';
 import type { UserList, UserListLite } from '@types';
 import type { ImportAction } from '@app/[locale]/lists/import/importShared';
 import type {
@@ -83,8 +84,14 @@ export function ImportControlsSidebar({
 
   // only lists the user still owns (deleted lists / other accounts on this browser drop out)
   const lastList = lastListId ? lists.find((l) => l.internal_id === lastListId) : undefined;
-  const showLastList =
-    !recommended_list && !!lastList && list?.internal_id !== lastList.internal_id;
+  // checklists the user already has for this page (some are per pet, so there may be several)
+  const linkedChecklists = recommended_list
+    ? lists.filter((l) => l.linkedListId === recommended_list.internal_id)
+    : [];
+  // with a recommended list, only while the checklist that follows it isn't the one selected
+  // (e.g. one "All Collectibles" checklist fed by every album page)
+  const usesRecommended = !!recommended_list && list?.linkedListId === recommended_list.internal_id;
+  const showLastList = !usesRecommended && !!lastList && list?.internal_id !== lastList.internal_id;
 
   return (
     <Box
@@ -171,7 +178,7 @@ export function ImportControlsSidebar({
                   })}
                 </Text>
               )}
-              {recommended_list && (
+              {recommended_list && !linkedChecklists.length && (
                 <>
                   <Text fontSize="xs" color="gray.300">
                     {t('General.or')}
@@ -182,6 +189,44 @@ export function ImportControlsSidebar({
                     onCreate={onLinkedList}
                   />
                 </>
+              )}
+              {recommended_list && linkedChecklists.length > 0 && (
+                <Flex direction="column" gap={1.5} w="100%">
+                  <Text fontSize="xs" color="gray.300">
+                    {t('Lists.importV2-your-checklists', {
+                      count: linkedChecklists.length,
+                      name: recommended_list.name.trim(),
+                    })}
+                  </Text>
+                  <Flex gap={1.5} flexWrap="wrap">
+                    {linkedChecklists.map((checklist) => {
+                      const isSelected = list?.internal_id === checklist.internal_id;
+                      return (
+                        <Button
+                          key={checklist.internal_id}
+                          size="xs"
+                          colorPalette="orange"
+                          variant={isSelected ? 'solid' : 'outline'}
+                          aria-pressed={isSelected}
+                          maxW="100%"
+                          onClick={() => {
+                            window.umami?.track('import-v2-own-checklist', {
+                              count: linkedChecklists.length,
+                            });
+                            onListChange(checklist);
+                          }}
+                        >
+                          {isSelected && <LuCheck />}
+                          <Text as="span" truncate>
+                            {checklist.name}
+                          </Text>
+                        </Button>
+                      );
+                    })}
+                  </Flex>
+                  {/* e.g. one Gourmet Food checklist per pet */}
+                  <CreateLinkedListButton list={recommended_list} compact onCreate={onLinkedList} />
+                </Flex>
               )}
             </Flex>
           </Field.Root>
@@ -207,7 +252,11 @@ export function ImportControlsSidebar({
                 <option value="remove" disabled={!dynamicListCan(list, 'remove')}>
                   {t('Lists.remove-these-items')}
                 </option>
-                <option value="hide">{t('Lists.mark-as-hidden')}</option>
+                <option value="hide">
+                  {list && isChecklist(list)
+                    ? t('Lists.mark-as-collected')
+                    : t('Lists.mark-as-hidden')}
+                </option>
               </NativeSelect.Field>
               <NativeSelect.Indicator />
             </NativeSelect.Root>

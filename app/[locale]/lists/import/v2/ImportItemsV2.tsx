@@ -33,6 +33,7 @@ import { ImportToolbar } from './ImportToolbar';
 import { setLastImportListId } from './lastImportList';
 import type { GoalCounterInfo } from '@utils/goalCounter/eligibility';
 import { isFullSyncList } from '@utils/utils';
+import { isChecklist } from '@utils/list/dynamicListLabels';
 
 type ImportItemsV2Props = {
   importToken: string;
@@ -275,20 +276,25 @@ export function ImportItemsV2({
           ? t('Lists.toast-hidding')
           : t('Lists.toast-removing');
 
+    // in a checklist, hidden items are the collected ones
+    const isCollecting = action === 'hide' && isChecklist(list);
+
     setIsSubmitting(true);
     const toastInfo = toast({
       id: 'import-list-v2',
       title: t('Lists.import-toast-title', {
         action: action === 'add' ? t('General.importing') : t('General.removing'),
       }),
-      description: t('Lists.import-please-wait', {
-        action:
-          action === 'add'
-            ? t('Lists.toast-import')
-            : action === 'hide'
-              ? t('Lists.toast-hide')
-              : t('Lists.toast-remove'),
-      }),
+      description: isCollecting
+        ? t('Lists.import-collect-wait')
+        : t('Lists.import-please-wait', {
+            action:
+              action === 'add'
+                ? t('Lists.toast-import')
+                : action === 'hide'
+                  ? t('Lists.toast-hide')
+                  : t('Lists.toast-remove'),
+          }),
       status: 'loading',
       duration: Infinity,
     });
@@ -323,14 +329,16 @@ export function ImportItemsV2({
       toast.update(toastInfo, {
         id: toastInfo,
         title: t('General.success'),
-        description: t('Lists.import-success', {
-          action:
-            action === 'add'
-              ? t('Lists.toast-imported')
-              : action === 'hide'
-                ? t('Lists.toast-hidden')
-                : t('Lists.toast-removed'),
-        }),
+        description: isCollecting
+          ? t('Lists.import-collect-success')
+          : t('Lists.import-success', {
+              action:
+                action === 'add'
+                  ? t('Lists.toast-imported')
+                  : action === 'hide'
+                    ? t('Lists.toast-hidden')
+                    : t('Lists.toast-removed'),
+            }),
         status: 'success',
         duration: 10000,
         isClosable: true,

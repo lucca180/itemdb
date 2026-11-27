@@ -21,8 +21,10 @@ import {
   DYNAMIC_LIST_ACCENT_LIGHT,
   DYNAMIC_LIST_ACCENT_RGB,
 } from '@app/[locale]/tools/price-checker/priceCheckerTheme';
-
-const FLOW_STEPS = ['dyn-1', 'dyn-2', 'dyn-3'] as const;
+import {
+  ChecklistAutoUpdateBanner,
+  ChecklistHowToTabs,
+} from '@components/UserLists/ChecklistGuide';
 
 const GOAL_SAMPLES: { sample: string; config: GoalConfig; alt: string }[] = [
   { sample: 'stamps-220', config: { variant: 'mosaic', bg: 'transparent' }, alt: 'Stamp album' },
@@ -45,64 +47,6 @@ const eyebrowProps = {
   letterSpacing: '0.14em',
   textTransform: 'uppercase',
 } as const;
-
-function FlowStep({ step, index }: { step: (typeof FLOW_STEPS)[number]; index: number }) {
-  const t = useTranslations();
-
-  return (
-    <Flex
-      gap={3}
-      direction="column"
-      borderWidth="1px"
-      borderColor={`rgba(${DYNAMIC_LIST_ACCENT_RGB}, 0.22)`}
-      borderRadius="lg"
-      bg="blackAlpha.300"
-      p={4}
-    >
-      <Flex
-        boxSize="32px"
-        borderRadius="full"
-        align="center"
-        justify="center"
-        bg={DYNAMIC_LIST_ACCENT}
-        color="gray.900"
-        fontSize="sm"
-        fontWeight="bold"
-      >
-        {index + 1}
-      </Flex>
-      <Box>
-        <Heading as="h3" size="sm" mb={1}>
-          {t(`ImportPage.${step}-title`)}
-        </Heading>
-        <Text
-          as="div"
-          fontSize="sm"
-          color="gray.300"
-          lineHeight="1.55"
-          css={{ b: { color: 'white' } }}
-        >
-          {t.rich(`ImportPage.${step}`, {
-            b: (chunks) => <b>{chunks}</b>,
-            OfficialLink: (chunks) => (
-              <MainLink
-                viaNextLink
-                prefetch={false}
-                href="/lists/official"
-                trackEvent="import-page-link"
-                trackEventLabel="official-lists"
-              >
-                <Text as="span" fontWeight="semibold" color={DYNAMIC_LIST_ACCENT_LIGHT}>
-                  {chunks}
-                </Text>
-              </MainLink>
-            ),
-          })}
-        </Text>
-      </Box>
-    </Flex>
-  );
-}
 
 function GoalCounterShowcase() {
   const t = useTranslations();
@@ -176,19 +120,22 @@ function GoalCounterShowcase() {
   );
 }
 
+/** "Track a collection": checklists, how to fill them and where to import from */
 export function ImportDynamicLists() {
   const t = useTranslations();
 
   return (
     <Box
       as="section"
+      id="collections"
+      scrollMarginTop="80px"
       borderRadius="xl"
       borderWidth="1px"
       borderColor={`rgba(${DYNAMIC_LIST_ACCENT_RGB}, 0.4)`}
       bg={`linear-gradient(145deg, rgba(${DYNAMIC_LIST_ACCENT_RGB}, 0.16), rgba(${DYNAMIC_LIST_ACCENT_RGB}, 0.03))`}
       p={{ base: 4, md: 6 }}
     >
-      <Flex align="center" gap={3} mb={2}>
+      <Flex align="center" gap={3} mb={5}>
         <Flex
           boxSize="42px"
           flexShrink={0}
@@ -200,31 +147,24 @@ export function ImportDynamicLists() {
           <NextImage src={DynamicIcon} alt="" width={14} style={{ height: 'auto' }} />
         </Flex>
         <Box>
-          <Text {...eyebrowProps}>{t('ImportPage.dynamic-eyebrow')}</Text>
+          <Text {...eyebrowProps}>{t('ImportPage.collections-eyebrow')}</Text>
           <Heading as="h2" size="lg">
             {t('ImportPage.dynamic-title')}
           </Heading>
         </Box>
       </Flex>
-      <Text color="gray.300" fontSize="sm" lineHeight="1.6" maxW="780px" mb={5}>
-        {t('ImportPage.dynamic-intro')}
-      </Text>
 
-      <Flex direction="column" gap={4}>
-        <SimpleGrid columns={{ base: 1, md: 3 }} gap={3}>
-          {FLOW_STEPS.map((step, index) => (
-            <FlowStep key={step} step={step} index={index} />
-          ))}
-        </SimpleGrid>
+      <Flex direction="column" gap={5}>
+        <ChecklistAutoUpdateBanner accent={DYNAMIC_LIST_ACCENT} variant="generic" />
 
-        <GoalCounterShowcase />
+        <ChecklistHowToTabs variant="generic" trackFrom="import-page" />
 
-        <Box mt={2}>
+        <Box>
           <Heading as="h3" size="md">
-            {t('ImportPage.dynamic-pages-title')}
+            {t('ImportPage.collections-pick-title')}
           </Heading>
           <Text color="gray.400" fontSize="sm" mt={0.5} mb={3}>
-            {t('ImportPage.dynamic-pages-hint')}
+            {t('ImportPage.collections-pick-hint')}
           </Text>
           <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap={3}>
             {checklistPages.map((page) => (
@@ -237,6 +177,8 @@ export function ImportDynamicLists() {
             ))}
           </SimpleGrid>
         </Box>
+
+        <GoalCounterShowcase />
 
         <Flex gap={2} flexWrap="wrap">
           <Button asChild size="sm" variant="outline">

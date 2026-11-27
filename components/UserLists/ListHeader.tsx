@@ -648,6 +648,7 @@ const ListHeader = (props: ListHeaderProps) => {
                     )
                   }
                   sourceDeleted={dynamicSource?.type === 'deleted'}
+                  importPage={dynamicSource?.type === 'list' ? dynamicSource.importPage : null}
                   onHide={() => setProgressHidden(true)}
                 />
               )}

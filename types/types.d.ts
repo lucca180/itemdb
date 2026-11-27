@@ -341,7 +341,13 @@ export type UserListLite = Pick<
 export type DynamicListTypes = 'addOnly' | 'removeOnly' | 'fullSync' | 'search';
 
 export type DynamicListSource =
-  | { type: 'list'; name: string; href: string }
+  | {
+      type: 'list';
+      name: string;
+      href: string;
+      /** Neopets page the List Importer fills this checklist from */
+      importPage?: import('@utils/list/checklistImportPage').ChecklistImportPage | null;
+    }
   | { type: 'privateList' }
   | { type: 'search' }
   | { type: 'deleted' };

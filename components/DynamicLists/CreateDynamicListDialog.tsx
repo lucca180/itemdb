@@ -25,6 +25,8 @@ import {
   LuArrowRight,
   LuCheck,
   LuCircleCheck,
+  LuDownload,
+  LuExternalLink,
   LuEyeOff,
   LuInfo,
   LuList,
@@ -39,6 +41,9 @@ import type { DynamicListTypes, UserList } from '@types';
 import { useAuth } from '@utils/auth';
 import { isChecklist, useDynamicListLabels } from '@utils/list/dynamicListLabels';
 import { useLists } from '@utils/useLists';
+import { useScriptStatus } from '@utils/scriptUtils';
+import type { ChecklistImportPage } from '@utils/list/checklistImportPage';
+import type { IconType } from 'react-icons';
 import {
   DYNAMIC_LIST_ACCENT,
   DYNAMIC_LIST_ACCENT_LIGHT,
@@ -117,6 +122,19 @@ export type CreateDynamicListDialogProps = {
   onCreate?: (newList: UserList, mode: DynamicListTypes) => void;
   /** The source can back a Goal Counter */
   showGoalStep?: boolean;
+  /** Neopets page the List Importer fills a checklist of this source from */
+  importPage?: ChecklistImportPage | null;
+};
+
+type NextStep = {
+  key: string;
+  href: string;
+  isExternal?: boolean;
+  icon: IconType;
+  title: ReactNode;
+  body: ReactNode;
+  /** Shown under the step, outside its link */
+  note?: ReactNode;
 };
 
 const CreateDynamicListDialog = (props: CreateDynamicListDialogProps) => {
@@ -141,7 +159,9 @@ const CreateDynamicListDialog = (props: CreateDynamicListDialogProps) => {
     trackProps,
     onCreate,
     showGoalStep,
+    importPage,
   } = props;
+  const { scriptStatus } = useScriptStatus();
 
   const [mode, setMode] = useState<DynamicListTypes>(defaultMode);
   const [step, setStep] = useState<1 | 2>(1);
@@ -246,11 +266,79 @@ const CreateDynamicListDialog = (props: CreateDynamicListDialogProps) => {
   let footer: ReactNode;
 
   if (created) {
-    const nextSteps = isChecklist(listInfo)
+    const b = (chunks: ReactNode) => <b>{chunks}</b>;
+    const importerStatus = scriptStatus?.itemdb_listImporter?.status;
+    const pageName = importPage ? t(importPage.labelKey) : '';
+
+    // a known Neopets page: straight there once the List Importer is installed
+    const importStep: NextStep = !importPage
+      ? {
+          key: 'hide',
+          href: '/lists/import',
+          icon: LuEyeOff,
+          title: t('ImportPage.dyn-2-title'),
+          body: t.rich('ImportPage.dyn-2', { b }),
+        }
+      : importerStatus === 'ok'
+        ? {
+            key: 'import-page',
+            href: importPage.href,
+            isExternal: true,
+            icon: LuExternalLink,
+            title: t('ImportPage.dyn-2-title'),
+            body: importPage.albumPage
+              ? t.rich('DynamicList.next-import-album', { album: importPage.albumPage, b })
+              : importPage.labelKey === 'General.stamp-album'
+                ? // a whole-album list (e.g. All Collectibles) isn't recommended by any page
+                  t.rich('DynamicList.next-import-album-all', { page: pageName, b })
+                : t.rich('DynamicList.next-import-page', { page: pageName, b }),
+          }
+        : {
+            key: importerStatus === 'outdated' ? 'update-script' : 'install-script',
+            href: '/lists/import',
+            icon: LuDownload,
+            title:
+              importerStatus === 'outdated'
+                ? t('DynamicList.next-update-script-title')
+                : t('DynamicList.next-install-script-title'),
+            body: t('DynamicList.next-install-script', { page: pageName }),
+            note: t.rich('DynamicList.next-install-extra-step', {
+              b,
+              Link: (chunks) => (
+                <MainLink
+                  onClick={onClose}
+                  viaNextLink
+                  prefetch={false}
+                  href="/articles/help-my-scripts-are-not-working"
+                  trackEvent="dynamic-list-next-step"
+                  trackEventLabel="tampermonkey-extra-step"
+                >
+                  <Text
+                    as="span"
+                    fontWeight="semibold"
+                    color="orange.300"
+                    textDecoration="underline"
+                  >
+                    {chunks}
+                  </Text>
+                </MainLink>
+              ),
+            }),
+          };
+
+    const nextSteps: NextStep[] = isChecklist(listInfo)
       ? [
-          { key: 'hide', href: '/lists/import', icon: LuEyeOff, content: 'dyn-2' },
+          importStep,
           ...(showGoalStep
-            ? [{ key: 'goal', href: newListHref, icon: LuCircleCheck, content: 'dyn-3' }]
+            ? [
+                {
+                  key: 'goal',
+                  href: newListHref,
+                  icon: LuCircleCheck,
+                  title: t('ImportPage.dyn-3-title'),
+                  body: t.rich('ImportPage.dyn-3', { b }),
+                },
+              ]
             : []),
         ]
       : [];
@@ -274,42 +362,46 @@ const CreateDynamicListDialog = (props: CreateDynamicListDialogProps) => {
               {t('DynamicList.next-steps')}
             </Text>
             {nextSteps.map((nextStep) => (
-              <Box key={nextStep.key} onClick={onClose}>
-                <MainLink
-                  viaNextLink
-                  prefetch={false}
-                  href={nextStep.href}
-                  trackEvent="dynamic-list-next-step"
-                  trackEventLabel={nextStep.key}
-                >
-                  <Flex
-                    gap={3}
-                    p={3}
-                    borderRadius="md"
-                    bg="blackAlpha.300"
-                    align="flex-start"
-                    _hover={{ bg: 'blackAlpha.400' }}
+              <Box key={nextStep.key}>
+                <Box onClick={onClose}>
+                  <MainLink
+                    viaNextLink={!nextStep.isExternal}
+                    isExternal={nextStep.isExternal}
+                    prefetch={false}
+                    href={nextStep.href}
+                    trackEvent="dynamic-list-next-step"
+                    trackEventLabel={nextStep.key}
                   >
-                    <Icon
-                      as={nextStep.icon}
-                      color={DYNAMIC_LIST_ACCENT_LIGHT}
-                      mt="2px"
-                      flexShrink={0}
-                    />
-                    <Box>
-                      <Text fontSize="sm" fontWeight="semibold">
-                        {nextStep.content === 'dyn-2'
-                          ? t('ImportPage.dyn-2-title')
-                          : t('ImportPage.dyn-3-title')}
-                      </Text>
-                      <Text as="div" fontSize="xs" color="gray.400">
-                        {nextStep.content === 'dyn-2'
-                          ? t.rich('ImportPage.dyn-2', { b: (chunks) => <b>{chunks}</b> })
-                          : t.rich('ImportPage.dyn-3', { b: (chunks) => <b>{chunks}</b> })}
-                      </Text>
-                    </Box>
-                  </Flex>
-                </MainLink>
+                    <Flex
+                      gap={3}
+                      p={3}
+                      borderRadius="md"
+                      bg="blackAlpha.300"
+                      align="flex-start"
+                      _hover={{ bg: 'blackAlpha.400' }}
+                    >
+                      <Icon
+                        as={nextStep.icon}
+                        color={DYNAMIC_LIST_ACCENT_LIGHT}
+                        mt="2px"
+                        flexShrink={0}
+                      />
+                      <Box>
+                        <Text fontSize="sm" fontWeight="semibold">
+                          {nextStep.title}
+                        </Text>
+                        <Text as="div" fontSize="xs" color="gray.400">
+                          {nextStep.body}
+                        </Text>
+                      </Box>
+                    </Flex>
+                  </MainLink>
+                </Box>
+                {nextStep.note && (
+                  <Text as="div" fontSize="xs" color="gray.400" mt={1} px={1}>
+                    {nextStep.note}
+                  </Text>
+                )}
               </Box>
             ))}
           </Flex>
