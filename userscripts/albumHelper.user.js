@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Stamp Album Helper
-// @version      2.1.0
+// @version      2.1.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Shows the price of your missing stamps, your album progress and imports it to your itemdb checklist
@@ -113,7 +113,6 @@ $("head").append(`<style>
   .idb-chip.cheap { background: rgba(39,103,73,.95); }
   .idb-chip.none { background: rgba(113,128,150,.92); }
   .idb-chip.soon { background: rgba(74,85,104,.9); font-weight: 600; }
-  .idb-check { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #38A169; color: #fff; font: 700 11px/18px sans-serif; text-align: center; pointer-events: none; box-shadow: 0 0 0 2px #fff; }
 </style>`);
 
 // ---------- helpers ---------- //
@@ -271,7 +270,7 @@ function stats() {
 }
 
 // ---------- price toggle ---------- //
-// on by default, saved per browser; hides the chips on the stamps (price and "Not out yet"), the checks stay
+// on by default, saved per browser; hides the chips on the stamps (price and "Not out yet")
 let showPrices = GM_getValue("showPrices", true);
 
 function priceToggle() {
@@ -288,17 +287,16 @@ function togglePrices() {
 }
 
 // ---------- grid ---------- //
-// price chip on each missing stamp (green = cheaper half), check on the owned ones
+// price chip on each missing stamp (green = cheaper half), "Not out yet" on the empty slots
 function gridOverlays() {
   const prices = stats().missing.map(priceOf).filter(Boolean).sort((a, b) => a - b);
   const cheapLimit = prices[Math.floor(prices.length / 2)] ?? 0;
 
   stamps.forEach((s) => {
-    s.$cell.addClass("idb-cell").find(".idb-chip, .idb-check").remove();
+    s.$cell.addClass("idb-cell").find(".idb-chip").remove();
 
-    if (s.owned) s.$cell.append('<span class="idb-check">✓</span>');
-    else if (!showPrices) return;
-    else if (s.data) {
+    if (s.owned || !showPrices) return;
+    if (s.data) {
       const p = priceOf(s);
       s.$cell.append(`<span class="idb-chip ${!p ? "none" : p <= cheapLimit ? "cheap" : ""}">${priceText(s, true)}</span>`);
     } else s.$cell.append('<span class="idb-chip soon">Not out yet</span>');
