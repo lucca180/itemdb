@@ -4,7 +4,7 @@ export const LATEST_VERSIONS_CODE = {
   itemdb_script: 202,
   itemdb_restock: 204,
   itemdb_sdbPricer: 212,
-  itemdb_albumHelper: 103,
+  itemdb_albumHelper: 200,
   itemdb_listImporter: 230,
   itemdb_sortGallery: 110,
 };
