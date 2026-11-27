@@ -300,8 +300,11 @@ export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | nul
   const confirmedDrops = new Set<string>();
   const allItemIds = new Set<number>();
 
-  drops.map((drop) => {
+  // Built from the raw rows: each opening_id is one submission, so the same item repeated in it
+  // is a real quantity (e.g. 4-6 Basic Gift Boxes in a GBMC) and counts toward pool min/max.
+  rawDrops.map((drop) => {
     if (isAuthoritativeDrop(drop)) return;
+    if (!evidence.acceptedItemIds.has(drop.item_iid)) return;
 
     if (drop.notes?.toLowerCase().includes(GRAM_OPTION_NOTE)) return;
 

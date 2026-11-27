@@ -412,3 +412,42 @@ describe('getItemDrops grams', () => {
     expect(result?.pools['gram-1-1'].offerChance).toBeUndefined();
   });
 });
+
+describe('getItemDrops repeated items in one opening', () => {
+  const BASIC_GIFT_BOX_ID = 65354;
+  const REGULAR_DROP_ID = 301;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prismaMock.wearableData.findMany.mockResolvedValue([]);
+    getManyItemsMock.mockResolvedValue({});
+  });
+
+  test('counts each copy of a repeated item toward the pool min/max (GBMC gift boxes)', async () => {
+    prismaMock.items.findFirst.mockResolvedValue({
+      ...item(true),
+      name: 'Test Gift Box Mystery Capsule',
+    });
+
+    const opening = (id: string, boxes: number) => [
+      drop(id, REGULAR_DROP_ID),
+      ...Array.from({ length: boxes }, () => drop(id, BASIC_GIFT_BOX_ID)),
+    ];
+
+    prismaMock.openableItems.findMany.mockResolvedValue([
+      ...opening('a', 4),
+      ...opening('b', 4),
+      ...opening('c', 5),
+      ...opening('d', 5),
+      ...opening('e', 6),
+      ...opening('f', 6),
+    ]);
+
+    const result = await getItemDrops(PARENT_ITEM_ID);
+
+    expect(result?.pools.giftbox.minDrop).toBe(4);
+    expect(result?.pools.giftbox.maxDrop).toBe(6);
+    expect(result?.drops[BASIC_GIFT_BOX_ID].dropRate).toBe(100);
+    expect(result?.isGBC).toBe(true);
+  });
+});
