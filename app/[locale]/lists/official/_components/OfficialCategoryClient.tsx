@@ -219,7 +219,7 @@ export function OfficialCategoryClient(props: Props) {
       case 'cta':
         return props.albums ? (
           <TrackSection section="cta">
-            <StampsCta accent={accent} />
+            <StampsCta accent={accent} collapsed={config.ctaCollapsed} />
           </TrackSection>
         ) : null;
 
@@ -492,12 +492,12 @@ const CTA_SAMPLE = `stamps-${SAMPLE_STAMP_ALBUMS[0].id}`;
 const [CTA_SAMPLE_W, CTA_SAMPLE_H] = GOAL_SIZES.mosaic;
 
 /** Stamp Album only: how to track the album with checklists, and goal counters. */
-const StampsCta = ({ accent }: { accent: string }) => {
+const StampsCta = ({ accent, collapsed }: { accent: string; collapsed?: boolean }) => {
   const t = useTranslations('OfficialCategory');
   const track = useTrack();
   return (
     <Flex direction="column" mt={8} gap={3}>
-      <StampsGuide accent={accent} />
+      <StampsGuide accent={accent} collapsible={collapsed} />
       <Flex
         gap={4}
         p={4}
@@ -548,84 +548,122 @@ const StampsCta = ({ accent }: { accent: string }) => {
 };
 
 /** Stamp Album guide: pick a checklist format, then mark the stamps you own (with or without a script) */
-const StampsGuide = ({ accent }: { accent: string }) => {
+const StampsGuide = ({ accent, collapsible }: { accent: string; collapsible?: boolean }) => {
   const t = useTranslations('OfficialCategory');
   const track = useTrack();
 
-  return (
-    <Box
-      as="section"
-      borderRadius="xl"
-      borderWidth="1px"
-      borderColor={rgba(accent, 0.33)}
-      bg={`linear-gradient(145deg, ${rgba(accent, 0.12)}, ${rgba(accent, 0.02)})`}
-      p={{ base: 4, md: 6 }}
-    >
-      <Flex direction="column" gap={5}>
-        <Flex align="center" gap={3}>
-          <Flex
-            boxSize="42px"
-            flexShrink={0}
-            borderRadius="md"
-            align="center"
-            justify="center"
-            bg={rgba(accent, 0.2)}
+  const header = (
+    <Flex align="center" gap={3} textAlign="left">
+      <Flex
+        boxSize="42px"
+        flexShrink={0}
+        borderRadius="md"
+        align="center"
+        justify="center"
+        bg={rgba(accent, 0.2)}
+      >
+        <Icon as={LuStamp} color={accent} boxSize={5} />
+      </Flex>
+      <Box>
+        <Heading as="h2" size="lg">
+          {t('stamps-guide-title')}
+        </Heading>
+        <Text fontSize="sm" color="gray.300" fontWeight="normal">
+          {collapsible ? t('stamps-guide-collapsed-text') : t('stamps-guide-text')}
+        </Text>
+      </Box>
+    </Flex>
+  );
+
+  const body = (
+    <Flex direction="column" gap={5}>
+      <ChecklistAutoUpdateBanner accent={accent} variant="stamps" />
+
+      <Box>
+        <Heading as="h3" size="sm" mb={2}>
+          {t('stamps-guide-step-1')}
+        </Heading>
+        <SimpleGrid columns={{ base: 1, md: 2 }} gap={3}>
+          <StampsFormatCard
+            accent={accent}
+            icon={LuBookOpen}
+            title={t('stamps-format-page-title')}
+            body={t('stamps-format-page')}
+            cta={
+              <a href="#lists" onClick={() => track('official-category-cta', { cta: 'pages' })}>
+                {t('stamps-format-page-cta')} <LuArrowRight />
+              </a>
+            }
+          />
+          <StampsFormatCard
+            accent={accent}
+            icon={LuListChecks}
+            title={t('stamps-format-all-title')}
+            body={t('stamps-format-all')}
+            isPrimary
+            cta={
+              <MainLink
+                href="/lists/official/all-collectibles"
+                prefetch={false}
+                onClick={() => track('official-category-cta', { cta: 'all-collectibles' })}
+              >
+                {t('stamps-format-all-cta')} <LuArrowRight />
+              </MainLink>
+            }
+          />
+        </SimpleGrid>
+      </Box>
+
+      <Box>
+        <Heading as="h3" size="sm" mb={2}>
+          {t('stamps-guide-step-2')}
+        </Heading>
+        <ChecklistHowToTabs variant="stamps" trackFrom="stamps-category" />
+      </Box>
+    </Flex>
+  );
+
+  const frame = {
+    borderRadius: 'xl',
+    borderWidth: '1px',
+    borderColor: rgba(accent, 0.33),
+    bg: `linear-gradient(145deg, ${rgba(accent, 0.12)}, ${rgba(accent, 0.02)})`,
+  };
+
+  // returning collectors skip the tutorial: only the header shows until it's opened
+  if (collapsible)
+    return (
+      <Accordion.Root
+        as="section"
+        collapsible
+        {...frame}
+        onValueChange={({ value }) =>
+          value.length && track('official-category-cta', { cta: 'guide-open' })
+        }
+      >
+        <Accordion.Item value="guide" border="none">
+          <Accordion.ItemTrigger
+            p={{ base: 4, md: 6 }}
+            cursor="pointer"
+            justifyContent="space-between"
           >
-            <Icon as={LuStamp} color={accent} boxSize={5} />
-          </Flex>
-          <Box>
-            <Heading as="h2" size="lg">
-              {t('stamps-guide-title')}
-            </Heading>
-            <Text fontSize="sm" color="gray.300">
-              {t('stamps-guide-text')}
-            </Text>
-          </Box>
-        </Flex>
+            {header}
+            <Accordion.ItemIndicator />
+          </Accordion.ItemTrigger>
+          <Accordion.ItemContent>
+            <Accordion.ItemBody px={{ base: 4, md: 6 }} pt={0} pb={{ base: 4, md: 6 }}>
+              {body}
+            </Accordion.ItemBody>
+          </Accordion.ItemContent>
+        </Accordion.Item>
+      </Accordion.Root>
+    );
 
-        <ChecklistAutoUpdateBanner accent={accent} variant="stamps" />
-
-        <Box>
-          <Heading as="h3" size="sm" mb={2}>
-            {t('stamps-guide-step-1')}
-          </Heading>
-          <SimpleGrid columns={{ base: 1, md: 2 }} gap={3}>
-            <StampsFormatCard
-              accent={accent}
-              icon={LuBookOpen}
-              title={t('stamps-format-page-title')}
-              body={t('stamps-format-page')}
-              cta={
-                <a href="#lists" onClick={() => track('official-category-cta', { cta: 'pages' })}>
-                  {t('stamps-format-page-cta')} <LuArrowRight />
-                </a>
-              }
-            />
-            <StampsFormatCard
-              accent={accent}
-              icon={LuListChecks}
-              title={t('stamps-format-all-title')}
-              body={t('stamps-format-all')}
-              isPrimary
-              cta={
-                <MainLink
-                  href="/lists/official/all-collectibles"
-                  prefetch={false}
-                  onClick={() => track('official-category-cta', { cta: 'all-collectibles' })}
-                >
-                  {t('stamps-format-all-cta')} <LuArrowRight />
-                </MainLink>
-              }
-            />
-          </SimpleGrid>
-        </Box>
-
-        <Box>
-          <Heading as="h3" size="sm" mb={2}>
-            {t('stamps-guide-step-2')}
-          </Heading>
-          <ChecklistHowToTabs variant="stamps" trackFrom="stamps-category" />
-        </Box>
+  return (
+    <Box as="section" {...frame} p={{ base: 4, md: 6 }}>
+      <Flex direction="column" gap={5}>
+        {header}
+        {body}
       </Flex>
     </Box>
   );

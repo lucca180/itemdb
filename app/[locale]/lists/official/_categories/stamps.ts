@@ -26,6 +26,9 @@ export const stamps = {
     featured: { slugs: ['all-collectibles'], popular: 2 },
     groups: [],
   },
+  // the checklist guide (cta) sits after the album pages, collapsed: returning visitors skip it
+  sections: ['featured', 'intro', 'main', 'other', 'cta', 'archive', ['faq', 'related']],
+  ctaCollapsed: true,
   faq: [
     {
       q: 'Do I have to add stamps one by one?',

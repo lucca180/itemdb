@@ -74,6 +74,8 @@ that makes `/lists/official` hit `official/page.tsx`).
 - `sections: SectionSlot[]`: order below the hero (`featured`, `intro`, `cta`, `main`, `other`,
   `archive`, `faq`, `related`); an array renders side by side. Missing ones are appended in `DEFAULT_SECTIONS`
   order. `featured` overlaps the hero only when it comes first.
+- `ctaCollapsed`: the `cta` (only the Stamp Album checklist guide today) renders as a closed
+  accordion; opening it tracks `official-category-cta` with `cta: guide-open`.
 - `faq` (also emitted as `FAQPage` JSON-LD), `relatedArticles` (WordPress slugs; section hidden when
   empty), `seoTitle`, `description`, `kicker`, `tagline`, `intro`.
 

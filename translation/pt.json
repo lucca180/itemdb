@@ -2241,11 +2241,12 @@
     "stamps-cta-goals-button": "Ver contadores de meta",
     "stamps-guide-title": "Acompanhe seu Álbum de Selos",
     "stamps-guide-text": "Veja quais selos faltam e quanto custa completar cada página.",
+    "stamps-guide-collapsed-text": "Primeira vez? Veja como criar um checklist e marcar os selos que você já tem.",
     "stamps-guide-step-1": "1. Escolha como acompanhar",
     "stamps-guide-step-2": "2. Marque os selos que você tem",
     "stamps-format-page-title": "Um checklist por página do álbum",
     "stamps-format-page": "Progresso e custo de cada página, e um Contador de Meta para cada avatar que você está buscando. Cada um é criado na primeira vez que você importa aquela página.",
-    "stamps-format-page-cta": "Escolha uma página abaixo",
+    "stamps-format-page-cta": "Ver as páginas do álbum",
     "stamps-format-all-title": "Um checklist com todos os selos",
     "stamps-format-all": "Segue o All Collectibles: todos os selos do álbum num lugar só. Crie uma vez e escolha ele ao importar cada página.",
     "stamps-format-all-cta": "Abrir All Collectibles"

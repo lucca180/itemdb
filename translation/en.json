@@ -2239,11 +2239,12 @@
     "stamps-cta-goals-button": "See goal counters",
     "stamps-guide-title": "Track your Stamp Album",
     "stamps-guide-text": "See which stamps you're missing and how much each page costs to finish.",
+    "stamps-guide-collapsed-text": "New here? See how to create a checklist and mark the stamps you already own.",
     "stamps-guide-step-1": "1. Choose how to track it",
     "stamps-guide-step-2": "2. Mark the stamps you own",
     "stamps-format-page-title": "One checklist per album page",
     "stamps-format-page": "Progress and cost for each page, and a Goal Counter for each avatar you're chasing. Each one is created the first time you import that page.",
-    "stamps-format-page-cta": "Pick a page below",
+    "stamps-format-page-cta": "See the album pages",
     "stamps-format-all-title": "One checklist with every stamp",
     "stamps-format-all": "Follows All Collectibles: every stamp in the album, in one place. Create it once, then pick it when you import each page.",
     "stamps-format-all-cta": "Open All Collectibles"

@@ -114,6 +114,9 @@ export type OfficialCategoryConfig = {
    */
   sections?: SectionSlot[];
 
+  /** `cta` (Stamp Album guide) starts collapsed, so returning visitors skip the tutorial */
+  ctaCollapsed?: boolean;
+
   faq?: { q: string; a: string }[];
   /** WordPress article slugs, in display order. The section is hidden when empty. */
   relatedArticles?: string[];
